@@ -35,28 +35,30 @@ EOF
 
 # compare current RHEL version against a sign and a value,
 # behave like beakerlib's rlIsRHEL and its sign-based comparison
-# rhel '==8'    # true on 8.0, 8.1, etc.
-# rhel '>7'     # true on any 8, 9, etc.
-# rhel '==8.3'  # true only on 8.3
-# rhel '<=8.3'  # true on 8.3, 8.2, but false on 7.9 or older 7, 6, etc.
-# rhel '>7.5'   # true on 7.5, 7.6, but false on any 8, 9, etc.
-function rhel {
-    local sign=${1%%[0-9]*} tgt=${1##*[><=]} rc=0
-    # rare sanity check to guard against old rlIsRHEL syntax
-    [[ $sign ]] || exit_error "rhel() must always be used with a sign"
+# isrhel '==8'    # true on 8.0, 8.1, etc.
+# isrhel '>7'     # true on any 8, 9, etc.
+# isrhel '==8.3'  # true only on 8.3
+# isrhel '<=8.3'  # true on 8.3, 8.2, even across majors, 7.9, 6.4, etc.
+# isrhel '>7.5'   # true on 7.5, 7.6, any 8, 9, etc.
+# isrhel '8'      # equivalent to '==8'
+# isrhel '8.3'    # equivalent to '==8.3'
+function isrhel {
+    local sign=${1%%[0-9]*} tgt=${1##*[><=]}
+    [[ -z $sign ]] && sign="=="
 
     local os_release=$(</etc/os-release)
     local osname=$(eval "$os_release"; echo "$ID")
     [[ $osname == rhel ]] || return 1
     local cur=$(eval "$os_release"; echo "$VERSION_ID")
 
-    local tgt_major=${tgt%%.*} tgt_minor=${tgt#*.}
-    local cur_major=${cur%%.*} cur_minor=${cur#*.}
+    local tgt_major=${tgt%%.*} cur_major=${cur%%.*}
 
     # if target has only major, compare majors
+    # else compare the full version
     if [[ $tgt_major == $tgt ]]; then
-        rpm_ver_cmp "$cur_major" '' "$sign" "$tgt_major" '' || rc=$?
-        return $rc
+        rpm_ver_cmp "$cur_major" '' "$sign" "$tgt_major" ''
+    else
+        rpm_ver_cmp "$cur" '' "$sign" "$tgt" ''
     fi
 
     # else compare only minors
