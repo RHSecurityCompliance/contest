@@ -101,20 +101,11 @@ function assert_child_success {
 # isrpm openscap '<=' 1.3.6-3.el8_3  # full v+r
 # isrpm openscap '>' 1.3             # partial version
 # isrpm openscap                     # just name (installed check)
-declare -A _rpmlist_cache
-function _make_rpmlist_cache {
-    local n vr
-    while read -r n vr; do
-        _rpmlist_cache[$n]="$vr"
-    done < <(rpm -qa --qf "%{NAME} %{VERSION} %{RELEASE}\n")
-    assert_child_success "rpm -qa"
-}
 function isrpm {
-    local n=$1 sign=$2 tgt_vr=$3
-    [[ ${#_rpmlist_cache[@]} -eq 0 ]] && _make_rpmlist_cache
-    [[ ${_rpmlist_cache[$n]+exists} ]] || return 1
+    local n=$1 sign=$2 tgt_vr=$3 cur_vr
+    cur_vr=$(rpm -q --qf "%{VERSION} %{RELEASE}" "$n") || return 1
     [[ -z $tgt_vr ]] && return 0  # just name, passed exists check
     local tgt_v=${tgt_vr%-*} tgt_r=${tgt_vr##*-} cur_v cur_r
-    read -r cur_v cur_r <<<"${_rpmlist_cache[$n]}"
+    read -r cur_v cur_r <<<"$cur_vr"
     rpm_ver_cmp "$cur_v" "$cur_r" "$sign" "$tgt_v" "$tgt_r"
 }
