@@ -1,6 +1,6 @@
-[[ $_LIB_CLEANUP_DEFINED ]] && return
-_LIB_CLEANUP_DEFINED=1
-[[ -z $_LIB_LIBDIR ]] && _LIB_LIBDIR=$(dirname "${BASH_SOURCE[0]}")
+[[ $_CLEANUP_DEFINED ]] && return
+_CLEANUP_DEFINED=1
+[[ -z $_LIBDIR ]] && _LIBDIR=$(dirname "${BASH_SOURCE[0]}")
 
 #
 # The idea here is to have a "buffer" of cleanup commands, the _cleanup_buffer,
@@ -8,7 +8,7 @@ _LIB_CLEANUP_DEFINED=1
 # At the end, this function is executed to do the clean up.
 #
 
-. "$_LIB_LIBDIR/at-exit.sh"
+. "$_LIBDIR/at-exit.sh"
 
 function clear_cleanup {
     function _cleanup_buffer {

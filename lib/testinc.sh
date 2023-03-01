@@ -3,16 +3,16 @@ if [ -z "$TMT_TEST_DATA" ]; then
     exit 1
 fi
 
-[ -z "$_LIB_LIBDIR" ] && _LIB_LIBDIR=$(dirname "${BASH_SOURCE[0]}")
+[ -z "$_LIBDIR" ] && _LIBDIR=$(dirname "${BASH_SOURCE[0]}")
 
-PATH="$_LIB_LIBDIR:$PATH"
+PATH="$_LIBDIR:$PATH"
 
-. "$_LIB_LIBDIR/at-exit.sh"
-. "$_LIB_LIBDIR/backup.sh"
-. "$_LIB_LIBDIR/cleanup.sh"
-. "$_LIB_LIBDIR/misc.sh"
-. "$_LIB_LIBDIR/services.sh"
-. "$_LIB_LIBDIR/tmt.sh"
+. "$_LIBDIR/at-exit.sh"
+. "$_LIBDIR/backup.sh"
+. "$_LIBDIR/cleanup.sh"
+. "$_LIBDIR/misc.sh"
+. "$_LIBDIR/services.sh"
+. "$_LIBDIR/tmt.sh"
 
 # standardize the following across all bash tests in the suite
 { set -e -x; } 2>/dev/null

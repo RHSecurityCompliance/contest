@@ -1,6 +1,6 @@
-[[ $_LIB_SERVICES_DEFINED ]] && return
-_LIB_SERVICES_DEFINED=1
-[[ -z $_LIB_LIBDIR ]] && _LIB_LIBDIR=$(dirname "${BASH_SOURCE[0]}")
+[[ $_SERVICES_DEFINED ]] && return
+_SERVICES_DEFINED=1
+[[ -z $_LIBDIR ]] && _LIBDIR=$(dirname "${BASH_SOURCE[0]}")
 
 #
 # Functions for starting/stoping systemctl services, and restoring them

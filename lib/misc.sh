@@ -1,8 +1,8 @@
-[[ $_LIB_MISC_DEFINED ]] && return
-_LIB_MISC_DEFINED=1
-[[ -z $_LIB_LIBDIR ]] && _LIB_LIBDIR=$(dirname "${BASH_SOURCE[0]}")
+[[ $_MISC_DEFINED ]] && return
+_MISC_DEFINED=1
+[[ -z $_LIBDIR ]] && _LIBDIR=$(dirname "${BASH_SOURCE[0]}")
 
-. "$_LIB_LIBDIR/tmt.sh"
+. "$_LIBDIR/tmt.sh"
 
 # simply print out a msg to stderr, for non-fatal errors
 function error {

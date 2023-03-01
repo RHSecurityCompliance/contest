@@ -1,6 +1,6 @@
-[[ $_LIB_AT_EXIT_DEFINED ]] && return
-_LIB_AT_EXIT_DEFINED=1
-[[ -z $_LIB_LIBDIR ]] && _LIB_LIBDIR=$(dirname "${BASH_SOURCE[0]}")
+[[ $_AT_EXIT_DEFINED ]] && return
+_AT_EXIT_DEFINED=1
+[[ -z $_LIBDIR ]] && _LIBDIR=$(dirname "${BASH_SOURCE[0]}")
 
 #
 # Simple "buffer" of commands to execute on exit, since multiple places using

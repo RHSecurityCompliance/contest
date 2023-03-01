@@ -1,6 +1,6 @@
-[[ $_LIB_TMT_DEFINED ]] && return
-_LIB_TMT_DEFINED=1
-[[ -z $_LIB_LIBDIR ]] && _LIB_LIBDIR=$(dirname "${BASH_SOURCE[0]}")
+[[ $_TMT_DEFINED ]] && return
+_TMT_DEFINED=1
+[[ -z $_LIBDIR ]] && _LIBDIR=$(dirname "${BASH_SOURCE[0]}")
 
 function _tmt_record_status {
     cat >> "$TMT_TEST_DATA/result.yaml" <<EOF
