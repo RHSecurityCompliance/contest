@@ -60,10 +60,6 @@ function isrhel {
     else
         rpm_ver_cmp "$cur" '' "$sign" "$tgt" ''
     fi
-
-    # else compare only minors
-    [[ $tgt_major == $cur_major ]] || return 1
-    rpm_ver_cmp "$cur_minor" '' "$sign" "$tgt_minor" ''
 }
 
 # return 0 if the current system has support for creating virtual machines
@@ -98,4 +94,27 @@ function assert_child_success {
         [[ $rc -eq 0 ]] && return 0
     fi
     exit_error "$msg failed, exitcode: $rc"
+}
+
+# compare an installed RPM NVR against the passed version/release,
+# fail if the RPM is not installed as well
+# isrpm openscap '<=' 1.3.6-3.el8_3  # full v+r
+# isrpm openscap '>' 1.3             # partial version
+# isrpm openscap                     # just name (installed check)
+declare -A _rpmlist_cache
+function _make_rpmlist_cache {
+    local n vr
+    while read -r n vr; do
+        _rpmlist_cache[$n]="$vr"
+    done < <(rpm -qa --qf "%{NAME} %{VERSION} %{RELEASE}\n")
+    assert_child_success "rpm -qa"
+}
+function isrpm {
+    local n=$1 sign=$2 tgt_vr=$3
+    [[ ${#_rpmlist_cache[@]} -eq 0 ]] && _make_rpmlist_cache
+    [[ ${_rpmlist_cache[$n]+exists} ]] || return 1
+    [[ -z $tgt_vr ]] && return 0  # just name, passed exists check
+    local tgt_v=${tgt_vr%-*} tgt_r=${tgt_vr##*-} cur_v cur_r
+    read -r cur_v cur_r <<<"${_rpmlist_cache[$n]}"
+    rpm_ver_cmp "$cur_v" "$cur_r" "$sign" "$tgt_v" "$tgt_r"
 }
