@@ -1,0 +1,10 @@
+#summary: Concise summary describing what the test does
+test: ./test.py
+require:
+ - python3
+#- tree
+#- url: git://pkgs.devel.redhat.com/tests/openscap
+#  name: /Library/common
+#  nick: foobar
+result: custom
+duration: 4h

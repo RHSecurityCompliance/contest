@@ -1,0 +1,11 @@
+summary: Temp development plan
+provision:
+    how: connect
+    guest: 127.0.0.1
+    port: 1234
+    key: ~/.ssh/id_rsa
+    user: root
+discover:
+    how: fmf
+execute:
+    how: tmt
