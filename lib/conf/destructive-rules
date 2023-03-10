@@ -1,0 +1,27 @@
+#!/bin/bash
+
+# executed by a test,
+# outputs a newline-separated list of rules that will break ssh connection,
+# and any testing logic if remediated on a given system
+
+. "$_LIBDIR/misc.sh"
+
+echo some_destructive_rule
+echo another_one
+
+if isrhel 7; then
+    echo some_old_rule
+fi
+
+if isrpm openscap '<' 1.3.5; then
+    echo new_rule_that_breaks_old_openscap
+fi
+
+isrhel 8 && isrhel '<8.4' && echo broken_rule  # old systemd
+
+cat <<EOF
+big
+list
+of
+broken_rules
+EOF
