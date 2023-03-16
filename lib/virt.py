@@ -42,12 +42,12 @@ Example using snapshots:
         vm.prepare_for_snapshot()
 
     with vm.snapshotted():
-        state = vm.comm(['ls', '/root'])
+        state = vm.comm('ls', '/root')
         if state.returncode != 0:
             report_failure()
 
     with vm.snapshotted():
-        out = g.comm_out([...])
+        out = g.comm_out(...)
 
 Example using plain guest:
 
@@ -92,7 +92,9 @@ _log = logging.getLogger(__name__).debug
 GUEST_NAME = 'contest-ssg'
 GUEST_NAME_GUI = 'contest-ssg-gui'
 
-GUEST_ROOT_PASS = 'c0Nt3st-SSG,pass'
+GUEST_LOGIN_PASS = 'c0Nt3st-SSG,pass'
+GUEST_AUTO_USER = 'auto'
+GUEST_AUTO_HOME = '/home/auto'
 
 GUEST_IMG_DIR = '/var/lib/libvirt/images'
 
@@ -104,7 +106,7 @@ KICKSTART_TEMPLATE = f'''\
 lang en_US.UTF-8
 keyboard --vckeymap us
 network --onboot yes --bootproto dhcp
-rootpw {GUEST_ROOT_PASS}
+rootpw {GUEST_LOGIN_PASS}
 firstboot --disable
 selinux --enforcing
 timezone --utc Europe/Prague
@@ -112,7 +114,16 @@ bootloader --append="console=ttyS0,115200 mitigations=off"
 reboot
 zerombr
 clearpart --all --initlabel
-autopart --type=plain --nohome'''
+autopart --type=plain --nohome
+
+user --name {GUEST_AUTO_USER} --homedir={GUEST_AUTO_HOME} --groups=wheel --plaintext --password {GUEST_LOGIN_PASS} --uid 5678  # nopep8
+%post
+echo "{GUEST_AUTO_USER} ALL=(ALL) NOPASSWD: ALL" >> /etc/sudoers
+%end
+
+%post
+dnf -y makecache || yum -y makecache
+%end'''
 
 KICKSTART_PACKAGES = [
     'openscap',
@@ -247,12 +258,14 @@ class Kickstart:
         lines = '\n'.join(f'  {k} = {v}' for k, v in keyvals.items())
         self.append(f'%addon org_fedora_oscap\n{lines}\n%end')
 
-    def add_root_authorized_key(self, pubkey):
+    def add_authorized_key(self, pubkey, homedir='/root', owner='root'):
         script = textwrap.dedent(f'''\
-            mkdir -m 0700 -p /root/.ssh
-            cat >> /root/.ssh/authorized_keys <<EOF
+            mkdir -m 0700 -p {homedir}/.ssh
+            cat >> {homedir}/.ssh/authorized_keys <<EOF
             {pubkey}
-            EOF''')
+            EOF
+            chmod 0600 {homedir}/.ssh/authorized_keys
+            chown {owner} -R {homedir}/.ssh''')
         self.add_post(script)
 
 
@@ -315,7 +328,7 @@ class Guest:
             ssh_keygen(self.ssh_keyfile_path)
             with open(f'{self.ssh_keyfile_path}.pub') as f:
                 pubkey = f.read().rstrip()
-            kickstart.add_root_authorized_key(pubkey)
+            kickstart.add_authorized_key(pubkey, homedir=GUEST_AUTO_HOME, owner=GUEST_AUTO_USER)
 
         disk_path = f'{GUEST_IMG_DIR}/{self.name}.img'
         disk_format = 'raw'
@@ -370,6 +383,19 @@ class Guest:
         if guest_domstate(self.name) == 'running':
             virsh('shutdown', self.name, check=True)
         wait_for_domstate(self.name, 'shut off')
+
+    # we cannot shutdown/start a snapshotted guest as that would start it from
+    # the persistent non-snapshotted disk - we must somehow reboot the guest OS
+    # without exiting the QEMU process - either hard 'reset' or ssh reboot
+    def soft_reboot(self):
+        """Reboot by issuing 'reboot' via ssh."""
+        self.comm('sudo', 'reboot')
+        wait_for_ssh(self.ipaddr, to_shutdown=True)
+        self.ipaddr = wait_for_ifaddr(self.name)
+        wait_for_ssh(self.ipaddr)
+
+    def reset(self):
+        virsh('reset', self.name, check=True)
 
     def undefine(self, incl_storage=False):
         if guest_domstate(self.name):
@@ -460,14 +486,20 @@ class Guest:
         wait_for_ssh(self.ipaddr)
         yield self
 
-    def comm(self, cmd, binary=False):
+    def _do_ssh(self, *cmd, **run_args):
         ssh_cmdline = [
-            'ssh', '-q', '-l', 'root', '-i', self.ssh_keyfile_path,
+            'ssh', '-q', '-i', self.ssh_keyfile_path,
             '-o', 'StrictHostKeyChecking=no', '-o', 'UserKnownHostsFile=/dev/null',
-            self.ipaddr, *cmd
+            f'{GUEST_AUTO_USER}@{self.ipaddr}', *cmd
         ]
         self.log(f"running ssh root@{self.ipaddr} {cmd}")
-        return subprocess.run(ssh_cmdline, stdout=PIPE, stderr=PIPE, universal_newlines=not binary)
+        return subprocess.run(ssh_cmdline, **run_args)
+
+    def comm(self, *cmd, **kwargs):
+        return self._do_ssh(*cmd, stdout=PIPE, stderr=PIPE, **kwargs)
+
+    def comm_out(self, *cmd, **kwargs):
+        return self._do_ssh(*cmd, **kwargs)
 
     def _do_scp(self, *args):
         scp_cmdline = [
@@ -481,13 +513,13 @@ class Guest:
         if not local_file:
             local_file = '.'
         self.log(f"copying {remote_file} from guest, to {local_file}")
-        self._do_scp(f'root@{self.ipaddr}:{remote_file}', local_file)
+        self._do_scp(f'{GUEST_AUTO_USER}@{self.ipaddr}:{remote_file}', local_file)
 
     def copy_to(self, local_file, remote_file=None):
         if not remote_file:
             remote_file = '.'
         self.log(f"copying {local_file} to guest, to {remote_file}")
-        self._do_scp(local_file, f'root@{self.ipaddr}:{remote_file}')
+        self._do_scp(local_file, f'{GUEST_AUTO_USER}@{self.ipaddr}:{remote_file}')
 
     @classmethod
     def _remove_previous(cls, name):
@@ -558,25 +590,31 @@ def wait_for_ifaddr(name, timeout=600, sleep=0.5):
     raise builtins.TimeoutError(f"wait for {name} IP addr timed out (not requested DHCP?)")
 
 
-def wait_for_ssh(ip, port=22, timeout=600, sleep=0.5):
+def wait_for_ssh(ip, port=22, timeout=600, sleep=0.5, to_shutdown=False):
     """
     Attempt to repeatedly connect to a given ip address and port (both strings)
     and return when a connection has been established with a genuine sshd
     service (not just any TCP server).
 
     If the attempts continue to fail for 'timeout' seconds, raise TimeoutError.
+
+    If 'to_shutdown' is true, wait for ssh to shut down, instead of to start.
+    Useful for waiting until a guest reboots without changing domain state.
     """
-    _log(f"waiting for ssh on {ip}:{port} for up to {timeout}sec")
+    state = 'shut down' if to_shutdown else 'start'
+    _log(f"waiting for ssh on {ip}:{port} to {state} for up to {timeout}sec")
     end_time = datetime.now() + timedelta(seconds=timeout)
     while datetime.now() < end_time:
         try:
             with socket.create_connection((ip, port), timeout=sleep) as s:
                 data = s.recv(10)
-                if data.startswith(b'SSH-'):
+                if data.startswith(b'SSH-') and not to_shutdown:
                     return
                 # something else on the port? .. just wait + close
                 time.sleep(sleep)
         except OSError:
+            if to_shutdown:
+                return
             time.sleep(sleep)
     raise builtins.TimeoutError(f"ssh wait for {ip}:{port} timed out")
 

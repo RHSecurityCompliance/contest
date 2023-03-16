@@ -7,5 +7,6 @@ provision:
     user: root
 discover:
     how: fmf
+    #test: /hardening/.*
 execute:
     how: tmt
