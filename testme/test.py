@@ -39,10 +39,15 @@ if not vm.can_be_snapshotted():
     vm.prepare_for_snapshot()
 
 with vm.snapshotted():
-    vm.comm(['dd', 'if=/dev/zero', 'of=/bigf', 'bs=1M', 'count=10'])
-    state = vm.comm(['ls', '/', '-l'])
-    log(state.stdout)
+    #vm.comm(['dd', 'if=/dev/zero', 'of=/bigf', 'bs=1M', 'count=10'])
+    #state = vm.comm(['ls', '/', '-l'])
+    #log(state.stdout)
+    vm.copy_from('/etc/passwd')
 
 with vm.snapshotted():
-    state = vm.comm(['ls', '/', '-l'])
-    log(state.stdout)
+    #state = vm.comm(['ls', '/', '-l'])
+    #log(state.stdout)
+    vm.comm(['mkdir', 'foob'])
+    vm.copy_to('passwd', 'foob/dasswd')
+    out = vm.comm(['cat', 'foob/dasswd'])
+    log(out)

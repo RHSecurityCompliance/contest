@@ -464,10 +464,30 @@ class Guest:
         ssh_cmdline = [
             'ssh', '-q', '-l', 'root', '-i', self.ssh_keyfile_path,
             '-o', 'StrictHostKeyChecking=no', '-o', 'UserKnownHostsFile=/dev/null',
-            self.ipaddr
-        ] + cmd
+            self.ipaddr, *cmd
+        ]
         self.log(f"running ssh root@{self.ipaddr} {cmd}")
         return subprocess.run(ssh_cmdline, stdout=PIPE, stderr=PIPE, universal_newlines=not binary)
+
+    def _do_scp(self, *args):
+        scp_cmdline = [
+            'scp', '-q', '-i', self.ssh_keyfile_path,
+            '-o', 'StrictHostKeyChecking=no', '-o', 'UserKnownHostsFile=/dev/null',
+            *args
+        ]
+        return subprocess.run(scp_cmdline, check=True)
+
+    def copy_from(self, remote_file, local_file=None):
+        if not local_file:
+            local_file = '.'
+        self.log(f"copying {remote_file} from guest, to {local_file}")
+        self._do_scp(f'root@{self.ipaddr}:{remote_file}', local_file)
+
+    def copy_to(self, local_file, remote_file=None):
+        if not remote_file:
+            remote_file = '.'
+        self.log(f"copying {local_file} to guest, to {remote_file}")
+        self._do_scp(local_file, f'root@{self.ipaddr}:{remote_file}')
 
     @classmethod
     def _remove_previous(cls, name):
