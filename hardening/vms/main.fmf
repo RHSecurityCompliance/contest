@@ -1,7 +1,5 @@
 #summary: Concise summary describing what the test does
 test: ./test.py
-require:
- - python3
 #- tree
 #- url: git://pkgs.devel.redhat.com/tests/openscap
 #  name: /Library/common
@@ -9,15 +7,21 @@ require:
 result: custom
 duration: 4h
 
-#/anssi_bp28_high:
-#    environment:
-#        PROFILE: anssi_bp28_high
+/anssi_bp28_high:
+    environment:
+        PROFILE: anssi_bp28_high
 #/anssi_nt28_high:
 #    environment:
 #        PROFILE: anssi_nt28_high
 /cis:
     environment:
         PROFILE: cis
+/cis_server_l1:
+    environment:
+        PROFILE: cis_server_l1
+#/cis_workstation_l1:
+#    environment:
+#        PROFILE: cis_workstation_l1
 /cis_workstation_l2:
     environment:
         PROFILE: cis_workstation_l2
@@ -42,3 +46,6 @@ duration: 4h
 /stig:
     environment:
         PROFILE: stig
+#/stig_gui:
+#    environment:
+#        PROFILE: stig_gui

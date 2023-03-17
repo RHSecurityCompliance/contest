@@ -2,6 +2,7 @@
 
 import os
 import sys
+import time
 import atexit
 from logging import info as log
 
@@ -39,10 +40,13 @@ if not vm.can_be_snapshotted():
     vm.prepare_for_snapshot()
 
 with vm.snapshotted():
-    log(vm.comm('id'))
-    log(vm.comm_out('id'))
+    log(vm.comm('ls', '-1', '/'))
+    log(vm.comm_out('ls', '-1', '/'))
     #vm.soft_reboot()
     #log(vm.comm('id'))
+    log(vm.comm_out('oscap', 'info', '--profiles', '/usr/share/xml/scap/ssg/content/ssg-rhel8-ds.xml'))
+    #log(vm.comm_out('dnf', 'install', '-y', 'aide'))
+    #time.sleep(300)
 
 #with vm.snapshotted():
 #    vm.comm('mkdir', 'foob')

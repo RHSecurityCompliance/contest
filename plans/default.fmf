@@ -7,6 +7,15 @@ provision:
     user: root
 discover:
     how: fmf
-    #test: /hardening/.*
+    test: /hardening/.*
+prepare:
+    - how: install
+      package:
+      #- https://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm
+      - python3
+      - python36
+      - python3-requests
+      - python36-requests
+      missing: skip
 execute:
     how: tmt

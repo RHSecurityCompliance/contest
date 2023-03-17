@@ -29,6 +29,11 @@ upon guest installation. Only baseurl is supported for now, Fedora won't work.
 Step (1) can be replaced by importing a pre-existing ImageBuilder image, with
 (2) and (3), or Guest() usage, remaining unaffected / compatible.
 
+This module also hacks PermitRootLogin=yes in the sshd sysconfig file
+(not checked by oscap) instead of using unprivileged + sudo, because there
+are more oscap rules breaking NOPASSWD sudo and needing special nonstandard
+sudo-related authentication (cvtsudoers), .. than the 1 rule for sshd.
+
 Example using snapshots:
 
     import virt
@@ -77,6 +82,7 @@ import builtins
 import subprocess
 import textwrap
 import contextlib
+import shutil
 import tempfile
 import requests
 import configparser
@@ -93,8 +99,7 @@ GUEST_NAME = 'contest-ssg'
 GUEST_NAME_GUI = 'contest-ssg-gui'
 
 GUEST_LOGIN_PASS = 'c0Nt3st-SSG,pass'
-GUEST_AUTO_USER = 'auto'
-GUEST_AUTO_HOME = '/home/auto'
+GUEST_SSH_USER = 'root'
 
 GUEST_IMG_DIR = '/var/lib/libvirt/images'
 
@@ -106,7 +111,8 @@ KICKSTART_TEMPLATE = f'''\
 lang en_US.UTF-8
 keyboard --vckeymap us
 network --onboot yes --bootproto dhcp
-rootpw {GUEST_LOGIN_PASS}
+#rootpw {GUEST_LOGIN_PASS}  # breaks on CIS forcing pw change
+rootpw --lock
 firstboot --disable
 selinux --enforcing
 timezone --utc Europe/Prague
@@ -116,12 +122,16 @@ zerombr
 clearpart --all --initlabel
 autopart --type=plain --nohome
 
-user --name {GUEST_AUTO_USER} --homedir={GUEST_AUTO_HOME} --groups=wheel --plaintext --password {GUEST_LOGIN_PASS} --uid 5678  # nopep8
 %post
-echo "{GUEST_AUTO_USER} ALL=(ALL) NOPASSWD: ALL" >> /etc/sudoers
+# broken by something adding $CRYPTO_POLICY
+#sed '/^ExecStart=.*\/sshd /s/$/ -oPermitRootLogin=yes/' \\
+#  -i /usr/lib/systemd/system/sshd.service
+echo 'OPTIONS=-oPermitRootLogin=yes' >> /etc/sysconfig/sshd
 %end
 
 %post
+# would have been done by subscription-manager
+rpm --import /etc/pki/rpm-gpg/RPM-GPG-KEY-redhat-release
 dnf -y makecache || yum -y makecache
 %end'''
 
@@ -160,6 +170,8 @@ def setup_host():
     if not check_host_virt():
         raise RuntimeError("host has no HVM virtualization support")
 
+    dnf = 'dnf' if shutil.which('dnf') else 'yum'
+
     host_pkgs = [
         'libvirt-daemon-driver-qemu',
         'libvirt-daemon-driver-storage-core',
@@ -175,10 +187,10 @@ def setup_host():
     ret = subprocess.run(['rpm', '--quiet', '-q'] + host_pkgs)
     if ret.returncode != 0:
         _log("installing libvirt + qemu")
-        cmd = ['dnf', '-y', '--nogpgcheck', '--setopt=install_weak_deps=False', 'install']
+        cmd = [dnf, '-y', '--nogpgcheck', '--setopt=install_weak_deps=False', 'install']
         subprocess.run(cmd + host_pkgs, check=True)
         # free up some disk space
-        subprocess.run(['dnf', 'clean', 'packages'], check=True)
+        subprocess.run([dnf, 'clean', 'packages'], check=True)
 
     _log("enabling libvirtd")
     subprocess.run(['systemctl', 'enable', '--now', 'libvirtd'], check=True)
@@ -245,7 +257,7 @@ class Kickstart:
         self.packages += pkgs
 
     def add_repo(self, name, url, install=True):
-        new = f'repo --name={name} --baseurl={url} --noverifyssl'
+        new = f'repo --name={name} --baseurl={url}'
         new += ' --install' if install else ''
         self.appends.append(new)
 
@@ -316,6 +328,11 @@ class Guest:
                 if reply.status_code == 200:
                     location = url
                     break
+                # RHEL-7
+                reply = requests.head(url + '/LiveOS/squashfs.img')
+                if reply.status_code == 200:
+                    location = url
+                    break
             if not location:
                 raise RuntimeError("did not find any install-capable repo amongst host repos")
 
@@ -328,7 +345,7 @@ class Guest:
             ssh_keygen(self.ssh_keyfile_path)
             with open(f'{self.ssh_keyfile_path}.pub') as f:
                 pubkey = f.read().rstrip()
-            kickstart.add_authorized_key(pubkey, homedir=GUEST_AUTO_HOME, owner=GUEST_AUTO_USER)
+            kickstart.add_authorized_key(pubkey)
 
         disk_path = f'{GUEST_IMG_DIR}/{self.name}.img'
         disk_format = 'raw'
@@ -389,7 +406,7 @@ class Guest:
     # without exiting the QEMU process - either hard 'reset' or ssh reboot
     def soft_reboot(self):
         """Reboot by issuing 'reboot' via ssh."""
-        self.comm('sudo', 'reboot')
+        self.comm('reboot')  # sudo reboot if unprivileged
         wait_for_ssh(self.ipaddr, to_shutdown=True)
         self.ipaddr = wait_for_ifaddr(self.name)
         wait_for_ssh(self.ipaddr)
@@ -400,8 +417,9 @@ class Guest:
     def undefine(self, incl_storage=False):
         if guest_domstate(self.name):
             storage = ['--remove-all-storage'] if incl_storage else []
+            # TODO: add --checkpoints-metadata after we drop RHEL-7
             virsh('undefine', self.name, '--nvram', '--snapshots-metadata',
-                                         '--checkpoints-metadata', *storage, check=True)
+                  *storage, check=True)
 
     def can_be_snapshotted(self):
         return os.path.exists(self.snapshot_ready_path)
@@ -413,16 +431,17 @@ class Guest:
         self.start()
         ip = wait_for_ifaddr(self.name)
         wait_for_ssh(ip)
-        self.log("sleeping for 60sec for firstboot to settle")
-        time.sleep(60)
-        self.log(f"waiting for clean shutdown of {self.name}")
-        self.shutdown()  # clean shutdown
-        self.log(f"starting {self.name} back up")
-        self.start()
-        ip = wait_for_ifaddr(self.name)
-        wait_for_ssh(ip)
-        self.log("sleeping for 30sec for second boot to settle, for imaging")
-        time.sleep(30)  # fully finish booting (ssh starts early)
+        self.log("sleeping for 30sec for firstboot to settle")
+        time.sleep(30)
+        # - disable for now, the ~200M saved RAM is not worth the ~2 minutes
+        #self.log(f"waiting for clean shutdown of {self.name}")
+        #self.shutdown()  # clean shutdown
+        #self.log(f"starting {self.name} back up")
+        #self.start()
+        #ip = wait_for_ifaddr(self.name)
+        #wait_for_ssh(ip)
+        #self.log("sleeping for 30sec for second boot to settle, for imaging")
+        #time.sleep(30)  # fully finish booting (ssh starts early)
 
         # save RAM image (domain state)
         virsh('save', self.name, self.state_file_path, check=True)
@@ -488,9 +507,9 @@ class Guest:
 
     def _do_ssh(self, *cmd, **run_args):
         ssh_cmdline = [
-            'ssh', '-q', '-i', self.ssh_keyfile_path,
+            'ssh', '-q', '-i', self.ssh_keyfile_path, '-o', 'BatchMode=yes',
             '-o', 'StrictHostKeyChecking=no', '-o', 'UserKnownHostsFile=/dev/null',
-            f'{GUEST_AUTO_USER}@{self.ipaddr}', *cmd
+            f'{GUEST_SSH_USER}@{self.ipaddr}', *cmd
         ]
         self.log(f"running ssh root@{self.ipaddr} {cmd}")
         return subprocess.run(ssh_cmdline, **run_args)
@@ -503,7 +522,7 @@ class Guest:
 
     def _do_scp(self, *args):
         scp_cmdline = [
-            'scp', '-q', '-i', self.ssh_keyfile_path,
+            'scp', '-q', '-i', self.ssh_keyfile_path, '-o', 'BatchMode=yes',
             '-o', 'StrictHostKeyChecking=no', '-o', 'UserKnownHostsFile=/dev/null',
             *args
         ]
@@ -513,13 +532,13 @@ class Guest:
         if not local_file:
             local_file = '.'
         self.log(f"copying {remote_file} from guest, to {local_file}")
-        self._do_scp(f'{GUEST_AUTO_USER}@{self.ipaddr}:{remote_file}', local_file)
+        self._do_scp(f'{GUEST_SSH_USER}@{self.ipaddr}:{remote_file}', local_file)
 
     def copy_to(self, local_file, remote_file=None):
         if not remote_file:
             remote_file = '.'
         self.log(f"copying {local_file} to guest, to {remote_file}")
-        self._do_scp(local_file, f'{GUEST_AUTO_USER}@{self.ipaddr}:{remote_file}')
+        self._do_scp(local_file, f'{GUEST_SSH_USER}@{self.ipaddr}:{remote_file}')
 
     @classmethod
     def _remove_previous(cls, name):
@@ -692,6 +711,12 @@ def set_state_image_disk(image, source_file, image_format):
     backing_store = disk.find('backingStore')
     if backing_store is not None:
         disk.remove(backing_store)
+    # RHEL-7 doesn't leave enough space in the RAM image for the extra few
+    # bytes added by a slightly longer disk path - free up this space by
+    # deleting a useless <pm> section
+    pm = domain.find('pm')
+    if pm is not None:
+        domain.remove(pm)
     with tempfile.NamedTemporaryFile(mode='wb', suffix='.xml') as f:
         f.write(ET.tostring(domain))
         f.flush()
