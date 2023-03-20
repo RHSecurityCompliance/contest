@@ -15,19 +15,25 @@ The guest-related functionality consists of:
   2) Preparing guests for snapshotting (booting up, taking RAM image)
   3) Snapshotting guests (repeatedly restoring, using, throwing away)
 
-There is a Guest() class, which can be instantiated in two ways,
-both of which assume the installation (1) has been done already:
- - Guest.snapshotted()
-   - does (3), and returns a Guest() instance for communicating with the guest,
-     destroying the snapshot on python exit or __exit__
- - Guest.plain()
-   - just boots up the guest and returns a Guest() instance for communication
+There is a Guest() class, which represents a guest with a specific name (used
+for its domain name). Aside from doing (1) and (2), an instance of Guest can
+be used in two ways, both using a context manager ('g' is an instance):
+   - g.snapshotted()
+     - Assumes (1) and (2) were done, creates a snapshot and restores the guest
+       from its RAM image, waits for ssh.
+     - Stops the guest and deletes the snapshot on __exit__
+   - g.booted()
+     - Assumes (1) was done and just boots and waits for ssh.
 
 Any host yum.repos.d repositories are given to Anaconda via kickstart 'repo'
 upon guest installation. Only baseurl is supported for now, Fedora won't work.
 
 Step (1) can be replaced by importing a pre-existing ImageBuilder image, with
 (2) and (3), or Guest() usage, remaining unaffected / compatible.
+
+Installation customization can be done via g.install() arguments, such as by
+instantiating Kickstart() in the test itself, modifying it, and passing the
+instance to g.install().
 
 This module also hacks PermitRootLogin=yes in the sshd sysconfig file
 (not checked by oscap) instead of using unprivileged + sudo, because there
@@ -39,36 +45,37 @@ Example using snapshots:
     import virt
 
     virt.setup_host()
-    vm = virt.Guest(virt.GUEST_NAME_GUI)
+    g = virt.Guest(virt.GUEST_NAME_GUI)
 
     # reuse if it already exists from previous tests, reinstall if not
-    if not vm.can_be_snapshotted():
-        vm.install()
-        vm.prepare_for_snapshot()
+    if not g.can_be_snapshotted():
+        g.install()
+        g.prepare_for_snapshot()
 
-    with vm.snapshotted():
-        state = vm.comm('ls', '/root')
+    with g.snapshotted():
+        state = g.comm('ls', '/root')
         if state.returncode != 0:
             report_failure()
 
-    with vm.snapshotted():
+    with g.snapshotted():
         out = g.comm_out(...)
 
-Example using plain guest:
+Example using plain one-time-use guest:
 
     import virt
     import atexit
 
     virt.setup_host()
-    vm = virt.Guest(virt.GUEST_NAME_GUI)
+    gm = virt.Guest(virt.GUEST_NAME_GUI)
 
     ks = virt.Kickstart()
     ks.add_post('some test-specific stuff')
-    vm.install(kickstart=ks)
-    atexit.register(vm.remove)
+    g.install(kickstart=ks)
+    atexit.register(g.remove)
 
-    with vm.booted():
-        vm.comm( ... )
+    with g.booted():
+        g.comm( ... )
+        g.comm( ... )
 """
 
 import os

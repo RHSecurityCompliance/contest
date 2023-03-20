@@ -31,25 +31,25 @@ import virt
 
 virt.setup_host()
 
-vm = virt.Guest(virt.GUEST_NAME_GUI)
+g = virt.Guest(virt.GUEST_NAME_GUI)
 
-#vm.install()
-#vm.prepare_for_snapshot()
-if not vm.can_be_snapshotted():
-    vm.install()
-    vm.prepare_for_snapshot()
+#g.install()
+#g.prepare_for_snapshot()
+if not g.can_be_snapshotted():
+    g.install()
+    g.prepare_for_snapshot()
 
-with vm.snapshotted():
-    log(vm.comm('ls', '-1', '/'))
-    log(vm.comm_out('ls', '-1', '/'))
-    #vm.soft_reboot()
-    #log(vm.comm('id'))
-    log(vm.comm_out('oscap', 'info', '--profiles', '/usr/share/xml/scap/ssg/content/ssg-rhel8-ds.xml'))
-    #log(vm.comm_out('dnf', 'install', '-y', 'aide'))
+with g.snapshotted():
+    log(g.comm('ls', '-1', '/'))
+    log(g.comm_out('ls', '-1', '/'))
+    #g.soft_reboot()
+    #log(g.comm('id'))
+    log(g.comm_out('oscap', 'info', '--profiles', '/usr/share/xml/scap/ssg/content/ssg-rhel8-ds.xml'))
+    #log(g.comm_out('dnf', 'install', '-y', 'aide'))
     #time.sleep(300)
 
-#with vm.snapshotted():
-#    vm.comm('mkdir', 'foob')
-#    vm.copy_to('passwd', 'foob/dasswd')
-#    out = vm.comm('cat', 'foob/dasswd')
+#with g.snapshotted():
+#    g.comm('mkdir', 'foob')
+#    g.copy_to('passwd', 'foob/dasswd')
+#    out = g.comm('cat', 'foob/dasswd')
 #    log(out)
