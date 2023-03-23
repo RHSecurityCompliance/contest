@@ -143,7 +143,7 @@ dnf -y makecache || yum -y makecache
 %end'''
 
 KICKSTART_PACKAGES = [
-    'openscap',
+    'openscap-scanner',
     'scap-security-guide',
 ]
 
@@ -166,11 +166,12 @@ def check_host_virt():
     Return True if the host has HW-accelerated virtualization support (HVM).
     Else return False.
     """
-    def cpu_flag(flag, cpuinfo):
-        return bool(re.search(f'\nflags\t+:.* {flag}( |$)', cpuinfo))
     with open('/proc/cpuinfo') as f:
-        contents = f.read()
-    return any(cpu_flag(x, contents) for x in ['vmx', 'svm'])
+        cpuinfo = f.read()
+    for virt_type in ['vmx', 'svm']:
+        if re.search(f'\nflags\t+:.* {virt_type}( |$)', cpuinfo):
+            return True
+    return False
 
 
 def setup_host():
@@ -308,7 +309,7 @@ class Guest:
         # if exists, all snapshot preparation processes were successful
         self.snapshot_ready_path = f'{GUEST_IMG_DIR}/{name}.ready'
 
-    def install(self, location=None, kickstart=None, add_host_repos=True, add_sshkey=True):
+    def install(self, location=None, kickstart=None, ks_verbatim=False):
         """
         Install a new guest, to a shut down state.
 
@@ -318,10 +319,9 @@ class Guest:
         If custom 'kickstart' is used, it is passed to virt-install. It should be
         a Kickstart class instance.
 
-        If 'add_host_repos' is true, host repositories are added to the kickstart.
-
-        If 'add_sshkey' is true, new ssh keypair is generated and the public key
-        is installed into /root/.ssh/authorized_keys on the guest.
+        If 'ks_verbatim' is true, the kickstart is used as-is, otherwise host
+        repositories are added to it, and a new ssh keypair is generated, with
+        the public key added to the kickstart.
         """
         self.log(f"installing guest {self.name}")
 
@@ -345,10 +345,10 @@ class Guest:
 
         if not kickstart:
             kickstart = Kickstart()
-        if add_host_repos:
+
+        if not ks_verbatim:
             kickstart.add_host_repos()
 
-        if add_sshkey:
             ssh_keygen(self.ssh_keyfile_path)
             with open(f'{self.ssh_keyfile_path}.pub') as f:
                 pubkey = f.read().rstrip()
@@ -374,10 +374,11 @@ class Guest:
                 '--noreboot',
             ]
 
+            executable = util.libdir / 'pseudotty'
+            proc = subprocess.Popen(virt_install, stdout=PIPE, executable=executable)
+            fail_exprs = [re.compile(x) for x in INSTALL_FAILURES]
+
             try:
-                proc = subprocess.Popen(virt_install, stdout=PIPE,
-                                        executable=util.libdir / 'pseudotty')
-                fail_exprs = [re.compile(x) for x in INSTALL_FAILURES]
                 for line in proc.stdout:
                     sys.stdout.buffer.write(line)
                     sys.stdout.buffer.flush()
