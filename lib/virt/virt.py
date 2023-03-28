@@ -92,13 +92,16 @@ import contextlib
 import shutil
 import tempfile
 import requests
+import gzip
+import base64
 import configparser
 import xml.etree.ElementTree as ET
 from datetime import datetime, timedelta
 from pathlib import Path
-#from . import util
 
 import util
+
+from . import shell
 
 _log = logging.getLogger(__name__).debug
 
@@ -127,7 +130,17 @@ bootloader --append="console=ttyS0,115200 mitigations=off"
 reboot
 zerombr
 clearpart --all --initlabel
-autopart --type=plain --nohome
+
+# commonly used partitions by some content profiles
+#autopart --type=plain --nohome
+reqpart  # adds /boot, /boot/efi, etc.
+part / --size=5000
+part /home --size=100
+part /var --size=8000
+part /var/log --size=1000
+part /var/log/audit --size=1000
+part /tmp --size=1000
+part /var/tmp --size=1000
 
 %post
 # broken by something adding $CRYPTO_POLICY
@@ -136,7 +149,7 @@ autopart --type=plain --nohome
 echo 'OPTIONS=-oPermitRootLogin=yes' >> /etc/sysconfig/sshd
 %end
 
-%post
+%post --erroronfail
 # would have been done by subscription-manager
 rpm --import /etc/pki/rpm-gpg/RPM-GPG-KEY-redhat-release
 dnf -y makecache || yum -y makecache
@@ -145,12 +158,13 @@ dnf -y makecache || yum -y makecache
 KICKSTART_PACKAGES = [
     'openscap-scanner',
     'scap-security-guide',
+    'python3',
 ]
 
 # as byte-strings
 INSTALL_FAILURES = [
     b"org.fedoraproject.Anaconda.Addons.OSCAP.*: The installation should be aborted.",
-    #b"TECH PREVIEW: .* may not be fully supported.",
+    b"There was an error running the kickstart script",
 ]
 
 PIPE = subprocess.PIPE
@@ -210,7 +224,9 @@ def setup_host():
           <bridge stp='off' delay='0'/>
           <ip address='{NETWORK_PREFIX}.1' netmask='255.255.255.0'>
             <dhcp>
-              <range start='{NETWORK_PREFIX}.2' end='{NETWORK_PREFIX}.254'/>
+              <range start='{NETWORK_PREFIX}.2' end='{NETWORK_PREFIX}.254'>
+                <lease expiry='0' unit='hours'/>
+              </range>
             </dhcp>
           </ip>
         </network>''')
@@ -257,8 +273,9 @@ class Kickstart:
         """Append arbitrary string content to the kickstart template."""
         self.appends.append(content)
 
-    def add_post(self, content, interpreter='/bin/bash'):
-        new = f'%post --interpreter={interpreter}\n' + content + '\n%end'
+    def add_post(self, content):
+        new = (f'%post --interpreter=/bin/bash --erroronfail\n'
+               'set -xe; exec >/dev/tty 2>&1\n' + content + '\n%end')
         self.append(new)
 
     def add_packages(self, pkgs):
@@ -288,6 +305,32 @@ class Kickstart:
             chown {owner} -R {homedir}/.ssh''')
         self.add_post(script)
 
+    def add_shell(self):
+        with open(inspect.getfile(shell), 'rb') as f:
+            compressed_shell = base64.b64encode(gzip.compress(f.read()))
+        script = textwrap.dedent(f'''\
+            base64 -d > /usr/sbin/contest_shell.gz <<'EOF'
+            {compressed_shell.decode()}
+            EOF
+            gzip -d /usr/sbin/contest_shell.gz
+            chmod 0755 /usr/sbin/contest_shell
+            cat > /etc/systemd/system/contest-shell.service <<EOF
+            [Unit]
+            Description=contest shell service
+            [Service]
+            ExecStart=/usr/sbin/contest_shell /dev/virtio-ports/guest_shell
+            StandardOutput=journal+console
+            StandardError=journal+console
+            [Install]
+            WantedBy=multi-user.target
+            EOF
+            systemctl enable contest-shell''')
+#            mkdir -p /etc/fapolicyd/rules.d
+#            cat > /etc/fapolicyd/rules.d/20-contest.rules <<EOF
+#            allow perm=any uid=0 : path=/usr/sbin/contest_shell
+#            EOF
+        self.add_post(script)
+
 
 #
 # all user-visible guest operations, from installation to ssh
@@ -302,6 +345,7 @@ class Guest:
         self.name = name
         self.ipaddr = None
         self.ssh_keyfile_path = f'{GUEST_IMG_DIR}/{name}.sshkey'
+        self.shell_socket = f'{GUEST_IMG_DIR}/{name}.sock'
         self.orig_disk_path = None
         self.orig_disk_format = None
         self.state_file_path = f'{GUEST_IMG_DIR}/{name}.state'
@@ -354,6 +398,8 @@ class Guest:
                 pubkey = f.read().rstrip()
             kickstart.add_authorized_key(pubkey)
 
+            kickstart.add_shell()
+
         disk_path = f'{GUEST_IMG_DIR}/{self.name}.img'
         disk_format = 'raw'
 
@@ -371,6 +417,7 @@ class Guest:
                 # and rhel7 was the first RHEL to do so, so it's the most compatible
                 '--initrd-inject', ksfile, '--os-variant', 'rhel7-unknown',
                 '--extra-args', f'console=ttyS0 inst.ks=file:/{ksfile.name} inst.notmux',
+                '--channel', f'unix,mode=bind,path={self.shell_socket},target.type=virtio,target.name=guest_shell',  # nopep8
                 '--noreboot',
             ]
 
@@ -560,7 +607,8 @@ class Guest:
         inst.undefine(incl_storage=True)
         files = [
             inst.ssh_keyfile_path, f'{inst.ssh_keyfile_path}.pub',
-            inst.snapshot_path, inst.state_file_path, inst.snapshot_ready_path
+            inst.snapshot_path, inst.state_file_path, inst.snapshot_ready_path,
+            inst.shell_socket
         ]
         for f in files:
             if os.path.exists(f):
