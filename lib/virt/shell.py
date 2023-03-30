@@ -16,6 +16,8 @@ from pathlib import Path
 # max length in bytes for various streaming operations
 BUFF_SIZE = 8192
 
+#_log = logging.getLogger(__name__).debug
+
 
 #class ServerError(RuntimeError):
 #    pass
@@ -81,37 +83,26 @@ class _Opcode:
     # - 1 byte with the status code
     RETCODE = b'\x06'
 
-    # retrieve glob-matching paths as tarfile stream
+    # retrieve (download) file contents
     # - 4 bytes with length of the file path (glob pattern)
-    # - 4 bytes with length of the basedir path
     # - the file path itself, unterminated
-    # - the basedir path itself, unterminated
     GET = b'\x07'
-    #//# the retrieved file contents, as tarfile stream
-    #//# - 4 bytes with length of the output
-    #// the tarfile stream itself (uses its own metadata for length)
-    #GETOUT = b'\x08'
-    # ^^^ kind of useless, we know the next data will be tarfile stream
+    # the retrieved file contents
+    # - 4 bytes with length of the file contents
+    # - the file contents, unterminated
+    GETOUT = b'\x08'
 
-    # send (upload) a tarfile stream, extract it to path
-    # - 4 bytes with length of the destination path
+    # send (upload) file contents
+    # - 4 bytes with length of the destination path (file name)
+    # - 4 bytes with length of the file contents
     # - the path itself, unterminated
-    #//# - 4 bytes with length of the stream
-    # - the tarfile stream itself (uses its own metadata for length)
+    # - the file contents, unterminated
     PUT = b'\x09'
 
     # notify the sender that an unexpected exception happened
     # - 4 bytes with length of the verbose string
     # - the string itself, unterminated
-    #ERROR = b'\x0a'
-    # ^^^ this won't work, imagine ie. tarfile generating an Exception
-    #     sometime during its run - there's no way for the receiver (client)
-    #     to catch it, as our opcode will be eaten by the tarfile receiver
-    #     and missed by our client code
-    #     - we probably need a global exception catcher on the serger + storing
-    #       the last exception in some buffer, and have an opcode for the client
-    #       to query the status of any last request, which would return success
-    #       or failure, with a string of that exception
+    ERROR = b'\x0a'
 
 
 class _ExecMetadata:
@@ -187,24 +178,16 @@ class Server:
             self.stream_subprocess(meta)
 
         elif action == _Opcode.GET:
-            path_len, basedir_len = struct.unpack('!II', self.sock.read(8))
-            path = self.sock.read(path_len).decode()
-            basedir = self.sock.read(basedir_len).decode()
-            self.log(f"handling GET {path} in {basedir}")
-            self.send_tarfile(path, basedir)
-
-        elif action == _Opcode.PUT:
             path_len = struct.unpack('!I', self.sock.read(4))[0]
             path = self.sock.read(path_len).decode()
-            self.log(f"handling PUT {path}")
-            self.recv_tarfile(path)
+            self.log(f"handling GET {path}")
+            self.send_file(path)
 
-        # TODO: python 3.6 tarfile padding bug (seems fixed on 3.11)
-        #       - reading tarfile from a stream leaves extra zeros in the stream
-        #         and they match one-by-one here as potential opcodes - ignore
-        #         them here
-        elif opcode == b'\x00':
-            return True
+        elif action == _Opcode.PUT:
+            path_len, contents_len = struct.unpack('!II', self.sock.read(8))
+            path = self.sock.read(path_len).decode()
+            self.log(f"handling PUT {path}")
+            self.receive_file(path, contents_len)
 
         else:
             raise RuntimeError(f"unknown opcode: {action[0]:#x}")
@@ -253,17 +236,26 @@ class Server:
                 if fd is not None:
                     os.close(fd)
 
-    def send_tarfile(self, path_glob, basedir):
-        basedir = Path(basedir)
-        files = ((basedir / x, x) for x in _relative_glob(path_glob, root_dir=basedir))
-        with tarfile.open(mode='w|', fileobj=self.sock) as t:
-            #os.write(control, _Opcode.GETOUT)
-            for path, name in files:
-                t.add(path, arcname=name)
+    def send_file(self, path):
+        path = Path(path)
+        length = path.stat().st_size
+        # open first, to catch errors even before sending a packet
+        with open(path, 'rb') as f:
+            packet = _Opcode.GETOUT + struct.pack('!I', length)
+            self.sock.write(packet)
+            while True:
+                part = f.read(BUFF_SIZE)
+                if len(part) == 0:
+                    break
+                self.sock.write(part)
 
-    def recv_tarfile(self, dest_dir):
-        with tarfile.open(mode='r|', fileobj=self.sock) as t:
-            t.extractall(path=dest_dir)
+    def receive_file(self, path, length):
+        with open(path, 'wb') as f:
+            while length > 0:
+                part_len = BUFF_SIZE if length > BUFF_SIZE else length
+                part = self.sock.read(part_len)
+                f.write(part)
+                length -= len(part)
 
 
 class Client:
@@ -293,6 +285,7 @@ class Client:
 
         while True:
             opcode = self.conn.read(1)
+            _check_error_opcode(opcode, self.conn)
 
             if opcode == _Opcode.STDOUT:
                 out_len = struct.unpack('!I', self.conn.read(4))[0]
@@ -314,11 +307,6 @@ class Client:
                 return_code = struct.unpack('B', self.conn.read(1))[0]
                 break
 
-            #elif opcode == _Opcode.ERROR:
-            #    error_len = struct.unpack('!I', self.conn.read(4))[0]
-            #    error_str = self.conn.read(error_len)
-            #    raise ServerError(f"server failed: {error_str}")
-
             else:
                 raise RuntimeError(f"unexpected opcode {opcode}")
 
@@ -328,27 +316,38 @@ class Client:
         else:
             return return_code
 
-    def download(self, pattern, source='/root', target='.'):
-        self.log(f"downloading any {pattern} from {source} to {target}")
-        pattern_bytes = pattern.encode()
-        source_bytes = source.encode()
-        packet = (_Opcode.GET + struct.pack('!II', len(pattern_bytes), len(source_bytes))
-                  + pattern_bytes + source_bytes)
-        self.conn.write(packet)
-        with tarfile.open(mode='r|', fileobj=self.conn) as t:
-            t.extractall(path=target)
+    def download(self, path, dest_dir='.'):
+        self.log(f"downloading {path} to {dest_dir}")
+        # open first, to catch local errors even before sending a request
+        dest_file = Path(dest_dir) / Path(path).name
+        with open(dest_file, 'wb') as f:
+            path_bytes = path.encode()
+            packet = _Opcode.GET + struct.pack('!I', len(path_bytes)) + path_bytes
+            self.conn.write(packet)
 
-    def upload(self, pattern, source='.', target='/root'):
-        target_bytes = target.encode()
-        packet = _Opcode.PUT + struct.pack('!I', len(target_bytes)) + target_bytes
-        self.conn.write(packet)
+            reply = self.conn.read(1)
+            _check_error_opcode(reply, self.conn)
 
-        source = Path(source)
-        files = ((source / x, x) for x in _relative_glob(pattern, root_dir=source))
-        with tarfile.open(mode='w|', fileobj=self.conn) as t:
-            for path, name in files:
-                self.log(f"uploading {name} from {source} to {target}")
-                t.add(path, arcname=name)
+            length = struct.unpack('!I', self.conn.read(4))[0]
+            while length > 0:
+                part_len = BUFF_SIZE if length > BUFF_SIZE else length
+                part = self.conn.read(part_len)
+                f.write(part)
+                length -= len(part)
+
+    def upload(self, path, dest_dir='/root'):
+        self.log(f"uploading {path} to {dest_dir}")
+        path_bytes = path.encode()
+        path = Path(path)
+        length = path.stat().st_size
+        with open(path, 'rb') as f:
+            packet = _Opcode.PUT + struct.pack('!II', len(path_bytes), length) + path_bytes
+            self.conn.write(packet)
+            while length > 0:
+                part_len = BUFF_SIZE if length > BUFF_SIZE else length
+                part = f.read(part_len)
+                self.conn.write(part)
+                length -= len(part)
 
 
 # TODO: replace with glob.glob(..., root_dir=...) in python3.10
@@ -358,6 +357,20 @@ def _relative_glob(pattern, root_dir):
     for x in glob.glob(str(root / pattern)):
         matches.append(Path(x).relative_to(root))
     return matches
+
+
+def _send_error_opcode(fobj):
+    tb_bytes = traceback.format_exc().rstrip().encode()
+    packet = _Opcode.ERROR + struct.pack('!I', len(tb_bytes)) + tb_bytes
+    fobj.write(packet)
+
+
+def _check_error_opcode(opcode, fobj):
+    if opcode != _Opcode.ERROR:
+        return
+    tb_len = struct.unpack('!I', fobj.read(4))[0]
+    tb = fobj.read(details_len).decode()
+    raise RuntimeError(f"shell failed inside guest:\n{tb}")
 
 
 if __name__ == '__main__':
@@ -384,5 +397,9 @@ if __name__ == '__main__':
             if not server.handle_request():
                 time.sleep(0.1)
         except:
+            # TODO: actually call _send_error_opcode(), but we probably need to
+            #       open the virtio-port as O_NONBLOCK first, otherwise we might
+            #       end up blocking/waiting to send ie. KeyboardInterrupt to
+            #       a port without any reader, blocking the server
             logging.exception("unexpected error")
             time.sleep(0.1)  # just in case
