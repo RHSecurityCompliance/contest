@@ -46,12 +46,7 @@ with g.snapshotted():
     #log(g.comm('id'))
     log(g.comm_out('oscap', 'info', '--profiles', '/usr/share/xml/scap/ssg/content/ssg-rhel8-ds.xml'))
     #log(g.comm_out('dnf', 'install', '-y', 'aide'))
-
-    c = virt.shell.Client('/var/lib/libvirt/images/contest-ssg-gui.sock')
-    c.ping()
-    c.exec('ls', '/')
-
-    #time.sleep(3000)
+    #time.sleep(300)
 
 #with g.snapshotted():
 #    g.comm('mkdir', 'foob')
