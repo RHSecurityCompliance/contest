@@ -16,7 +16,7 @@ import virt
 
 virt.setup_host()
 
-g = virt.Guest(virt.GUEST_NAME_GUI)
+g = virt.Guest('minimal_with_oscap')
 
 if not g.can_be_snapshotted():
     g.install()

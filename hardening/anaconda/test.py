@@ -16,7 +16,7 @@ import virt
 
 virt.setup_host()
 
-g = virt.Guest(virt.GUEST_NAME_GUI)
+g = virt.Guest()
 
 ks = virt.Kickstart()
 

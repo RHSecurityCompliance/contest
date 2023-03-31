@@ -45,7 +45,7 @@ Example using snapshots:
     import virt
 
     virt.setup_host()
-    g = virt.Guest(virt.GUEST_NAME_GUI)
+    g = virt.Guest('gui')
 
     # reuse if it already exists from previous tests, reinstall if not
     if not g.can_be_snapshotted():
@@ -53,7 +53,8 @@ Example using snapshots:
         g.prepare_for_snapshot()
 
     with g.snapshotted():
-        state = g.ssh('ls', '/root', capture_output=True)
+        state = g.ssh('ls', '/root', capture=True)
+        print(state.stdout)
         if state.returncode != 0:
             report_failure()
 
@@ -66,7 +67,7 @@ Example using plain one-time-use guest:
     import atexit
 
     virt.setup_host()
-    gm = virt.Guest(virt.GUEST_NAME_GUI)
+    gm = virt.Guest()
 
     ks = virt.Kickstart()
     ks.add_post('some test-specific stuff')
@@ -103,8 +104,6 @@ import util
 _log = logging.getLogger(__name__).debug
 
 GUEST_NAME = 'contest-ssg'
-GUEST_NAME_GUI = 'contest-ssg-gui'
-
 GUEST_LOGIN_PASS = 'c0Nt3st-SSG,pass'
 GUEST_SSH_USER = 'root'
 
@@ -311,9 +310,15 @@ class Kickstart:
 class Guest:
     """
     When instantiated, represents a guest (VM).
+
+    Set a 'tag' (string) to a unique name you would like to share across tests
+    that use snapshots - the .can_be_snapshotted() function will return True
+    when it finds an already installed guest using the same tag.
+    Tag-less guests cannot be shared across tests.
     """
-    def __init__(self, name):
+    def __init__(self, tag=None, *, name=GUEST_NAME):
         self.log = logging.getLogger(f'{__name__}.{self.__class__.__name__}').debug
+        self.tag = tag
         self.name = name
         self.ipaddr = None
         self.ssh_keyfile_path = f'{GUEST_IMG_DIR}/{name}.sshkey'
@@ -445,7 +450,11 @@ class Guest:
                   *storage, check=True)
 
     def can_be_snapshotted(self):
-        return os.path.exists(self.snapshot_ready_path)
+        if not os.path.exists(self.snapshot_ready_path):
+            return False
+        with open(self.snapshot_ready_path) as f:
+            tag = f.read().rstrip()
+        return tag == self.tag
 
     def prepare_for_snapshot(self):
         # do guest first boot, let it settle and finish firstboot tasks,
@@ -477,7 +486,9 @@ class Guest:
         # modify its built-in XML to point to a snapshot-style disk path
         set_state_image_disk(self.state_file_path, self.snapshot_path, 'qcow2')
 
-        Path(self.snapshot_ready_path).touch()
+        if self.tag is not None:
+            with open(self.snapshot_ready_path, 'w') as f:
+                f.write(self.tag)
 
     def _restore_snapshotted(self):
         # reused guest from another test, install() or prepare_for_snapshot()
@@ -538,6 +549,16 @@ class Guest:
         return subprocess.run(ssh_cmdline, **run_args)
 
     def ssh(self, *cmd, **kwargs):
+        """
+        Run a command via ssh(1) inside the guest.
+
+        'kwargs' are passed to subprocess.Popen, except for special 'capture='
+        boolean parameter, which is equivalent to stdout=PIPE stderr=PIPE.
+        """
+        if 'capture' in kwargs and kwargs['capture']:
+            kwargs['stdout'] = PIPE
+            kwargs['stderr'] = PIPE
+            del kwargs['capture']
         return self._do_ssh(*cmd, **kwargs)
 
     def _do_scp(self, *args):

@@ -31,7 +31,7 @@ import virt
 
 virt.setup_host()
 
-g = virt.Guest(virt.GUEST_NAME_GUI)
+g = virt.Guest('testme test')
 
 #g.install()
 #g.prepare_for_snapshot()
@@ -40,7 +40,7 @@ if not g.can_be_snapshotted():
     g.prepare_for_snapshot()
 
 with g.snapshotted():
-    log(g.ssh('ls', '-1', '/', capture_output=True))
+    log(g.ssh('ls', '-1', '/', capture=True))
     log(g.ssh('ls', '-1', '/'))
     #g.soft_reboot()
     log(g.ssh('oscap', 'info', '--profiles', '/usr/share/xml/scap/ssg/content/ssg-rhel8-ds.xml'))
