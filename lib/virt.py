@@ -100,6 +100,7 @@ from pathlib import Path
 #from . import util
 
 import util
+import versions
 
 _log = logging.getLogger(__name__).debug
 
@@ -355,11 +356,11 @@ class Guest:
                 if reply.status_code == 200:
                     location = url
                     break
-                # RHEL-7
-                reply = requests.head(url + '/LiveOS/squashfs.img')
-                if reply.status_code == 200:
-                    location = url
-                    break
+                if versions.rhel <= 7:
+                    reply = requests.head(url + '/LiveOS/squashfs.img')
+                    if reply.status_code == 200:
+                        location = url
+                        break
             if not location:
                 raise RuntimeError("did not find any install-capable repo amongst host repos")
 

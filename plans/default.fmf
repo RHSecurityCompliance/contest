@@ -16,6 +16,8 @@ prepare:
       - python36
       - python3-requests
       - python36-requests
+      - python3-rpm
+      - python36-rpm
       missing: skip
 execute:
     how: tmt

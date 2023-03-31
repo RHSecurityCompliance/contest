@@ -46,6 +46,6 @@ duration: 4h
 /stig:
     environment:
         PROFILE: stig
-#/stig_gui:
-#    environment:
-#        PROFILE: stig_gui
+/stig_gui:
+    environment:
+        PROFILE: stig_gui
