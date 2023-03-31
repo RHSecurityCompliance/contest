@@ -5,15 +5,11 @@ import sys
 import atexit
 from logging import info as log
 
-sys.path.insert(0, '../../lib')
 import util
 import tmt
-
-
-util.setup_test_logging()
-
 import virt
 from versions import rhel
+
 
 virt.setup_host()
 

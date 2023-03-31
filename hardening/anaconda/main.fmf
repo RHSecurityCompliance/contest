@@ -1,9 +1,11 @@
 #summary: Concise summary describing what the test does
-test: ./test.py
+test: python3 -m runtest ./test.py
 #- tree
 #- url: git://pkgs.devel.redhat.com/tests/openscap
 #  name: /Library/common
 #  nick: foobar
+environment:
+  PYTHONPATH: ../../lib
 result: custom
 duration: 4h
 

@@ -1,3 +1,13 @@
+"""
+Functions and helpers for result management when working with TMT, the test
+execution framework (https://github.com/teemtee/tmt).
+
+TMT has a 'result:custom' feature (in test's main.fmf), which allows us to
+supply completely custom results as a YAML file, and TMT will use it as-is
+to represent a result from the test itself, and any results "under" it,
+effectively allowing a test to report more than 1 result.
+"""
+
 import os
 import logging
 import shutil
@@ -7,6 +17,8 @@ from pathlib import Path
 _log = logging.getLogger(__name__).debug
 
 _valid_results = ['pass', 'fail', 'error', 'info']
+
+RESULTS_FILE = 'results.yaml'
 
 
 def _compose_results_yaml(keyvals):
@@ -79,18 +91,5 @@ def report(result, name=None, note=None, logs=None):
     yaml_addition = _compose_results_yaml(new_result)
     _log(f"appending to results:\n{textwrap.indent(yaml_addition.rstrip(), '  ')}")
 
-    results_yaml = Path(test_data) / 'results.yaml'
-    with open(results_yaml, 'a') as f:
+    with open(test_data / RESULTS_FILE, 'a') as f:
         f.write(yaml_addition)
-
-
-def pass_on_exit():
-    """
-    Report a 'pass' for the test itself if no 'fail' or 'error' results were
-    reported during the runtime of the test.
-    """
-    pass
-    # TODO: maybe redo all of the 'tmt' module (at least report) as a class,
-    #       (AutoCleanup) so a test can instantiate it and the class can track
-    #       failed reports and emit 'pass' for '/' if none were recorded
-    #        -- probably better than relying on global variables
