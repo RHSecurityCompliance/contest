@@ -53,12 +53,12 @@ Example using snapshots:
         g.prepare_for_snapshot()
 
     with g.snapshotted():
-        state = g.comm('ls', '/root')
+        state = g.ssh('ls', '/root', capture_output=True)
         if state.returncode != 0:
             report_failure()
 
     with g.snapshotted():
-        out = g.comm_out(...)
+        out = g.ssh(...)
 
 Example using plain one-time-use guest:
 
@@ -74,8 +74,8 @@ Example using plain one-time-use guest:
     atexit.register(g.remove)
 
     with g.booted():
-        g.comm( ... )
-        g.comm( ... )
+        g.ssh( ... )
+        g.ssh( ... )
 """
 
 import os
@@ -118,8 +118,7 @@ KICKSTART_TEMPLATE = f'''\
 lang en_US.UTF-8
 keyboard --vckeymap us
 network --onboot yes --bootproto dhcp
-#rootpw {GUEST_LOGIN_PASS}  # breaks on CIS forcing pw change
-rootpw --lock
+rootpw {GUEST_LOGIN_PASS}
 firstboot --disable
 selinux --enforcing
 timezone --utc Europe/Prague
@@ -130,14 +129,17 @@ clearpart --all --initlabel
 
 # commonly used partitions by some content profiles
 #autopart --type=plain --nohome
-reqpart  # adds /boot, /boot/efi, etc.
-part / --size=5000
+part /boot --size=700
+part / --size=1000
 part /home --size=100
-part /var --size=8000
+part /var --size=6000
 part /var/log --size=1000
 part /var/log/audit --size=1000
-part /tmp --size=1000
 part /var/tmp --size=1000
+part /srv --size=100
+part /opt --size=100
+part /tmp --size=1000
+part /usr --size=8000
 
 %post
 # broken by something adding $CRYPTO_POLICY
@@ -383,7 +385,7 @@ class Guest:
                 # this has nothing to do with rhel7, it just tells v-i to use virtio
                 # and rhel7 was the first RHEL to do so, so it's the most compatible
                 '--initrd-inject', ksfile, '--os-variant', 'rhel7-unknown',
-                '--extra-args', f'console=ttyS0 inst.ks=file:/{ksfile.name} inst.notmux',
+                '--extra-args', f'console=ttyS0 inst.ks=file:/{ksfile.name} inst.notmux inst.noninteractive',  # nopep8
                 '--noreboot',
             ]
 
@@ -427,7 +429,7 @@ class Guest:
     # without exiting the QEMU process - either hard 'reset' or ssh reboot
     def soft_reboot(self):
         """Reboot by issuing 'reboot' via ssh."""
-        self.comm('reboot')  # sudo reboot if unprivileged
+        self.ssh('reboot')  # sudo reboot if unprivileged
         wait_for_ssh(self.ipaddr, to_shutdown=True)
         self.ipaddr = wait_for_ifaddr(self.name)
         wait_for_ssh(self.ipaddr)
@@ -530,15 +532,12 @@ class Guest:
         ssh_cmdline = [
             'ssh', '-q', '-i', self.ssh_keyfile_path, '-o', 'BatchMode=yes',
             '-o', 'StrictHostKeyChecking=no', '-o', 'UserKnownHostsFile=/dev/null',
-            f'{GUEST_SSH_USER}@{self.ipaddr}', *cmd
+            f'{GUEST_SSH_USER}@{self.ipaddr}', '--', *cmd
         ]
         self.log(f"running ssh root@{self.ipaddr} {cmd}")
         return subprocess.run(ssh_cmdline, **run_args)
 
-    def comm(self, *cmd, **kwargs):
-        return self._do_ssh(*cmd, stdout=PIPE, stderr=PIPE, **kwargs)
-
-    def comm_out(self, *cmd, **kwargs):
+    def ssh(self, *cmd, **kwargs):
         return self._do_ssh(*cmd, **kwargs)
 
     def _do_scp(self, *args):

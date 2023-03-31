@@ -40,16 +40,8 @@ if not g.can_be_snapshotted():
     g.prepare_for_snapshot()
 
 with g.snapshotted():
-    log(g.comm('ls', '-1', '/'))
-    log(g.comm_out('ls', '-1', '/'))
+    log(g.ssh('ls', '-1', '/', capture_output=True))
+    log(g.ssh('ls', '-1', '/'))
     #g.soft_reboot()
-    #log(g.comm('id'))
-    log(g.comm_out('oscap', 'info', '--profiles', '/usr/share/xml/scap/ssg/content/ssg-rhel8-ds.xml'))
-    #log(g.comm_out('dnf', 'install', '-y', 'aide'))
+    log(g.ssh('oscap', 'info', '--profiles', '/usr/share/xml/scap/ssg/content/ssg-rhel8-ds.xml'))
     #time.sleep(300)
-
-#with g.snapshotted():
-#    g.comm('mkdir', 'foob')
-#    g.copy_to('passwd', 'foob/dasswd')
-#    out = g.comm('cat', 'foob/dasswd')
-#    log(out)

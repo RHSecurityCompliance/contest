@@ -1,0 +1,51 @@
+#summary: Concise summary describing what the test does
+test: ./test.py
+#- tree
+#- url: git://pkgs.devel.redhat.com/tests/openscap
+#  name: /Library/common
+#  nick: foobar
+result: custom
+duration: 4h
+
+/anssi_bp28_high:
+    environment:
+        PROFILE: anssi_bp28_high
+#/anssi_nt28_high:
+#    environment:
+#        PROFILE: anssi_nt28_high
+/cis:
+    environment:
+        PROFILE: cis
+/cis_server_l1:
+    environment:
+        PROFILE: cis_server_l1
+#/cis_workstation_l1:
+#    environment:
+#        PROFILE: cis_workstation_l1
+/cis_workstation_l2:
+    environment:
+        PROFILE: cis_workstation_l2
+/cui:
+    environment:
+        PROFILE: cui
+/e8:
+    environment:
+        PROFILE: e8
+/hipaa:
+    environment:
+        PROFILE: hipaa
+/ism_o:
+    environment:
+        PROFILE: ism_o
+/ospp:
+    environment:
+        PROFILE: ospp
+/pci-dss:
+    environment:
+        PROFILE: pci-dss
+/stig:
+    environment:
+        PROFILE: stig
+/stig_gui:
+    environment:
+        PROFILE: stig_gui
