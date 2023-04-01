@@ -406,13 +406,14 @@ class Guest:
                     if any(x.search(line) for x in fail_exprs):
                         proc.terminate()
                         proc.wait()
-                        raise RuntimeError(f"installation failed: {line}")
+                        raise RuntimeError(f"installation failed: {util.make_printable(line)}")
                 if proc.wait() > 0:
                     raise RuntimeError("virt-install failed")
-            except RuntimeError as e:
+            except:
                 self.destroy()
                 self.undefine()
-                raise e from None
+                _, exc_value, _ = sys.exc_info()
+                raise exc_value from None
 
         self.orig_disk_path = disk_path
         self.orig_disk_format = disk_format

@@ -3,6 +3,7 @@ import logging
 import runpy
 
 import tmt
+import util
 
 
 logging.basicConfig(level=logging.DEBUG,
@@ -19,7 +20,8 @@ try:
     #tracer.runfunc(runpy.run_path, sys.argv[1])
 except:
     exc_type, exc_value, _ = sys.exc_info()
-    tmt.report('error', f'/{exc_type.__name__}', str(exc_value))
+    exc_details = util.make_printable(str(exc_value))
+    tmt.report('error', f'/{exc_type.__name__}', exc_details)
     raise exc_value from None
 
 # here we rely on the test to report pass/fail for itself, as its control flow
