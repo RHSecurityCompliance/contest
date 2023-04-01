@@ -3,7 +3,6 @@ import logging
 import runpy
 
 import tmt
-import util
 
 
 logging.basicConfig(level=logging.DEBUG,
@@ -18,11 +17,9 @@ logging.basicConfig(level=logging.DEBUG,
 try:
     runpy.run_path(sys.argv[1], run_name='__main__')
     #tracer.runfunc(runpy.run_path, sys.argv[1])
-except:
-    exc_type, exc_value, _ = sys.exc_info()
-    exc_details = util.make_printable(str(exc_value))
-    tmt.report('error', f'/{exc_type.__name__}', exc_details)
-    raise exc_value from None
+except Exception as e:
+    tmt.report('error', f'/{type(e).__name__}', str(e))
+    raise e from None
 
 # here we rely on the test to report pass/fail for itself, as its control flow
 # reached an end successfully - we care only about it ending prematurely due to

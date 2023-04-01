@@ -14,6 +14,8 @@ import shutil
 import textwrap
 from pathlib import Path
 
+import util
+
 _log = logging.getLogger(__name__).debug
 
 _valid_results = ['pass', 'fail', 'error', 'info']
