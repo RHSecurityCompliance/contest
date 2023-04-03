@@ -11,6 +11,12 @@ discover:
 prepare:
     - how: install
       package:
+      # needed even when using VMs, for scanner version checks in various tests
+      - openscap-scanner
+      - scap-security-guide
+    - how: install
+      missing: skip
+      package:
       #- https://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm
       - python3
       - python36
@@ -18,6 +24,5 @@ prepare:
       - python36-requests
       - python3-rpm
       - python36-rpm
-      missing: skip
 execute:
     how: tmt

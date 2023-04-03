@@ -2,6 +2,7 @@
 
 import os
 import sys
+import re
 import time
 import atexit
 from logging import info as log
@@ -9,6 +10,7 @@ from logging import info as log
 #sys.path.insert(0, '../lib')
 import util
 import tmt
+import oscap
 
 
 #util.setup_test_logging()
@@ -43,8 +45,12 @@ if not g.can_be_snapshotted():
 with g.snapshotted():
     log(g.ssh('ls', '-1', '/', capture=True))
     log(g.ssh('ls', '-1', '/'))
+    #x = g.ssh_Popen('ls /etc', capture=True)
+    #log(x.communicate())
     #g.soft_reboot()
-    log(g.ssh('oscap', 'info', '--profiles', '/usr/share/xml/scap/ssg/content/ssg-rhel8-ds.xml'))
+    for line in g.ssh_stream(f'oscap info --profiles {oscap.datastream}'):
+        log(f'GOT: --{line}--')
+    #log(g.ssh('oscap', 'info', '--profiles', '/usr/share/xml/scap/ssg/content/ssg-rhel8-ds.xml'))
     #time.sleep(300)
 
 tmt.report('pass')

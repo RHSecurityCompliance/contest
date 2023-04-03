@@ -142,10 +142,8 @@ part /tmp --size=1000
 part /usr --size=8000
 
 %post
-# broken by something adding $CRYPTO_POLICY
-#sed '/^ExecStart=.*\/sshd /s/$/ -oPermitRootLogin=yes/' \\
-#  -i /usr/lib/systemd/system/sshd.service
-echo 'OPTIONS=-oPermitRootLogin=yes' >> /etc/sysconfig/sshd
+# RHEL-7 takes ~30 seconds to login with UseDNS=yes
+echo 'OPTIONS=-oPermitRootLogin=yes -oUseDNS=no' >> /etc/sysconfig/sshd
 %end
 
 %post --erroronfail
@@ -291,7 +289,8 @@ class Kickstart:
     def add_oscap(self, keyvals):
         """Append an OSCAP addon section, with key=value pairs from 'keyvals'."""
         lines = '\n'.join(f'  {k} = {v}' for k, v in keyvals.items())
-        self.append(f'%addon org_fedora_oscap\n{lines}\n%end')
+        section = 'org_fedora_oscap' if versions.rhel < 9 else 'com_redhat_oscap'
+        self.append(f'%addon {section}\n{lines}\n%end')
 
     def add_authorized_key(self, pubkey, homedir='/root', owner='root'):
         script = textwrap.dedent(f'''\
@@ -356,7 +355,7 @@ class Guest:
                 if reply.status_code == 200:
                     location = url
                     break
-                if versions.rhel <= 7:
+                if versions.rhel < 8:
                     reply = requests.head(url + '/LiveOS/squashfs.img')
                     if reply.status_code == 200:
                         location = url
@@ -527,6 +526,7 @@ class Guest:
         self._restore_snapshotted()
         self.ipaddr = wait_for_ifaddr(self.name)
         wait_for_ssh(self.ipaddr)
+        self.log(f"guest {self.name} ready")
         yield self
         self._destroy_snapshotted()
 
@@ -538,29 +538,27 @@ class Guest:
         self.start()
         self.ipaddr = wait_for_ifaddr(self.name)
         wait_for_ssh(self.ipaddr)
+        self.log(f"guest {self.name} ready")
         yield self
 
-    def _do_ssh(self, *cmd, **run_args):
+    def _do_ssh(self, *cmd, func=subprocess.run, capture=False, **run_args):
+        if capture:
+            run_args['stdout'] = PIPE
+            run_args['stderr'] = PIPE
         ssh_cmdline = [
             'ssh', '-q', '-i', self.ssh_keyfile_path, '-o', 'BatchMode=yes',
             '-o', 'StrictHostKeyChecking=no', '-o', 'UserKnownHostsFile=/dev/null',
             f'{GUEST_SSH_USER}@{self.ipaddr}', '--', *cmd
         ]
-        self.log(f"running ssh root@{self.ipaddr} {cmd}")
-        return subprocess.run(ssh_cmdline, **run_args)
+        self.log(f"running ssh root@{self.ipaddr} {' '.join(cmd)}")
+        return func(ssh_cmdline, **run_args)
 
     def ssh(self, *cmd, **kwargs):
-        """
-        Run a command via ssh(1) inside the guest.
-
-        'kwargs' are passed to subprocess.Popen, except for special 'capture='
-        boolean parameter, which is equivalent to stdout=PIPE stderr=PIPE.
-        """
-        if 'capture' in kwargs and kwargs['capture']:
-            kwargs['stdout'] = PIPE
-            kwargs['stderr'] = PIPE
-            del kwargs['capture']
+        """Run a command via ssh(1) inside the guest."""
         return self._do_ssh(*cmd, **kwargs)
+
+    def ssh_stream(self, *cmd, **kwargs):
+        return self._do_ssh(*cmd, func=util.proc_stream, **kwargs)
 
     def _do_scp(self, *args):
         scp_cmdline = [
@@ -594,11 +592,15 @@ class Guest:
         inst.undefine(incl_storage=True)
         files = [
             inst.ssh_keyfile_path, f'{inst.ssh_keyfile_path}.pub',
-            inst.snapshot_path, inst.state_file_path, inst.snapshot_ready_path
+            inst.snapshot_path, inst.state_file_path, inst.snapshot_ready_path,
         ]
         for f in files:
             if os.path.exists(f):
                 os.remove(f)
+        # RHEL-7 specific, see domifaddr()
+        ipaddr = Path(GUEST_IMG_DIR) / f'{name}.ipaddr'
+        if ipaddr.exists():
+            ipaddr.unlink()
 
 
 #
@@ -628,16 +630,27 @@ def wait_for_domstate(name, state, timeout=300, sleep=0.5):
 # ssh related helpers, generally used from Guest()
 #
 
+# TODO: RHEL-7 libvirt has no <lease ..> tag, so it expires the address within
+#       1h, making restored snapshot fail to find the address via domifaddr -
+#       work around this by storing the IP address separately - this is not
+#       perfect (may conflict), but GEFN for 1-guest-at-a-time
 def domifaddr(name):
     """
     Return a guest's IP address, queried from libvirt.
     """
+    if versions.rhel < 8:
+        cache = Path(GUEST_IMG_DIR) / f'{name}.ipaddr'
+        if cache.exists():
+            return cache.read_text()
     ret = virsh('domifaddr', name, stdout=PIPE, universal_newlines=True, check=True)
     first = ret.stdout.strip().split('\n')[0]  # in case of multiple interfaces
     if not first:
         raise ConnectionError(f"guest {name} has no address assigned yet")
     addr_mask = first.split()[3]
-    return addr_mask.split('/')[0]
+    addr = addr_mask.split('/')[0]
+    if versions.rhel < 8:
+        cache.write_text(addr)
+    return addr
 
 
 def wait_for_ifaddr(name, timeout=600, sleep=0.5):

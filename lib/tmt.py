@@ -9,6 +9,7 @@ effectively allowing a test to report more than 1 result.
 """
 
 import os
+import re
 import logging
 import shutil
 import textwrap
@@ -18,7 +19,7 @@ import util
 
 _log = logging.getLogger(__name__).debug
 
-_valid_results = ['pass', 'fail', 'error', 'info']
+_valid_results = ['pass', 'fail', 'warn', 'error', 'info']
 
 RESULTS_FILE = 'results.yaml'
 
@@ -44,6 +45,14 @@ def _compose_results_yaml(keyvals):
     return out
 
 
+def _sanitize_yaml_id(string):
+    """
+    Remove anything that shouldn't appear in a YAML identifier (ie. key name),
+    whether the limitation comes from YAML itself, or its use by TMT.
+    """
+    return re.sub('[^\w/ _-]', '', string, flags=re.A).strip()
+
+
 # TODO: dict() support for logs, key as filename, value as log contents ?
 def report(result, name=None, note=None, logs=None):
     """
@@ -66,12 +75,14 @@ def report(result, name=None, note=None, logs=None):
     if not name:
         name = '/'  # https://github.com/teemtee/tmt/issues/1855
 
+    name = _sanitize_yaml_id(name)
+
     new_result = {
         'name': name,
         'result': result,
     }
     if note:
-        new_result['note'] = note
+        new_result['note'] = util.make_printable(note)
 
     test_data = Path(os.environ['TMT_TEST_DATA'])
 
@@ -87,7 +98,7 @@ def report(result, name=None, note=None, logs=None):
             dstfile = dst / log.name
             _log(f"copying log {log} to {dstfile}")
             shutil.copyfile(log, dstfile)
-            log_entries.append(str(dstfile))
+            log_entries.append(str(dstfile.relative_to(test_data)))
         new_result['log'] = log_entries
 
     yaml_addition = _compose_results_yaml(new_result)
