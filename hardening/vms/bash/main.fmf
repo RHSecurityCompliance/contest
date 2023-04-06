@@ -1,193 +1,191 @@
-summary: Remediates VM via anaconda %addon, scans via oscap
+summary: Runs oscap remediation and scan inside VMs
 test: python3 -m runtest ./test.py
 result: custom
 environment+:
-  PYTHONPATH: ../../lib
+    PYTHONPATH: ../../../lib
 duration: 4h
-extra-hardware: |
-  keyvalue = HVM=1
-  hostrequire = memory>=4000
 
 /anssi_bp28_enhanced:
-    extra-summary: /CoreOS/scap-security-guide/hardening/anaconda/anssi_bp28_enhanced
     environment+:
         PROFILE: anssi_bp28_enhanced
     adjust:
         when: distro < rhel-8
         enabled: false
+    extra-summary: /CoreOS/scap-security-guide/hardening/vms/bash/anssi_bp28_enhanced
 
 /anssi_bp28_high:
-    extra-summary: /CoreOS/scap-security-guide/hardening/anaconda/anssi_bp28_high
     environment+:
         PROFILE: anssi_bp28_high
     adjust:
         when: distro < rhel-8
         enabled: false
+    extra-summary: /CoreOS/scap-security-guide/hardening/vms/bash/anssi_bp28_high
 
 /anssi_bp28_intermediary:
-    extra-summary: /CoreOS/scap-security-guide/hardening/anaconda/anssi_bp28_intermediary
     environment+:
         PROFILE: anssi_bp28_intermediary
     adjust:
         when: distro < rhel-8
         enabled: false
+    extra-summary: /CoreOS/scap-security-guide/hardening/vms/bash/anssi_bp28_intermediary
 
 /anssi_bp28_minimal:
-    extra-summary: /CoreOS/scap-security-guide/hardening/anaconda/anssi_bp28_minimal
     environment+:
         PROFILE: anssi_bp28_minimal
     adjust:
         when: distro < rhel-8
         enabled: false
+    extra-summary: /CoreOS/scap-security-guide/hardening/vms/bash/anssi_bp28_minimal
 
 /anssi_nt28_enhanced:
-    extra-summary: /CoreOS/scap-security-guide/hardening/anaconda/anssi_nt28_enhanced
     environment+:
         PROFILE: anssi_nt28_enhanced
     adjust:
         when: distro > rhel-7
         enabled: false
+    extra-summary: /CoreOS/scap-security-guide/hardening/vms/bash/anssi_nt28_enhanced
 
 /anssi_nt28_high:
-    extra-summary: /CoreOS/scap-security-guide/hardening/anaconda/anssi_nt28_high
     environment+:
         PROFILE: anssi_nt28_high
     adjust:
         when: distro > rhel-7
         enabled: false
+    extra-summary: /CoreOS/scap-security-guide/hardening/vms/bash/anssi_nt28_high
 
 /anssi_nt28_intermediary:
-    extra-summary: /CoreOS/scap-security-guide/hardening/anaconda/anssi_nt28_intermediary
     environment+:
         PROFILE: anssi_nt28_intermediary
     adjust:
         when: distro > rhel-7
         enabled: false
+    extra-summary: /CoreOS/scap-security-guide/hardening/vms/bash/anssi_nt28_intermediary
 
 /anssi_nt28_minimal:
-    extra-summary: /CoreOS/scap-security-guide/hardening/anaconda/anssi_nt28_minimal
     environment+:
         PROFILE: anssi_nt28_minimal
     adjust:
         when: distro > rhel-7
         enabled: false
+    extra-summary: /CoreOS/scap-security-guide/hardening/vms/bash/anssi_nt28_minimal
 
 /C2S:
-    extra-summary: /CoreOS/scap-security-guide/hardening/anaconda/C2S
     environment+:
         PROFILE: C2S
     adjust:
         when: distro > rhel-7
         enabled: false
+    extra-summary: /CoreOS/scap-security-guide/hardening/vms/bash/C2S
 
 /cis:
-    extra-summary: /CoreOS/scap-security-guide/hardening/anaconda/cis
     environment+:
         PROFILE: cis
+    extra-summary: /CoreOS/scap-security-guide/hardening/vms/bash/cis
 
 /cis_server_l1:
-    extra-summary: /CoreOS/scap-security-guide/hardening/anaconda/cis_server_l1
     environment+:
         PROFILE: cis_server_l1
+    extra-summary: /CoreOS/scap-security-guide/hardening/vms/bash/cis_server_l1
 
 /cis_workstation_l1:
-    extra-summary: /CoreOS/scap-security-guide/hardening/anaconda/cis_workstation_l1
     environment+:
         PROFILE: cis_workstation_l1
+    extra-summary: /CoreOS/scap-security-guide/hardening/vms/bash/cis_workstation_l1
 
 /cis_workstation_l2:
-    extra-summary: /CoreOS/scap-security-guide/hardening/anaconda/cis_workstation_l2
     environment+:
         PROFILE: cis_workstation_l2
+    extra-summary: /CoreOS/scap-security-guide/hardening/vms/bash/cis_workstation_l2
 
 /cjis:
-    extra-summary: /CoreOS/scap-security-guide/hardening/anaconda/cjis
     environment+:
         PROFILE: cjis
     adjust:
         when: distro > rhel-7
         enabled: false
+    extra-summary: /CoreOS/scap-security-guide/hardening/vms/bash/cjis
 
 /cui:
-    extra-summary: /CoreOS/scap-security-guide/hardening/anaconda/cui
     environment+:
         PROFILE: cui
+    extra-summary: /CoreOS/scap-security-guide/hardening/vms/bash/cui
 
 /e8:
-    extra-summary: /CoreOS/scap-security-guide/hardening/anaconda/e8
     environment+:
         PROFILE: e8
+    extra-summary: /CoreOS/scap-security-guide/hardening/vms/bash/e8
 
 /hipaa:
-    extra-summary: /CoreOS/scap-security-guide/hardening/anaconda/hipaa
     environment+:
         PROFILE: hipaa
+    extra-summary: /CoreOS/scap-security-guide/hardening/vms/bash/hipaa
 
 /ism_o:
-    extra-summary: /CoreOS/scap-security-guide/hardening/anaconda/ism_o
     environment+:
         PROFILE: ism_o
     adjust:
         when: distro < rhel-8
         enabled: false
+    extra-summary: /CoreOS/scap-security-guide/hardening/vms/bash/ism_o
 
 /ncp:
-    extra-summary: /CoreOS/scap-security-guide/hardening/anaconda/ncp
     environment+:
         PROFILE: ncp
     adjust:
         when: distro > rhel-7
         enabled: false
+    extra-summary: /CoreOS/scap-security-guide/hardening/vms/bash/ncp
 
 /ospp:
-    extra-summary: /CoreOS/scap-security-guide/hardening/anaconda/ospp
     environment+:
         PROFILE: ospp
+    extra-summary: /CoreOS/scap-security-guide/hardening/vms/bash/ospp
 
 /pci-dss:
-    extra-summary: /CoreOS/scap-security-guide/hardening/anaconda/pci-dss
     environment+:
         PROFILE: pci-dss
+    extra-summary: /CoreOS/scap-security-guide/hardening/vms/bash/pci-dss
 
 /rhelh-stig:
-    extra-summary: /CoreOS/scap-security-guide/hardening/anaconda/rhelh-stig
     environment+:
         PROFILE: rhelh-stig
     adjust:
         when: distro > rhel-7
         enabled: false
+    extra-summary: /CoreOS/scap-security-guide/hardening/vms/bash/rhelh-stig
 
 /rhelh-vpp:
-    extra-summary: /CoreOS/scap-security-guide/hardening/anaconda/rhelh-vpp
     environment+:
         PROFILE: rhelh-vpp
     adjust:
         when: distro > rhel-7
         enabled: false
+    extra-summary: /CoreOS/scap-security-guide/hardening/vms/bash/rhelh-vpp
 
 /rht-ccp:
-    extra-summary: /CoreOS/scap-security-guide/hardening/anaconda/rht-ccp
     environment+:
         PROFILE: rht-ccp
     adjust:
         when: distro > rhel-7
         enabled: false
+    extra-summary: /CoreOS/scap-security-guide/hardening/vms/bash/rht-ccp
 
 /standard:
-    extra-summary: /CoreOS/scap-security-guide/hardening/anaconda/standard
     environment+:
         PROFILE: standard
     adjust:
         when: distro > rhel-7
         enabled: false
+    extra-summary: /CoreOS/scap-security-guide/hardening/vms/bash/standard
 
 /stig:
-    extra-summary: /CoreOS/scap-security-guide/hardening/anaconda/stig
     environment+:
         PROFILE: stig
+    extra-summary: /CoreOS/scap-security-guide/hardening/vms/bash/stig
+    extra-nitrate: TC#0615134
+    id: 77ba8ac4-00d7-4a07-a632-d7ddba5fb6d4
 
 /stig_gui:
-    extra-summary: /CoreOS/scap-security-guide/hardening/anaconda/stig_gui
     environment+:
         PROFILE: stig_gui
-
+    extra-summary: /CoreOS/scap-security-guide/hardening/vms/bash/stig_gui
