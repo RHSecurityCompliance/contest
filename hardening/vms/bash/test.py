@@ -4,7 +4,7 @@ import os
 import sys
 from logging import info as log
 
-import tmt
+import results
 import virt
 import oscap
 import versions
@@ -54,7 +54,7 @@ with g.snapshotted():
     g.copy_from('report.html')
 
 if failed:
-    tmt.report('info', '/html-report', logs=['report.html'])
+    results.report('info', 'html-report', logs=['report.html'])
     sys.exit(2)
 else:
-    tmt.report('pass', logs=['report.html'])
+    results.report('pass', logs=['report.html'])

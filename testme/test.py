@@ -9,7 +9,7 @@ from logging import info as log
 
 #sys.path.insert(0, '../lib')
 import util
-import tmt
+import results
 import oscap
 
 
@@ -24,9 +24,9 @@ log(f"hello from test! -- {__name__}")
 #log(f"got req: {x}")
 
 
-tmt.report('pass', '/some/result')
+results.report('pass', 'some/result')
 
-tmt.report('fail', '/another/result', logs=['/etc/passwd', '/etc/mtab'], note='foo \'"bar')
+results.report('fail', 'another/result', logs=['/etc/passwd', '/etc/mtab'], note='foo \'"bar')
 
 import virt
 
@@ -53,4 +53,4 @@ with g.snapshotted():
     #log(g.ssh('oscap', 'info', '--profiles', '/usr/share/xml/scap/ssg/content/ssg-rhel8-ds.xml'))
     #time.sleep(300)
 
-tmt.report('pass')
+results.report('pass')

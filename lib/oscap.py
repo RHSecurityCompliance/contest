@@ -5,7 +5,7 @@ import logging
 import subprocess
 from pathlib import Path
 
-import tmt
+import results
 import util
 from versions import rhel
 
@@ -63,7 +63,7 @@ def rules_from_verbose(lines):
 
 def report_from_verbose(lines):
     """
-    Report tmt results from oscap output.
+    Report results from oscap output.
     See rules_from_verbose() for requirements on the output.
 
     Returns a number of truly failed rules.
@@ -102,6 +102,6 @@ def report_from_verbose(lines):
         if result in ['fail', 'error']:
             failed += 1
 
-        tmt.report(result, f'/{rule}', note, [logfile])
+        results.report(result, f'{rule}', note, [logfile])
 
     return failed

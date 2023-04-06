@@ -2,7 +2,7 @@ import sys
 import logging
 import runpy
 
-import tmt
+import results
 
 
 logging.basicConfig(level=logging.DEBUG,
@@ -18,7 +18,7 @@ try:
     runpy.run_path(sys.argv[1], run_name='__main__')
     #tracer.runfunc(runpy.run_path, sys.argv[1])
 except Exception as e:
-    tmt.report('error', f'/{type(e).__name__}', str(e))
+    results.report('error', f'{type(e).__name__}', str(e))
     raise e from None
 
 # here we rely on the test to report pass/fail for itself, as its control flow
