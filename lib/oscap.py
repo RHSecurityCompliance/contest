@@ -1,3 +1,4 @@
+import os
 import sys
 import re
 import logging
@@ -13,15 +14,6 @@ _log = logging.getLogger(__name__).debug
 datastream = f'/usr/share/xml/scap/ssg/content/ssg-rhel{rhel.major}-ds.xml'
 
 
-# TODO: query this from a locally-installed scap-security-guide instead of a guest?
-#def _rules_with_remediation(guest):
-#    cmd = f'oscap xccdf generate --profile "(all)" fix {datastream} | grep "^# BEGIN fix ("'
-#    out = guest.ssh(cmd, capture=True)
-#    out.check_returncode()
-#    for i in out.stdout.decode().strip().split('\n'):
-#        yield re.sub('^# BEGIN fix .*\) for \'xccdf_org.ssgproject.content_rule_(.*)\'$', r'\1', i)
-#
-# TODO: run without shell=True, 'grep' natively in python
 def _rules_without_remediation():
     #cmd = f'oscap xccdf generate --profile "(all)" fix {datastream} | grep "^# BEGIN fix ("'
     cmd = ['oscap', 'xccdf', 'generate', '--profile', '(all)', 'fix', datastream]
@@ -73,7 +65,12 @@ def report_from_verbose(lines):
     """
     Report tmt results from oscap output.
     See rules_from_verbose() for requirements on the output.
+
+    Returns a number of truly failed rules.
     """
+    failed = 0
+    silent = os.environ.get('CONTEST_SILENT')
+
     for rule, result, details in rules_from_verbose(lines):
         note = None
         logfile = None
@@ -82,42 +79,29 @@ def report_from_verbose(lines):
             logfile = 'oscap.log.txt'  # txt to make browsers open it natively
             Path(logfile).write_text(details)
 
-        if result in ['pass', 'error']:
-            pass  # same as tmt
+        if result == 'pass':
+            if silent:
+                continue
+        elif result == 'error':
+            pass
         elif result == 'fail':
             if has_no_remediation(rule):
+                if silent:
+                    continue
                 note = 'no remediation'
                 result = 'warn'
         elif result in ['notapplicable', 'notchecked', 'notselected', 'informational']:
+            if silent:
+                continue
             note = result
             result = 'info'
         else:
             note = result
             result = 'error'
 
+        if result in ['fail', 'error']:
+            failed += 1
+
         tmt.report(result, f'/{rule}', note, [logfile])
 
-
-#def rules_from_progress(lines):
-#    """
-#    Get (rulename, result) from oscap xccdf eval --progress output.
-#
-#    On RHEL-8 and newer, use rules_from_verbose instead.
-#    """
-#    for line in lines:
-#        match = re.match(f"^(xccdf_org.ssgproject.content_rule_.+):([a-z]+)$", line)
-#        if match:
-#            yield (match.group(1), match.group(2))
-#        else:
-#            sys.stdout.write(line)
-#            sys.stdout.flush()
-
-
-
-
-
-
-# TODO: rules_from_verbose only on newer oscap version,
-#       old one doesn't have oscap --verbose, only oscap xccdf eval --verbose,
-#       which has a different implementation and broken (interleaved) output
-#       with stdout and rule name printing
+    return failed

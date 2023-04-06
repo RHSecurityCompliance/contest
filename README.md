@@ -1,7 +1,7 @@
 
 TODO:
 
-- `CONTEST_REPORT_PASS`
+- `CONTEST_QUIET`
    - have tmt.report() func silently discard 'pass' results for any 'name'
      that isn't None (eg. still report 'pass' for / , the test itself)
     - this is needed to detect waived-but-passed, even if we discard
