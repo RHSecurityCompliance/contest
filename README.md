@@ -46,3 +46,8 @@ for `oscap`, as we can simply do `oscap xccdf eval ... ; chage ...` in the same
 shell, but Ansible remediation cannot do this.  
 So we need a simple side-channel that can run `chage` **after** ansible-playbook
 finishes.
+
+## License
+
+Unless specified otherwise, any content within this repository is distributed
+under the GNU GPLv3 license, see the [COPYING.txt](COPYING.txt) file for more.
