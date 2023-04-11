@@ -35,7 +35,7 @@ with g.snapshotted():
     # remediate, reboot
     #
 
-    g.ssh(f'oscap xccdf eval --profile {prof} --progress --remediate {oscap.datastream} ; chage -d 99999 root')
+    g.ssh(f'oscap xccdf eval --profile {prof} --progress --remediate {oscap.datastream}')
     g.soft_reboot()
 
     #
