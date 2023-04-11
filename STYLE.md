@@ -1,11 +1,24 @@
-Philosophy:
+## Code style check
+
+Check your code with `pycodestyle-3`, which has been configured via `setup.cfg`.
+
+## Line length
+
+Keep line length to under 80, but don't be pedantic about it. If a line looks
+better without a break, leave it longer.  
+Don't exceed 100 characters on a line unless there's a good reason for it
+(waive that reason via `# nopep8` to avoid codestyle warning).
+
+Try to always keep docstrings under 80, don't make them unnecessarily wider.
+
+## Control flow
 
 Don't hide control flow, let the user see what's happening
 
 All state is tracked by the test, not by supporting modules (libraries),
 modules either
-* provide state-less functions
-* context manager based classes
+- provide state-less functions
+- context manager based classes
 
 In the first case, it's up to the test to clean up:
 
@@ -28,46 +41,35 @@ with Something(variant) as x:
     do(x)
 ```
 
----
+## Shebang
 
-Use `#!/usr/bin/python3` as shebang.
+Use `#!/usr/bin/python3` as shebang in python scripts.
 
-If this binary is not available, install the appropriate packages (should be
-done by top-level FMF/TMT configuration).
+If this binary is not available, install the appropriate packages
+(should be done by TMT via test requirements).
 
 Do not use `#!/usr/libexec/platform-python`, which is not available outside
 of RHEL and may have unknown python version.
 
----
-
-Check your code with `pycodestyle-3`, which has been configured via `setup.cfg`.
-
----
-
-Keep line length to under 80, but don't be pedantic about it. If a line looks
-better without a break, leave it longer.  
-Don't exceed 100 characters on a line unless there's a good reason for it
-(waive that reason via `# nopep8` or `# noqa` to avoid codestyle warning).
-
-Try to always keep docstrings under 80, don't make them unnecessarily wider.
-
----
+## Python features
 
 Prefer modern Python features over older (but still valid) ones, namely:
 
-* f-strings over `.format()` and `%`
- * unless required by a module, ie. `logging` needs `%(blabla)s`
-* pathlib over `os.path.*`
- * unless you wouldn't use any path splitting/joining, in which case just
-   use `os.path.*`, ie. to get a basename string from a path string
-* `subprocess.run()` over `.check_output()` and `.call()`
+- f-strings over `.format()` and `%`
+  - unless required by a module, ie. `logging` needs `%(blabla)s`
+- `pathlib.Path` over `os.path.*`
+  - `Path('some/path') / subdir / another_dir`
+  - `Path().name` instead of `os.path.basename()`
+  - `Path().parent` instead of `os.path.dirname()`
+  - see others on https://docs.python.org/3.6/library/pathlib.html#methods
+- `subprocess.run()` over `.check_output()` and `.call()`
 
 However avoid using these new features:
 
-* explicit data types like `varname: int = 5`
- * incl. function parameters and return type
+- explicit data types like `varname: int = 5`
+  - incl. function parameters and return type
 
----
+## Quotes
 
 Use single `''` for identifier-like strings (array key, argparse parameter name,
 etc.).  
@@ -84,7 +86,7 @@ Exception("you went too fast, try going slower")
 This applies to multi-line strings too, use `'''` for data-based formats,
 and `"""` for human-readable texts and docstrings.
 
----
+## Import namespaces
 
 Generally avoid importing objects from modules into the current namespace,
 prefer referencing them via their import names.
@@ -104,7 +106,8 @@ y = textwrap.dedent("""\
           bar""")
 ```
 
-Unless you need to repeat it many times, then it's probably okay.
+However a unique enough identifier that is repeated several/many times
+can be imported directly into the current namespace:
 
 ```
 from pathlib import Path
@@ -115,7 +118,21 @@ y = Path(...)
 z = some_func(x, y, Path(...))
 ```
 
----
+```
+from concurrent.futures import ThreadPoolExecutor
+
+e = ThreadPoolExecutor(...)
+```
+
+Avoid overriding python keywords with imported identifiers, ie. avoid
+
+```
+from os import open
+
+open(...)  # overrides built-in open()
+```
+
+## Import order
 
 Try to keep the most commonly used modules at the top of the import list,
 for consistency across tests. Put less common ones lower down.
@@ -138,7 +155,20 @@ import xml.etree.ElementTree as ET
 from pathlib import Path
 ```
 
----
+Finally, put imports of custom libraries after all the imports from standard
+ones, separated by an empty line.
+
+```
+import os
+import xml.etree.ElementTree as ET
+from pathlib import Path
+
+import results
+import virt
+from util import AutoCleanup
+```
+
+## None comparisons
 
 Don't be pedantic about `None` checking. If a function argument doesn't make
 sense when empty, include that logic into the check. It makes for a more
@@ -156,17 +186,27 @@ def func(arg=None):
         ...
 ```
 
----
+## Prefer operators over methods
 
-Misc:
+Use expressions like `some_list += another_list` instead of
+`some_list.extend(another_list)`.
 
-* prefer operators over methods
- * ie. `list += another_list` instead of `list.extend(another_list)`
- * but **do** use methods where appropriate
-  * ie. `list.append(item)` instead of forcing `list += [item]`
+However **do** use methods where an operator doesn't exist, don't try to come up
+with workarounds that would use operators.
 
----
+Use `some_list.append(item)` instead of `some_list += [item]`.
+
+## TODOs
 
 Obsoletes/replaces when we drop support for Python 3.6:
 
-* `subprocess.run()` - replace `universal_newlines` with `text`
+- `subprocess.run()` - replace `universal_newlines` with `text`
+
+Misc:
+
+- maybe move all python stuff to `lib/python/` and leave `lib/` for other things too ?
+  - runconf
+  - waiveconf
+  - pseudotty and other executables
+  - ...
+  - adjust `libdir` in `util` appropriately ?
