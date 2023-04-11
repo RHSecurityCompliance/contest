@@ -1,3 +1,0 @@
-extra-hardware: |
-  keyvalue = HVM=1
-  hostrequire = memory>=4000

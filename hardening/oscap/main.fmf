@@ -2,8 +2,11 @@ summary: Runs oscap remediation and scan inside VMs
 test: python3 -m runtest ./test.py
 result: custom
 environment+:
-    PYTHONPATH: ../../../lib
+    PYTHONPATH: ../../lib
 duration: 4h
+extra-hardware: |
+  keyvalue = HVM=1
+  hostrequire = memory>=4000
 
 /anssi_bp28_enhanced:
     environment+:
@@ -11,7 +14,7 @@ duration: 4h
     adjust:
         when: distro < rhel-8
         enabled: false
-    extra-summary: /CoreOS/scap-security-guide/hardening/vms/bash/anssi_bp28_enhanced
+    extra-summary: /CoreOS/scap-security-guide/hardening/oscap/anssi_bp28_enhanced
 
 /anssi_bp28_high:
     environment+:
@@ -19,7 +22,7 @@ duration: 4h
     adjust:
         when: distro < rhel-8
         enabled: false
-    extra-summary: /CoreOS/scap-security-guide/hardening/vms/bash/anssi_bp28_high
+    extra-summary: /CoreOS/scap-security-guide/hardening/oscap/anssi_bp28_high
 
 /anssi_bp28_intermediary:
     environment+:
@@ -27,7 +30,7 @@ duration: 4h
     adjust:
         when: distro < rhel-8
         enabled: false
-    extra-summary: /CoreOS/scap-security-guide/hardening/vms/bash/anssi_bp28_intermediary
+    extra-summary: /CoreOS/scap-security-guide/hardening/oscap/anssi_bp28_intermediary
 
 /anssi_bp28_minimal:
     environment+:
@@ -35,7 +38,7 @@ duration: 4h
     adjust:
         when: distro < rhel-8
         enabled: false
-    extra-summary: /CoreOS/scap-security-guide/hardening/vms/bash/anssi_bp28_minimal
+    extra-summary: /CoreOS/scap-security-guide/hardening/oscap/anssi_bp28_minimal
 
 /anssi_nt28_enhanced:
     environment+:
@@ -43,7 +46,7 @@ duration: 4h
     adjust:
         when: distro > rhel-7
         enabled: false
-    extra-summary: /CoreOS/scap-security-guide/hardening/vms/bash/anssi_nt28_enhanced
+    extra-summary: /CoreOS/scap-security-guide/hardening/oscap/anssi_nt28_enhanced
 
 /anssi_nt28_high:
     environment+:
@@ -51,7 +54,7 @@ duration: 4h
     adjust:
         when: distro > rhel-7
         enabled: false
-    extra-summary: /CoreOS/scap-security-guide/hardening/vms/bash/anssi_nt28_high
+    extra-summary: /CoreOS/scap-security-guide/hardening/oscap/anssi_nt28_high
 
 /anssi_nt28_intermediary:
     environment+:
@@ -59,7 +62,7 @@ duration: 4h
     adjust:
         when: distro > rhel-7
         enabled: false
-    extra-summary: /CoreOS/scap-security-guide/hardening/vms/bash/anssi_nt28_intermediary
+    extra-summary: /CoreOS/scap-security-guide/hardening/oscap/anssi_nt28_intermediary
 
 /anssi_nt28_minimal:
     environment+:
@@ -67,7 +70,7 @@ duration: 4h
     adjust:
         when: distro > rhel-7
         enabled: false
-    extra-summary: /CoreOS/scap-security-guide/hardening/vms/bash/anssi_nt28_minimal
+    extra-summary: /CoreOS/scap-security-guide/hardening/oscap/anssi_nt28_minimal
 
 /C2S:
     environment+:
@@ -75,27 +78,27 @@ duration: 4h
     adjust:
         when: distro > rhel-7
         enabled: false
-    extra-summary: /CoreOS/scap-security-guide/hardening/vms/bash/C2S
+    extra-summary: /CoreOS/scap-security-guide/hardening/oscap/C2S
 
 /cis:
     environment+:
         PROFILE: cis
-    extra-summary: /CoreOS/scap-security-guide/hardening/vms/bash/cis
+    extra-summary: /CoreOS/scap-security-guide/hardening/oscap/cis
 
 /cis_server_l1:
     environment+:
         PROFILE: cis_server_l1
-    extra-summary: /CoreOS/scap-security-guide/hardening/vms/bash/cis_server_l1
+    extra-summary: /CoreOS/scap-security-guide/hardening/oscap/cis_server_l1
 
 /cis_workstation_l1:
     environment+:
         PROFILE: cis_workstation_l1
-    extra-summary: /CoreOS/scap-security-guide/hardening/vms/bash/cis_workstation_l1
+    extra-summary: /CoreOS/scap-security-guide/hardening/oscap/cis_workstation_l1
 
 /cis_workstation_l2:
     environment+:
         PROFILE: cis_workstation_l2
-    extra-summary: /CoreOS/scap-security-guide/hardening/vms/bash/cis_workstation_l2
+    extra-summary: /CoreOS/scap-security-guide/hardening/oscap/cis_workstation_l2
 
 /cjis:
     environment+:
@@ -103,22 +106,22 @@ duration: 4h
     adjust:
         when: distro > rhel-7
         enabled: false
-    extra-summary: /CoreOS/scap-security-guide/hardening/vms/bash/cjis
+    extra-summary: /CoreOS/scap-security-guide/hardening/oscap/cjis
 
 /cui:
     environment+:
         PROFILE: cui
-    extra-summary: /CoreOS/scap-security-guide/hardening/vms/bash/cui
+    extra-summary: /CoreOS/scap-security-guide/hardening/oscap/cui
 
 /e8:
     environment+:
         PROFILE: e8
-    extra-summary: /CoreOS/scap-security-guide/hardening/vms/bash/e8
+    extra-summary: /CoreOS/scap-security-guide/hardening/oscap/e8
 
 /hipaa:
     environment+:
         PROFILE: hipaa
-    extra-summary: /CoreOS/scap-security-guide/hardening/vms/bash/hipaa
+    extra-summary: /CoreOS/scap-security-guide/hardening/oscap/hipaa
 
 /ism_o:
     environment+:
@@ -126,7 +129,7 @@ duration: 4h
     adjust:
         when: distro < rhel-8
         enabled: false
-    extra-summary: /CoreOS/scap-security-guide/hardening/vms/bash/ism_o
+    extra-summary: /CoreOS/scap-security-guide/hardening/oscap/ism_o
 
 /ncp:
     environment+:
@@ -134,17 +137,17 @@ duration: 4h
     adjust:
         when: distro > rhel-7
         enabled: false
-    extra-summary: /CoreOS/scap-security-guide/hardening/vms/bash/ncp
+    extra-summary: /CoreOS/scap-security-guide/hardening/oscap/ncp
 
 /ospp:
     environment+:
         PROFILE: ospp
-    extra-summary: /CoreOS/scap-security-guide/hardening/vms/bash/ospp
+    extra-summary: /CoreOS/scap-security-guide/hardening/oscap/ospp
 
 /pci-dss:
     environment+:
         PROFILE: pci-dss
-    extra-summary: /CoreOS/scap-security-guide/hardening/vms/bash/pci-dss
+    extra-summary: /CoreOS/scap-security-guide/hardening/oscap/pci-dss
 
 /rhelh-stig:
     environment+:
@@ -152,7 +155,7 @@ duration: 4h
     adjust:
         when: distro > rhel-7
         enabled: false
-    extra-summary: /CoreOS/scap-security-guide/hardening/vms/bash/rhelh-stig
+    extra-summary: /CoreOS/scap-security-guide/hardening/oscap/rhelh-stig
 
 /rhelh-vpp:
     environment+:
@@ -160,7 +163,7 @@ duration: 4h
     adjust:
         when: distro > rhel-7
         enabled: false
-    extra-summary: /CoreOS/scap-security-guide/hardening/vms/bash/rhelh-vpp
+    extra-summary: /CoreOS/scap-security-guide/hardening/oscap/rhelh-vpp
 
 /rht-ccp:
     environment+:
@@ -168,7 +171,7 @@ duration: 4h
     adjust:
         when: distro > rhel-7
         enabled: false
-    extra-summary: /CoreOS/scap-security-guide/hardening/vms/bash/rht-ccp
+    extra-summary: /CoreOS/scap-security-guide/hardening/oscap/rht-ccp
 
 /standard:
     environment+:
@@ -176,16 +179,14 @@ duration: 4h
     adjust:
         when: distro > rhel-7
         enabled: false
-    extra-summary: /CoreOS/scap-security-guide/hardening/vms/bash/standard
+    extra-summary: /CoreOS/scap-security-guide/hardening/oscap/standard
 
 /stig:
     environment+:
         PROFILE: stig
-    extra-summary: /CoreOS/scap-security-guide/hardening/vms/bash/stig
-    extra-nitrate: TC#0615134
-    id: 77ba8ac4-00d7-4a07-a632-d7ddba5fb6d4
+    extra-summary: /CoreOS/scap-security-guide/hardening/oscap/stig
 
 /stig_gui:
     environment+:
         PROFILE: stig_gui
-    extra-summary: /CoreOS/scap-security-guide/hardening/vms/bash/stig_gui
+    extra-summary: /CoreOS/scap-security-guide/hardening/oscap/stig_gui
