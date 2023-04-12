@@ -161,6 +161,7 @@ KICKSTART_PACKAGES = [
 # as byte-strings
 INSTALL_FAILURES = [
     br"org.fedoraproject.Anaconda.Addons.OSCAP.*: The installation should be aborted.",
+    br"The installation was stopped due to an error",
     br"There was an error running the kickstart script",
 ]
 
