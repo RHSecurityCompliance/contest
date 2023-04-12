@@ -98,14 +98,14 @@ import versions
 
 _log = logging.getLogger(__name__).debug
 
-GUEST_NAME = 'contest-ssg'
-GUEST_LOGIN_PASS = 'c0Nt3st-SSG,pass'
+GUEST_NAME = 'contest'
+GUEST_LOGIN_PASS = 'contest'
 GUEST_SSH_USER = 'root'
 
 GUEST_IMG_DIR = '/var/lib/libvirt/images'
 
 # don't rely on 'default' being sane, define a new STP-less network
-NETWORK_NAME = 'contest-ssg-net'
+NETWORK_NAME = 'contest-net'
 NETWORK_PREFIX = '192.168.121'
 
 KICKSTART_TEMPLATE = fr'''
