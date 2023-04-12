@@ -108,7 +108,7 @@ GUEST_IMG_DIR = '/var/lib/libvirt/images'
 NETWORK_NAME = 'contest-ssg-net'
 NETWORK_PREFIX = '192.168.121'
 
-KICKSTART_TEMPLATE = fr'''\
+KICKSTART_TEMPLATE = fr'''
 lang en_US.UTF-8
 keyboard --vckeymap us
 network --onboot yes --bootproto dhcp
@@ -150,7 +150,8 @@ semanage permissive -a virt_qemu_ga_t
 # would have been done by subscription-manager
 rpm --import /etc/pki/rpm-gpg/RPM-GPG-KEY-redhat-release
 dnf -y makecache || yum -y makecache
-%end'''
+%end
+'''
 
 KICKSTART_PACKAGES = [
     'openscap-scanner',
