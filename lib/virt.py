@@ -161,9 +161,12 @@ KICKSTART_PACKAGES = [
 
 # as byte-strings
 INSTALL_FAILURES = [
-    br"org.fedoraproject.Anaconda.Addons.OSCAP.*: The installation should be aborted.",
+    br"org\.fedoraproject\.Anaconda\.Addons\.OSCAP\.*: The installation should be aborted",
+    br"\.common\.OSCAPaddonError:",
     br"The installation was stopped due to an error",
     br"There was an error running the kickstart script",
+    br"Aborting the installation",
+    br"Something went wrong during the final hardening",
 ]
 
 PIPE = subprocess.PIPE
