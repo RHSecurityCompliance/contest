@@ -14,8 +14,8 @@ def make_printable(obj):
         obj = obj.decode()
     elif not isinstance(obj, str):
         obj = str(obj)
-    obj = re.sub('\n', ' ', obj)
-    obj = re.sub('[^\w\-\+~\.,:;\?@#$%^&*\(\)<>\'"/ ]', '', obj, flags=re.A)
+    obj = re.sub(r'\n', ' ', obj)
+    obj = re.sub(r'[^\w\-\+~\.,:;\?@#$%^&*\(\)<>\'"/ ]', '', obj, flags=re.A)
     return obj.strip()
 
 
@@ -27,10 +27,12 @@ def proc_stream(cmd, check=False, **kwargs):
     With 'check' set to True, raise a CalledProcessError if the 'cmd' failed.
     """
     proc = subprocess.Popen(cmd, stdout=subprocess.PIPE, **kwargs)
+
     def generate_lines():
         for line in proc.stdout:
             yield line.decode('ascii', errors='ignore').rstrip('\n')
         code = proc.wait()
         if code > 0 and check:
             raise subprocess.CalledProcessError(cmd=cmd, returncode=code)
+
     return (proc, generate_lines())

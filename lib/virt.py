@@ -78,7 +78,6 @@ import re
 import logging
 import socket
 import time
-import inspect
 import builtins
 import subprocess
 import textwrap
@@ -109,7 +108,7 @@ GUEST_IMG_DIR = '/var/lib/libvirt/images'
 NETWORK_NAME = 'contest-ssg-net'
 NETWORK_PREFIX = '192.168.121'
 
-KICKSTART_TEMPLATE = f'''\
+KICKSTART_TEMPLATE = fr'''\
 lang en_US.UTF-8
 keyboard --vckeymap us
 network --onboot yes --bootproto dhcp
@@ -160,8 +159,8 @@ KICKSTART_PACKAGES = [
 
 # as byte-strings
 INSTALL_FAILURES = [
-    b"org.fedoraproject.Anaconda.Addons.OSCAP.*: The installation should be aborted.",
-    b"There was an error running the kickstart script",
+    br"org.fedoraproject.Anaconda.Addons.OSCAP.*: The installation should be aborted.",
+    br"There was an error running the kickstart script",
 ]
 
 PIPE = subprocess.PIPE
@@ -271,7 +270,7 @@ class Kickstart:
         self.appends.append(content)
 
     def add_post(self, content):
-        new = (f'%post --interpreter=/bin/bash --erroronfail\n'
+        new = ('%post --interpreter=/bin/bash --erroronfail\n'
                'set -xe; exec >/dev/tty 2>&1\n' + content + '\n%end')
         self.append(new)
 
@@ -391,7 +390,8 @@ class Guest:
                 # this has nothing to do with rhel7, it just tells v-i to use virtio
                 # and rhel7 was the first RHEL to do so, so it's the most compatible
                 '--initrd-inject', ksfile, '--os-variant', 'rhel7-unknown',
-                '--extra-args', f'console=ttyS0 inst.ks=file:/{ksfile.name} inst.notmux inst.noninteractive',  # nopep8
+                '--extra-args', f'console=ttyS0 inst.ks=file:/{ksfile.name} '
+                                'inst.notmux inst.noninteractive',
                 '--noreboot',
             ]
 
@@ -810,7 +810,7 @@ def domain_xml_diskinfo(xmlstr):
     driver = disk.find('driver')
     source = disk.find('source')
     if driver is None or source is None:
-        raise RuntimeError(f"invalid disk specification")
+        raise RuntimeError("invalid disk specification")
     return (domain, devices, disk, driver, source)
 
 

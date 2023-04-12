@@ -54,7 +54,7 @@ def _sanitize_yaml_id(string):
     Remove anything that shouldn't appear in a YAML identifier (ie. key name),
     whether the limitation comes from YAML itself, or its use by TMT.
     """
-    return re.sub('[^\w/ _-]', '', string, flags=re.A).strip()
+    return re.sub(r'[^\w/ _-]', '', string, flags=re.A).strip()
 
 
 def report_tmt(result, name=None, note=None, logs=None):
@@ -124,7 +124,6 @@ def report_beaker(result, name=None, note=None, logs=None):
     if r.status_code != 201:
         _log(f"reporting to {url} failed with {r.status_code}")
         return
-
 
     if logs:
         for log in logs:

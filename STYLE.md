@@ -1,13 +1,13 @@
 ## Code style check
 
-Check your code with `pycodestyle-3`, which has been configured via `setup.cfg`.
+Check your code with `flake8`, which has been configured via `setup.cfg`.
 
 ## Line length
 
 Keep line length to under 80, but don't be pedantic about it. If a line looks
 better without a break, leave it longer.  
 Don't exceed 100 characters on a line unless there's a good reason for it
-(waive that reason via `# nopep8` to avoid codestyle warning).
+(waive that reason via `# noqa` to avoid codestyle warning).
 
 Try to always keep docstrings under 80, don't make them unnecessarily wider.
 

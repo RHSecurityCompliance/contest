@@ -2,7 +2,6 @@ import os
 import sys
 import re
 import logging
-import subprocess
 from pathlib import Path
 
 import results
@@ -10,6 +9,7 @@ import util
 from versions import rhel
 
 _log = logging.getLogger(__name__).debug
+_no_remediation_cache = None
 
 datastream = f'/usr/share/xml/scap/ssg/content/ssg-rhel{rhel.major}-ds.xml'
 
@@ -20,12 +20,11 @@ def _rules_without_remediation():
     cmd = ['oscap', 'xccdf', 'generate', '--profile', '(all)', 'fix', datastream]
     proc, lines = util.proc_stream(cmd, check=True)
     for line in lines:
-        match = re.search('FIX FOR THIS RULE \'xccdf_org.ssgproject.content_rule_(.+)\' IS MISSING!', line)
+        match = re.search('FIX FOR THIS RULE \'xccdf_org.ssgproject.content_rule_(.+)\' IS MISSING!', line)  # noqa
         if match:
             yield match.group(1)
 
 
-_no_remediation_cache = None
 def has_no_remediation(rule):
     global _no_remediation_cache
     if _no_remediation_cache is None:
@@ -45,7 +44,7 @@ def rules_from_verbose(lines):
     log = ''
     for line in lines:
         # oscap xccdf eval --progress rule name and result
-        match = re.match(f"^xccdf_org.ssgproject.content_rule_(.+):([a-z]+)$", line)
+        match = re.match(r'^xccdf_org.ssgproject.content_rule_(.+):([a-z]+)$', line)
         if match:
             yield (match.group(1), match.group(2), log)
             log = ''
