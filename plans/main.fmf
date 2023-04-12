@@ -1,0 +1,3 @@
+# do not inherit test-specific metadata from toplevel
+/:
+    inherit: false
