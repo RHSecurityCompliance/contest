@@ -546,7 +546,10 @@ class Guest:
         self.ipaddr = wait_for_ifaddr(self.name)
         wait_for_ssh(self.ipaddr)
         self.log(f"guest {self.name} ready")
-        yield self
+        try:
+            yield self
+        finally:
+            self.destroy()
 
     def _do_ssh(self, *cmd, func=subprocess.run, capture=False, **run_args):
         if capture:
