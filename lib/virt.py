@@ -397,6 +397,7 @@ class Guest:
                 # and rhel7 was the first RHEL to do so, so it's the most compatible
                 '--initrd-inject', ksfile, '--os-variant', 'rhel7-unknown',
                 '--extra-args', f'console=ttyS0 inst.ks=file:/{ksfile.name} '
+                                'systemd.journald.forward_to_console=1 '
                                 'inst.notmux inst.noninteractive',
                 '--noreboot',
             ]
