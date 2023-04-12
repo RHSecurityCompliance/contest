@@ -153,7 +153,8 @@ def report(result, name=None, note=None, logs=None):
         raise SyntaxError(f"{result} is not a valid result")
 
     # apply to all report variants
-    name = _sanitize_yaml_id(name)
+    if name:
+        name = _sanitize_yaml_id(name)
     if note:
         note = util.make_printable(note)
 
