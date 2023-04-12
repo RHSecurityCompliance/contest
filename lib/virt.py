@@ -142,7 +142,8 @@ echo 'OPTIONS=-oPermitRootLogin=yes -oUseDNS=no' >> /etc/sysconfig/sshd
 
 %post
 # allow qemu-guest-agent to execute code
-sed '/^BLACKLIST_RPC=/s/=.*/=/' -i /etc/sysconfig/qemu-ga
+sed '/^BLACKLIST_RPC=/s/=.*/=/' -i /etc/sysconfig/qemu-ga  # RHEL-7/8
+sed '/^BLOCK_RPCS=/s/=.*/=/' -i /etc/sysconfig/qemu-ga     # RHEL-9+
 semanage permissive -a virt_qemu_ga_t
 %end
 
