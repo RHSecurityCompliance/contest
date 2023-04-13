@@ -55,7 +55,7 @@ with g.snapshotted():
     g.copy_from('report.html')
 
 if failed:
-    results.report('info', 'html-report', logs=['report.html'])
+    results.report('info', logs=['report.html'])
     sys.exit(2)
 else:
     results.report('pass', logs=['report.html'])
