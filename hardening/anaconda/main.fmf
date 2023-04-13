@@ -6,7 +6,7 @@ environment+:
 duration: 4h
 extra-hardware: |
     keyvalue = HVM=1
-    hostrequire = memory>=4000
+    hostrequire = memory>=4800
 
 /anssi_bp28_enhanced:
     environment+:
