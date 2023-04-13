@@ -3,3 +3,16 @@ discover:
     how: fmf
 execute:
     how: tmt
+adjust:
+    prepare:
+      - how: shell
+        name: install-epel-on-rhel7
+        because: python3 is not on RHEL 7 by default
+        script: |
+            if ! rpm -q epel-release; then
+                curl -o epel-release.rpm --retry 10 https://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm
+                rpm -ivh epel-release.rpm
+                rm -f epel-release.rpm
+                #sed -i 's/^enabled=.*/enabled=1/' /etc/yum.repos.d/epel*
+            fi
+    when: distro < rhel-8
