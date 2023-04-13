@@ -12,3 +12,7 @@ recommend:
 - python36-rpm
 component:
 - scap-security-guide
+
+# report only rule fails
+environment:
+    CONTEST_SILENT: 1
