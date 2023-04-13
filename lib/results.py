@@ -23,7 +23,7 @@ import util
 
 _log = logging.getLogger(__name__).debug
 
-_valid_results = ['pass', 'fail', 'warn', 'error', 'info']
+_valid_statuses = ['pass', 'fail', 'warn', 'error', 'info']
 
 RESULTS_FILE = 'results.yaml'
 
@@ -57,7 +57,7 @@ def _sanitize_yaml_id(string):
     return re.sub(r'[^\w/ _-]', '', string, flags=re.A).strip()
 
 
-def report_tmt(result, name=None, note=None, logs=None):
+def report_tmt(status, name=None, note=None, logs=None):
     if not name:
         name = '/'  # https://github.com/teemtee/tmt/issues/1855
     else:
@@ -65,7 +65,7 @@ def report_tmt(result, name=None, note=None, logs=None):
 
     new_result = {
         'name': name,
-        'result': result,
+        'result': status,
     }
     if note:
         new_result['note'] = note
@@ -94,7 +94,7 @@ def report_tmt(result, name=None, note=None, logs=None):
         f.write(yaml_addition)
 
 
-def report_beaker(result, name=None, note=None, logs=None):
+def report_beaker(status, name=None, note=None, logs=None):
     labctl = os.environ['LAB_CONTROLLER']
     taskid = os.environ['TASKID']
     recipeid = os.environ['RECIPEID']
@@ -105,19 +105,19 @@ def report_beaker(result, name=None, note=None, logs=None):
     if not name:
         return
 
-    if result == 'pass':
-        result = 'Pass'
-    elif result == 'warn':
-        result = 'Warn'
-    elif result == 'info':
-        result = 'None'
+    if status == 'pass':
+        status = 'Pass'
+    elif status == 'warn':
+        status = 'Warn'
+    elif status == 'info':
+        status = 'None'
     else:
-        result = 'Fail'
+        status = 'Fail'
 
     url = f'http://{labctl}:8000/recipes/{recipeid}/tasks/{taskid}/results/'
     payload = {
         'path': f'{name} ({note})' if note else name,
-        'result': result,
+        'result': status,
     }
     _log(f'result: {payload}')
     r = requests.post(url, data=payload)
@@ -134,11 +134,11 @@ def report_beaker(result, name=None, note=None, logs=None):
                     _log(f"uploading log {logpath} failed with {r.status_code}")
 
 
-def report_plain(result, name=None, note=None, logs=None):
-    _log(f'result: {name}:{result} ({note})')
+def report_plain(status, name=None, note=None, logs=None):
+    _log(f'result: {name}:{status} ({note})')
 
 
-def report(result, name=None, note=None, logs=None):
+def report(status, name=None, note=None, logs=None):
     """
     Report a test result.
 
@@ -149,8 +149,8 @@ def report(result, name=None, note=None, logs=None):
     'logs' is a list of file paths (relative to CWD) to be copied
     or uploaded, and associated with the new result.
     """
-    if result not in _valid_results:
-        raise SyntaxError(f"{result} is not a valid result")
+    if status not in _valid_statuses:
+        raise SyntaxError(f"{status} is not a valid status")
 
     # apply to all report variants
     if name:
@@ -160,8 +160,8 @@ def report(result, name=None, note=None, logs=None):
 
     taskpath = os.environ.get('RSTRNT_TASKPATH')
     if taskpath and taskpath.endswith('/distribution/wrapper/fmf'):
-        return report_beaker(result, name, note, logs)
+        return report_beaker(status, name, note, logs)
     elif 'TMT_TEST_DATA' in os.environ:
-        return report_tmt(result, name, note, logs)
+        return report_tmt(status, name, note, logs)
     else:
-        return report_plain(result, name, note, logs)
+        return report_plain(status, name, note, logs)
