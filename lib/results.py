@@ -100,10 +100,8 @@ def report_beaker(status, name=None, note=None, logs=None):
     recipeid = os.environ['RECIPEID']
     taskid = os.environ['TASKID']
 
-    # don't report a result for the task itself, rely on exit code
-    # and a Beaker harness setting the task status for us
     if not name:
-        return
+        name = '/'
 
     if status == 'pass':
         status = 'Pass'
