@@ -40,6 +40,11 @@ def rules_from_verbose(lines):
       - with --verbose INFO
       - with --progress
       - with stdout and stderr merged, ie. 2>&1
+
+    If running with openscap < 1.3, this function expects oscap to be run:
+      - without any --verbose (uses different format)
+      - with --progress
+      - without any redirect (due to broken locking), keeping stdout clean
     """
     log = ''
     for line in lines:
@@ -48,11 +53,13 @@ def rules_from_verbose(lines):
         if match:
             yield (match.group(1), match.group(2), log)
             log = ''
+            sys.stdout.write(f'{line}\n')
+            sys.stdout.flush()
             continue
 
         # print out any unrelated warnings/errors
         if not line.startswith('I: oscap: '):
-            sys.stdout.write(line)
+            sys.stdout.write(f'{line}\n')
             sys.stdout.flush()
             continue
 
@@ -68,16 +75,12 @@ def report_from_verbose(lines):
 
     Returns a number of truly failed rules.
     """
-    failed = 0
+    total = failed = 0
     silent = os.environ.get('CONTEST_SILENT')
 
-    for rule, result, details in rules_from_verbose(lines):
+    for rule, result, verbose_out in rules_from_verbose(lines):
+        total += 1
         note = None
-        logfile = None
-
-        if details:
-            logfile = 'oscap.log.txt'  # txt to make browsers open it natively
-            Path(logfile).write_text(details)
 
         if result == 'pass':
             if silent:
@@ -102,6 +105,16 @@ def report_from_verbose(lines):
         if result in ['fail', 'error']:
             failed += 1
 
-        results.report(result, f'{rule}', note, [logfile])
+        if verbose_out:
+            logfile = 'oscap.log.txt'  # txt to make browsers open it natively
+            Path(logfile).write_text(verbose_out)
+            results.report(result, f'{rule}', note, [logfile])
+        else:
+            results.report(result, f'{rule}', note)
+
+    if total == 0:
+        raise RuntimeError("oscap returned no results")
+
+    _log(f"all done: {failed} failed, {total} total results")
 
     return failed
