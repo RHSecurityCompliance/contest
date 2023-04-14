@@ -558,7 +558,12 @@ class Guest:
         try:
             yield self
         finally:
-            self.destroy()
+            try:
+                self.log(f"shutting down {self.name}")
+                self.shutdown()
+            except builtins.TimeoutError:
+                self.log(f"shutdown timed out, destroying {self.name}")
+                self.destroy()
 
     def _do_ssh(self, *cmd, func=subprocess.run, capture=False, **run_args):
         if capture:
@@ -699,6 +704,7 @@ def wait_for_domstate(name, state, timeout=300, sleep=0.5):
     Wait until the guest reaches a specified libvirt domain state
     ('running', 'shut off', etc.).
     """
+    _log(f"waiting for {name} to be {state} for {timeout}sec")
     end_time = datetime.now() + timedelta(seconds=timeout)
     while datetime.now() < end_time:
         if guest_domstate(name) == state:
