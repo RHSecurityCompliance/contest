@@ -104,18 +104,18 @@ def report_beaker(status, name=None, note=None, logs=None):
         name = '/'
 
     if status == 'pass':
-        status = 'Pass'
+        beaker_status = 'Pass'
     elif status == 'warn':
-        status = 'Warn'
+        beaker_status = 'Warn'
     elif status == 'info':
-        status = 'None'
+        beaker_status = 'None'
     else:
-        status = 'Fail'
+        beaker_status = 'Fail'
 
     url = f'http://{labctl}:8000/recipes/{recipeid}/tasks/{taskid}/results/'
     payload = {
-        'path': f'{name} ({note})' if note else name,
-        'result': status,
+        'path': f'{status}: {name}' + (f' ({note})' if note else ''),
+        'result': beaker_status,
     }
     _log(f'result: {payload}')
     r = requests.post(url, data=payload)
