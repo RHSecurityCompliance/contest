@@ -23,7 +23,7 @@ class _RpmVerCmp:
     #   self.version
     #   self.release
 
-    def _compare(self, other):
+    def compare(self, other):
         if not isinstance(other, str):
             other = str(other)
         other_version, _, other_release = other.partition('-')
@@ -32,25 +32,25 @@ class _RpmVerCmp:
         return rpm.labelCompare(ours, theirs)
 
     def __lt__(self, other):
-        return bool(self) and self._compare(other) < 0
+        return bool(self) and self.compare(other) < 0
 
     def __le__(self, other):
-        return bool(self) and self._compare(other) <= 0
+        return bool(self) and self.compare(other) <= 0
 
     def __eq__(self, other):
-        return bool(self) and self._compare(other) == 0
+        return bool(self) and self.compare(other) == 0
 
     def __ne__(self, other):
-        return bool(self) and self._compare(other) != 0
+        return bool(self) and self.compare(other) != 0
 
     def __ge__(self, other):
-        return bool(self) and self._compare(other) >= 0
+        return bool(self) and self.compare(other) >= 0
 
     def __gt__(self, other):
-        return bool(self) and self._compare(other) > 0
+        return bool(self) and self.compare(other) > 0
 
     def __str__(self):
-        if self._release:
+        if self.release:
             return f'{self.version}-{self.release}'
         else:
             return self.version
@@ -65,6 +65,13 @@ class _Rhel(_RpmVerCmp):
 
     def __bool__(self):
         return _os_release['ID'] == 'rhel'
+
+    def compare(self, other):
+        # if one number is given, treat it as a RHEL major version
+        if isinstance(other, int):
+            return self.major - other
+        else:
+            return super().compare(other)
 
     @staticmethod
     def _major_minor():
