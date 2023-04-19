@@ -76,6 +76,14 @@ tmt \
             report -h html
 ```
 
+## Waiving failed results
+
+In this context, "to waive" means to label a failing result as known-bad,
+something we have seen before and expect to fail.
+
+Read [WAIVES.md](WAIVES.md) to see where/how you can set up rules to
+automatically waive failures.
+
 ## Workarounds
 
 (TODO: Find a better place for this?)

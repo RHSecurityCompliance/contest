@@ -1,0 +1,48 @@
+# requires running firewalld (firewall-cmd) and NetworkManager,
+# which are not available in their final form in the Anaconda environment
+# - see https://github.com/ComplianceAsCode/content/issues/9746
+/hardening/anaconda/[^/]+/firewalld_sshd_port_enabled
+    rhel >= 8
+
+# https://github.com/OpenSCAP/openscap/issues/1880
+# needs to be remediated more than once due to rule ordering issues
+/hardening/oscap/[^/]+/configure_bashrc_exec_tmux
+/hardening/oscap/[^/]+/no_tmux_in_shells
+/hardening/oscap/[^/]+/configure_usbguard_auditbackend
+    rhel >= 8
+/hardening/oscap/[^/]+/configure_bashrc_tmux
+/hardening/oscap/stig(_gui)?/postfix_prevent_unrestricted_relay
+    rhel == 8
+
+# rule ordering issue - accounts_password_pam_retry is checked first and passes,
+# and a later enable_authselect remediation breaks it
+# - see https://github.com/OpenSCAP/openscap/issues/1880
+/hardening/.+/accounts_password_pam_retry
+    rhel >= 8
+
+# https://github.com/ComplianceAsCode/content/pull/10499
+# these are missing the required partitions, making the oscap Anaconda addon
+# error out during remediaton
+/hardening/anaconda/cis_(server|workstation)_l1
+    status == 'error' and note.startswith('RuntimeError: installation failed')
+
+# bz1828871, won't be fixed on rhel7
+# needs to be remediated more than once due to rule ordering issues
+/hardening/anaconda/[^/]+/postfix_network_listening_disabled
+    rhel == 7
+
+# bz1778661 abrt package
+/hardening/anaconda/e8/rpm_verify_(ownership|permissions)
+    rhel == 7
+
+# bz1825810 or maybe bz1929805
+# can be reproduced reliably both via anaconda and oscap CLI,
+# but apparently we don't really care about old releases
+/hardening/[^/]+/stig_gui/sysctl_net_ipv4_ip_forward
+    rhel == 7
+
+# TODO: something new? .. RHEL-8 on e8 and ism_o
+/hardening/oscap/[^/]+/package_rear_installed
+    rhel == 8
+
+# vim: syntax=python
