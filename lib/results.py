@@ -19,6 +19,7 @@ import requests
 from pathlib import Path
 
 import util
+import waive
 
 _log = logging.getLogger(__name__).debug
 
@@ -167,6 +168,8 @@ def report(status, name=None, note=None, logs=None, *, add_output=True):
         name = _sanitize_yaml_id(name)
     if note:
         note = util.make_printable(note)
+
+    status, name, note = waive.rewrite_result(status, name, note)
 
     if util.running_in_beaker():
         return report_beaker(status, name, note, logs)
