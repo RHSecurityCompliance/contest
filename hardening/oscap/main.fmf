@@ -97,6 +97,7 @@ extra-hardware: |
     extra-summary: /CoreOS/scap-security-guide/hardening/oscap/C2S
     extra-nitrate: TC#0615182
     id: dd5cf152-086f-475b-ac3b-4e0b7e1d4c6c
+    enabled: false
 
 /cis:
     environment+:
@@ -135,6 +136,7 @@ extra-hardware: |
     extra-summary: /CoreOS/scap-security-guide/hardening/oscap/cjis
     extra-nitrate: TC#0615195
     id: e17cea3b-c97a-48a9-a6fa-e2c079f1c8da
+    enabled: false
 
 /cui:
     environment+:
@@ -176,6 +178,7 @@ extra-hardware: |
     extra-summary: /CoreOS/scap-security-guide/hardening/oscap/ncp
     extra-nitrate: TC#0615200
     id: 8c093236-2529-481e-9c67-5763ed660544
+    enabled: false
 
 /ospp:
     environment+:
@@ -200,6 +203,7 @@ extra-hardware: |
     extra-summary: /CoreOS/scap-security-guide/hardening/oscap/rhelh-stig
     extra-nitrate: TC#0615203
     id: b4cb06e4-463e-4fc9-8d08-f72fd872010a
+    enabled: false
 
 /rhelh-vpp:
     environment+:
@@ -210,6 +214,7 @@ extra-hardware: |
     extra-summary: /CoreOS/scap-security-guide/hardening/oscap/rhelh-vpp
     extra-nitrate: TC#0615204
     id: 80c8033b-a568-455f-b236-6112b9cf8f59
+    enabled: false
 
 /rht-ccp:
     environment+:
@@ -220,6 +225,7 @@ extra-hardware: |
     extra-summary: /CoreOS/scap-security-guide/hardening/oscap/rht-ccp
     extra-nitrate: TC#0615205
     id: 91e1ff19-6720-4c58-80c6-57400106616c
+    enabled: false
 
 /standard:
     environment+:
@@ -230,6 +236,7 @@ extra-hardware: |
     extra-summary: /CoreOS/scap-security-guide/hardening/oscap/standard
     extra-nitrate: TC#0615206
     id: 9659aafa-7482-47bb-9c7a-cd9c9f3b2196
+    enabled: false
 
 /stig:
     environment+:

@@ -97,6 +97,7 @@ extra-hardware: |
     extra-summary: /CoreOS/scap-security-guide/hardening/anaconda/C2S
     extra-nitrate: TC#0615155
     id: c7c35b94-ce61-43d5-a784-c60730e152a1
+    enabled: false
 
 /cis:
     environment+:
@@ -135,6 +136,7 @@ extra-hardware: |
     extra-summary: /CoreOS/scap-security-guide/hardening/anaconda/cjis
     extra-nitrate: TC#0615168
     id: 35526efe-728a-47a1-b448-5f4c6e73bca3
+    enabled: false
 
 /cui:
     environment+:
@@ -176,6 +178,7 @@ extra-hardware: |
     extra-summary: /CoreOS/scap-security-guide/hardening/anaconda/ncp
     extra-nitrate: TC#0615173
     id: 2cec7079-dab0-4c3c-b6df-c077fdcd6bb4
+    enabled: false
 
 /ospp:
     environment+:
@@ -200,6 +203,7 @@ extra-hardware: |
     extra-summary: /CoreOS/scap-security-guide/hardening/anaconda/rhelh-stig
     extra-nitrate: TC#0615176
     id: 53d79015-f08e-4bb5-9792-3948897285d3
+    enabled: false
 
 /rhelh-vpp:
     environment+:
@@ -210,6 +214,7 @@ extra-hardware: |
     extra-summary: /CoreOS/scap-security-guide/hardening/anaconda/rhelh-vpp
     extra-nitrate: TC#0615177
     id: e9ead67f-d5b5-4423-98b1-0c5c073ef242
+    enabled: false
 
 /rht-ccp:
     environment+:
@@ -220,6 +225,7 @@ extra-hardware: |
     extra-summary: /CoreOS/scap-security-guide/hardening/anaconda/rht-ccp
     extra-nitrate: TC#0615178
     id: 2d58bbcb-835e-408a-8a8f-3e4c97fd579e
+    enabled: false
 
 /standard:
     environment+:
@@ -230,6 +236,7 @@ extra-hardware: |
     extra-summary: /CoreOS/scap-security-guide/hardening/anaconda/standard
     extra-nitrate: TC#0615179
     id: 4359e4ac-7359-47fc-a61f-4abbf390aacb
+    enabled: false
 
 /stig:
     environment+:
