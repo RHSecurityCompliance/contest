@@ -4,6 +4,29 @@ This is a repository of publicly-available tests used for testing
 [ComplianceAsCode/content](https://github.com/ComplianceAsCode/content/)
 on Red Hat Enterprise Linux.
 
+## Terminology
+
+- [FMF - Flexible Metadata Format](https://github.com/teemtee/fmf/), a test
+  metadata format used by TMT
+- [TMT - Test Management Tool](https://github.com/teemtee/tmt/), a framework
+  and a related CLI tool for running tests, see also
+  [user docs here](https://tmt.readthedocs.io/en/stable/) or
+  [Under The Hood](https://tmt.readthedocs.io/en/stable/guide.html#under-the-hood)
+  which explains the basic much better
+
+- "test" is a FMF object with a `test:` in its YAML definiton, ie.
+  `/hardening/oscap/stig`
+  - (In this case, one directory `/hardening/oscap` defines multiple tests,
+    all sharing the same source code, parametrized using environment variables
+    in `main.fmf`.)
+
+- "result" is a piece of data reported by a test, containing
+  - `name` - either a test name, or a test name with something appended to it,
+    ie. `/hardening/oscap/stig` or `/hardening/oscap/stig/some_rule_name/etc`
+  - `status` - one of `pass`, `fail`, `info`, `warn` or `error`
+  - `note` - additional freeform text details about the result
+  - `log` - a list of logs associated with the result
+
 ## Parameters
 
 (TODO: Probably document this on a better place.)
