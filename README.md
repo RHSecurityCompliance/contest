@@ -31,10 +31,6 @@ on Red Hat Enterprise Linux.
 
 (TODO: Probably document this on a better place.)
 
-- `CONTEST_SILENT`
-  - set to `1` to verbosely report only genuine oscap rule failures
-  - other results are unaffected (for now)
-
 - `CONTEST_DATASTREAMS`
   - alternate location for `/usr/share/xml/scap/ssg/content`
 - `CONTEST_PLAYBOOKS`
