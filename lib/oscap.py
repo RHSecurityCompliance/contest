@@ -1,4 +1,3 @@
-import os
 import sys
 import re
 import logging
@@ -72,26 +71,18 @@ def report_from_verbose(lines):
     Returns a number of truly failed rules.
     """
     total = failed = 0
-    silent = os.environ.get('CONTEST_SILENT')
 
     for rule, status, verbose_out in rules_from_verbose(lines):
         total += 1
         note = None
 
-        if status == 'pass':
-            if silent:
-                continue
-        elif status == 'error':
+        if status in ['pass', 'error']:
             pass
         elif status == 'fail':
             if has_no_remediation(rule):
-                if silent:
-                    continue
                 note = 'no remediation'
                 status = 'warn'
         elif status in ['notapplicable', 'notchecked', 'notselected', 'informational']:
-            if silent:
-                continue
             note = status
             status = 'info'
         else:
