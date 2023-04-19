@@ -78,39 +78,39 @@ def report_from_verbose(lines):
     total = failed = 0
     silent = os.environ.get('CONTEST_SILENT')
 
-    for rule, result, verbose_out in rules_from_verbose(lines):
+    for rule, status, verbose_out in rules_from_verbose(lines):
         total += 1
         note = None
 
-        if result == 'pass':
+        if status == 'pass':
             if silent:
                 continue
-        elif result == 'error':
+        elif status == 'error':
             pass
-        elif result == 'fail':
+        elif status == 'fail':
             if has_no_remediation(rule):
                 if silent:
                     continue
                 note = 'no remediation'
-                result = 'warn'
-        elif result in ['notapplicable', 'notchecked', 'notselected', 'informational']:
+                status = 'warn'
+        elif status in ['notapplicable', 'notchecked', 'notselected', 'informational']:
             if silent:
                 continue
-            note = result
-            result = 'info'
+            note = status
+            status = 'info'
         else:
-            note = result
-            result = 'error'
+            note = status
+            status = 'error'
 
-        if result in ['fail', 'error']:
+        if status in ['fail', 'error']:
             failed += 1
 
         if verbose_out:
             logfile = 'oscap.log.txt'  # txt to make browsers open it natively
             Path(logfile).write_text(verbose_out)
-            results.report(result, f'{rule}', note, [logfile])
+            results.report(status, f'{rule}', note, [logfile])
         else:
-            results.report(result, f'{rule}', note)
+            results.report(status, f'{rule}', note)
 
     if total == 0:
         raise RuntimeError("oscap returned no results")
