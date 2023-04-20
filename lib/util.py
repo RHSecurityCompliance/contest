@@ -14,8 +14,8 @@ def make_printable(obj):
         obj = obj.decode()
     elif not isinstance(obj, str):
         obj = str(obj)
-    obj = re.sub(r'\n', ' ', obj)
-    obj = re.sub(r'[^\w\-\+~\.,:;\?@#$%^&*\(\)<>\'"/ ]', '', obj, flags=re.A)
+    obj = re.sub(r'\n\r', ' ', obj)
+    obj = re.sub(r'''[^\w\-\+~\.,:;!\?@#$%^&*=\(\)<>{}\[\]'"`/\\| ]''', '', obj, flags=re.A)
     return obj.strip()
 
 
