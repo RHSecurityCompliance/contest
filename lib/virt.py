@@ -404,7 +404,7 @@ class Guest:
                 '--initrd-inject', ksfile, '--os-variant', 'rhel7-unknown',
                 '--extra-args', f'console=ttyS0 inst.ks=file:/{ksfile.name} '
                                 'systemd.journald.forward_to_console=1 '
-                                'inst.notmux inst.noninteractive',
+                                'inst.notmux inst.noninteractive inst.sshd',
                 '--noreboot',
             ]
 
