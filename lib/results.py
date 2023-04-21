@@ -57,7 +57,7 @@ def _sanitize_yaml_id(string):
     return re.sub(r'[^\w/ _-]', '', string, flags=re.A).strip()
 
 
-def report_tmt(status, name=None, note=None, logs=None):
+def report_tmt(status, name=None, note=None, logs=None, *, add_output=True):
     if not name:
         name = '/'  # https://github.com/teemtee/tmt/issues/1855
     else:
@@ -72,9 +72,13 @@ def report_tmt(status, name=None, note=None, logs=None):
 
     test_data = Path(os.environ['TMT_TEST_DATA'])
 
+    log_entries = []
+
+    if add_output and name == '/':
+        log_entries.append('../output.txt')
+
     # copy logs to tmt test data dir
     if logs:
-        log_entries = []
         for log in logs:
             log = Path(log)
             # put logs into a name-based subdir tree inside the data dir,
@@ -85,6 +89,8 @@ def report_tmt(status, name=None, note=None, logs=None):
             _log(f"copying log {log} to {dstfile}")
             shutil.copyfile(log, dstfile)
             log_entries.append(str(dstfile.relative_to(test_data)))
+
+    if log_entries:
         new_result['log'] = log_entries
 
     yaml_addition = _compose_results_yaml(new_result)
@@ -136,7 +142,7 @@ def report_plain(status, name=None, note=None, logs=None):
     _log(f'result: {name}:{status} ({note})')
 
 
-def report(status, name=None, note=None, logs=None):
+def report(status, name=None, note=None, logs=None, *, add_output=True):
     """
     Report a test result.
 
@@ -146,6 +152,10 @@ def report(status, name=None, note=None, logs=None):
 
     'logs' is a list of file paths (relative to CWD) to be copied
     or uploaded, and associated with the new result.
+
+    'add_output' specifies whether to add the test's own std* console
+    output, as captured by TMT, to the list of logs whenever 'name'
+    is empty.
     """
     if status not in _valid_statuses:
         raise SyntaxError(f"{status} is not a valid status")
@@ -160,6 +170,6 @@ def report(status, name=None, note=None, logs=None):
     if taskpath and taskpath.endswith('/distribution/wrapper/fmf'):
         return report_beaker(status, name, note, logs)
     elif 'TMT_TEST_DATA' in os.environ:
-        return report_tmt(status, name, note, logs)
+        return report_tmt(status, name, note, logs, add_output=add_output)
     else:
         return report_plain(status, name, note, logs)
