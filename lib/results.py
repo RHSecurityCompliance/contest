@@ -168,10 +168,9 @@ def report(status, name=None, note=None, logs=None, *, add_output=True):
     if note:
         note = util.make_printable(note)
 
-    taskpath = os.environ.get('RSTRNT_TASKPATH')
-    if taskpath and taskpath.endswith('/distribution/wrapper/fmf'):
+    if util.running_in_beaker():
         return report_beaker(status, name, note, logs)
-    elif 'TMT_TEST_DATA' in os.environ:
+    elif util.running_in_tmt():
         return report_tmt(status, name, note, logs, add_output=add_output)
     else:
         return report_plain(status, name, note, logs)
