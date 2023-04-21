@@ -70,6 +70,17 @@ shell, but Ansible remediation cannot do this.
 So we need a simple side-channel that can run `chage` **after** ansible-playbook
 finishes.
 
+## Debugging
+
+(TODO: probably move to its own document?)
+
+Anaconda-based remediation can be debugged on a virtual machine by issuing
+`virsh domifaddr contest` (where `contest` is the default VM name) to acquire
+an IP address of the guest (which gets assigned just before Anaconda launches)
+and doing `ssh root@that-ip-addr` from the host running the test itself (and
+hosting the VM).  
+There is no password for the Anaconda environment, so this will just log you in.
+
 ## License
 
 Unless specified otherwise, any content within this repository is distributed
