@@ -50,10 +50,10 @@ def rules_from_verbose(lines):
         # oscap xccdf eval --progress rule name and result
         match = re.match(r'^xccdf_org.ssgproject.content_rule_(.+):([a-z]+)$', line)
         if match:
-            yield (match.group(1), match.group(2), log)
-            log = ''
             sys.stdout.write(f'{line}\n')
             sys.stdout.flush()
+            yield (match.group(1), match.group(2), log)
+            log = ''
             continue
 
         # print out any unrelated warnings/errors
