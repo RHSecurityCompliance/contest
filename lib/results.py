@@ -15,7 +15,6 @@ import os
 import re
 import logging
 import shutil
-import textwrap
 import requests
 from pathlib import Path
 
@@ -58,6 +57,8 @@ def _sanitize_yaml_id(string):
 
 
 def report_tmt(status, name=None, note=None, logs=None, *, add_output=True):
+    report_plain(status, name, note, logs)
+
     if not name:
         name = '/'  # https://github.com/teemtee/tmt/issues/1855
     else:
@@ -86,7 +87,6 @@ def report_tmt(status, name=None, note=None, logs=None, *, add_output=True):
             dst = test_data / name[1:]
             dst.mkdir(parents=True, exist_ok=True)
             dstfile = dst / log.name
-            _log(f"copying log {log} to {dstfile}")
             shutil.copyfile(log, dstfile)
             log_entries.append(str(dstfile.relative_to(test_data)))
 
@@ -94,13 +94,14 @@ def report_tmt(status, name=None, note=None, logs=None, *, add_output=True):
         new_result['log'] = log_entries
 
     yaml_addition = _compose_results_yaml(new_result)
-    _log(f"appending to results:\n{textwrap.indent(yaml_addition.rstrip(), '  ')}")
 
     with open(test_data / RESULTS_FILE, 'a') as f:
         f.write(yaml_addition)
 
 
 def report_beaker(status, name=None, note=None, logs=None):
+    report_plain(status, name, note, logs)
+
     labctl = os.environ['LAB_CONTROLLER']
     taskid = os.environ['TASKID']
     recipeid = os.environ['RECIPEID']
@@ -123,7 +124,6 @@ def report_beaker(status, name=None, note=None, logs=None):
         'path': f'{status}: {name}' + (f' ({note})' if note else ''),
         'result': beaker_status,
     }
-    _log(f'result: {payload}')
     r = requests.post(url, data=payload)
     if r.status_code != 201:
         _log(f"reporting to {url} failed with {r.status_code}")
@@ -139,7 +139,9 @@ def report_beaker(status, name=None, note=None, logs=None):
 
 
 def report_plain(status, name=None, note=None, logs=None):
-    _log(f'result: {name}:{status} ({note})')
+    note = f' ({note})' if note else ''
+    logs = f' / {logs}' if logs else ''
+    _log(f'{status.upper()} {name}{note}{logs}')
 
 
 def report(status, name=None, note=None, logs=None, *, add_output=True):
