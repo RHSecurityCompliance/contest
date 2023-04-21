@@ -39,7 +39,7 @@ with g.booted():
 
     # scan the remediated system
     proc, lines = g.ssh_stream(f'oscap xccdf eval {verbose} --profile {profile} --progress '
-                               f'--report report.html {oscap.datastream} {redir}')
+                               f'--report report.html {oscap.DATASTREAM} {redir}')
     failed = oscap.report_from_verbose(lines)
     if proc.returncode not in [0,2]:
         raise RuntimeError("post-reboot oscap failed unexpectedly")

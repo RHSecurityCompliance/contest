@@ -28,7 +28,7 @@ if not g.can_be_snapshotted():
 
 with g.snapshotted():
     # remediate, reboot
-    g.ssh(f'oscap xccdf eval --profile {profile} --progress --remediate {oscap.datastream}')
+    g.ssh(f'oscap xccdf eval --profile {profile} --progress --remediate {oscap.DATASTREAM}')
     g.soft_reboot()
 
     # old RHEL-7 oscap mixes errors into --progress rule names without a newline
@@ -37,7 +37,7 @@ with g.snapshotted():
 
     # scan the remediated system
     proc, lines = g.ssh_stream(f'oscap xccdf eval {verbose} --profile {profile} --progress '
-                               f'--report report.html {oscap.datastream} {redir}')
+                               f'--report report.html {oscap.DATASTREAM} {redir}')
     failed = oscap.report_from_verbose(lines)
     if proc.returncode not in [0,2]:
         raise RuntimeError("post-reboot oscap failed unexpectedly")
