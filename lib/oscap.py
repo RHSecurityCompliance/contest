@@ -67,10 +67,8 @@ def report_from_verbose(lines):
     """
     Report results from oscap output.
     See rules_from_verbose() for requirements on the output.
-
-    Returns a number of truly failed rules.
     """
-    total = failed = 0
+    total = 0
 
     for rule, status, verbose_out in rules_from_verbose(lines):
         total += 1
@@ -89,9 +87,6 @@ def report_from_verbose(lines):
             note = status
             status = 'error'
 
-        if status in ['fail', 'error']:
-            failed += 1
-
         if verbose_out:
             logfile = 'oscap.log.txt'  # txt to make browsers open it natively
             Path(logfile).write_text(verbose_out)
@@ -102,6 +97,4 @@ def report_from_verbose(lines):
     if total == 0:
         raise RuntimeError("oscap returned no results")
 
-    _log(f"all done: {failed} failed, {total} total results")
-
-    return failed
+    _log(f"all done: {total} total results")
