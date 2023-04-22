@@ -204,7 +204,7 @@ def report_and_exit(note=None, logs=None):
     the test.
     """
     if failed_count > 0:
-        report('info', note=note, logs=logs)
+        report('fail', note=note, logs=logs)
         sys.exit(2)
     else:
         report('pass', note=note, logs=logs)
