@@ -47,14 +47,10 @@ with g.booted():
     # scan the remediated system
     proc, lines = g.ssh_stream(f'oscap xccdf eval {verbose} --profile {profile} --progress '
                                f'--report report.html /root/openscap_data/contest-ds.xml {redir}')
-    failed = oscap.report_from_verbose(lines)
+    oscap.report_from_verbose(lines)
     if proc.returncode not in [0,2]:
         raise RuntimeError("post-reboot oscap failed unexpectedly")
 
     g.copy_from('report.html')
 
-if failed:
-    results.report('info', logs=['report.html'])
-    sys.exit(2)
-else:
-    results.report('pass', logs=['report.html'])
+results.report_and_exit(logs=['report.html'])
