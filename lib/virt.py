@@ -91,7 +91,6 @@ import base64
 import xml.etree.ElementTree as ET
 from datetime import datetime, timedelta
 from pathlib import Path
-#from . import util
 
 import util
 import versions
@@ -202,7 +201,6 @@ def setup_host():
         'libvirt-daemon-driver-qemu',
         'libvirt-daemon-driver-storage-core',
         'libvirt-daemon-driver-network',
-        #'libvirt-daemon-config-network',
         'firewalld',  # needed for virtual networks to work (?)
         'qemu-kvm',
         'libvirt-client',
@@ -790,7 +788,6 @@ def virsh(*virsh_args, **run_args):
 
 
 # TODO:
-# - move to util.
 # - resolve metalinks via requests.get() + parse using elementtree XML,
 #   look for first <url protocol="http*", as they are sorted by preference already
 # - strip the tailing /repodata/repomd.xml
