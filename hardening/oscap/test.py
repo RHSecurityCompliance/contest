@@ -22,10 +22,7 @@ else:
 if not g.can_be_snapshotted():
     ks = virt.Kickstart()
     if prof.endswith('_gui'):
-        if versions.rhel < 8:
-            ks.add_packages(['@^Server with GUI'])
-        else:
-            ks.add_packages(['@Server with GUI'])
+        ks.add_package_group('Server with GUI')
     g.install(kickstart=ks)
     g.prepare_for_snapshot()
 
