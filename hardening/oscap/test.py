@@ -2,7 +2,6 @@
 
 import os
 import sys
-#from logging import info as log
 
 import results
 import virt
@@ -31,21 +30,15 @@ if not g.can_be_snapshotted():
     g.prepare_for_snapshot()
 
 with g.snapshotted():
-    #
     # remediate, reboot
-    #
-
     g.ssh(f'oscap xccdf eval --profile {prof} --progress --remediate {oscap.datastream}')
     g.soft_reboot()
 
-    #
-    # scan the remediated system
-    #
-
-    # old oscap mixes errors into --progress rule names without a newline,
+    # old RHEL-7 oscap mixes errors into --progress rule names without a newline
     verbose = '--verbose INFO' if versions.oscap >= 1.3 else ''
     redir = '2>&1' if versions.oscap >= 1.3 else ''
 
+    # scan the remediated system
     proc, lines = g.ssh_stream(f'oscap xccdf eval {verbose} --profile {prof} --progress '
                                f'--report report.html {oscap.datastream} {redir}')
     failed = oscap.report_from_verbose(lines)

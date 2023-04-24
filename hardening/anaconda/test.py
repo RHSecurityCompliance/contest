@@ -18,8 +18,8 @@ g = virt.Guest()
 
 ks = virt.Kickstart()
 
+# remediate using Anaconda's oscap addon
 oscap_conf = {
-    #'content-type': 'rpm',
     'content-type': 'scap-security-guide',
     'profile': prof,
 }
@@ -36,10 +36,11 @@ if prof.endswith('_gui'):
 g.install(kickstart=ks)
 
 with g.booted():
-    # old oscap mixes errors into --progress rule names without a newline,
+    # old RHEL-7 oscap mixes errors into --progress rule names without a newline
     verbose = '--verbose INFO' if versions.oscap >= 1.3 else ''
     redir = '2>&1' if versions.oscap >= 1.3 else ''
 
+    # scan the remediated system
     proc, lines = g.ssh_stream(f'oscap xccdf eval {verbose} --profile {prof} --progress '
                                f'--report report.html {oscap.datastream} {redir}')
     failed = oscap.report_from_verbose(lines)
