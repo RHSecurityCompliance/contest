@@ -11,24 +11,24 @@ import versions
 
 virt.setup_host()
 
-prof = os.environ['PROFILE']
-prof = f'xccdf_org.ssgproject.content_profile_{prof}'
+profile = os.environ['PROFILE']
+profile = f'xccdf_org.ssgproject.content_profile_{profile}'
 
-if prof.endswith('_gui'):
+if profile.endswith('_gui'):
     g = virt.Guest('gui_with_oscap')
 else:
     g = virt.Guest('minimal_with_oscap')
 
 if not g.can_be_snapshotted():
     ks = virt.Kickstart()
-    if prof.endswith('_gui'):
+    if profile.endswith('_gui'):
         ks.add_package_group('Server with GUI')
     g.install(kickstart=ks)
     g.prepare_for_snapshot()
 
 with g.snapshotted():
     # remediate, reboot
-    g.ssh(f'oscap xccdf eval --profile {prof} --progress --remediate {oscap.datastream}')
+    g.ssh(f'oscap xccdf eval --profile {profile} --progress --remediate {oscap.datastream}')
     g.soft_reboot()
 
     # old RHEL-7 oscap mixes errors into --progress rule names without a newline
@@ -36,7 +36,7 @@ with g.snapshotted():
     redir = '2>&1' if versions.oscap >= 1.3 else ''
 
     # scan the remediated system
-    proc, lines = g.ssh_stream(f'oscap xccdf eval {verbose} --profile {prof} --progress '
+    proc, lines = g.ssh_stream(f'oscap xccdf eval {verbose} --profile {profile} --progress '
                                f'--report report.html {oscap.datastream} {redir}')
     failed = oscap.report_from_verbose(lines)
     if proc.returncode not in [0,2]:
