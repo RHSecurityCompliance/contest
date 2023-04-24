@@ -28,10 +28,7 @@ ks.add_oscap(oscap_conf)
 ks.add_post('chage -d 99999 root')
 
 if prof.endswith('_gui'):
-    if versions.rhel < 8:
-        ks.add_packages(['@^Server with GUI'])
-    else:
-        ks.add_packages(['@Server with GUI'])
+    ks.add_package_group('Server with GUI')
 
 g.install(kickstart=ks)
 

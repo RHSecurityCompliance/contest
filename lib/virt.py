@@ -283,6 +283,12 @@ class Kickstart:
     def add_packages(self, pkgs):
         self.packages += pkgs
 
+    def add_package_group(self, group):
+        if versions.rhel < 8:
+            self.packages.append(f'@^{group}')
+        else:
+            self.packages.append(f'@{group}')
+
     def add_repo(self, name, url, install=True):
         new = f'repo --name={name} --baseurl={url}'
         new += ' --install' if install else ''
