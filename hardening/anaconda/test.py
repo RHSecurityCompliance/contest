@@ -11,8 +11,8 @@ import versions
 
 virt.setup_host()
 
-prof = os.environ['PROFILE']
-prof = f'xccdf_org.ssgproject.content_profile_{prof}'
+profile = os.environ['PROFILE']
+profile = f'xccdf_org.ssgproject.content_profile_{profile}'
 
 g = virt.Guest()
 
@@ -21,13 +21,13 @@ ks = virt.Kickstart()
 # remediate using Anaconda's oscap addon
 oscap_conf = {
     'content-type': 'scap-security-guide',
-    'profile': prof,
+    'profile': profile,
 }
 ks.add_oscap(oscap_conf)
 
 ks.add_post('chage -d 99999 root')
 
-if prof.endswith('_gui'):
+if profile.endswith('_gui'):
     ks.add_package_group('Server with GUI')
 
 g.install(kickstart=ks)
@@ -38,7 +38,7 @@ with g.booted():
     redir = '2>&1' if versions.oscap >= 1.3 else ''
 
     # scan the remediated system
-    proc, lines = g.ssh_stream(f'oscap xccdf eval {verbose} --profile {prof} --progress '
+    proc, lines = g.ssh_stream(f'oscap xccdf eval {verbose} --profile {profile} --progress '
                                f'--report report.html {oscap.datastream} {redir}')
     failed = oscap.report_from_verbose(lines)
     if proc.returncode not in [0,2]:
