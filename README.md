@@ -46,6 +46,8 @@ on Red Hat Enterprise Linux.
 
 (TODO: Find a better place for this?)
 
+### Virtual machines and logging in
+
 The VM-using `/hardening` tests do two hacks to allow login after hardening:
 
 - `-oPermitRootLogin=yes` in `OPTIONS` of `/etc/sysconfig/sshd`
@@ -76,6 +78,16 @@ for `oscap`, as we can simply do `oscap xccdf eval ... ; chage ...` in the same
 shell, but Ansible remediation cannot do this.  
 So we need a simple side-channel that can run `chage` **after** ansible-playbook
 finishes.
+
+### Using upstream/shipped content kickstarts
+
+These have some unfortunate metadata, such as
+
+- hardcoded network interface names
+- unnecessarily big partition sizes
+- oscap Anaconda addon configuration using `scap-security-guide`
+
+At least the first two are hopefully temporary, until TODO:PR-here is resolved.
 
 ## Debugging
 

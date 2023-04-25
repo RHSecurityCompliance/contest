@@ -1,8 +1,12 @@
 import os
 import re
+import logging
+import shutil
 import inspect
 import subprocess
+import multiprocessing
 from pathlib import Path
+from http.server import HTTPServer, SimpleHTTPRequestHandler
 
 import versions
 
@@ -81,3 +85,42 @@ def running_in_tmt():
     Return True if running under TMT.
     """
     return bool(os.environ.get('TMT_TEST_DATA'))
+
+
+class _BackgroundHTTPServerHandler(SimpleHTTPRequestHandler):
+    def do_GET(self):
+        mapping = self.server.file_mapping
+        if self.path not in mapping:
+            self.send_response(404)
+            self.end_headers()
+            return
+        with open(mapping[self.path], 'rb') as f:
+            self.send_response(200)
+            self.end_headers()
+            shutil.copyfileobj(f, self.wfile)
+
+    def log_message(self, form, *args):
+        self.server.log(form % args)
+
+
+class BackgroundHTTPServer(HTTPServer):
+    def __init__(self, host, port):
+        self.log = logging.getLogger(f'{__name__}.{self.__class__.__name__}').debug
+        self.file_mapping = {}
+        super().__init__((host, port), _BackgroundHTTPServerHandler)
+
+    def add_file(self, fspath, urlpath=None):
+        if not urlpath:
+            urlpath = Path(fspath).name
+        self.file_mapping[f'/{urlpath}'] = fspath
+
+    def __enter__(self):
+        self.log(f"starting with: {self.file_mapping}")
+        proc = multiprocessing.Process(target=self.serve_forever)
+        self.process = proc
+        proc.start()
+
+    def __exit__(self, exc_type, exc_value, traceback):
+        self.log("ending")
+        self.process.terminate()
+        self.process.join()

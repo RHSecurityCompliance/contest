@@ -106,6 +106,7 @@ GUEST_IMG_DIR = '/var/lib/libvirt/images'
 # don't rely on 'default' being sane, define a new STP-less network
 NETWORK_NAME = 'contest-net'
 NETWORK_PREFIX = '192.168.121'
+NETWORK_HOST = f'{NETWORK_PREFIX}.1'
 
 KICKSTART_TEMPLATE = fr'''
 lang en_US.UTF-8
@@ -133,24 +134,6 @@ part /srv --size=100
 part /opt --size=100
 part /tmp --size=1000
 part /usr --size=8000
-
-%post
-# RHEL-7 takes ~30 seconds to login with UseDNS=yes
-echo 'OPTIONS=-oPermitRootLogin=yes -oUseDNS=no' >> /etc/sysconfig/sshd
-%end
-
-%post
-# allow qemu-guest-agent to execute code
-sed '/^BLACKLIST_RPC=/s/=.*/=/' -i /etc/sysconfig/qemu-ga  # RHEL-7/8
-sed '/^BLOCK_RPCS=/s/=.*/=/' -i /etc/sysconfig/qemu-ga     # RHEL-9+
-semanage permissive -a virt_qemu_ga_t
-%end
-
-%post --erroronfail
-# would have been done by subscription-manager
-rpm --import /etc/pki/rpm-gpg/RPM-GPG-KEY-redhat-release
-dnf -y makecache || yum -y makecache
-%end
 '''
 
 KICKSTART_PACKAGES = [
@@ -223,7 +206,7 @@ def setup_host():
           <name>{NETWORK_NAME}</name>
           <forward mode='nat'/>
           <bridge stp='off' delay='0'/>
-          <ip address='{NETWORK_PREFIX}.1' netmask='255.255.255.0'>
+          <ip address='{NETWORK_HOST}' netmask='255.255.255.0'>
             <dhcp>
               <range start='{NETWORK_PREFIX}.2' end='{NETWORK_PREFIX}.254'>
                 <lease expiry='0' unit='hours'/>
@@ -247,9 +230,9 @@ def setup_host():
 #
 
 class Kickstart:
-    def __init__(self, kickstart=KICKSTART_TEMPLATE, packages=KICKSTART_PACKAGES):
+    def __init__(self, template=KICKSTART_TEMPLATE, packages=KICKSTART_PACKAGES):
         self.log = logging.getLogger(f'{__name__}.{self.__class__.__name__}').debug
-        self.ks = kickstart
+        self.ks = template
         self.appends = []
         self.packages = packages
 
@@ -311,6 +294,28 @@ class Kickstart:
             EOF
             chmod 0600 {homedir}/.ssh/authorized_keys
             chown {owner} -R {homedir}/.ssh''')
+        self.add_post(script)
+
+    def allow_root_login(self):
+        """
+        Hack sshd cmdline to allow root login,
+        also hack UseDNS on RHEL-7, otherwise login takes ~30sec.
+        """
+        self.add_post('echo "OPTIONS=-oPermitRootLogin=yes -oUseDNS=no" >> /etc/sysconfig/sshd')
+
+    def allow_guest_agent(self):
+        """Allow qemu-guest-agent to execute code."""
+        script = textwrap.dedent('''\
+            sed '/^BLACKLIST_RPC=/s/=.*/=/' -i /etc/sysconfig/qemu-ga  # RHEL-7/8
+            sed '/^BLOCK_RPCS=/s/=.*/=/' -i /etc/sysconfig/qemu-ga     # RHEL-9+
+            semanage permissive -a virt_qemu_ga_t''')
+        self.add_post(script)
+
+    def cache_dnf(self):
+        """(Would have been done by subscription-manager.)"""
+        script = textwrap.dedent('''\
+            rpm --import /etc/pki/rpm-gpg/RPM-GPG-KEY-redhat-release
+            { dnf -y makecache || yum -y makecache; } 2>/dev/null''')
         self.add_post(script)
 
 
@@ -379,6 +384,9 @@ class Guest:
 
         if not ks_verbatim:
             kickstart.add_host_repos()
+            kickstart.allow_root_login()
+            kickstart.allow_guest_agent()
+            kickstart.cache_dnf()
 
             ssh_keygen(self.ssh_keyfile_path)
             with open(f'{self.ssh_keyfile_path}.pub') as f:
@@ -817,6 +825,51 @@ def ssh_keygen(path):
     Generate private/public keys prefixed by 'path'.
     """
     subprocess.run(['ssh-keygen', '-N', '', '-f', path], stdout=DEVNULL, check=True)
+
+
+def translate_ssg_kickstart(profile):
+    """
+    Parse (and tweak) a kickstart shipped with the upstream content
+    into class Kickstart instance.
+    """
+    ks_text = ''
+    with open(util.get_kickstart(profile)) as f:
+        for line in f:
+            line = line.rstrip('\n')
+
+            # use our own password
+            if re.match('^rootpw ', line):
+                line = f'rootpw {GUEST_LOGIN_PASS}'
+
+            # don't hardcode interface name
+            elif re.match('^network ', line):
+                line = re.sub(' --device[= ][^ ]+', '', line)
+
+            # shrink some unnecessary partitions
+            elif re.match('^logvol / ', line):
+                line = re.sub('--size=[^ ]+', '--size=4000', line)
+            elif re.match('^logvol /var/log/audit ', line):
+                line = re.sub('--size=[^ ]+', '--size=500', line)
+
+            ks_text += f'{line}\n'
+
+    # remove %addon oscap, we'll add our own
+    ks_text = re.sub(r'\n%addon .+?_oscap\n.+?\n%end[^\n]*', '', ks_text, flags=re.DOTALL)
+
+    # remove %packages, until it becomes consistent everywhere
+    # TODO: upstream content PR + add it to README
+    ks_text = re.sub(r'\n%packages.*?\n%end[^\n]*', '', ks_text, flags=re.DOTALL)
+
+    return Kickstart(template=ks_text)
+
+
+def firewalld_allow_port(port):
+    """Allow guests to access the host on a specific TCP port."""
+    # just try everything we reasonably can and ignore any errors,
+    # RHEL-7 needs the rule in 'public', RHEL-9 in 'libvirt',
+    # RHEL-8 in Beaker doesn't seem to have firewalld running
+    for zone in ['public', 'libvirt']:
+        subprocess.run(['firewall-cmd', f'--zone={zone}',  f'--add-port={port}/tcp'])
 
 
 #
