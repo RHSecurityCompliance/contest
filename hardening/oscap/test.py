@@ -3,6 +3,7 @@
 import os
 import sys
 
+import util
 import results
 import virt
 import oscap
@@ -27,8 +28,11 @@ if not g.can_be_snapshotted():
     g.prepare_for_snapshot()
 
 with g.snapshotted():
+    # copy our datastream to the guest
+    g.copy_to(util.get_datastream(), 'contest-ds.xml')
+
     # remediate, reboot
-    g.ssh(f'oscap xccdf eval --profile {profile} --progress --remediate {oscap.DATASTREAM}')
+    g.ssh(f'oscap xccdf eval --profile {profile} --progress --remediate contest-ds.xml')
     g.soft_reboot()
 
     # old RHEL-7 oscap mixes errors into --progress rule names without a newline
@@ -37,7 +41,7 @@ with g.snapshotted():
 
     # scan the remediated system
     proc, lines = g.ssh_stream(f'oscap xccdf eval {verbose} --profile {profile} --progress '
-                               f'--report report.html {oscap.DATASTREAM} {redir}')
+                               f'--report report.html contest-ds.xml {redir}')
     failed = oscap.report_from_verbose(lines)
     if proc.returncode not in [0,2]:
         raise RuntimeError("post-reboot oscap failed unexpectedly")

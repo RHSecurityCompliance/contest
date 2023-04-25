@@ -35,6 +35,13 @@ on Red Hat Enterprise Linux.
   - set to `1` to verbosely report only genuine oscap rule failures
   - other results are unaffected (for now)
 
+- `CONTEST_DATASTREAMS`
+  - alternate location for `/usr/share/xml/scap/ssg/content`
+- `CONTEST_PLAYBOOKS`
+  - alternate location for `/usr/share/scap-security-guide/ansible`
+- `CONTEST_KICKSTARTS`
+  - alternate location for `/usr/share/scap-security-guide/kickstart`
+
 ## Workarounds
 
 (TODO: Find a better place for this?)
