@@ -8,16 +8,6 @@ extra-hardware: |
     keyvalue = HVM=1
     hostrequire = memory>=4800
 
-/anssi_bp28_enhanced:
-    environment+:
-        PROFILE: anssi_bp28_enhanced
-    adjust:
-        when: distro < rhel-8
-        enabled: false
-    extra-summary: /CoreOS/scap-security-guide/hardening/oscap/anssi_bp28_enhanced
-    extra-nitrate: TC#0615183
-    id: d7da0b03-a520-4077-9721-b4a516370e40
-
 /anssi_bp28_high:
     environment+:
         PROFILE: anssi_bp28_high
@@ -28,36 +18,6 @@ extra-hardware: |
     extra-nitrate: TC#0615184
     id: f505892f-12ab-49de-bfa0-59e3fe9fe5c4
 
-/anssi_bp28_intermediary:
-    environment+:
-        PROFILE: anssi_bp28_intermediary
-    adjust:
-        when: distro < rhel-8
-        enabled: false
-    extra-summary: /CoreOS/scap-security-guide/hardening/oscap/anssi_bp28_intermediary
-    extra-nitrate: TC#0615185
-    id: a93199cf-dea3-4715-a87b-ffde76d9dd97
-
-/anssi_bp28_minimal:
-    environment+:
-        PROFILE: anssi_bp28_minimal
-    adjust:
-        when: distro < rhel-8
-        enabled: false
-    extra-summary: /CoreOS/scap-security-guide/hardening/oscap/anssi_bp28_minimal
-    extra-nitrate: TC#0615186
-    id: cb6173f7-49d5-4f06-97be-ac804f5ed458
-
-/anssi_nt28_enhanced:
-    environment+:
-        PROFILE: anssi_nt28_enhanced
-    adjust:
-        when: distro > rhel-7
-        enabled: false
-    extra-summary: /CoreOS/scap-security-guide/hardening/oscap/anssi_nt28_enhanced
-    extra-nitrate: TC#0615187
-    id: 331b5394-05d7-449f-8392-5888d00dadf1
-
 /anssi_nt28_high:
     environment+:
         PROFILE: anssi_nt28_high
@@ -67,37 +27,6 @@ extra-hardware: |
     extra-summary: /CoreOS/scap-security-guide/hardening/oscap/anssi_nt28_high
     extra-nitrate: TC#0615188
     id: 72343ccf-47c6-4d0f-83e2-1026951c370c
-
-/anssi_nt28_intermediary:
-    environment+:
-        PROFILE: anssi_nt28_intermediary
-    adjust:
-        when: distro > rhel-7
-        enabled: false
-    extra-summary: /CoreOS/scap-security-guide/hardening/oscap/anssi_nt28_intermediary
-    extra-nitrate: TC#0615189
-    id: 53d8ba13-2fff-475e-a043-dda495c22a4c
-
-/anssi_nt28_minimal:
-    environment+:
-        PROFILE: anssi_nt28_minimal
-    adjust:
-        when: distro > rhel-7
-        enabled: false
-    extra-summary: /CoreOS/scap-security-guide/hardening/oscap/anssi_nt28_minimal
-    extra-nitrate: TC#0615190
-    id: efc66467-2d06-4a9e-8e7f-4522ed45f01b
-
-/C2S:
-    environment+:
-        PROFILE: C2S
-    adjust:
-        when: distro > rhel-7
-        enabled: false
-    extra-summary: /CoreOS/scap-security-guide/hardening/oscap/C2S
-    extra-nitrate: TC#0615182
-    id: dd5cf152-086f-475b-ac3b-4e0b7e1d4c6c
-    enabled: false
 
 /cis:
     environment+:
@@ -126,17 +55,6 @@ extra-hardware: |
     extra-summary: /CoreOS/scap-security-guide/hardening/oscap/cis_workstation_l2
     extra-nitrate: TC#0615194
     id: a984cb43-71a8-4aea-b965-5c29a6c4018a
-
-/cjis:
-    environment+:
-        PROFILE: cjis
-    adjust:
-        when: distro > rhel-7
-        enabled: false
-    extra-summary: /CoreOS/scap-security-guide/hardening/oscap/cjis
-    extra-nitrate: TC#0615195
-    id: e17cea3b-c97a-48a9-a6fa-e2c079f1c8da
-    enabled: false
 
 /cui:
     environment+:
@@ -169,17 +87,6 @@ extra-hardware: |
     extra-nitrate: TC#0615199
     id: 71ec5f37-5061-490a-a845-7eea86ad0c16
 
-/ncp:
-    environment+:
-        PROFILE: ncp
-    adjust:
-        when: distro > rhel-7
-        enabled: false
-    extra-summary: /CoreOS/scap-security-guide/hardening/oscap/ncp
-    extra-nitrate: TC#0615200
-    id: 8c093236-2529-481e-9c67-5763ed660544
-    enabled: false
-
 /ospp:
     environment+:
         PROFILE: ospp
@@ -193,50 +100,6 @@ extra-hardware: |
     extra-summary: /CoreOS/scap-security-guide/hardening/oscap/pci-dss
     extra-nitrate: TC#0615202
     id: 339cb66e-0b63-4266-802a-3972b6cf36ff
-
-/rhelh-stig:
-    environment+:
-        PROFILE: rhelh-stig
-    adjust:
-        when: distro > rhel-7
-        enabled: false
-    extra-summary: /CoreOS/scap-security-guide/hardening/oscap/rhelh-stig
-    extra-nitrate: TC#0615203
-    id: b4cb06e4-463e-4fc9-8d08-f72fd872010a
-    enabled: false
-
-/rhelh-vpp:
-    environment+:
-        PROFILE: rhelh-vpp
-    adjust:
-        when: distro > rhel-7
-        enabled: false
-    extra-summary: /CoreOS/scap-security-guide/hardening/oscap/rhelh-vpp
-    extra-nitrate: TC#0615204
-    id: 80c8033b-a568-455f-b236-6112b9cf8f59
-    enabled: false
-
-/rht-ccp:
-    environment+:
-        PROFILE: rht-ccp
-    adjust:
-        when: distro > rhel-7
-        enabled: false
-    extra-summary: /CoreOS/scap-security-guide/hardening/oscap/rht-ccp
-    extra-nitrate: TC#0615205
-    id: 91e1ff19-6720-4c58-80c6-57400106616c
-    enabled: false
-
-/standard:
-    environment+:
-        PROFILE: standard
-    adjust:
-        when: distro > rhel-7
-        enabled: false
-    extra-summary: /CoreOS/scap-security-guide/hardening/oscap/standard
-    extra-nitrate: TC#0615206
-    id: 9659aafa-7482-47bb-9c7a-cd9c9f3b2196
-    enabled: false
 
 /stig:
     environment+:
