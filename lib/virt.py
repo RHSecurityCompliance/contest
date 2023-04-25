@@ -155,7 +155,6 @@ dnf -y makecache || yum -y makecache
 
 KICKSTART_PACKAGES = [
     'openscap-scanner',
-    'scap-security-guide',
     # because of semanage permissive -a virt_qemu_ga_t
     'policycoreutils-python' if versions.rhel < 8 else 'policycoreutils-python-utils',
 ]

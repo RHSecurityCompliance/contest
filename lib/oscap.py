@@ -6,17 +6,14 @@ from pathlib import Path
 
 import results
 import util
-from versions import rhel
 
 _log = logging.getLogger(__name__).debug
 _no_remediation_cache = None
 
-DATASTREAM = f'/usr/share/xml/scap/ssg/content/ssg-rhel{rhel.major}-ds.xml'
-
 
 def _rules_without_remediation():
     # TODO: parse this info from datastream XML
-    cmd = ['oscap', 'xccdf', 'generate', '--profile', '(all)', 'fix', DATASTREAM]
+    cmd = ['oscap', 'xccdf', 'generate', '--profile', '(all)', 'fix', util.get_datastream()]
     proc, lines = util.proc_stream(cmd, check=True)
     for line in lines:
         match = re.search('FIX FOR THIS RULE \'xccdf_org.ssgproject.content_rule_(.+)\' IS MISSING!', line)  # noqa

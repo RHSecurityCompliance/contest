@@ -4,10 +4,39 @@ import inspect
 import subprocess
 from pathlib import Path
 
+import versions
+
+
 # directory with all these modules, and potentially more files
 # - useful until TMT can parametrize 'environment:' with variable expressions,
 #   so we could add the libdir to PATH and PYTHONPATH
 libdir = Path(inspect.getfile(inspect.currentframe())).parent
+
+# content locations
+DATASTREAMS = Path(os.getenv('CONTEST_DATASTREAMS', '/usr/share/xml/scap/ssg/content'))
+PLAYBOOKS = Path(os.getenv('CONTEST_PLAYBOOKS', '/usr/share/scap-security-guide/ansible'))
+KICKSTARTS = Path(os.getenv('CONTEST_KICKSTARTS', '/usr/share/scap-security-guide/kickstart'))
+
+
+def get_datastream():
+    if versions.rhel:
+        return DATASTREAMS / f'ssg-rhel{versions.rhel.major}-ds.xml'
+    else:
+        raise RuntimeError("cannot find datastream for non-RHEL")
+
+
+def get_playbook(profile):
+    if versions.rhel:
+        return PLAYBOOKS / f'rhel{versions.rhel.major}-playbook-{profile}.yml'
+    else:
+        raise RuntimeError("cannot find playbook for non-RHEL")
+
+
+def get_kickstart(profile):
+    if versions.rhel:
+        return KICKSTARTS / f'ssg-rhel{versions.rhel.major}-{profile}-ks.cfg'
+    else:
+        raise RuntimeError("cannot find kickstart for non-RHEL")
 
 
 def make_printable(obj):
