@@ -34,7 +34,6 @@ oscap_conf = {
 ks.add_oscap(oscap_conf)
 
 # host a HTTP server with a datastream and let the guest download it
-virt.firewalld_allow_port(8088)
 srv = util.BackgroundHTTPServer(virt.NETWORK_HOST, 8088)
 srv.add_file(util.get_datastream(), 'contest-ds.xml')
 with srv:
