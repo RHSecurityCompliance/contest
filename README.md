@@ -84,10 +84,10 @@ finishes.
 These have some unfortunate metadata, such as
 
 - hardcoded network interface names
-- unnecessarily big partition sizes
+- unnecessarily large `/var/log/audit` size
 - oscap Anaconda addon configuration using `scap-security-guide`
 
-At least the first two are hopefully temporary, until TODO:PR-here is resolved.
+which are removed by `translate_ssg_kickstart()` [in virt.py](lib/virt.py).
 
 ## Debugging
 

@@ -841,24 +841,26 @@ def translate_ssg_kickstart(profile):
             if re.match('^rootpw ', line):
                 line = f'rootpw {GUEST_LOGIN_PASS}'
 
-            # don't hardcode interface name
+            # don't hardcode interface name because we use network installs,
+            # which fill in the booted-from device automatically
             elif re.match('^network ', line):
                 line = re.sub(' --device[= ][^ ]+', '', line)
 
-            # shrink some unnecessary partitions
-            elif re.match('^logvol / ', line):
-                line = re.sub('--size=[^ ]+', '--size=4000', line)
-            elif re.match('^logvol /var/log/audit ', line):
-                line = re.sub('--size=[^ ]+', '--size=500', line)
+            # STIG uses 10 GB audit because of DISA requiring large partitions,
+            # checked by 'auditd_audispd_configure_sufficiently_large_partition'
+            # (see https://github.com/ComplianceAsCode/content/pull/7141)
+            # - reducing this to 512 makes the rest of the partitions align
+            #   perfectly at 20448 MB, same as other kickstarts
+            elif re.match('^logvol /var/log/audit .*--size=10240', line):
+                line = re.sub('--size=[^ ]+', '--size=512', line)
 
             ks_text += f'{line}\n'
 
     # remove %addon oscap, we'll add our own
     ks_text = re.sub(r'\n%addon .+?_oscap\n.+?\n%end[^\n]*', '', ks_text, flags=re.DOTALL)
 
-    # remove %packages, until it becomes consistent everywhere
-    # TODO: upstream content PR + add it to README
-    ks_text = re.sub(r'\n%packages.*?\n%end[^\n]*', '', ks_text, flags=re.DOTALL)
+    # leave original %packages - Anaconda can handle multiple %packages sections
+    # just fine (when we later add ours during installation)
 
     return Kickstart(template=ks_text)
 
