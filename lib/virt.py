@@ -863,15 +863,6 @@ def translate_ssg_kickstart(profile):
     return Kickstart(template=ks_text)
 
 
-def firewalld_allow_port(port):
-    """Allow guests to access the host on a specific TCP port."""
-    # just try everything we reasonably can and ignore any errors,
-    # RHEL-7 needs the rule in 'public', RHEL-9 in 'libvirt',
-    # RHEL-8 in Beaker doesn't seem to have firewalld running
-    for zone in ['public', 'libvirt']:
-        subprocess.run(['firewall-cmd', f'--zone={zone}',  f'--add-port={port}/tcp'])
-
-
 #
 # libvirt domain (guest) XML operations
 #
