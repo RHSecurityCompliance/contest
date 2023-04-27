@@ -836,7 +836,10 @@ def translate_ssg_kickstart(profile):
     into class Kickstart instance.
     """
     ks_text = ''
-    with open(util.get_kickstart(profile)) as f:
+    ks_file = util.get_kickstart(profile)
+    _log(f"using orig file: {ks_file}")
+
+    with open(ks_file) as f:
         for line in f:
             line = line.rstrip('\n')
 
