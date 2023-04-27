@@ -59,6 +59,9 @@ extra-hardware: |
 /cui:
     environment+:
         PROFILE: cui
+    adjust:
+        when: distro < rhel-8
+        enabled: false
     extra-summary: /CoreOS/scap-security-guide/hardening/anaconda/cui
     extra-nitrate: TC#0615169
     id: dcc000cc-f65a-47fd-bce2-d3ed4a1d5f4f
@@ -97,6 +100,9 @@ extra-hardware: |
 /pci-dss:
     environment+:
         PROFILE: pci-dss
+    adjust:
+        when: distro < rhel-8
+        enabled: false
     extra-summary: /CoreOS/scap-security-guide/hardening/anaconda/pci-dss
     extra-nitrate: TC#0615175
     id: f0f0151a-888c-4efa-aef8-90d0a94499c1
