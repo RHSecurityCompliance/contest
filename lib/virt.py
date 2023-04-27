@@ -819,8 +819,9 @@ def host_dnf_repos():
         c.read(repofile)
         for section in c.sections():
             if all(x in c[section] for x in ['name', 'baseurl', 'enabled']):
-                if c[section]['enabled'] == '1':
-                    yield (section, c[section]['baseurl'])
+                baseurl = c[section]['baseurl']
+                if c[section]['enabled'] == '1' and not baseurl.startswith('file://'):
+                    yield (section, baseurl)
 
 
 def ssh_keygen(path):
