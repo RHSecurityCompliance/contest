@@ -42,6 +42,40 @@ on Red Hat Enterprise Linux.
 - `CONTEST_KICKSTARTS`
   - alternate location for `/usr/share/scap-security-guide/kickstart`
 
+## Testing content from source
+
+Normally, you would run this test suite via `tmt` as ie.
+
+```
+tmt \
+    -c distro=rhel-9.2 \
+    run -vvva \
+        plans -n /plans/default \
+        provision -h ... \
+        discover -h fmf -t '/hardening/anaconda/stig$' \
+        report -h html
+```
+
+and this simply uses content shipped in whatever distro you specify to
+`provision`, or whatever distro is already installed if you use
+`provision -h connect ...`.
+
+To build content from source, just run the `/plans/upstream` plan instead,
+and **optionally** give it parameters to test your specific code - ie. prior
+or during a pull request submission:
+
+```
+tmt \
+    -c distro=rhel-9.2 \
+    run -vvva \
+        -e CONTENT_URL=https://github.com/someuser/your-content.git \
+        -e CONTENT_BRANCH=small_fixes \
+            plans -n /plans/upstream \
+            provision -h ... \
+            discover -h fmf -t '/hardening/anaconda/stig$' \
+            report -h html
+```
+
 ## Workarounds
 
 (TODO: Find a better place for this?)
