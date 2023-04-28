@@ -27,6 +27,7 @@ _log = logging.getLogger(__name__).debug
 _valid_statuses = ['pass', 'fail', 'warn', 'error', 'info']
 
 failed_count = 0
+errored_count = 0
 
 RESULTS_FILE = 'results.yaml'
 
@@ -185,9 +186,12 @@ def report(status, name=None, note=None, logs=None, *, add_output=True):
     status, name, note = waive.rewrite_result(status, name, note)
 
     # failure even after waiving
-    if status in ['fail', 'error']:
+    if status == 'fail':
         global failed_count
         failed_count += 1
+    elif status == 'error':
+        global errored_count
+        errored_count += 1
 
     if util.running_in_beaker():
         return report_beaker(status, name, note, logs)
@@ -203,9 +207,15 @@ def report_and_exit(note=None, logs=None):
     on whether there were any failures reported during execution of
     the test.
     """
-    if failed_count > 0:
+    # only failures, no errors --> fail
+    if failed_count > 0 and errored_count == 0:
         report('fail', note=note, logs=logs)
         sys.exit(2)
+    # any errors anywhere --> error
+    elif errored_count > 0:
+        report('error', note=note, logs=logs)
+        sys.exit(1)
+    # no errors, no fails --> pass
     else:
         report('pass', note=note, logs=logs)
         sys.exit(0)
