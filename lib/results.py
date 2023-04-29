@@ -154,6 +154,8 @@ def report_beaker(status, name=None, note=None, logs=None):
 
 
 def report_plain(status, name=None, note=None, logs=None):
+    if not name:
+        name = '/'
     note = f' ({note})' if note else ''
     logs = f' / {logs}' if logs else ''
     _log(f'{status.upper()} {name}{note}{logs}')
