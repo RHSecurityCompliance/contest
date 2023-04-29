@@ -364,7 +364,8 @@ class Guest:
         """
         self.log(f"installing guest {self.name}")
 
-        self._remove_previous(self.name)
+        # remove any previously installed guest
+        self.wipe()
 
         # location (install URL) not given, try using first one found amongst host
         # repository URLs that has Anaconda stage2 image
@@ -679,25 +680,24 @@ class Guest:
             completed.check_returncode()
         return completed
 
-    @classmethod
-    def _remove_previous(cls, name):
+    def wipe(self):
         """
-        Remove all previous data and metadata for a domain 'name'.
+        Remove all previous data and metadata of a domain.
 
-        Useful to clean up an unclean state from a previous use of Guest().
+        Useful to clean up an unclean state from a previous use of Guest(),
+        or just to remove any leftovers after using a one-time guest.
         """
-        inst = cls(name)
-        inst.destroy()
-        inst.undefine(incl_storage=True)
+        self.destroy()
+        self.undefine(incl_storage=True)
         files = [
-            inst.ssh_keyfile_path, f'{inst.ssh_keyfile_path}.pub',
-            inst.snapshot_path, inst.state_file_path, inst.snapshot_ready_path,
+            self.ssh_keyfile_path, f'{self.ssh_keyfile_path}.pub',
+            self.snapshot_path, self.state_file_path, self.snapshot_ready_path,
         ]
         for f in files:
             if os.path.exists(f):
                 os.remove(f)
         # RHEL-7 specific, see domifaddr()
-        ipaddr = Path(GUEST_IMG_DIR) / f'{name}.ipaddr'
+        ipaddr = Path(GUEST_IMG_DIR) / f'{self.name}.ipaddr'
         if ipaddr.exists():
             ipaddr.unlink()
 
