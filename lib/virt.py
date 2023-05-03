@@ -201,8 +201,10 @@ def setup_host():
         # free up some disk space
         subprocess.run([dnf, 'clean', 'packages'], check=True)
 
-    _log("enabling libvirtd")
-    subprocess.run(['systemctl', 'enable', '--now', 'libvirtd'], check=True)
+    ret = subprocess.run(['systemctl', 'is-active', '--quiet', 'libvirtd'])
+    if ret.returncode != 0:
+        _log("starting libvirtd")
+        subprocess.run(['systemctl', 'start', 'libvirtd'], check=True)
 
     net_xml = textwrap.dedent(f'''\
         <network>
