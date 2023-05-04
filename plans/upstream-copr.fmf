@@ -1,0 +1,44 @@
+summary: Test against a fresh COPR build of upstream content
+description: >
+    Note that this plan is just for convenience when running tests manually via
+    the TMT CLI and should not be used in production.
+
+    For proper upstream CI on Github, use packit-as-a-service to build RPMs
+    for the testing.
+
+    For proper downstream testing, use wow --brew-build, or the
+        /distribution/install/brew-build
+    internal Beaker task, with its parameters (documented in runtest.sh).
+
+discover:
+    how: fmf
+execute:
+    how: tmt
+
+adjust+:
+    - prepare+:
+          - how: shell
+            name: Prepare COPR repository with content
+            script: |
+                # can't use rpm $releasever because it's 7Server on RHEL-7
+                major=$(. /etc/os-release && echo "${VERSION_ID%%.*}")
+                cat > /etc/yum.repos.d/contest-copr.repo <<EOF
+                [contest-copr]
+                name=contest-copr
+                baseurl=https://download.copr.fedorainfracloud.org/results/jjaburek/ssg-nightly/rhel-$major-x86_64/
+                gpgkey=https://download.copr.fedorainfracloud.org/results/jjaburek/ssg-nightly/pubkey.gpg
+                enabled=1
+                EOF
+          - how: shell
+            name: Install scap-security-guide from COPR
+            script: |
+                if command -v dnf >/dev/null; then
+                    # install/upgrade thanks to --best
+                    dnf -y --refresh --best install scap-security-guide
+                else
+                    # yum has no --refresh
+                    yum clean all
+                    # yum upgrades on install by default
+                    yum -y install scap-security-guide
+                fi
+      when: true
