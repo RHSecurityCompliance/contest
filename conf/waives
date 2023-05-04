@@ -36,13 +36,24 @@
     rhel == 7
 
 # bz1825810 or maybe bz1929805
-# can be reproduced reliably both via anaconda and oscap CLI,
+# can be reproduced mostly reliably (95%) both via anaconda and oscap CLI,
 # but apparently we don't really care about old releases
 /hardening/[^/]+/stig_gui/sysctl_net_ipv4_ip_forward
-    rhel == 7
+    Match(rhel == 7, sometimes=True)
+
+# https://github.com/ComplianceAsCode/content/issues/10424
+/hardening/anaconda/[^/]+/service_nftables_disabled
+    ssg >= '0.1.68'
+
+# caused by us not caring whether the VM has it installed,
+# - TODO: why can't the remediation install it? -- it will probably fail
+#   for customers too
+/hardening/oscap/[^/]+/package_scap-security-guide_installed
+    ssg >= '0.1.68'
 
 # TODO: something new? .. RHEL-8 on e8 and ism_o
+#  - seems to not happen on latest 8.9 nightlies ??
 /hardening/oscap/[^/]+/package_rear_installed
-    rhel == 8
+    Match(rhel == 8, sometimes=True)
 
 # vim: syntax=python
