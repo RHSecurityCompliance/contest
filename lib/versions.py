@@ -20,15 +20,18 @@ def _update_os_release():
 class _RpmVerCmp:
     # needs:
     #   self.__bool__
+    #   self._release_separator
     #   self.version
     #   self.release
 
     def compare(self, other):
         if not isinstance(other, str):
             other = str(other)
-        other_version, _, other_release = other.partition('-')
-        ours = (None, self.version, self.release)
+        other_version, _, other_release = other.partition(self._release_separator)
         theirs = (None, other_version, other_release if other_release else None)
+        # if 'theirs' is without release, omit it for 'ours' too
+        # to allow for things like <= '0.1.66'
+        ours = (None, self.version, self.release if other_release else None)
         return rpm.labelCompare(ours, theirs)
 
     def __lt__(self, other):
@@ -59,31 +62,25 @@ class _RpmVerCmp:
 class _Rhel(_RpmVerCmp):
     def __init__(self):
         _update_os_release()
-        self.version = _os_release['VERSION_ID']
-        self.release = None
-        self.major, self.minor = self._major_minor()
+        self._release_separator = '.'
+        v = _os_release['VERSION_ID'].split(self._release_separator)
+        if len(v) == 1:
+            self.version = v[0]
+            self.major = int(v[0])
+            self.release = self.minor = None
+        else:
+            self.version = v[0]
+            self.release = v[1]
+            self.major = int(v[0])
+            self.minor = int(v[1])
 
     def __bool__(self):
         return _os_release['ID'] == 'rhel'
 
-    def compare(self, other):
-        # if one number is given, treat it as a RHEL major version
-        if isinstance(other, int):
-            return self.major - other
-        else:
-            return super().compare(other)
-
-    @staticmethod
-    def _major_minor():
-        v = _os_release['VERSION_ID'].split('.')
-        if len(v) == 1:
-            return (int(v[0]), None)
-        else:
-            return (int(v[0]), int(v[1]))
-
 
 class _Rpm(_RpmVerCmp):
     def __init__(self, name):
+        self._release_separator = '-'
         ts = rpm.TransactionSet()
         mi = ts.dbMatch('name', name)
         try:
