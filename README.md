@@ -31,14 +31,11 @@ on Red Hat Enterprise Linux.
 
 (TODO: Probably document this on a better place.)
 
-- `CONTEST_DATASTREAMS`
-  - alternate location for `/usr/share/xml/scap/ssg/content`
-- `CONTEST_PLAYBOOKS`
-  - alternate location for `/usr/share/scap-security-guide/ansible`
-- `CONTEST_KICKSTARTS`
-  - alternate location for `/usr/share/scap-security-guide/kickstart`
+## Testing latest upstream content
 
-## Testing content from source
+Note that as the
+[relevant TMT plan says in its description](plans/upstream-copr.fmf),
+this is just a convenience feature, it shouldn't be relied upon.
 
 Normally, you would run this test suite via `tmt` as ie.
 
@@ -56,21 +53,9 @@ and this simply uses content shipped in whatever distro you specify to
 `provision`, or whatever distro is already installed if you use
 `provision -h connect ...`.
 
-To build content from source, just run the `/plans/upstream` plan instead,
-and **optionally** give it parameters to test your specific code - ie. prior
-or during a pull request submission:
-
-```
-tmt \
-    -c distro=rhel-9.2 \
-    run -vvva \
-        -e CONTENT_URL=https://github.com/someuser/your-content.git \
-        -e CONTENT_BRANCH=small_fixes \
-            plans -n /plans/upstream \
-            provision -h ... \
-            discover -h fmf -t '/hardening/anaconda/stig$' \
-            report -h html
-```
+To install latest available upstream content as an RPM (built cca 15 minutes
+after every push/merge to the upstream content repository), simply specify
+the `/plans/upstream-copr` TMT plan instead of `/plans/default`.
 
 ## Waiving failed results
 
