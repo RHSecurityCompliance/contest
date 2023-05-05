@@ -1,0 +1,83 @@
+environment+:
+    USE_SERVER_WITH_GUI: 1
+duration: 2h
+
+/anssi_bp28_high:
+    environment+:
+        PROFILE: anssi_bp28_high
+    adjust:
+        when: distro < rhel-8
+        enabled: false
+    extra-summary: /CoreOS/scap-security-guide/hardening/anaconda/with-gui/anssi_bp28_high
+
+/anssi_nt28_high:
+    environment+:
+        PROFILE: anssi_nt28_high
+    adjust:
+        when: distro > rhel-7
+        enabled: false
+    extra-summary: /CoreOS/scap-security-guide/hardening/anaconda/with-gui/anssi_nt28_high
+
+/cis:
+    environment+:
+        PROFILE: cis
+    extra-summary: /CoreOS/scap-security-guide/hardening/anaconda/with-gui/cis
+
+/cis_server_l1:
+    environment+:
+        PROFILE: cis_server_l1
+    extra-summary: /CoreOS/scap-security-guide/hardening/anaconda/with-gui/cis_server_l1
+
+/cis_workstation_l1:
+    environment+:
+        PROFILE: cis_workstation_l1
+    extra-summary: /CoreOS/scap-security-guide/hardening/anaconda/with-gui/cis_workstation_l1
+
+/cis_workstation_l2:
+    environment+:
+        PROFILE: cis_workstation_l2
+    extra-summary: /CoreOS/scap-security-guide/hardening/anaconda/with-gui/cis_workstation_l2
+
+/cui:
+    environment+:
+        PROFILE: cui
+    adjust:
+        when: distro < rhel-8
+        enabled: false
+    extra-summary: /CoreOS/scap-security-guide/hardening/anaconda/with-gui/cui
+
+/e8:
+    environment+:
+        PROFILE: e8
+    extra-summary: /CoreOS/scap-security-guide/hardening/anaconda/with-gui/e8
+
+/hipaa:
+    environment+:
+        PROFILE: hipaa
+    extra-summary: /CoreOS/scap-security-guide/hardening/anaconda/with-gui/hipaa
+
+/ism_o:
+    environment+:
+        PROFILE: ism_o
+    adjust:
+        when: distro < rhel-8
+        enabled: false
+    extra-summary: /CoreOS/scap-security-guide/hardening/anaconda/with-gui/ism_o
+
+/ospp:
+    environment+:
+        PROFILE: ospp
+    extra-summary: /CoreOS/scap-security-guide/hardening/anaconda/with-gui/ospp
+
+/pci-dss:
+    environment+:
+        PROFILE: pci-dss
+    adjust:
+        when: distro < rhel-8
+        enabled: false
+    extra-summary: /CoreOS/scap-security-guide/hardening/anaconda/with-gui/pci-dss
+
+/stig_gui:
+    environment+:
+        PROFILE: stig_gui
+    extra-summary: /CoreOS/scap-security-guide/hardening/anaconda/with-gui/stig_gui

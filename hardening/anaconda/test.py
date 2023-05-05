@@ -22,7 +22,7 @@ profile = f'xccdf_org.ssgproject.content_profile_{profile}'
 
 ks.add_post('chage -d 99999 root')
 
-if profile.endswith('_gui'):
+if os.environ.get('USE_SERVER_WITH_GUI'):
     ks.add_package_group('Server with GUI')
 
 oscap_conf = {
