@@ -113,10 +113,3 @@ extra-hardware: |
     extra-summary: /CoreOS/scap-security-guide/hardening/anaconda/stig
     extra-nitrate: TC#0615180
     id: 156ae132-5eac-4063-8189-7bd2fdd32e21
-
-/stig_gui:
-    environment+:
-        PROFILE: stig_gui
-    extra-summary: /CoreOS/scap-security-guide/hardening/anaconda/stig_gui
-    extra-nitrate: TC#0615181
-    id: 21b4d2f5-36fb-469f-8de9-d2c7a0eb0f92

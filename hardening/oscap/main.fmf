@@ -107,10 +107,3 @@ extra-hardware: |
     extra-summary: /CoreOS/scap-security-guide/hardening/oscap/stig
     extra-nitrate: TC#0615207
     id: 90d8c69c-4dea-404f-9158-2b2923e929c3
-
-/stig_gui:
-    environment+:
-        PROFILE: stig_gui
-    extra-summary: /CoreOS/scap-security-guide/hardening/oscap/stig_gui
-    extra-nitrate: TC#0615208
-    id: c50a0633-b112-43dd-bb70-8d99da62294f

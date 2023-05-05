@@ -14,14 +14,16 @@ virt.setup_host()
 profile = os.environ['PROFILE']
 profile = f'xccdf_org.ssgproject.content_profile_{profile}'
 
-if profile.endswith('_gui'):
+use_gui = os.environ.get('USE_SERVER_WITH_GUI')
+
+if use_gui:
     g = virt.Guest('gui_with_oscap')
 else:
     g = virt.Guest('minimal_with_oscap')
 
 if not g.can_be_snapshotted():
     ks = virt.Kickstart()
-    if profile.endswith('_gui'):
+    if use_gui:
         ks.add_package_group('Server with GUI')
     g.install(kickstart=ks)
     g.prepare_for_snapshot()
