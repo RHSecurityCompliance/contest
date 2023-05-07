@@ -1,0 +1,7 @@
+summary: Default plan (simple for now)
+discover:
+    how: fmf
+    test:
+        - /hardening/anaconda/ospp
+execute:
+    how: tmt

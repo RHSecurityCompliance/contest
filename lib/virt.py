@@ -402,12 +402,13 @@ class Guest:
         disk_path = f'{GUEST_IMG_DIR}/{self.name}.img'
         disk_format = 'raw'
 
+        virsh('capabilities')
         with kickstart.to_tmpfile() as ksfile:
             virt_install = [
                 'pseudotty', 'virt-install',
                 # unreleased RHEL tends to have higher-than-released memory use due to
                 # the install process not yet being optimized to fit minimum reqs
-                '--name', self.name, '--vcpus', '2', '--memory', '3000',
+                '--name', self.name, '--vcpus', '2', '--memory', '3000', '-d',
                 '--disk', f'path={disk_path},size=20,format={disk_format},cache=unsafe',
                 '--network', f'network={NETWORK_NAME}',
                 '--location', location,
@@ -418,7 +419,7 @@ class Guest:
                 '--extra-args', f'console=ttyS0 inst.ks=file:/{ksfile.name} '
                                 'systemd.journald.forward_to_console=1 '
                                 'inst.notmux inst.noninteractive inst.sshd',
-                '--noreboot',
+                '--noreboot', '--virt-type', 'kvm',
             ]
 
             self.log(f"calling {virt_install}")
