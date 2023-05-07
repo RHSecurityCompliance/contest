@@ -421,6 +421,7 @@ class Guest:
                 '--noreboot',
             ]
 
+            self.log(f"calling {virt_install}")
             executable = util.libdir / 'pseudotty'
             proc = subprocess.Popen(virt_install, stdout=PIPE, executable=executable)
             fail_exprs = [re.compile(x) for x in INSTALL_FAILURES]
