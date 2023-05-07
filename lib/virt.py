@@ -373,6 +373,7 @@ class Guest:
         disk_path = f'{GUEST_IMG_DIR}/{self.name}.img'
         disk_format = 'raw'
 
+        virsh('capabilities')
         cpus = os.cpu_count() or 1
         with kickstart.to_tmpfile() as ksfile:
             virt_install = [
@@ -391,7 +392,7 @@ class Guest:
                 '--extra-args', f'console=ttyS0 inst.ks=file:/{ksfile.name} '
                                 'systemd.journald.forward_to_console=1 '
                                 'inst.notmux inst.noninteractive inst.sshd',
-                '--noreboot',
+                '--noreboot', '--virt-type', 'kvm',
             ]
 
             util.log(f"calling {virt_install}")
