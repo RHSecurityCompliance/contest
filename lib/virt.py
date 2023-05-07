@@ -448,7 +448,8 @@ class Guest:
             virsh('start', self.name, check=True)
 
     def destroy(self):
-        if guest_domstate(self.name) == 'running':
+        state = guest_domstate(self.name)
+        if state and state != 'shut off':
             virsh('destroy', self.name, check=True)
 
     def shutdown(self):
