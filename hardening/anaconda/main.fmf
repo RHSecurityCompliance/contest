@@ -12,8 +12,9 @@ extra-hardware: |
     environment+:
         PROFILE: anssi_bp28_high
     adjust:
-        when: distro < rhel-8
+        when: distro == rhel-7
         enabled: false
+        because: RHEL-7 has anssi_nt28_high instead
     extra-summary: /CoreOS/scap-security-guide/hardening/anaconda/anssi_bp28_high
     extra-nitrate: TC#0615157
     id: fa9bafe4-ec23-4f9e-8f20-277b32c3bcb3
@@ -22,8 +23,9 @@ extra-hardware: |
     environment+:
         PROFILE: anssi_nt28_high
     adjust:
-        when: distro > rhel-7
+        when: distro >= rhel-8
         enabled: false
+        because: RHEL-8 and newer have anssi_bp28_high instead
     extra-summary: /CoreOS/scap-security-guide/hardening/anaconda/anssi_nt28_high
     extra-nitrate: TC#0615161
     id: c30492f5-a24e-4b88-a566-b75cc3485855
@@ -60,8 +62,9 @@ extra-hardware: |
     environment+:
         PROFILE: cui
     adjust:
-        when: distro < rhel-8
+        when: distro == rhel-7
         enabled: false
+        because: CUI doesn't have a kickstart on RHEL-7
     extra-summary: /CoreOS/scap-security-guide/hardening/anaconda/cui
     extra-nitrate: TC#0615169
     id: dcc000cc-f65a-47fd-bce2-d3ed4a1d5f4f
@@ -84,8 +87,9 @@ extra-hardware: |
     environment+:
         PROFILE: ism_o
     adjust:
-        when: distro < rhel-8
+        when: distro == rhel-7
         enabled: false
+        because: doesn't exist on RHEL-7
     extra-summary: /CoreOS/scap-security-guide/hardening/anaconda/ism_o
     extra-nitrate: TC#0615172
     id: 0d9c11fb-da88-4a94-8a35-3247287b4fc5
@@ -101,8 +105,12 @@ extra-hardware: |
     environment+:
         PROFILE: pci-dss
     adjust:
-        when: distro < rhel-8
+        when: distro == rhel-7
         enabled: false
+        because: >
+            RHEL-7 kickstart has a non-standard name and we decided that
+            it is too close to EOL to introduce a hacky logic specifically
+            for this case
     extra-summary: /CoreOS/scap-security-guide/hardening/anaconda/pci-dss
     extra-nitrate: TC#0615175
     id: f0f0151a-888c-4efa-aef8-90d0a94499c1
@@ -113,3 +121,11 @@ extra-hardware: |
     extra-summary: /CoreOS/scap-security-guide/hardening/anaconda/stig
     extra-nitrate: TC#0615180
     id: 156ae132-5eac-4063-8189-7bd2fdd32e21
+
+/stig_gui:
+    environment+:
+        PROFILE: stig_gui
+    adjust:
+        enabled: false
+        because: not supported without GUI, use stig instead
+    extra-summary: /CoreOS/scap-security-guide/hardening/anaconda/stig_gui
