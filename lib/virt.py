@@ -92,8 +92,7 @@ import xml.etree.ElementTree as ET
 from datetime import datetime, timedelta
 from pathlib import Path
 
-import util
-import versions
+from . import util, versions
 
 _log = logging.getLogger(__name__).debug
 

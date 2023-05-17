@@ -19,8 +19,7 @@ import shutil
 import requests
 from pathlib import Path
 
-import util
-import waive
+from . import util, waive
 
 _log = logging.getLogger(__name__).debug
 

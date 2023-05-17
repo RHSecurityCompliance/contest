@@ -3,8 +3,7 @@ import re
 import logging
 from pathlib import Path
 
-import results
-import util
+from . import util, results
 
 _log = logging.getLogger(__name__).debug
 _no_remediation_cache = None

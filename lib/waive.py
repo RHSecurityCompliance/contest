@@ -8,8 +8,7 @@ import re
 import textwrap
 from pathlib import Path
 
-import util
-import versions
+from . import util, versions
 
 _sections_cache = None
 

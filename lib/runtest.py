@@ -6,8 +6,7 @@ import runpy
 import signal
 from pathlib import Path
 
-import util
-import results
+from . import util, results
 
 
 # handle test duration on our own, don't rely on TMT -
