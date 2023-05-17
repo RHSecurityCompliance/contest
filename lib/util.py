@@ -10,6 +10,7 @@ from http.server import HTTPServer, SimpleHTTPRequestHandler
 
 from . import versions
 
+_log = logging.getLogger(__name__).debug
 
 # directory with all these modules, and potentially more files
 # - useful until TMT can parametrize 'environment:' with variable expressions,
@@ -120,15 +121,15 @@ class BackgroundHTTPServer(HTTPServer):
         self.log(f"starting with: {self.file_mapping}")
         # allow the target port on the firewall
         if shutil.which('firewall-cmd'):
-            res = subprocess.run(
+            res = subprocess_run(
                 ['firewall-cmd', '--state'], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
             if res.returncode == 0:
-                res = subprocess.run(
+                res = subprocess_run(
                     ['firewall-cmd', '--get-zones'], stdout=subprocess.PIPE,
                     universal_newlines=True, check=True)
                 self.firewalld_zones = res.stdout.strip().split(' ')
                 for zone in self.firewalld_zones:
-                    subprocess.run(
+                    subprocess_run(
                         ['firewall-cmd', f'--zone={zone}', f'--add-port={self.listen_port}/tcp'],
                         stdout=subprocess.DEVNULL, check=True)
         proc = multiprocessing.Process(target=self.serve_forever)
@@ -141,6 +142,14 @@ class BackgroundHTTPServer(HTTPServer):
         self.process.join()
         # remove allow rules from the firewall
         for zone in self.firewalld_zones:
-            subprocess.run(
+            subprocess_run(
                 ['firewall-cmd', f'--zone={zone}', f'--remove-port={self.listen_port}/tcp'],
                 stdout=subprocess.DEVNULL, check=True)
+
+
+def subprocess_run(*popenargs, **kwargs):
+    """
+    A simple wrapper for the real subprocess.run() that logs the command used.
+    """
+    _log(popenargs)
+    return subprocess.run(*popenargs, **kwargs)
