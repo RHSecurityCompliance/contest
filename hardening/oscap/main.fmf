@@ -12,8 +12,9 @@ extra-hardware: |
     environment+:
         PROFILE: anssi_bp28_high
     adjust:
-        when: distro < rhel-8
+        when: distro == rhel-7
         enabled: false
+        because: RHEL-7 has anssi_nt28_high instead
     extra-summary: /CoreOS/scap-security-guide/hardening/oscap/anssi_bp28_high
     extra-nitrate: TC#0615184
     id: f505892f-12ab-49de-bfa0-59e3fe9fe5c4
@@ -22,8 +23,9 @@ extra-hardware: |
     environment+:
         PROFILE: anssi_nt28_high
     adjust:
-        when: distro > rhel-7
+        when: distro >= rhel-8
         enabled: false
+        because: RHEL-8 and newer have anssi_bp28_high instead
     extra-summary: /CoreOS/scap-security-guide/hardening/oscap/anssi_nt28_high
     extra-nitrate: TC#0615188
     id: 72343ccf-47c6-4d0f-83e2-1026951c370c
@@ -81,8 +83,9 @@ extra-hardware: |
     environment+:
         PROFILE: ism_o
     adjust:
-        when: distro < rhel-8
+        when: distro == rhel-7
         enabled: false
+        because: doesn't exist on RHEL-7
     extra-summary: /CoreOS/scap-security-guide/hardening/oscap/ism_o
     extra-nitrate: TC#0615199
     id: 71ec5f37-5061-490a-a845-7eea86ad0c16
@@ -107,3 +110,11 @@ extra-hardware: |
     extra-summary: /CoreOS/scap-security-guide/hardening/oscap/stig
     extra-nitrate: TC#0615207
     id: 90d8c69c-4dea-404f-9158-2b2923e929c3
+
+/stig_gui:
+    environment+:
+        PROFILE: stig_gui
+    adjust:
+        enabled: false
+        because: not supported without GUI, use stig instead
+    extra-summary: /CoreOS/scap-security-guide/hardening/oscap/stig_gui
