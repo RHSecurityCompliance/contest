@@ -196,14 +196,14 @@ def setup_host():
     if ret.returncode != 0:
         _log("installing libvirt + qemu")
         cmd = [dnf, '-y', '--nogpgcheck', '--setopt=install_weak_deps=False', 'install']
-        subprocess.run(cmd + host_pkgs, check=True)
+        util.subprocess_run(cmd + host_pkgs, check=True)
         # free up some disk space
-        subprocess.run([dnf, 'clean', 'packages'], check=True)
+        util.subprocess_run([dnf, 'clean', 'packages'], check=True)
 
     ret = subprocess.run(['systemctl', 'is-active', '--quiet', 'libvirtd'])
     if ret.returncode != 0:
         _log("starting libvirtd")
-        subprocess.run(['systemctl', 'start', 'libvirtd'], check=True)
+        util.subprocess_run(['systemctl', 'start', 'libvirtd'], check=True)
 
     net_xml = textwrap.dedent(f'''\
         <network>
@@ -540,7 +540,7 @@ class Guest:
             '-b', self.orig_disk_path, '-F', self.orig_disk_format,
             self.snapshot_path
         ]
-        subprocess.run(cmd, check=True)
+        util.subprocess_run(cmd, check=True)
 
         virsh('restore', self.state_file_path, check=True)
 
@@ -583,7 +583,7 @@ class Guest:
                 self.log(f"shutdown timed out, destroying {self.name}")
                 self.destroy()
 
-    def _do_ssh(self, *cmd, func=subprocess.run, capture=False, **run_args):
+    def _do_ssh(self, *cmd, func=util.subprocess_run, capture=False, **run_args):
         if capture:
             run_args['stdout'] = PIPE
             run_args['stderr'] = PIPE
@@ -592,7 +592,6 @@ class Guest:
             '-o', 'StrictHostKeyChecking=no', '-o', 'UserKnownHostsFile=/dev/null',
             f'{GUEST_SSH_USER}@{self.ipaddr}', '--', *cmd
         ]
-        self.log(f"running ssh root@{self.ipaddr} {' '.join(cmd)}")
         return func(ssh_cmdline, **run_args)
 
     def ssh(self, *cmd, **kwargs):
@@ -608,7 +607,7 @@ class Guest:
             '-o', 'StrictHostKeyChecking=no', '-o', 'UserKnownHostsFile=/dev/null',
             *args
         ]
-        return subprocess.run(scp_cmdline, check=True)
+        return util.subprocess_run(scp_cmdline, check=True)
 
     def copy_from(self, remote_file, local_file=None):
         if not local_file:
@@ -831,7 +830,7 @@ def ssh_keygen(path):
     """
     Generate private/public keys prefixed by 'path'.
     """
-    subprocess.run(['ssh-keygen', '-N', '', '-f', path], stdout=DEVNULL, check=True)
+    util.subprocess_run(['ssh-keygen', '-N', '', '-f', path], stdout=DEVNULL, check=True)
 
 
 def translate_ssg_kickstart(profile):
