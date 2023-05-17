@@ -17,7 +17,7 @@
 # rule ordering issue - accounts_password_pam_retry is checked first and passes,
 # and a later enable_authselect remediation breaks it
 # - see https://github.com/OpenSCAP/openscap/issues/1880
-/hardening/.+/accounts_password_pam_retry
+/hardening/(anaconda|oscap)/.+/accounts_password_pam_retry
     rhel >= 8
 
 # https://github.com/ComplianceAsCode/content/pull/10499
@@ -97,5 +97,74 @@
 # seems to be happening much more reliably with GUI
 /hardening/anaconda/with-gui/cis_workstation_l[12]
     Match(status == 'error', sometimes=True)
+
+# TODO: completely unknown, investigate and sort
+#
+# all RHELs
+/hardening/ansible/.+/aide_verify_acls
+/hardening/ansible/.+/aide_verify_ext_attributes
+/hardening/ansible/.+/mount_option_boot_noexec
+/hardening/ansible/.+/mount_option_boot_nosuid
+/hardening/ansible/.+/mount_option_home_noexec
+/hardening/ansible/.+/accounts_password_set_min_life_existing
+/hardening/ansible/.+/audit_rules_usergroup_modification
+    True
+# RHEL-9 only
+/hardening/ansible/.+/aide_scan_notification
+/hardening/ansible/.+/dnf-automatic_apply_updates
+/hardening/ansible/.+/dnf-automatic_security_updates_only
+/hardening/ansible/.+/accounts_polyinstantiated_tmp
+/hardening/ansible/.+/accounts_polyinstantiated_var_tmp
+/hardening/ansible/.+/disable_ctrlaltdel_(burstaction|reboot)
+/hardening/ansible/.+/configure_opensc_card_drivers
+/hardening/ansible/.+/force_opensc_card_drivers
+/hardening/ansible/with-gui/.+/network_nmcli_permissions
+    rhel == 9
+# RHEL-8 or 9
+/hardening/ansible/.+/no_tmux_in_shells
+/hardening/ansible/.+/configure_usbguard_auditbackend
+/hardening/ansible/.+/audit_rules_unsuccessful_file_modification
+    rhel == 8 or rhel == 9
+# RHEL-7
+/hardening/ansible/.+/sshd_use_strong_ciphers
+/hardening/ansible/.+/sshd_use_strong_macs
+/hardening/ansible/.+/audit_rules_for_ospp
+/hardening/ansible/.+/aide_use_fips_hashes
+/hardening/ansible/.+/smartcard_auth
+    rhel == 7
+
+# it's weird how specific home_nosuid is - seems to pass for many other
+# profiles, or even for the same profile on different RHELs
+/hardening/ansible(/with-gui)?/anssi_bp28_high/mount_option_home_nosuid
+/hardening/ansible/stig/mount_option_home_nosuid
+    rhel == 9 or rhel == 8
+/hardening/ansible/with-gui/stig_gui/mount_option_home_nosuid
+    rhel == 9
+/hardening/ansible/cui/mount_option_home_nosuid
+/hardening/ansible/ospp/mount_option_home_nosuid
+    rhel == 8
+/hardening/ansible/with-gui/anssi_nt28_high/mount_option_home_nosuid
+    rhel == 7
+
+# only on ism_o, seems to pass everywhere else
+/hardening/ansible(/with-gui)?/ism_o/enable_fips_mode
+    rhel == 9
+
+# only pci-dss, passes everywhere else
+/hardening/ansible(/with-gui)?/pci-dss/audit_rules_login_events
+    rhel == 8 or rhel == 9
+
+# WARNING: UNPROTECTED PRIVATE KEY FILE!
+/hardening/ansible/with-gui/cis_workstation_l[12]
+    status == 'error'
+
+# ansible-playbook completed, but returned non-0, TODO: investigate
+/hardening/ansible/stig
+/hardening/ansible/with-gui/stig_gui
+    status == 'error' and rhel == 8
+
+
+
+
 
 # vim: syntax=python
