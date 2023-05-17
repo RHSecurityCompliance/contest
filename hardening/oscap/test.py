@@ -2,11 +2,7 @@
 
 import os
 
-import util
-import results
-import virt
-import oscap
-import versions
+from lib import util, results, virt, oscap, versions
 
 
 virt.setup_host()

@@ -1,8 +1,8 @@
 summary: Runs oscap remediation and scan inside VMs
-test: python3 -m runtest ./test.py
+test: python3 -m lib.runtest ./test.py
 result: custom
 environment+:
-    PYTHONPATH: ../../lib
+    PYTHONPATH: ../..
 duration: 1h
 extra-hardware: |
     keyvalue = HVM=1
