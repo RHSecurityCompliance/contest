@@ -60,6 +60,11 @@ def _sanitize_yaml_id(string):
 def report_tmt(status, name=None, note=None, logs=None, *, add_output=True):
     report_plain(status, name, note, logs)
 
+    # report these only in verbose mode
+    if status in ['pass', 'info'] and name:
+        if os.environ.get('CONTEST_VERBOSE') != '1':
+            return
+
     if not name:
         name = '/'  # https://github.com/teemtee/tmt/issues/1855
     else:
@@ -101,17 +106,12 @@ def report_tmt(status, name=None, note=None, logs=None, *, add_output=True):
 
 
 def report_beaker(status, name=None, note=None, logs=None):
-    # limit results reported directly to Beaker, because there is no way
-    # for us to post-process them, to remove "unimportant" results, like there
-    # is with TMT, so just pick some reasonable default of "fails only"
-    # - plus, this saves several minutes of slow Beaker reporting
-    #
-    # never skip name=None results (reports for the test itself) as these
-    # contain report.html attached
-    if status in ['pass', 'warn', 'info'] and name:
-        return
-
     report_plain(status, name, note, logs)
+
+    # report these only in verbose mode
+    if status in ['pass', 'warn', 'info'] and name:
+        if os.environ.get('CONTEST_VERBOSE') != '1':
+            return
 
     labctl = os.environ['LAB_CONTROLLER']
     taskid = os.environ['TASKID']

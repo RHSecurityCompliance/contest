@@ -29,7 +29,11 @@ on Red Hat Enterprise Linux.
 
 ## Parameters
 
-(TODO: Probably document this on a better place.)
+- `CONTEST_VERBOSE`
+  - Set to `1` to make Beaker/TMT report all results, incl. `pass`, `warn` and
+    `info`. These are suppressed by default to avoid huge result sets.  
+    This applies to sub-results (`/something` after a test name), results for
+    tests themselves (as seen by TMT) are always reported.
 
 ## Testing latest upstream content
 
