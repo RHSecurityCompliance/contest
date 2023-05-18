@@ -1,7 +1,6 @@
 import os
 import sys
 import re
-import logging
 import runpy
 import signal
 from pathlib import Path
@@ -55,10 +54,6 @@ def _setup_timeout_handling():
     signal.signal(signal.SIGALRM, _alarm_timed_out)
     signal.alarm(duration)
 
-
-logging.basicConfig(level=logging.DEBUG,
-                    format='%(asctime)s %(name)s:%(funcName)s:%(lineno)d: %(message)s',
-                    datefmt='%Y-%m-%d %H:%M:%S')
 
 if util.running_in_tmt():
     _setup_timeout_handling()

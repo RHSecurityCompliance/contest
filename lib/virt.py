@@ -75,7 +75,6 @@ Example using plain one-time-use guest:
 import os
 import sys
 import re
-import logging
 import socket
 import time
 import builtins
@@ -93,8 +92,6 @@ from datetime import datetime, timedelta
 from pathlib import Path
 
 from . import util, versions
-
-_log = logging.getLogger(__name__).debug
 
 GUEST_NAME = 'contest'
 GUEST_LOGIN_PASS = 'contest'
@@ -194,7 +191,7 @@ def setup_host():
     # is already installed
     ret = subprocess.run(['rpm', '--quiet', '-q'] + host_pkgs)
     if ret.returncode != 0:
-        _log("installing libvirt + qemu")
+        util.log("installing libvirt + qemu")
         cmd = [dnf, '-y', '--nogpgcheck', '--setopt=install_weak_deps=False', 'install']
         util.subprocess_run(cmd + host_pkgs, check=True)
         # free up some disk space
@@ -202,7 +199,6 @@ def setup_host():
 
     ret = subprocess.run(['systemctl', 'is-active', '--quiet', 'libvirtd'])
     if ret.returncode != 0:
-        _log("starting libvirtd")
         util.subprocess_run(['systemctl', 'start', 'libvirtd'], check=True)
 
     net_xml = textwrap.dedent(f'''\
@@ -220,7 +216,7 @@ def setup_host():
         </network>''')
     ret = virsh('net-info', NETWORK_NAME, stdout=DEVNULL, stderr=DEVNULL)
     if ret.returncode != 0:
-        _log(f"defining libvirt network: {NETWORK_NAME}")
+        util.log(f"defining libvirt network: {NETWORK_NAME}")
         with tempfile.NamedTemporaryFile(mode='w', suffix='.xml') as f:
             f.write(net_xml)
             f.flush()
@@ -235,7 +231,6 @@ def setup_host():
 
 class Kickstart:
     def __init__(self, template=KICKSTART_TEMPLATE, packages=KICKSTART_PACKAGES):
-        self.log = logging.getLogger(f'{__name__}.{self.__class__.__name__}').debug
         self.ks = template
         self.appends = []
         self.packages = packages
@@ -250,7 +245,7 @@ class Kickstart:
     @contextlib.contextmanager
     def to_tmpfile(self):
         final_ks = self._assemble_ks()
-        self.log(f"writing:\n{textwrap.indent(final_ks, '    ')}")
+        util.log(f"writing:\n{textwrap.indent(final_ks, '    ')}")
         with tempfile.NamedTemporaryFile(mode='w', suffix='.ks.cfg') as f:
             f.write(final_ks)
             f.flush()
@@ -337,7 +332,6 @@ class Guest:
     Tag-less guests cannot be shared across tests.
     """
     def __init__(self, tag=None, *, name=GUEST_NAME):
-        self.log = logging.getLogger(f'{__name__}.{self.__class__.__name__}').debug
         self.tag = tag
         self.name = name
         self.ipaddr = None
@@ -363,7 +357,7 @@ class Guest:
         repositories are added to it, and a new ssh keypair is generated, with
         the public key added to the kickstart.
         """
-        self.log(f"installing guest {self.name}")
+        util.log(f"installing guest {self.name}")
 
         # remove any previously installed guest
         self.wipe()
@@ -420,7 +414,7 @@ class Guest:
                 '--noreboot',
             ]
 
-            self.log(f"calling {virt_install}")
+            util.log(f"calling {virt_install}")
             executable = util.libdir / 'pseudotty'
             proc = subprocess.Popen(virt_install, stdout=PIPE, executable=executable)
             fail_exprs = [re.compile(x) for x in INSTALL_FAILURES]
@@ -465,7 +459,7 @@ class Guest:
         if fix_login:
             self.guest_agent_exec('/sbin/setenforce', '0', check=True)
             self.guest_agent_exec('/bin/chage', '-d', '99999', 'root', check=True)
-        self.log("rebooting using qemu-guest-agent")
+        util.log("rebooting using qemu-guest-agent")
         self.guest_agent_cmd('guest-shutdown', {'mode': 'reboot'}, blind=True)
         wait_for_ssh(self.ipaddr, to_shutdown=True)
         self.ipaddr = wait_for_ifaddr(self.name)
@@ -495,16 +489,16 @@ class Guest:
         self.start()
         ip = wait_for_ifaddr(self.name)
         wait_for_ssh(ip)
-        self.log("sleeping for 30sec for firstboot to settle")
+        util.log("sleeping for 30sec for firstboot to settle")
         time.sleep(30)
         # - disable for now, the ~200M saved RAM is not worth the ~2 minutes
-        #self.log(f"waiting for clean shutdown of {self.name}")
+        #util.log(f"waiting for clean shutdown of {self.name}")
         #self.shutdown()  # clean shutdown
-        #self.log(f"starting {self.name} back up")
+        #util.log(f"starting {self.name} back up")
         #self.start()
         #ip = wait_for_ifaddr(self.name)
         #wait_for_ssh(ip)
-        #self.log("sleeping for 30sec for second boot to settle, for imaging")
+        #util.log("sleeping for 30sec for second boot to settle, for imaging")
         #time.sleep(30)  # fully finish booting (ssh starts early)
 
         # save RAM image (domain state)
@@ -558,7 +552,7 @@ class Guest:
         self._restore_snapshotted()
         self.ipaddr = wait_for_ifaddr(self.name)
         wait_for_ssh(self.ipaddr)
-        self.log(f"guest {self.name} ready")
+        util.log(f"guest {self.name} ready")
         try:
             yield self
         finally:
@@ -572,15 +566,15 @@ class Guest:
         self.start()
         self.ipaddr = wait_for_ifaddr(self.name)
         wait_for_ssh(self.ipaddr)
-        self.log(f"guest {self.name} ready")
+        util.log(f"guest {self.name} ready")
         try:
             yield self
         finally:
             try:
-                self.log(f"shutting down {self.name}")
+                util.log(f"shutting down {self.name}")
                 self.shutdown()
             except builtins.TimeoutError:
-                self.log(f"shutdown timed out, destroying {self.name}")
+                util.log(f"shutdown timed out, destroying {self.name}")
                 self.destroy()
 
     def _do_ssh(self, *cmd, func=util.subprocess_run, capture=False, **run_args):
@@ -612,13 +606,13 @@ class Guest:
     def copy_from(self, remote_file, local_file=None):
         if not local_file:
             local_file = '.'
-        self.log(f"copying {remote_file} from guest, to {local_file}")
+        util.log(f"copying {remote_file} from guest, to {local_file}")
         self._do_scp(f'{GUEST_SSH_USER}@{self.ipaddr}:{remote_file}', local_file)
 
     def copy_to(self, local_file, remote_file=None):
         if not remote_file:
             remote_file = '.'
-        self.log(f"copying {local_file} to guest, to {remote_file}")
+        util.log(f"copying {local_file} to guest, to {remote_file}")
         self._do_scp(local_file, f'{GUEST_SSH_USER}@{self.ipaddr}:{remote_file}')
 
     def guest_agent_cmd(self, cmd, args=None, blind=False):
@@ -651,7 +645,7 @@ class Guest:
             'arg': args[1:],
             'capture-output': capture,
         }
-        self.log(f"sending {request}")
+        util.log(f"sending {request}")
         ret = self.guest_agent_cmd('guest-exec', request, **kwargs)
         pid = ret['pid']
 
@@ -677,7 +671,7 @@ class Guest:
             if 'err-data' in ret_json:
                 completed.stderr = base64.b64decode(ret_json['err-data'])
 
-        self.log(f"ended with {completed}")
+        util.log(f"ended with {completed}")
         if check:
             completed.check_returncode()
         return completed
@@ -720,7 +714,7 @@ def wait_for_domstate(name, state, timeout=300, sleep=0.5):
     Wait until the guest reaches a specified libvirt domain state
     ('running', 'shut off', etc.).
     """
-    _log(f"waiting for {name} to be {state} for {timeout}sec")
+    util.log(f"waiting for {name} to be {state} for {timeout}sec")
     end_time = datetime.now() + timedelta(seconds=timeout)
     while datetime.now() < end_time:
         if guest_domstate(name) == state:
@@ -756,7 +750,7 @@ def domifaddr(name):
 
 
 def wait_for_ifaddr(name, timeout=600, sleep=0.5):
-    _log(f"waiting for IP addr of {name} for up to {timeout}sec")
+    util.log(f"waiting for IP addr of {name} for up to {timeout}sec")
     end_time = datetime.now() + timedelta(seconds=timeout)
     while datetime.now() < end_time:
         try:
@@ -778,7 +772,7 @@ def wait_for_ssh(ip, port=22, timeout=600, sleep=0.5, to_shutdown=False):
     Useful for waiting until a guest reboots without changing domain state.
     """
     state = 'shut down' if to_shutdown else 'start'
-    _log(f"waiting for ssh on {ip}:{port} to {state} for up to {timeout}sec")
+    util.log(f"waiting for ssh on {ip}:{port} to {state} for up to {timeout}sec")
     end_time = datetime.now() + timedelta(seconds=timeout)
     while datetime.now() < end_time:
         try:
@@ -840,7 +834,7 @@ def translate_ssg_kickstart(profile):
     """
     ks_text = ''
     ks_file = util.get_kickstart(profile)
-    _log(f"using orig file: {ks_file}")
+    util.log(f"using orig file: {ks_file}")
 
     with open(ks_file) as f:
         for line in f:

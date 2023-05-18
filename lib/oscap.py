@@ -1,11 +1,9 @@
 import sys
 import re
-import logging
 from pathlib import Path
 
 from . import util, results
 
-_log = logging.getLogger(__name__).debug
 _no_remediation_cache = None
 
 
@@ -96,4 +94,4 @@ def report_from_verbose(lines):
     if total == 0:
         raise RuntimeError("oscap returned no results")
 
-    _log(f"all done: {total} total results")
+    util.log(f"all done: {total} total results")
