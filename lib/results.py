@@ -14,14 +14,11 @@ Beaker uses the HTTP API, connecting to a local labcontroller.
 import os
 import sys
 import re
-import logging
 import shutil
 import requests
 from pathlib import Path
 
 from . import util, waive
-
-_log = logging.getLogger(__name__).debug
 
 _valid_statuses = ['pass', 'fail', 'warn', 'error', 'info']
 
@@ -140,7 +137,7 @@ def report_beaker(status, name=None, note=None, logs=None):
     }
     r = requests.post(url, data=payload)
     if r.status_code != 201:
-        _log(f"reporting to {url} failed with {r.status_code}")
+        util.log(f"reporting to {url} failed with {r.status_code}")
         return
 
     if logs:
@@ -149,7 +146,7 @@ def report_beaker(status, name=None, note=None, logs=None):
             with open(log, 'rb') as f:
                 r = requests.put(logpath, data=f)
                 if r.status_code != 204:
-                    _log(f"uploading log {logpath} failed with {r.status_code}")
+                    util.log(f"uploading log {logpath} failed with {r.status_code}")
 
 
 def report_plain(status, name=None, note=None, logs=None):
@@ -157,7 +154,7 @@ def report_plain(status, name=None, note=None, logs=None):
         name = '/'
     note = f' ({note})' if note else ''
     logs = f' / {logs}' if logs else ''
-    _log(f'{status.upper()} {name}{note}{logs}')
+    util.log(f'{status.upper()} {name}{note}{logs}')
 
 
 def report(status, name=None, note=None, logs=None, *, add_output=True):
