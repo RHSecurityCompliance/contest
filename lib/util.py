@@ -53,25 +53,6 @@ def make_printable(obj):
     return obj.strip()
 
 
-def proc_stream(cmd, check=False, **kwargs):
-    """
-    Run 'cmd' via subprocess.Popen() and return an iterator over any lines
-    the command outputs on stdout.
-
-    With 'check' set to True, raise a CalledProcessError if the 'cmd' failed.
-    """
-    proc = subprocess.Popen(cmd, stdout=subprocess.PIPE, **kwargs)
-
-    def generate_lines():
-        for line in proc.stdout:
-            yield line.decode('ascii', errors='ignore').rstrip('\n')
-        code = proc.wait()
-        if code > 0 and check:
-            raise subprocess.CalledProcessError(cmd=cmd, returncode=code)
-
-    return (proc, generate_lines())
-
-
 def running_in_beaker():
     """
     Return True if running in Beaker under the FMF wrapper.
@@ -145,12 +126,41 @@ class BackgroundHTTPServer(HTTPServer):
                 stdout=subprocess.DEVNULL, check=True)
 
 
-def subprocess_run(*popenargs, **kwargs):
+def _format_subprocess_cmd(cmd):
+    if isinstance(cmd, (list, tuple)):
+        return ' '.join(str(x) for x in cmd)
+    else:
+        return cmd
+
+
+def subprocess_run(cmd, **kwargs):
     """
     A simple wrapper for the real subprocess.run() that logs the command used.
     """
-    log(popenargs)
-    return subprocess.run(*popenargs, **kwargs)
+    # when logging, skip current stack frame - report the place we were called
+    # from, not util.subprocess_run itself
+    log(f'running: {_format_subprocess_cmd(cmd)}', skip_caller=True)
+    return subprocess.run(cmd, **kwargs)
+
+
+def proc_stream(cmd, check=False, **kwargs):
+    """
+    Run 'cmd' via subprocess.Popen() and return an iterator over any lines
+    the command outputs on stdout.
+
+    With 'check' set to True, raise a CalledProcessError if the 'cmd' failed.
+    """
+    log(f'running: {_format_subprocess_cmd(cmd)}', skip_caller=True)
+    proc = subprocess.Popen(cmd, stdout=subprocess.PIPE, **kwargs)
+
+    def generate_lines():
+        for line in proc.stdout:
+            yield line.decode('ascii', errors='ignore').rstrip('\n')
+        code = proc.wait()
+        if code > 0 and check:
+            raise subprocess.CalledProcessError(cmd=cmd, returncode=code)
+
+    return (proc, generate_lines())
 
 
 def log(msg, *, skip_caller=False):
