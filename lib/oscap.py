@@ -10,7 +10,7 @@ _no_remediation_cache = None
 def _rules_without_remediation():
     # TODO: parse this info from datastream XML
     cmd = ['oscap', 'xccdf', 'generate', '--profile', '(all)', 'fix', util.get_datastream()]
-    _, lines = util.proc_stream(cmd, check=True)
+    _, lines = util.subprocess_stream(cmd, check=True)
     for line in lines:
         match = re.search('FIX FOR THIS RULE \'xccdf_org.ssgproject.content_rule_(.+)\' IS MISSING!', line)  # noqa
         if match:
