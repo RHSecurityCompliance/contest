@@ -1,6 +1,6 @@
 """
 Functionality for an automatic failure waiving logic, configured by
-a custom file format. See WAIVES.md.
+a custom file format. See WAIVERS.md.
 """
 
 import os
@@ -12,7 +12,7 @@ from . import util, versions
 
 _sections_cache = None
 
-WAIVE_FILE = Path(util.libdir).parent / 'conf' / 'waives'
+WAIVE_FILE = Path(util.libdir).parent / 'conf' / 'waivers'
 
 
 class _PushbackIterator:

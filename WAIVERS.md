@@ -2,7 +2,7 @@
 
 ## Custom file format
 
-The [waives file](conf/waives) uses a custom file format to specify when
+The [waivers file](conf/waivers) uses a custom file format to specify when
 a failure is expected.  
 This format consists of so-called "sections", optionally separated by any
 number of empty lines. Any lines beginning with `#` are skipped.
