@@ -143,7 +143,7 @@ def subprocess_run(cmd, **kwargs):
     return subprocess.run(cmd, **kwargs)
 
 
-def proc_stream(cmd, check=False, **kwargs):
+def subprocess_stream(cmd, check=False, **kwargs):
     """
     Run 'cmd' via subprocess.Popen() and return an iterator over any lines
     the command outputs on stdout.

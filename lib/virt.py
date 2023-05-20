@@ -593,7 +593,7 @@ class Guest:
         return self._do_ssh(*cmd, **kwargs)
 
     def ssh_stream(self, *cmd, **kwargs):
-        return self._do_ssh(*cmd, func=util.proc_stream, **kwargs)
+        return self._do_ssh(*cmd, func=util.subprocess_stream, **kwargs)
 
     def _do_scp(self, *args):
         scp_cmdline = [
