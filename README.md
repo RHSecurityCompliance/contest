@@ -66,7 +66,7 @@ the `/plans/upstream-copr` TMT plan instead of `/plans/default`.
 In this context, "to waive" means to label a failing result as known-bad,
 something we have seen before and expect to fail.
 
-Read [WAIVES.md](WAIVES.md) to see where/how you can set up rules to
+Read [WAIVERS.md](WAIVERS.md) to see where/how you can set up rules to
 automatically waive failures.
 
 ## Workarounds
