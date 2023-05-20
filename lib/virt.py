@@ -179,6 +179,7 @@ def setup_host():
     dnf = 'dnf' if shutil.which('dnf') else 'yum'
 
     host_pkgs = [
+        'libvirt-daemon',
         'libvirt-daemon-driver-qemu',
         'libvirt-daemon-driver-storage-core',
         'libvirt-daemon-driver-network',
