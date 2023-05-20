@@ -81,7 +81,7 @@ class _BackgroundHTTPServerHandler(SimpleHTTPRequestHandler):
             shutil.copyfileobj(f, self.wfile)
 
     def log_message(self, form, *args):
-        self.server.log(form % args)
+        log(form % args)
 
 
 class BackgroundHTTPServer(HTTPServer):
