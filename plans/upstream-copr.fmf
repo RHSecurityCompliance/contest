@@ -41,4 +41,12 @@ adjust+:
                     # yum upgrades on install by default
                     yum -y install scap-security-guide
                 fi
-      when: true
+    - finish+:
+          - how: shell
+            script: |
+                rm -f /etc/yum.repos.d/contest-copr.repo
+                if command -v dnf >/dev/null; then
+                    dnf -q -y downgrade scap-security-guide
+                else
+                    yum -q -y downgrade scap-security-guide
+                fi
