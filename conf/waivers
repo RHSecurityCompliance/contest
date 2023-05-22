@@ -1,17 +1,17 @@
 # requires running firewalld (firewall-cmd) and NetworkManager,
 # which are not available in their final form in the Anaconda environment
 # - see https://github.com/ComplianceAsCode/content/issues/9746
-/hardening/anaconda/[^/]+/firewalld_sshd_port_enabled
+/hardening/anaconda(/with-gui)?/[^/]+/firewalld_sshd_port_enabled
     rhel >= 8
 
 # https://github.com/OpenSCAP/openscap/issues/1880
 # needs to be remediated more than once due to rule ordering issues
-/hardening/oscap/[^/]+/configure_bashrc_exec_tmux
-/hardening/oscap/[^/]+/no_tmux_in_shells
-/hardening/oscap/[^/]+/configure_usbguard_auditbackend
+/hardening/oscap(/with-gui)?/[^/]+/configure_bashrc_exec_tmux
+/hardening/oscap(/with-gui)?/[^/]+/no_tmux_in_shells
+/hardening/oscap(/with-gui)?/[^/]+/configure_usbguard_auditbackend
     rhel >= 8
-/hardening/oscap/[^/]+/configure_bashrc_tmux
-/hardening/oscap/stig(_gui)?/postfix_prevent_unrestricted_relay
+/hardening/oscap(/with-gui)?/[^/]+/configure_bashrc_tmux
+/hardening/oscap(/with-gui)?/stig(_gui)?/postfix_prevent_unrestricted_relay
     rhel == 8
 
 # rule ordering issue - accounts_password_pam_retry is checked first and passes,
@@ -24,36 +24,83 @@
 # these are missing the required partitions, making the oscap Anaconda addon
 # error out during remediaton
 /hardening/anaconda/cis_(server|workstation)_l1
-    status == 'error' and note.startswith('RuntimeError: installation failed')
+    ssg < '0.1.68' and status == 'error' and \
+        note.startswith('RuntimeError: installation failed')
 
 # bz1828871, won't be fixed on rhel7
 # needs to be remediated more than once due to rule ordering issues
-/hardening/anaconda/[^/]+/postfix_network_listening_disabled
+/hardening/anaconda(/with-gui)?/[^/]+/postfix_network_listening_disabled
     rhel == 7
 
 # bz1778661 abrt package
-/hardening/anaconda/e8/rpm_verify_(ownership|permissions)
-    rhel == 7
+# - seems to be less predictable on new upstream content
+/hardening/anaconda(/with-gui)?/e8/rpm_verify_(ownership|permissions)
+    Match(rhel == 7, sometimes=True)
 
 # bz1825810 or maybe bz1929805
 # can be reproduced mostly reliably (95%) both via anaconda and oscap CLI,
 # but apparently we don't really care about old releases
-/hardening/[^/]+/stig_gui/sysctl_net_ipv4_ip_forward
+/hardening/[^/]+/with-gui/stig_gui/sysctl_net_ipv4_ip_forward
     Match(rhel == 7, sometimes=True)
+/hardening/[^/]+/with-gui/cis_workstation_[^/]+/sysctl_net_ipv4_ip_forward
+    rhel == 8
 
 # https://github.com/ComplianceAsCode/content/issues/10424
-/hardening/anaconda/[^/]+/service_nftables_disabled
+/hardening/anaconda(/with-gui)?/[^/]+/service_nftables_disabled
     ssg >= '0.1.68'
 
 # caused by us not caring whether the VM has it installed,
-# - TODO: why can't the remediation install it? -- it will probably fail
-#   for customers too
-/hardening/oscap/[^/]+/package_scap-security-guide_installed
+# - remediation should fix it, but doesn't -- possibly caused by
+#   https://github.com/RHSecurityCompliance/contest/issues/15
+/hardening/oscap(/with-gui)?/[^/]+/package_scap-security-guide_installed
+    Match(True, sometimes=True)
+
+# TODO: something new? .. RHEL-8 on e8 and ism_o, RHEL-7 e8
+#  - seems to not happen on latest 8.9 nightlies ??
+#  - on latest 7.9, but upstream 2023/05 content
+/hardening/oscap/[^/]+/package_rear_installed
+    Match(rhel <= 8, sometimes=True)
+
+# happens normally only on rhel-7 e8, but it's more widespread with GUI,
+# caused by the 'gdm' package
+/hardening/[^/]+/with-gui/[^/]+/rpm_verify_(ownership|permissions)
+    rhel == 9
+/hardening/oscap/with-gui/e8/rpm_verify_(ownership|permissions)
+    rhel == 7
+
+# https://github.com/ComplianceAsCode/content/issues/10592
+/hardening/anaconda/with-gui/cis_workstation_l[12]/file_groupownership_sshd_private_key
     ssg >= '0.1.68'
 
-# TODO: something new? .. RHEL-8 on e8 and ism_o
-#  - seems to not happen on latest 8.9 nightlies ??
-/hardening/oscap/[^/]+/package_rear_installed
-    Match(rhel == 8, sometimes=True)
+# RHEL-8: https://bugzilla.redhat.com/show_bug.cgi?id=1834716
+# RHEL-9: https://bugzilla.redhat.com/show_bug.cgi?id=1999587
+/hardening/anaconda/with-gui/[^/]+/service_avahi-daemon_disabled
+    True
+
+# TODO: no clue, but not present in new upstream content
+/hardening/oscap/with-gui/pci-dss/smartcard_auth
+    rhel == 7 and ssg < '0.1.68'
+
+# TODO: new in 2023/05, on all CIS profiles, seems to be new rules
+/hardening/anaconda(/with-gui)?/cis[^/]*/firewalld_loopback_traffic_(restricted|trusted)
+    rhel == 9 and ssg >= '0.1.68'
+
+# ssh either doesn't start up, or gets blocked, possibly related
+# to new firewalld rules being added?
+# https://github.com/ComplianceAsCode/content/pull/10573
+# (happens only with GUI)
+#
+# or perhaps one of
+# https://github.com/ComplianceAsCode/content/issues/10592
+# https://github.com/ComplianceAsCode/content/issues/10593
+# https://github.com/ComplianceAsCode/content/issues/10594
+/hardening/oscap/with-gui/cis_workstation_l[12]
+    ssg >= '0.1.68' and status == 'error'
+
+# OAA just failed without an error, as usual
+# https://issues.redhat.com/browse/OPENSCAP-3321
+# seems to be happening much more reliably with GUI
+/hardening/anaconda/with-gui/cis_workstation_l[12]
+    Match(status == 'error', sometimes=True)
 
 # vim: syntax=python
