@@ -271,14 +271,17 @@ class Kickstart:
         else:
             self.packages.append(f'@{group}')
 
-    def add_repo(self, name, url, install=True):
-        new = f'repo --name={name} --baseurl={url}'
-        new += ' --install' if install else ''
-        self.appends.append(new)
-
     def add_host_repos(self):
-        for reponame, url in host_dnf_repos():
-            self.add_repo(reponame, url)
+        installed_repos = []
+        for reponame, config in host_dnf_repos():
+            baseurl = config['baseurl']
+            self.appends.append(f'repo --name={reponame} --baseurl={baseurl}')
+            installed_repos.append(
+                f'cat > /etc/yum.repos.d/{reponame}.repo <<\'EOF\'\n' +
+                f'[{reponame}]\n' +
+                '\n'.join(f'{k}={v}' for k, v in config.items()) +
+                '\nEOF')
+        self.add_post('\n'.join(installed_repos))
 
     def add_oscap(self, keyvals):
         """Append an OSCAP addon section, with key=value pairs from 'keyvals'."""
@@ -313,10 +316,7 @@ class Kickstart:
 
     def cache_dnf(self):
         """(Would have been done by subscription-manager.)"""
-        script = textwrap.dedent('''\
-            rpm --import /etc/pki/rpm-gpg/RPM-GPG-KEY-redhat-release
-            { dnf -y makecache || yum -y makecache; } 2>/dev/null''')
-        self.add_post(script)
+        self.add_post('{ dnf -y makecache || yum -y makecache; } 2>/dev/null')
 
 
 #
@@ -366,7 +366,8 @@ class Guest:
         # location (install URL) not given, try using first one found amongst host
         # repository URLs that has Anaconda stage2 image
         if not location:
-            for _, url in host_dnf_repos():
+            for _, config in host_dnf_repos():
+                url = config['baseurl']
                 reply = requests.head(url + '/images/install.img')
                 if reply.status_code == 200:
                     location = url
@@ -818,7 +819,7 @@ def host_dnf_repos():
             if all(x in c[section] for x in ['name', 'baseurl', 'enabled']):
                 baseurl = c[section]['baseurl']
                 if c[section]['enabled'] == '1' and not baseurl.startswith('file://'):
-                    yield (section, baseurl)
+                    yield (section, c[section])
 
 
 def ssh_keygen(path):
