@@ -32,10 +32,12 @@
 /hardening/anaconda(/with-gui)?/[^/]+/postfix_network_listening_disabled
     rhel == 7
 
-# bz1778661 abrt package
-# - seems to be less predictable on new upstream content
-/hardening/anaconda(/with-gui)?/e8/rpm_verify_(ownership|permissions)
-    Match(rhel == 7, sometimes=True)
+# caused by one of:
+# - bz1778661 (abrt)
+# - bz2209266 (RHEL-9 gdm)
+# - bz2209294 (RHEL-7 gdm, different issue)
+/hardening/.+/rpm_verify_(ownership|permissions)
+    Match(True, sometimes=True)
 
 # bz1825810 or maybe bz1929805
 # can be reproduced mostly reliably (95%) both via anaconda and oscap CLI,
@@ -61,13 +63,6 @@
 /hardening/oscap/[^/]+/package_rear_installed
     Match(rhel <= 8, sometimes=True)
 
-# happens normally only on rhel-7 e8, but it's more widespread with GUI,
-# caused by the 'gdm' package
-/hardening/[^/]+/with-gui/[^/]+/rpm_verify_(ownership|permissions)
-    rhel == 9
-/hardening/oscap/with-gui/e8/rpm_verify_(ownership|permissions)
-    rhel == 7
-
 # https://github.com/ComplianceAsCode/content/issues/10592
 /hardening/anaconda/with-gui/cis_workstation_l[12]/file_groupownership_sshd_private_key
     ssg >= '0.1.68'
@@ -81,7 +76,7 @@
 /hardening/oscap/with-gui/pci-dss/smartcard_auth
     rhel == 7 and ssg < '0.1.68'
 
-# TODO: new in 2023/05, on all CIS profiles, seems to be new rules
+# https://github.com/ComplianceAsCode/content/issues/10613
 /hardening/anaconda(/with-gui)?/cis[^/]*/firewalld_loopback_traffic_(restricted|trusted)
     rhel == 9 and ssg >= '0.1.68'
 
