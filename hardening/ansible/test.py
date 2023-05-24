@@ -49,18 +49,7 @@ with g.snapshotted():
         *skip_tags_arg,
         playbook,
     ]
-
-    _, lines = util.subprocess_stream(ansible_cmd, check=True)
-    for line in lines:
-        # avoid printing/logging facts, which make up 99% of the output
-        if re.match('[a-z]+: \[[0-9\.]+\] => {"ansible_facts": ', line):
-            line = re.sub(
-                '"ansible_facts": .*',
-                '"ansible_facts": <contest redacted to save log space>',
-                line,
-                count=1)
-        util.log(line)
-
+    util.subprocess_run(ansible_cmd, check=True)
     g.soft_reboot()
 
     # old RHEL-7 oscap mixes errors into --progress rule names without a newline
