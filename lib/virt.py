@@ -77,7 +77,6 @@ import sys
 import re
 import socket
 import time
-import builtins
 import subprocess
 import textwrap
 import contextlib
@@ -575,7 +574,7 @@ class Guest:
             try:
                 util.log(f"shutting down {self.name}")
                 self.shutdown()
-            except builtins.TimeoutError:
+            except TimeoutError:
                 util.log(f"shutdown timed out, destroying {self.name}")
                 self.destroy()
 
@@ -721,7 +720,7 @@ def wait_for_domstate(name, state, timeout=300, sleep=0.5):
     while datetime.now() < end_time:
         if guest_domstate(name) == state:
             return
-    raise builtins.TimeoutError(f"wait for {name} to be in {state} timed out")
+    raise TimeoutError(f"wait for {name} to be in {state} timed out")
 
 
 #
@@ -759,7 +758,7 @@ def wait_for_ifaddr(name, timeout=600, sleep=0.5):
             return domifaddr(name)
         except ConnectionError:
             time.sleep(sleep)
-    raise builtins.TimeoutError(f"wait for {name} IP addr timed out (not requested DHCP?)")
+    raise TimeoutError(f"wait for {name} IP addr timed out (not requested DHCP?)")
 
 
 def wait_for_ssh(ip, port=22, timeout=600, sleep=0.5, to_shutdown=False):
@@ -788,7 +787,7 @@ def wait_for_ssh(ip, port=22, timeout=600, sleep=0.5, to_shutdown=False):
             if to_shutdown:
                 return
             time.sleep(sleep)
-    raise builtins.TimeoutError(f"ssh wait for {ip}:{port} timed out")
+    raise TimeoutError(f"ssh wait for {ip}:{port} timed out")
 
 
 #
