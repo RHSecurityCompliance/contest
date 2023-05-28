@@ -9,7 +9,7 @@ recommend+:
     # ansible is not on RHEL-8+
     - ansible-core
     - ansible
-    # needed for the ini_file ansible plugin
+    # needed for the ini_file ansible plugin, and more
     - rhc-worker-playbook
 extra-hardware: |
     keyvalue = HVM=1
