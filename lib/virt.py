@@ -396,12 +396,13 @@ class Guest:
         disk_path = f'{GUEST_IMG_DIR}/{self.name}.img'
         disk_format = 'raw'
 
+        cpus = os.cpu_count() or 1
         with kickstart.to_tmpfile() as ksfile:
             virt_install = [
                 'pseudotty', 'virt-install',
                 # unreleased RHEL tends to have higher-than-released memory use due to
                 # the install process not yet being optimized to fit minimum reqs
-                '--name', self.name, '--vcpus', '2', '--memory', '3000',
+                '--name', self.name, '--vcpus', str(cpus), '--memory', '3000',
                 '--disk', f'path={disk_path},size=20,format={disk_format},cache=unsafe',
                 '--network', f'network={NETWORK_NAME}',
                 '--location', location,
