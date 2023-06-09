@@ -400,8 +400,9 @@ class Guest:
         with kickstart.to_tmpfile() as ksfile:
             virt_install = [
                 'pseudotty', 'virt-install',
-                # unreleased RHEL tends to have higher-than-released memory use due to
-                # the install process not yet being optimized to fit minimum reqs
+                # installing from HTTP URL leads to Anaconda downloading stage2
+                # to RAM, leading to notably higher memory requirements during
+                # installation - we reduce it down to 2000M after install
                 '--name', self.name, '--vcpus', str(cpus), '--memory', '3000',
                 '--disk', f'path={disk_path},size=20,format={disk_format},cache=unsafe',
                 '--network', f'network={NETWORK_NAME}',
@@ -435,6 +436,9 @@ class Guest:
                 self.destroy()
                 self.undefine()
                 raise e from None
+
+        # installed system doesn't need as much RAM, alleviate swap pressure
+        set_domain_memory(self.name, 2000)
 
         self.orig_disk_path = disk_path
         self.orig_disk_format = disk_format
@@ -915,3 +919,17 @@ def set_state_image_disk(image, source_file, image_format):
         f.write(ET.tostring(domain))
         f.flush()
         virsh('save-image-define', image, f.name, check=True)
+
+
+def set_domain_memory(domain, amount, unit='MiB'):
+    """Set the amount of RAM allowed for a defined guest."""
+    ret = virsh('dumpxml', domain, stdout=PIPE, check=True, universal_newlines=True)
+    domain = ET.fromstring(ret.stdout)
+    for name in ['memory', 'currentMemory']:
+        mem = domain.find(name)
+        mem.set('unit', unit)
+        mem.text = str(amount)
+    with tempfile.NamedTemporaryFile(mode='wb', suffix='.xml') as f:
+        f.write(ET.tostring(domain))
+        f.flush()
+        virsh('define', f.name, check=True)
