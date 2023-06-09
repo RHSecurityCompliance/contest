@@ -13,7 +13,7 @@ recommend+:
     - rhc-worker-playbook
 extra-hardware: |
     keyvalue = HVM=1
-    hostrequire = memory>=4800
+    hostrequire = memory>=3720
 
 /anssi_bp28_high:
     environment+:
