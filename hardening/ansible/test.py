@@ -1,8 +1,6 @@
 #!/usr/bin/python3
 
 import os
-import re
-import subprocess
 
 from lib import util, results, virt, oscap, versions
 from conf import remediation_excludes
