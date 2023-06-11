@@ -1,0 +1,6 @@
+summary: Runs oscap xccdf eval as a simple sanity check
+test: python3 -m lib.runtest ./test.py
+result: custom
+environment+:
+    PYTHONPATH: ../..
+duration: 15m
