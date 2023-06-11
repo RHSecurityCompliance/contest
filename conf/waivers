@@ -163,8 +163,8 @@
 /hardening/ansible/with-gui/stig_gui
     status == 'error' and rhel == 8
 
-
-
-
+# TODO: is this a reported bug?
+/scanning/oscap-eval/ERROR
+    rhel == 7 and note == 'E: oscap: Failed to convert OVAL state to SEXP, id: oval:ssg-state_file_groupowner_var_log_syslog_gid_4_0:ste:1.'
 
 # vim: syntax=python
