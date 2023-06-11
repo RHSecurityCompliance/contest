@@ -24,9 +24,22 @@ def has_no_remediation(rule):
     return rule in _no_remediation_cache
 
 
+def rule_from_verbose(line):
+    """
+    Get (rulename, status) from an oscap info verbose output line.
+
+    Return None if the input line is not a valid oscap verbose result line.
+    """
+    match = re.match(r'^xccdf_org.ssgproject.content_rule_(.+):([a-z]+)$', line)
+    if match:
+        return (match.group(1), match.group(2))
+    else:
+        return None
+
+
 def rules_from_verbose(lines):
     """
-    Get (rulename, result, verboselog) from oscap info verbose output.
+    Yield (rulename, status, verboselog) from oscap info verbose output.
 
     Note that this expects 'oscap xccdf eval' to be run:
       - with --verbose INFO
@@ -40,12 +53,13 @@ def rules_from_verbose(lines):
     """
     log = ''
     for line in lines:
-        # oscap xccdf eval --progress rule name and result
-        match = re.match(r'^xccdf_org.ssgproject.content_rule_(.+):([a-z]+)$', line)
+        # oscap xccdf eval --progress rule name and status
+        match = rule_from_verbose(line)
         if match:
             sys.stdout.write(f'{line}\n')
             sys.stdout.flush()
-            yield (match.group(1), match.group(2), log)
+            rulename, status = match
+            yield (rulename, status, log)
             log = ''
             continue
 
@@ -87,9 +101,9 @@ def report_from_verbose(lines):
         if verbose_out:
             logfile = 'oscap.log.txt'  # txt to make browsers open it natively
             Path(logfile).write_text(verbose_out)
-            results.report(status, f'{rule}', note, [logfile])
+            results.report(status, rule, note, [logfile])
         else:
-            results.report(status, f'{rule}', note)
+            results.report(status, rule, note)
 
     if total == 0:
         raise RuntimeError("oscap returned no results")
