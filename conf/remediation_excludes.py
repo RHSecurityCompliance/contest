@@ -26,9 +26,9 @@ ansible_skip_tags = [
     #'accounts_password_set_max_life_existing',
 ]
 
-# same os "machine hardening" exclusions, the remediation of which would break
+# host os "machine hardening" exclusions, the remediation of which would break
 # this test suite
-same_os = [
+host_os = [
     # required by TMT
     'package_rsync_removed',
 ]
