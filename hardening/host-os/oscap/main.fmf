@@ -1,0 +1,91 @@
+summary: Runs oscap remediation directly on the target system
+test: python3 -m lib.runtest ./test.py
+result: custom
+environment+:
+    PYTHONPATH: ../../..
+duration: 1h
+
+/anssi_bp28_high:
+    environment+:
+        PROFILE: anssi_bp28_high
+    adjust:
+        when: distro == rhel-7
+        enabled: false
+        because: RHEL-7 has anssi_nt28_high instead
+    extra-summary: /CoreOS/scap-security-guide/hardening/oscap/anssi_bp28_high
+
+/anssi_nt28_high:
+    environment+:
+        PROFILE: anssi_nt28_high
+    adjust:
+        when: distro >= rhel-8
+        enabled: false
+        because: RHEL-8 and newer have anssi_bp28_high instead
+    extra-summary: /CoreOS/scap-security-guide/hardening/oscap/anssi_nt28_high
+
+/cis:
+    environment+:
+        PROFILE: cis
+    extra-summary: /CoreOS/scap-security-guide/hardening/oscap/cis
+
+/cis_server_l1:
+    environment+:
+        PROFILE: cis_server_l1
+    extra-summary: /CoreOS/scap-security-guide/hardening/oscap/cis_server_l1
+
+/cis_workstation_l1:
+    environment+:
+        PROFILE: cis_workstation_l1
+    extra-summary: /CoreOS/scap-security-guide/hardening/oscap/cis_workstation_l1
+
+/cis_workstation_l2:
+    environment+:
+        PROFILE: cis_workstation_l2
+    extra-summary: /CoreOS/scap-security-guide/hardening/oscap/cis_workstation_l2
+
+/cui:
+    environment+:
+        PROFILE: cui
+    extra-summary: /CoreOS/scap-security-guide/hardening/oscap/cui
+
+/e8:
+    environment+:
+        PROFILE: e8
+    extra-summary: /CoreOS/scap-security-guide/hardening/oscap/e8
+
+/hipaa:
+    environment+:
+        PROFILE: hipaa
+    extra-summary: /CoreOS/scap-security-guide/hardening/oscap/hipaa
+
+/ism_o:
+    environment+:
+        PROFILE: ism_o
+    adjust:
+        when: distro == rhel-7
+        enabled: false
+        because: doesn't exist on RHEL-7
+    extra-summary: /CoreOS/scap-security-guide/hardening/oscap/ism_o
+
+/ospp:
+    environment+:
+        PROFILE: ospp
+    extra-summary: /CoreOS/scap-security-guide/hardening/oscap/ospp
+
+/pci-dss:
+    environment+:
+        PROFILE: pci-dss
+    extra-summary: /CoreOS/scap-security-guide/hardening/oscap/pci-dss
+
+/stig:
+    environment+:
+        PROFILE: stig
+    extra-summary: /CoreOS/scap-security-guide/hardening/oscap/stig
+
+/stig_gui:
+    environment+:
+        PROFILE: stig_gui
+    adjust:
+        enabled: false
+        because: not supported without GUI, use stig instead
+    extra-summary: /CoreOS/scap-security-guide/hardening/oscap/stig_gui

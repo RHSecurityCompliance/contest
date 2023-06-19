@@ -9,9 +9,14 @@
 /hardening/oscap(/with-gui)?/[^/]+/configure_bashrc_exec_tmux
 /hardening/oscap(/with-gui)?/[^/]+/no_tmux_in_shells
 /hardening/oscap(/with-gui)?/[^/]+/configure_usbguard_auditbackend
+/hardening/host-os/oscap/[^/]+/configure_bashrc_exec_tmux
+/hardening/host-os/oscap/[^/]+/no_tmux_in_shells
+/hardening/host-os/oscap/[^/]+/configure_usbguard_auditbackend
     rhel >= 8
 /hardening/oscap(/with-gui)?/[^/]+/configure_bashrc_tmux
 /hardening/oscap(/with-gui)?/stig(_gui)?/postfix_prevent_unrestricted_relay
+/hardening/host-os/oscap/[^/]+/configure_bashrc_tmux
+/hardening/host-os/oscap/stig/postfix_prevent_unrestricted_relay
     rhel == 8
 
 # rule ordering issue - accounts_password_pam_retry is checked first and passes,
@@ -19,6 +24,8 @@
 # - see https://github.com/OpenSCAP/openscap/issues/1880
 /hardening/(anaconda|oscap)/.+/accounts_password_pam_retry
     rhel >= 8
+/hardening/host-os/oscap/[^/]+/accounts_password_pam_retry
+    Match(rhel >= 8, sometimes=True)
 
 # https://github.com/ComplianceAsCode/content/pull/10499
 # these are missing the required partitions, making the oscap Anaconda addon
@@ -48,8 +55,12 @@
     rhel == 8
 
 # https://github.com/ComplianceAsCode/content/issues/10424
+# happens on host-os hardening too, probably because Beaker doesn't have
+# firewall enabled or even installed
 /hardening/anaconda(/with-gui)?/[^/]+/service_nftables_disabled
     ssg >= '0.1.68'
+/hardening/host-os/oscap/[^/]+/service_nftables_disabled
+    Match(ssg >= '0.1.68', sometimes=True)
 
 # caused by us not caring whether the VM has it installed,
 # - remediation should fix it, but doesn't -- possibly caused by
@@ -97,6 +108,16 @@
 # seems to be happening much more reliably with GUI
 /hardening/anaconda/with-gui/cis_workstation_l[12]
     Match(status == 'error', sometimes=True)
+
+# probably because Beaker has crond enabled
+# - TODO: shouldn't oscap be able to disable a service via remediation?
+/hardening/host-os/oscap/[^/]+/service_crond_enabled
+    Match(True, sometimes=True)
+# same for dnf-automatic and rsyslog (??), is this fully random?
+/hardening/host-os/oscap/[^/]+/package_dnf-automatic_installed
+/hardening/host-os/oscap/[^/]+/timer_dnf-automatic_enabled
+/hardening/host-os/oscap/[^/]+/package_rsyslog-gnutls_installed
+    Match(rhel >= 8, sometimes=True)
 
 # TODO: completely unknown, investigate and sort
 #
