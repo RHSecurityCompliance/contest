@@ -128,24 +128,6 @@ def _parse_waive_file(stream):
     return sections
 
 
-def _absolute_test_name(name):
-    """
-    Return an absolute version of a test name, given a relative result name.
-    Ie. '/hardening/oscap/stig/some_rule' instead of 'some_rule'.
-    """
-    if util.running_in_tmt():
-        path = os.environ.get('TMT_TEST_NAME')  # tmt natively
-    elif util.running_in_beaker():
-        path = os.environ.get('TEST')
-    else:
-        path = None
-
-    if not path:
-        raise ValueError("unable to figure out absolute test name")
-
-    return f'{path}/{name}' if name else path
-
-
 class Match:
     """
     A True/False result with additional metadata, returned from
@@ -171,12 +153,14 @@ def match_result(status, name, note):
     if note is None:
         note = ''
 
-    abs_name = _absolute_test_name(name)
+    # prepend test name to a sub-result
+    if name:
+        name = util.get_test_name() + f'/{name}'
 
     objs = {
         # result related
         'status': status,
-        'name': abs_name,
+        'name': name,
         'note': note,
         # platform related
         'rhel': versions.rhel,
@@ -191,7 +175,7 @@ def match_result(status, name, note):
     for section in _sections_cache:
         regexes, python_code = section
 
-        if any(x.fullmatch(abs_name) for x in regexes):
+        if any(x.fullmatch(name) for x in regexes):
             ret = eval(python_code, objs, None)
 
             if not isinstance(ret, Match):
