@@ -1,5 +1,6 @@
 import sys
 import re
+import contextlib
 from pathlib import Path
 
 from . import util, results
@@ -109,3 +110,35 @@ def report_from_verbose(lines):
         raise RuntimeError("oscap returned no results")
 
     util.log(f"all done: {total} total results")
+
+
+@contextlib.contextmanager
+def unselect_rules(orig_ds, new_ds, rules):
+    """
+    Given
+    - a source XML file path as 'orig_ds',
+    - a destination XML file path as 'new_ds',
+    - an iterable of rules (partial or full rule names),
+    copy the source datastream to the destination one, disabling the
+    specified rules.
+    """
+    prefix = 'xccdf_org.ssgproject.content_rule_'
+    rules = (x if x.startswith(prefix) else prefix + x for x in rules)
+
+    exprs = set()
+    for rule in rules:
+        exprs.add(re.compile(fr'<.*Rule.*id="{rule}'))
+        exprs.add(re.compile(fr'<.*select.*idref="{rule}'))
+
+    new_ds = Path(new_ds)
+    # remove a possible existing/old file
+    if new_ds.exists():
+        new_ds.unlink()
+
+    with open(orig_ds) as orig_ds_f:
+        with open(new_ds, 'w') as new_ds_f:
+            for line in orig_ds_f:
+                if any(x.search(line) for x in exprs):
+                    line = line.replace('selected="true"', 'selected="false"')
+                    util.log(f'unselected {line.strip()}')
+                new_ds_f.write(line)
