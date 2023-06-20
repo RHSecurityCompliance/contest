@@ -12,7 +12,7 @@ duration: 1h
         when: distro == rhel-7
         enabled: false
         because: RHEL-7 has anssi_nt28_high instead
-    extra-summary: /CoreOS/scap-security-guide/hardening/oscap/anssi_bp28_high
+    extra-summary: /CoreOS/scap-security-guide/hardening/host-os/oscap/anssi_bp28_high
 
 /anssi_nt28_high:
     environment+:
@@ -21,42 +21,42 @@ duration: 1h
         when: distro >= rhel-8
         enabled: false
         because: RHEL-8 and newer have anssi_bp28_high instead
-    extra-summary: /CoreOS/scap-security-guide/hardening/oscap/anssi_nt28_high
+    extra-summary: /CoreOS/scap-security-guide/hardening/host-os/oscap/anssi_nt28_high
 
 /cis:
     environment+:
         PROFILE: cis
-    extra-summary: /CoreOS/scap-security-guide/hardening/oscap/cis
+    extra-summary: /CoreOS/scap-security-guide/hardening/host-os/oscap/cis
 
 /cis_server_l1:
     environment+:
         PROFILE: cis_server_l1
-    extra-summary: /CoreOS/scap-security-guide/hardening/oscap/cis_server_l1
+    extra-summary: /CoreOS/scap-security-guide/hardening/host-os/oscap/cis_server_l1
 
 /cis_workstation_l1:
     environment+:
         PROFILE: cis_workstation_l1
-    extra-summary: /CoreOS/scap-security-guide/hardening/oscap/cis_workstation_l1
+    extra-summary: /CoreOS/scap-security-guide/hardening/host-os/oscap/cis_workstation_l1
 
 /cis_workstation_l2:
     environment+:
         PROFILE: cis_workstation_l2
-    extra-summary: /CoreOS/scap-security-guide/hardening/oscap/cis_workstation_l2
+    extra-summary: /CoreOS/scap-security-guide/hardening/host-os/oscap/cis_workstation_l2
 
 /cui:
     environment+:
         PROFILE: cui
-    extra-summary: /CoreOS/scap-security-guide/hardening/oscap/cui
+    extra-summary: /CoreOS/scap-security-guide/hardening/host-os/oscap/cui
 
 /e8:
     environment+:
         PROFILE: e8
-    extra-summary: /CoreOS/scap-security-guide/hardening/oscap/e8
+    extra-summary: /CoreOS/scap-security-guide/hardening/host-os/oscap/e8
 
 /hipaa:
     environment+:
         PROFILE: hipaa
-    extra-summary: /CoreOS/scap-security-guide/hardening/oscap/hipaa
+    extra-summary: /CoreOS/scap-security-guide/hardening/host-os/oscap/hipaa
 
 /ism_o:
     environment+:
@@ -65,22 +65,22 @@ duration: 1h
         when: distro == rhel-7
         enabled: false
         because: doesn't exist on RHEL-7
-    extra-summary: /CoreOS/scap-security-guide/hardening/oscap/ism_o
+    extra-summary: /CoreOS/scap-security-guide/hardening/host-os/oscap/ism_o
 
 /ospp:
     environment+:
         PROFILE: ospp
-    extra-summary: /CoreOS/scap-security-guide/hardening/oscap/ospp
+    extra-summary: /CoreOS/scap-security-guide/hardening/host-os/oscap/ospp
 
 /pci-dss:
     environment+:
         PROFILE: pci-dss
-    extra-summary: /CoreOS/scap-security-guide/hardening/oscap/pci-dss
+    extra-summary: /CoreOS/scap-security-guide/hardening/host-os/oscap/pci-dss
 
 /stig:
     environment+:
         PROFILE: stig
-    extra-summary: /CoreOS/scap-security-guide/hardening/oscap/stig
+    extra-summary: /CoreOS/scap-security-guide/hardening/host-os/oscap/stig
 
 /stig_gui:
     environment+:
@@ -88,4 +88,4 @@ duration: 1h
     adjust:
         enabled: false
         because: not supported without GUI, use stig instead
-    extra-summary: /CoreOS/scap-security-guide/hardening/oscap/stig_gui
+    extra-summary: /CoreOS/scap-security-guide/hardening/host-os/oscap/stig_gui
