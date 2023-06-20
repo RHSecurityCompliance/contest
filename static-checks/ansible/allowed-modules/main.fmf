@@ -1,0 +1,19 @@
+summary: Verify Ansible remediations contain only allowed Ansible modules.
+description: |-
+    Ansible modules which are allowed to be used in the scap-security-guide
+    content include modules from the ansible-core RPM and modules from
+    posix and community collections (on RHEL-8+ packaged in rhc-worker-playbook).
+test: python3 -m lib.runtest ./test.py
+result: custom
+environment+:
+    PYTHONPATH: ../../..
+duration: 15m
+recommend+:
+    # python3-PyYAML is needed on RHEL-7
+    - python3-PyYAML
+    # ansible-core is not available on RHEL-7
+    # ansible is not on RHEL-8+
+    - ansible-core
+    - ansible
+    # needed for the ini_file ansible plugin, and more
+    - rhc-worker-playbook
