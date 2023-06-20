@@ -1,0 +1,12 @@
+summary: Builds from source and runs ctest
+test: python3 -m lib.runtest ./test.py
+result: custom
+environment+:
+    PYTHONPATH: ../..
+duration: 30m
+require+:
+    - rpm-build
+recommend+:
+    - dnf-utils
+    - yum-utils
+    - yum-builddep
