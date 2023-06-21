@@ -29,8 +29,8 @@ os.environ['ANSIBLE_COLLECTIONS_PATH'] = \
 #        check=True)
 
 if util.get_reboot_count() == 0:
-
     util.log("first boot, remediating using ansible-playbook")
+
     playbook = util.get_playbook(profile)
     skip_tags = ','.join(remediation_excludes.ansible_skip_tags)
     skip_tags_arg = ['--skip-tags', skip_tags] if skip_tags else []
@@ -49,7 +49,6 @@ if util.get_reboot_count() == 0:
     util.reboot()
 
 else:
-
     util.log("second boot, scanning")
 
     # old RHEL-7 oscap mixes errors into --progress rule names without a newline
