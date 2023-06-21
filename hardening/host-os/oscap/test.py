@@ -18,8 +18,8 @@ unique_name = util.get_test_name().lstrip('/').replace('/', '-')
 new_ds = Path(f'/var/tmp/contest-{unique_name}')
 
 if util.get_reboot_count() == 0:
-
     util.log("first boot, doing remediation")
+
     oscap.unselect_rules(ds, new_ds, remediation_excludes.host_os)
     cmd = [
         'oscap', 'xccdf', 'eval', '--profile', profile,
@@ -38,7 +38,6 @@ if util.get_reboot_count() == 0:
     util.reboot()
 
 else:
-
     util.log("second boot, scanning")
 
     # old RHEL-7 oscap mixes errors into --progress rule names without a newline
