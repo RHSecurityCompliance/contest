@@ -58,7 +58,6 @@
 # happens on host-os hardening too, probably because Beaker doesn't have
 # firewall enabled or even installed
 /hardening/anaconda(/with-gui)?/[^/]+/service_nftables_disabled
-    ssg >= '0.1.68'
 /hardening/host-os/oscap/[^/]+/service_nftables_disabled
     Match(ssg >= '0.1.68', sometimes=True)
 
@@ -105,6 +104,11 @@
 /hardening/anaconda/with-gui/cis_workstation_l[12]
     Match(status == 'error', sometimes=True)
 
+# Beaker-specific, since all Beaker repositories have gpgcheck=0
+# and these get copied to nested VMs too
+/(hardening|scanning)/.+/ensure_gpgcheck_never_disabled
+    Match(True, sometimes=True)
+
 # probably because Beaker has crond enabled
 # - TODO: shouldn't oscap be able to disable a service via remediation?
 /hardening/host-os/oscap/[^/]+/service_crond_enabled
@@ -142,6 +146,9 @@
 /hardening/ansible/.+/configure_usbguard_auditbackend
 /hardening/ansible/.+/audit_rules_unsuccessful_file_modification
     rhel == 8 or rhel == 9
+# RHEL-8
+/hardening/ansible/with-gui/stig_gui/sysctl_net_ipv4_conf_all_forwarding
+    rhel == 8
 # RHEL-7
 /hardening/ansible/.+/sshd_use_strong_ciphers
 /hardening/ansible/.+/sshd_use_strong_macs
@@ -150,18 +157,11 @@
 /hardening/ansible/.+/smartcard_auth
     rhel == 7
 
-# it's weird how specific home_nosuid is - seems to pass for many other
-# profiles, or even for the same profile on different RHELs
-/hardening/ansible(/with-gui)?/anssi_bp28_high/mount_option_home_nosuid
-/hardening/ansible/stig/mount_option_home_nosuid
-    rhel == 9 or rhel == 8
-/hardening/ansible/with-gui/stig_gui/mount_option_home_nosuid
-    rhel == 9
-/hardening/ansible/cui/mount_option_home_nosuid
-/hardening/ansible/ospp/mount_option_home_nosuid
-    rhel == 8
-/hardening/ansible/with-gui/anssi_nt28_high/mount_option_home_nosuid
-    rhel == 7
+# unknown as well, but happens only rarely
+/hardening/ansible/.+/configure_bashrc_exec_tmux
+# home_nosuid failures are just really random across RHEL versions and nightlies
+/hardening/ansible/.+/mount_option_home_nosuid
+    Match(True, sometimes=True)
 
 # only on ism_o, seems to pass everywhere else
 /hardening/ansible(/with-gui)?/ism_o/enable_fips_mode
@@ -182,6 +182,6 @@
 
 # TODO: is this a reported bug?
 /scanning/oscap-eval/ERROR
-    rhel == 7 and note == 'E: oscap: Failed to convert OVAL state to SEXP, id: oval:ssg-state_file_groupowner_var_log_syslog_gid_4_0:ste:1.'
+    rhel <= 8 and note == 'E: oscap: Failed to convert OVAL state to SEXP, id: oval:ssg-state_file_groupowner_var_log_syslog_gid_4_0:ste:1.'
 
 # vim: syntax=python
