@@ -27,13 +27,6 @@
 /hardening/host-os/oscap/[^/]+/accounts_password_pam_retry
     Match(rhel >= 8, sometimes=True)
 
-# https://github.com/ComplianceAsCode/content/pull/10499
-# these are missing the required partitions, making the oscap Anaconda addon
-# error out during remediaton
-/hardening/anaconda/cis_(server|workstation)_l1
-    ssg < '0.1.68' and status == 'error' and \
-        note.startswith('RuntimeError: installation failed')
-
 # bz1828871, won't be fixed on rhel7
 # needs to be remediated more than once due to rule ordering issues
 /hardening/anaconda(/with-gui)?/[^/]+/postfix_network_listening_disabled
@@ -59,7 +52,7 @@
 # firewall enabled or even installed
 /hardening/anaconda(/with-gui)?/[^/]+/service_nftables_disabled
 /hardening/host-os/oscap/[^/]+/service_nftables_disabled
-    Match(ssg >= '0.1.68', sometimes=True)
+    Match(True, sometimes=True)
 
 # caused by us not caring whether the VM has it installed,
 # - remediation should fix it, but doesn't -- possibly caused by
@@ -78,13 +71,9 @@
 /hardening/anaconda/with-gui/[^/]+/service_avahi-daemon_disabled
     True
 
-# TODO: no clue, but not present in new upstream content
-/hardening/oscap/with-gui/pci-dss/smartcard_auth
-    rhel == 7 and ssg < '0.1.68'
-
 # https://github.com/ComplianceAsCode/content/issues/10613
 /hardening/anaconda(/with-gui)?/cis[^/]*/firewalld_loopback_traffic_(restricted|trusted)
-    rhel == 9 and ssg >= '0.1.68'
+    rhel == 9
 
 # ssh either doesn't start up, or gets blocked, possibly related
 # to new firewalld rules being added?
@@ -96,7 +85,7 @@
 # https://github.com/ComplianceAsCode/content/issues/10593
 # https://github.com/ComplianceAsCode/content/issues/10594
 /hardening/oscap/with-gui/cis_workstation_l[12]
-    ssg >= '0.1.68' and status == 'error'
+    status == 'error'
 
 # OAA just failed without an error, as usual
 # https://issues.redhat.com/browse/OPENSCAP-3321

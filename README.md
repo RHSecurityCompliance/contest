@@ -35,6 +35,11 @@ on Red Hat Enterprise Linux.
     This applies to sub-results (`/something` after a test name), results for
     tests themselves (as seen by TMT) are always reported.
 
+- `CONTEST_WAIVERS`
+  - Specify a `conf/waiver-` suffix for a waiver file name inside `conf` to be
+    used for waiving results. Ie. `CONTEST_WAIVERS=upstream` to use
+    `conf/waivers-upstream`. Defaults to `released`.
+
 ## Testing latest upstream content
 
 Note that as the

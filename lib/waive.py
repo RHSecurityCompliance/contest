@@ -12,8 +12,6 @@ from . import util, versions
 
 _sections_cache = None
 
-WAIVE_FILE = Path(util.libdir).parent / 'conf' / 'waivers'
-
 
 class _PushbackIterator:
     """
@@ -128,6 +126,14 @@ def _parse_waive_file(stream):
     return sections
 
 
+def _open_waive_file():
+    preferred = os.environ.get('CONTEST_WAIVERS', 'released')
+    waive_file = Path(util.libdir).parent / 'conf' / f'waivers-{preferred}'
+    if not waive_file.exists():
+        raise FileNotFoundError(f"{waive_file.name} doesn't exist in 'conf'")
+    return open(waive_file)
+
+
 class Match:
     """
     A True/False result with additional metadata, returned from
@@ -144,7 +150,7 @@ class Match:
 def match_result(status, name, note):
     global _sections_cache
     if _sections_cache is None:
-        with open(WAIVE_FILE) as f:
+        with _open_waive_file() as f:
             _sections_cache = _parse_waive_file(f)
 
     # make sure "'someting' in name" always works
