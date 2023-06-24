@@ -43,23 +43,23 @@ class _PushbackIterator:
 
 class WaiveParseError(SyntaxError):
     """
-    Easy waive file syntax error reporting, with line numbers derived
+    Easy waiver file syntax error reporting, with line numbers derived
     from _PushbackIterator style counter.
     """
     def __init__(self, meta, msg):
-        super().__init__(f"waive line {meta.counter}: {msg}")
+        super().__init__(f"waiver line {meta.counter}: {msg}")
 
 
 def _compile_eval(meta, code):
     if not code.strip():
         raise WaiveParseError(meta, "empty python block code ending here")
     try:
-        return compile(textwrap.dedent(code), 'waivecode', 'eval')
+        return compile(textwrap.dedent(code), 'waivercode', 'eval')
     except Exception:
-        raise WaiveParseError(meta, "compiling waive python code failed")
+        raise WaiveParseError(meta, "compiling waiver python code failed")
 
 
-def _parse_waive_file(stream):
+def _parse_waiver_file(stream):
     sections = []
     regexes = set()
     python_code = ''
@@ -126,12 +126,12 @@ def _parse_waive_file(stream):
     return sections
 
 
-def _open_waive_file():
+def _open_waiver_file():
     preferred = os.environ.get('CONTEST_WAIVERS', 'released')
-    waive_file = Path(util.libdir).parent / 'conf' / f'waivers-{preferred}'
-    if not waive_file.exists():
-        raise FileNotFoundError(f"{waive_file.name} doesn't exist in 'conf'")
-    return open(waive_file)
+    waiver_file = Path(util.libdir).parent / 'conf' / f'waivers-{preferred}'
+    if not waiver_file.exists():
+        raise FileNotFoundError(f"{waiver_file.name} doesn't exist in 'conf'")
+    return open(waiver_file)
 
 
 class Match:
@@ -150,8 +150,8 @@ class Match:
 def match_result(status, name, note):
     global _sections_cache
     if _sections_cache is None:
-        with _open_waive_file() as f:
-            _sections_cache = _parse_waive_file(f)
+        with _open_waiver_file() as f:
+            _sections_cache = _parse_waiver_file(f)
 
     # make sure "'someting' in name" always works
     if name is None:
@@ -186,7 +186,7 @@ def match_result(status, name, note):
 
             if not isinstance(ret, Match):
                 if not isinstance(ret, bool):
-                    raise RuntimeError(f"waive python code did not return bool or Match: {ret}")
+                    raise RuntimeError(f"waiver python code did not return bool or Match: {ret}")
                 ret = Match(ret)
 
             if ret:
