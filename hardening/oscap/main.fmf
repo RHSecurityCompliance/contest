@@ -4,6 +4,16 @@ result: custom
 environment+:
     PYTHONPATH: ../..
 duration: 1h
+require+:
+    # virt library dependencies
+    - libvirt-daemon
+    - libvirt-daemon-driver-qemu
+    - libvirt-daemon-driver-storage-core
+    - libvirt-daemon-driver-network
+    - firewalld
+    - qemu-kvm
+    - libvirt-client
+    - virt-install
 extra-hardware: |
     keyvalue = HVM=1
     hostrequire = memory>=3720

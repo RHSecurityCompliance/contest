@@ -175,28 +175,6 @@ def setup_host():
     if not check_host_virt():
         raise RuntimeError("host has no HVM virtualization support")
 
-    dnf = 'dnf' if shutil.which('dnf') else 'yum'
-
-    host_pkgs = [
-        'libvirt-daemon',
-        'libvirt-daemon-driver-qemu',
-        'libvirt-daemon-driver-storage-core',
-        'libvirt-daemon-driver-network',
-        'firewalld',  # needed for virtual networks to work (?)
-        'qemu-kvm',
-        'libvirt-client',
-        'virt-install',
-    ]
-    # optimize for speed - avoid starting a dnf transaction if everything
-    # is already installed
-    ret = subprocess.run(['rpm', '--quiet', '-q'] + host_pkgs)
-    if ret.returncode != 0:
-        util.log("installing libvirt + qemu")
-        cmd = [dnf, '-y', '--nogpgcheck', '--setopt=install_weak_deps=False', 'install']
-        util.subprocess_run(cmd + host_pkgs, check=True)
-        # free up some disk space
-        util.subprocess_run([dnf, 'clean', 'packages'], check=True)
-
     ret = subprocess.run(['systemctl', 'is-active', '--quiet', 'libvirtd'])
     if ret.returncode != 0:
         util.subprocess_run(['systemctl', 'start', 'libvirtd'], check=True)
