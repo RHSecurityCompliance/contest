@@ -5,8 +5,10 @@ environment+:
     PYTHONPATH: ../..
 duration: 30m
 require+:
-    - rpm-build
+  - rpm-build
 recommend+:
-    - dnf-utils
-    - yum-utils
-    - yum-builddep
+  - dnf-utils
+  - yum-utils
+  - yum-builddep
+extra-nitrate: TC#0615490
+id: 87442db1-5e7a-4c3f-93fa-1e37b233721e

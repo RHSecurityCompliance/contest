@@ -5,15 +5,15 @@ environment+:
     PYTHONPATH: ../..
 duration: 1h
 require+:
-    # virt library dependencies
-    - libvirt-daemon
-    - libvirt-daemon-driver-qemu
-    - libvirt-daemon-driver-storage-core
-    - libvirt-daemon-driver-network
-    - firewalld
-    - qemu-kvm
-    - libvirt-client
-    - virt-install
+  # virt library dependencies
+  - libvirt-daemon
+  - libvirt-daemon-driver-qemu
+  - libvirt-daemon-driver-storage-core
+  - libvirt-daemon-driver-network
+  - firewalld
+  - qemu-kvm
+  - libvirt-client
+  - virt-install
 extra-hardware: |
     keyvalue = HVM=1
     hostrequire = memory>=3720
@@ -128,3 +128,5 @@ extra-hardware: |
         enabled: false
         because: not supported without GUI, use stig instead
     extra-summary: /CoreOS/scap-security-guide/hardening/oscap/stig_gui
+    extra-nitrate: TC#0615474
+    id: f65796bd-64eb-4c8a-b88b-3cf3b597d073

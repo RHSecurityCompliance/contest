@@ -10,6 +10,8 @@ duration: 2h
         enabled: false
         because: RHEL-7 has anssi_nt28_high instead
     extra-summary: /CoreOS/scap-security-guide/hardening/ansible/with-gui/anssi_bp28_high
+    extra-nitrate: TC#0615432
+    id: 70600369-4127-4489-bc67-bad0c41847b9
 
 /anssi_nt28_high:
     environment+:
@@ -19,6 +21,8 @@ duration: 2h
         enabled: false
         because: RHEL-8 and newer have anssi_bp28_high instead
     extra-summary: /CoreOS/scap-security-guide/hardening/ansible/with-gui/anssi_nt28_high
+    extra-nitrate: TC#0615433
+    id: 5d691786-4ed4-439c-b26b-fc60a91c00da
 
 /cis:
     environment+:
@@ -29,6 +33,8 @@ duration: 2h
             not supported on RHEL-8 or RHEL-9 according to RHEL documentation,
             the "Profiles not compatible with Server with GUI" table
     extra-summary: /CoreOS/scap-security-guide/hardening/ansible/with-gui/cis
+    extra-nitrate: TC#0615434
+    id: 21ada412-9be2-4e32-8c45-1873c3ff5306
 
 /cis_server_l1:
     environment+:
@@ -39,40 +45,52 @@ duration: 2h
             not supported on RHEL-8 or RHEL-9 according to RHEL documentation,
             the "Profiles not compatible with Server with GUI" table
     extra-summary: /CoreOS/scap-security-guide/hardening/ansible/with-gui/cis_server_l1
+    extra-nitrate: TC#0615435
+    id: 78c09474-e64f-4174-b60b-cf6ea439b590
 
 /cis_workstation_l1:
     environment+:
         PROFILE: cis_workstation_l1
     extra-summary: /CoreOS/scap-security-guide/hardening/ansible/with-gui/cis_workstation_l1
+    extra-nitrate: TC#0615436
+    id: 05fb0cea-604f-463c-a48e-2d6c774a0cc5
 
 /cis_workstation_l2:
     environment+:
         PROFILE: cis_workstation_l2
     extra-summary: /CoreOS/scap-security-guide/hardening/ansible/with-gui/cis_workstation_l2
+    extra-nitrate: TC#0615437
+    id: e683e50e-8579-4323-99bb-9d14822e069a
 
 /cui:
     environment+:
         PROFILE: cui
     adjust:
-        - when: distro == rhel-7
-          enabled: false
-          because: CUI doesn't have a kickstart on RHEL-7
-        - when: distro <= rhel-8
-          enabled: false
-          because: >
-              not supported on RHEL-8 according to RHEL documentation,
-              the "Profiles not compatible with Server with GUI" table
+      - when: distro == rhel-7
+        enabled: false
+        because: CUI doesn't have a kickstart on RHEL-7
+      - when: distro <= rhel-8
+        enabled: false
+        because: >
+            not supported on RHEL-8 according to RHEL documentation,
+            the "Profiles not compatible with Server with GUI" table
     extra-summary: /CoreOS/scap-security-guide/hardening/ansible/with-gui/cui
+    extra-nitrate: TC#0615438
+    id: c2089407-3b4d-46f7-8172-5e6d2d4c9919
 
 /e8:
     environment+:
         PROFILE: e8
     extra-summary: /CoreOS/scap-security-guide/hardening/ansible/with-gui/e8
+    extra-nitrate: TC#0615439
+    id: 898c7b70-4711-420b-80c5-e79a7a3e8adc
 
 /hipaa:
     environment+:
         PROFILE: hipaa
     extra-summary: /CoreOS/scap-security-guide/hardening/ansible/with-gui/hipaa
+    extra-nitrate: TC#0615440
+    id: b493b8b5-41b4-4b77-84b7-962001bf2970
 
 /ism_o:
     environment+:
@@ -82,6 +100,8 @@ duration: 2h
         enabled: false
         because: doesn't exist on RHEL-7
     extra-summary: /CoreOS/scap-security-guide/hardening/ansible/with-gui/ism_o
+    extra-nitrate: TC#0615441
+    id: 3cc4f0ee-6dfd-485d-9dd2-f0d841e2eb87
 
 /ospp:
     environment+:
@@ -93,6 +113,8 @@ duration: 2h
             not supported on RHEL-8 according to RHEL documentation,
             the "Profiles not compatible with Server with GUI" table
     extra-summary: /CoreOS/scap-security-guide/hardening/ansible/with-gui/ospp
+    extra-nitrate: TC#0615442
+    id: 28e32d25-2386-4fd7-bfb6-b889b5d5df90
 
 /pci-dss:
     environment+:
@@ -105,6 +127,8 @@ duration: 2h
             it is too close to EOL to introduce a hacky logic specifically
             for this case
     extra-summary: /CoreOS/scap-security-guide/hardening/ansible/with-gui/pci-dss
+    extra-nitrate: TC#0615443
+    id: c1ed3b2a-8ab8-4575-b3b0-19c3f7735ca5
 
 /stig:
     environment+:
@@ -116,8 +140,12 @@ duration: 2h
             not supported on RHEL-8 or RHEL-9 according to RHEL documentation,
             the "Profiles not compatible with Server with GUI" table
     extra-summary: /CoreOS/scap-security-guide/hardening/ansible/with-gui/stig
+    extra-nitrate: TC#0615444
+    id: 97abbf39-45a8-45e4-bc03-3e3955d131d2
 
 /stig_gui:
     environment+:
         PROFILE: stig_gui
     extra-summary: /CoreOS/scap-security-guide/hardening/ansible/with-gui/stig_gui
+    extra-nitrate: TC#0615445
+    id: 2e5aae97-9ded-4055-bef1-38e98cbf9dc8
