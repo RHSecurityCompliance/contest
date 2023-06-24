@@ -131,6 +131,7 @@ def _open_waiver_file():
     waiver_file = Path(util.libdir).parent / 'conf' / f'waivers-{preferred}'
     if not waiver_file.exists():
         raise FileNotFoundError(f"{waiver_file.name} doesn't exist in 'conf'")
+    util.log(f"using {waiver_file} for waiving")
     return open(waiver_file)
 
 
