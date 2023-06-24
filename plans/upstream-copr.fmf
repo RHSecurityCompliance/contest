@@ -41,6 +41,10 @@ adjust+:
                     # yum upgrades on install by default
                     yum -y install scap-security-guide
                 fi
+
+    - environment+:
+          CONTEST_WAIVERS: upstream
+
     - finish+:
           - how: shell
             script: |

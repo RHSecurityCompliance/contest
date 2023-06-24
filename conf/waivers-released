@@ -1,0 +1,163 @@
+# requires running firewalld (firewall-cmd) and NetworkManager,
+# which are not available in their final form in the Anaconda environment
+# - see https://github.com/ComplianceAsCode/content/issues/9746
+/hardening/anaconda(/with-gui)?/[^/]+/firewalld_sshd_port_enabled
+    rhel >= 8
+
+# https://github.com/OpenSCAP/openscap/issues/1880
+# needs to be remediated more than once due to rule ordering issues
+/hardening/oscap(/with-gui)?/[^/]+/configure_bashrc_exec_tmux
+/hardening/oscap(/with-gui)?/[^/]+/no_tmux_in_shells
+/hardening/oscap(/with-gui)?/[^/]+/configure_usbguard_auditbackend
+/hardening/host-os/oscap/[^/]+/configure_bashrc_exec_tmux
+/hardening/host-os/oscap/[^/]+/no_tmux_in_shells
+/hardening/host-os/oscap/[^/]+/configure_usbguard_auditbackend
+    rhel >= 8
+/hardening/oscap(/with-gui)?/[^/]+/configure_bashrc_tmux
+/hardening/oscap(/with-gui)?/stig(_gui)?/postfix_prevent_unrestricted_relay
+/hardening/host-os/oscap/[^/]+/configure_bashrc_tmux
+/hardening/host-os/oscap/stig/postfix_prevent_unrestricted_relay
+    rhel == 8
+
+# rule ordering issue - accounts_password_pam_retry is checked first and passes,
+# and a later enable_authselect remediation breaks it
+# - see https://github.com/OpenSCAP/openscap/issues/1880
+/hardening/(anaconda|oscap)/.+/accounts_password_pam_retry
+    rhel >= 8
+/hardening/host-os/oscap/[^/]+/accounts_password_pam_retry
+    Match(rhel >= 8, sometimes=True)
+
+# https://github.com/ComplianceAsCode/content/pull/10499
+# these are missing the required partitions, making the oscap Anaconda addon
+# error out during remediaton
+/hardening/anaconda/cis_(server|workstation)_l1
+    status == 'error' and note.startswith('RuntimeError: installation failed')
+
+# bz1828871, won't be fixed on rhel7
+# needs to be remediated more than once due to rule ordering issues
+/hardening/anaconda(/with-gui)?/[^/]+/postfix_network_listening_disabled
+    rhel == 7
+
+# caused by one of:
+# - bz1778661 (abrt)
+# - bz2209266 (RHEL-9 gdm)
+# - bz2209294 (RHEL-7 gdm, different issue)
+/hardening/.+/rpm_verify_(ownership|permissions)
+    Match(True, sometimes=True)
+
+# bz1825810 or maybe bz1929805
+# can be reproduced mostly reliably (95%) both via anaconda and oscap CLI,
+# but apparently we don't really care about old releases
+/hardening/[^/]+/with-gui/stig_gui/sysctl_net_ipv4_ip_forward
+    Match(rhel == 7, sometimes=True)
+/hardening/[^/]+/with-gui/cis_workstation_[^/]+/sysctl_net_ipv4_ip_forward
+    rhel == 8
+
+# caused by us not caring whether the VM has it installed,
+# - remediation should fix it, but doesn't -- possibly caused by
+#   https://github.com/RHSecurityCompliance/contest/issues/15
+/hardening/oscap(/with-gui)?/[^/]+/package_scap-security-guide_installed
+    Match(True, sometimes=True)
+
+# TODO: something new? .. RHEL-8 on e8 and ism_o, RHEL-7 e8
+#  - seems to not happen on latest 8.9 nightlies ??
+#  - on latest 7.9, but upstream 2023/05 content
+/hardening/oscap/[^/]+/package_rear_installed
+    Match(rhel <= 8, sometimes=True)
+
+# RHEL-8: https://bugzilla.redhat.com/show_bug.cgi?id=1834716
+# RHEL-9: https://bugzilla.redhat.com/show_bug.cgi?id=1999587
+/hardening/anaconda/with-gui/[^/]+/service_avahi-daemon_disabled
+    True
+
+# TODO: no clue, but not present in new upstream content
+/hardening/oscap/with-gui/pci-dss/smartcard_auth
+    rhel == 7
+
+# OAA just failed without an error, as usual
+# https://issues.redhat.com/browse/OPENSCAP-3321
+# seems to be happening much more reliably with GUI
+/hardening/anaconda/with-gui/cis_workstation_l[12]
+    Match(status == 'error', sometimes=True)
+
+# Beaker-specific, since all Beaker repositories have gpgcheck=0
+# and these get copied to nested VMs too
+/(hardening|scanning)/.+/ensure_gpgcheck_never_disabled
+    Match(True, sometimes=True)
+
+# probably because Beaker has crond enabled
+# - TODO: shouldn't oscap be able to disable a service via remediation?
+/hardening/host-os/oscap/[^/]+/service_crond_enabled
+    Match(True, sometimes=True)
+# same for dnf-automatic and rsyslog (??), is this fully random?
+/hardening/host-os/oscap/[^/]+/package_dnf-automatic_installed
+/hardening/host-os/oscap/[^/]+/timer_dnf-automatic_enabled
+/hardening/host-os/oscap/[^/]+/package_rsyslog-gnutls_installed
+    Match(rhel >= 8, sometimes=True)
+
+# TODO: completely unknown, investigate and sort
+#
+# all RHELs
+/hardening/ansible/.+/aide_verify_acls
+/hardening/ansible/.+/aide_verify_ext_attributes
+/hardening/ansible/.+/mount_option_boot_noexec
+/hardening/ansible/.+/mount_option_boot_nosuid
+/hardening/ansible/.+/mount_option_home_noexec
+/hardening/ansible/.+/accounts_password_set_min_life_existing
+/hardening/ansible/.+/audit_rules_usergroup_modification
+    True
+# RHEL-9 only
+/hardening/ansible/.+/aide_scan_notification
+/hardening/ansible/.+/dnf-automatic_apply_updates
+/hardening/ansible/.+/dnf-automatic_security_updates_only
+/hardening/ansible/.+/accounts_polyinstantiated_tmp
+/hardening/ansible/.+/accounts_polyinstantiated_var_tmp
+/hardening/ansible/.+/disable_ctrlaltdel_(burstaction|reboot)
+/hardening/ansible/.+/configure_opensc_card_drivers
+/hardening/ansible/.+/force_opensc_card_drivers
+/hardening/ansible/with-gui/.+/network_nmcli_permissions
+    rhel == 9
+# RHEL-8 or 9
+/hardening/ansible/.+/no_tmux_in_shells
+/hardening/ansible/.+/configure_usbguard_auditbackend
+/hardening/ansible/.+/audit_rules_unsuccessful_file_modification
+    rhel == 8 or rhel == 9
+# RHEL-8
+/hardening/ansible/with-gui/stig_gui/sysctl_net_ipv4_conf_all_forwarding
+    rhel == 8
+# RHEL-7
+/hardening/ansible/.+/sshd_use_strong_ciphers
+/hardening/ansible/.+/sshd_use_strong_macs
+/hardening/ansible/.+/audit_rules_for_ospp
+/hardening/ansible/.+/aide_use_fips_hashes
+/hardening/ansible/.+/smartcard_auth
+    rhel == 7
+
+# unknown as well, but happens only rarely
+/hardening/ansible/.+/configure_bashrc_exec_tmux
+# home_nosuid failures are just really random across RHEL versions and nightlies
+/hardening/ansible/.+/mount_option_home_nosuid
+    Match(True, sometimes=True)
+
+# only on ism_o, seems to pass everywhere else
+/hardening/ansible(/with-gui)?/ism_o/enable_fips_mode
+    rhel == 9
+
+# only pci-dss, passes everywhere else
+/hardening/ansible(/with-gui)?/pci-dss/audit_rules_login_events
+    rhel == 8 or rhel == 9
+
+# WARNING: UNPROTECTED PRIVATE KEY FILE!
+/hardening/ansible/with-gui/cis_workstation_l[12]
+    status == 'error'
+
+# ansible-playbook completed, but returned non-0, TODO: investigate
+/hardening/ansible/stig
+/hardening/ansible/with-gui/stig_gui
+    status == 'error' and rhel == 8
+
+# TODO: is this a reported bug?
+/scanning/oscap-eval/ERROR
+    rhel <= 8 and note == 'E: oscap: Failed to convert OVAL state to SEXP, id: oval:ssg-state_file_groupowner_var_log_syslog_gid_4_0:ste:1.'
+
+# vim: syntax=python
