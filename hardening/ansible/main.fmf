@@ -4,6 +4,16 @@ result: custom
 environment+:
     PYTHONPATH: ../..
 duration: 1h
+require+:
+    # virt library dependencies
+    - libvirt-daemon
+    - libvirt-daemon-driver-qemu
+    - libvirt-daemon-driver-storage-core
+    - libvirt-daemon-driver-network
+    - firewalld
+    - qemu-kvm
+    - libvirt-client
+    - virt-install
 recommend+:
     # ansible-core is not available on RHEL-7
     # ansible is not on RHEL-8+
