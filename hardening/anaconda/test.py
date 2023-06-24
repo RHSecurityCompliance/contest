@@ -2,6 +2,7 @@
 
 import os
 
+import httpsrv
 from lib import util, results, virt, oscap, versions
 
 
@@ -29,7 +30,7 @@ oscap_conf = {
 ks.add_oscap(oscap_conf)
 
 # host a HTTP server with a datastream and let the guest download it
-srv = util.BackgroundHTTPServer(virt.NETWORK_HOST, 8088)
+srv = httpsrv.BackgroundHTTPServer(virt.NETWORK_HOST, 8088)
 srv.add_file(util.get_datastream(), 'contest-ds.xml')
 with srv:
     g.install(kickstart=ks)

@@ -4,8 +4,7 @@ import multiprocessing
 from pathlib import Path
 from http.server import HTTPServer, SimpleHTTPRequestHandler
 
-from .log import log
-from .subprocess import subprocess_run
+from lib import util
 
 
 class _BackgroundHTTPServerHandler(SimpleHTTPRequestHandler):
@@ -21,7 +20,7 @@ class _BackgroundHTTPServerHandler(SimpleHTTPRequestHandler):
             shutil.copyfileobj(f, self.wfile)
 
     def log_message(self, form, *args):
-        log(form % args)
+        util.log(form % args)
 
 
 class BackgroundHTTPServer(HTTPServer):
@@ -37,18 +36,18 @@ class BackgroundHTTPServer(HTTPServer):
         self.file_mapping[f'/{urlpath}'] = fspath
 
     def __enter__(self):
-        log(f"starting with: {self.file_mapping}")
+        util.log(f"starting with: {self.file_mapping}")
         # allow the target port on the firewall
         if shutil.which('firewall-cmd'):
-            res = subprocess_run(
+            res = util.subprocess_run(
                 ['firewall-cmd', '--state'], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
             if res.returncode == 0:
-                res = subprocess_run(
+                res = util.subprocess_run(
                     ['firewall-cmd', '--get-zones'], stdout=subprocess.PIPE,
                     universal_newlines=True, check=True)
                 self.firewalld_zones = res.stdout.strip().split(' ')
                 for zone in self.firewalld_zones:
-                    subprocess_run(
+                    util.subprocess_run(
                         ['firewall-cmd', f'--zone={zone}', f'--add-port={self.listen_port}/tcp'],
                         stdout=subprocess.DEVNULL, check=True)
         proc = multiprocessing.Process(target=self.serve_forever)
@@ -56,11 +55,11 @@ class BackgroundHTTPServer(HTTPServer):
         proc.start()
 
     def __exit__(self, exc_type, exc_value, traceback):
-        log("ending")
+        util.log("ending")
         self.process.terminate()
         self.process.join()
         # remove allow rules from the firewall
         for zone in self.firewalld_zones:
-            subprocess_run(
+            util.subprocess_run(
                 ['firewall-cmd', f'--zone={zone}', f'--remove-port={self.listen_port}/tcp'],
                 stdout=subprocess.DEVNULL, check=True)
