@@ -4,5 +4,6 @@ result: custom
 environment+:
     PYTHONPATH: ../..
 duration: 15m
+extra-summary: /CoreOS/scap-security-guide/scanning/oscap-eval
 extra-nitrate: TC#0615489
 id: 12ccbda9-d7e4-4331-a74d-14f9abdd9374
