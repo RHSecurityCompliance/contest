@@ -3,6 +3,7 @@ import sys
 import re
 import runpy
 import signal
+import traceback
 from pathlib import Path
 
 from . import util, results
@@ -48,8 +49,7 @@ def _setup_timeout_handling():
         # - the sys.exit() here also skips the exception catch-all in
         #   the wider runtest.py body because SystemExit is not a subclass
         #   of Exception
-        results.report('error', note="timed out: test exceeded duration time")
-        sys.exit(1)
+        results.report_and_exit('error', note="timed out: test exceeded duration time")
 
     signal.signal(signal.SIGALRM, _alarm_timed_out)
     signal.alarm(duration)
@@ -61,8 +61,8 @@ if util.running_in_tmt():
 try:
     runpy.run_path(sys.argv[1], run_name='__main__')
 except Exception as e:
-    results.report('error', note=f'{type(e).__name__}: {str(e)}')
-    raise e from None
+    traceback.print_exc()
+    results.report_and_exit('error', note=f'{type(e).__name__}: {str(e)}')
 
 # here we rely on the test to report pass/fail for itself, as its control flow
 # reached an end successfully - we care only about it ending prematurely due to

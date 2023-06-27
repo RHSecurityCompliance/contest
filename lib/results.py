@@ -171,6 +171,8 @@ def report(status, name=None, note=None, logs=None, *, add_output=True):
     'add_output' specifies whether to add the test's own std* console
     output, as captured by TMT, to the list of logs whenever 'name'
     is empty.
+
+    Returns the final 'status', potentially modified by the waiving logic.
     """
     if status not in _valid_statuses:
         raise SyntaxError(f"{status} is not a valid status")
@@ -192,28 +194,40 @@ def report(status, name=None, note=None, logs=None, *, add_output=True):
         errored_count += 1
 
     if util.running_in_beaker():
-        return report_beaker(status, name, note, logs)
+        report_beaker(status, name, note, logs)
     elif util.running_in_tmt():
-        return report_tmt(status, name, note, logs, add_output=add_output)
+        report_tmt(status, name, note, logs, add_output=add_output)
     else:
-        return report_plain(status, name, note, logs)
+        report_plain(status, name, note, logs)
+
+    return status
 
 
-def report_and_exit(note=None, logs=None):
+def report_and_exit(status=None, note=None, logs=None):
     """
     Report a result for the test itself and exit with 0 or 2, depending
     on whether there were any failures reported during execution of
     the test.
     """
-    # only failures, no errors --> fail
-    if failed_count > 0 and errored_count == 0:
-        report('fail', note=note, logs=logs)
+    # figure out overall test status based on previously reported results
+    if not status:
+        # only failures, no errors --> fail
+        if failed_count > 0 and errored_count == 0:
+            status = 'fail'
+        # any errors anywhere --> error
+        elif errored_count > 0:
+            status = 'error'
+        # no errors, no fails --> pass
+        else:
+            status = 'pass'
+
+    # report and pass the status through the waiving logic
+    status = report(status=status, note=note, logs=logs)
+
+    # exit based on the new status
+    if status == 'fail':
         sys.exit(2)
-    # any errors anywhere --> error
-    elif errored_count > 0:
-        report('error', note=note, logs=logs)
-        sys.exit(1)
-    # no errors, no fails --> pass
-    else:
-        report('pass', note=note, logs=logs)
+    elif status in ['pass', 'info', 'warn']:
         sys.exit(0)
+    else:
+        sys.exit(1)

@@ -160,9 +160,12 @@ def match_result(status, name, note):
     if note is None:
         note = ''
 
-    # prepend test name to a sub-result
     if name:
+        # prepend test name to a sub-result
         name = util.get_test_name() + f'/{name}'
+    else:
+        # use the actual test name, not '/'
+        name = util.get_test_name()
 
     objs = {
         # result related
