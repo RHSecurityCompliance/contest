@@ -9,11 +9,14 @@ environment+:
     PYTHONPATH: ../../..
 duration: 15m
 recommend+:
-    # python3-PyYAML is needed on RHEL-7
-    - python3-PyYAML
-    # ansible-core is not available on RHEL-7
-    # ansible is not on RHEL-8+
-    - ansible-core
-    - ansible
-    # needed for the ini_file ansible plugin, and more
-    - rhc-worker-playbook
+  # python3-PyYAML is needed on RHEL-7
+  - python3-PyYAML
+  # ansible-core is not available on RHEL-7
+  # ansible is not on RHEL-8+
+  - ansible-core
+  - ansible
+  # needed for the ini_file ansible plugin, and more
+  - rhc-worker-playbook
+extra-summary: /CoreOS/scap-security-guide/static-checks/ansible/allowed-modules
+extra-nitrate: TC#0615492
+id: 2081f398-38e2-4404-94c4-b88f2e73ccb0
