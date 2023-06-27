@@ -124,7 +124,9 @@ def report_beaker(status, name=None, note=None, logs=None):
     if status == 'pass':
         beaker_status = 'Pass'
     elif status == 'warn':
-        beaker_status = 'Warn'
+        # 'Warn' causes tcms-results to treat it as a failure,
+        # in fact, anything non-'Pass' does
+        beaker_status = 'Pass'
     elif status == 'info':
         beaker_status = 'None'
     else:
