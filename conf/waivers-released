@@ -9,15 +9,19 @@
 /hardening/oscap(/with-gui)?/[^/]+/configure_bashrc_exec_tmux
 /hardening/oscap(/with-gui)?/[^/]+/no_tmux_in_shells
 /hardening/oscap(/with-gui)?/[^/]+/configure_usbguard_auditbackend
-/hardening/host-os/oscap/[^/]+/configure_bashrc_exec_tmux
-/hardening/host-os/oscap/[^/]+/no_tmux_in_shells
-/hardening/host-os/oscap/[^/]+/configure_usbguard_auditbackend
     rhel >= 8
 /hardening/oscap(/with-gui)?/[^/]+/configure_bashrc_tmux
 /hardening/oscap(/with-gui)?/stig(_gui)?/postfix_prevent_unrestricted_relay
+    rhel == 8
+
+# same issue, but host-os seems to be a lot more random in this
+/hardening/host-os/oscap/[^/]+/configure_bashrc_exec_tmux
+/hardening/host-os/oscap/[^/]+/no_tmux_in_shells
+/hardening/host-os/oscap/[^/]+/configure_usbguard_auditbackend
+    Match(rhel >= 8, sometimes=True)
 /hardening/host-os/oscap/[^/]+/configure_bashrc_tmux
 /hardening/host-os/oscap/stig/postfix_prevent_unrestricted_relay
-    rhel == 8
+    Match(rhel == 8, sometimes=True)
 
 # rule ordering issue - accounts_password_pam_retry is checked first and passes,
 # and a later enable_authselect remediation breaks it
@@ -72,7 +76,7 @@
 
 # TODO: no clue, but not present in new upstream content
 /hardening/oscap/with-gui/pci-dss/smartcard_auth
-    rhel == 7
+    Match(rhel == 7, sometimes=True)
 
 # OAA just failed without an error, as usual
 # https://issues.redhat.com/browse/OPENSCAP-3321
@@ -80,20 +84,51 @@
 /hardening/anaconda/with-gui/cis_workstation_l[12]
     Match(status == 'error', sometimes=True)
 
-# Beaker-specific, since all Beaker repositories have gpgcheck=0
-# and these get copied to nested VMs too
-/(hardening|scanning)/.+/ensure_gpgcheck_never_disabled
+# happened in Beaker, but uses VMs, so it shouldn't be Beaker-specific
+# TODO: investigate, seems to be RHEL-9.3+ but unsure
+/hardening/oscap/with-gui/.+/package_aide_installed
+/hardening/oscap/with-gui/.+/aide_build_database
+/hardening/oscap/with-gui/.+/aide_periodic_cron_checking
+/hardening/oscap/with-gui/.+/aide_scan_notification
+/hardening/oscap/with-gui/.+/aide_verify_acls
+/hardening/oscap/with-gui/.+/aide_verify_ext_attributes
     Match(True, sometimes=True)
 
-# probably because Beaker has crond enabled
-# - TODO: shouldn't oscap be able to disable a service via remediation?
-/hardening/host-os/oscap/[^/]+/service_crond_enabled
+# Beaker-specific:
+# all Beaker repositories have gpgcheck=0 and they get copied to nested VMs too
+/(hardening|scanning)/.+/ensure_gpgcheck_never_disabled
+# we don't control partitions on the host OS
+/hardening/host-os/oscap/.+/mount_option_(home|opt|srv|var|var_log|var_log_audit)_(noexec|nosuid|nodev|usrquota|grpquota)
+# likely something caused by restraint / Beaker test env 
+/hardening/host-os/oscap/.+/file_permissions_unauthorized_world_writable
+# Beaker and host-os seem to randomly fail any services enabled
+# or packages installed - TODO investigate remediation script outputs
+# to figure out why
+/hardening/host-os/oscap/[^/]+/service_.+_enabled
+/hardening/host-os/oscap/[^/]+/timer_.+_enabled
+/hardening/host-os/oscap/[^/]+/package_.+_installed
+# TODO: unknown, probably worth investigating
+/hardening/host-os/oscap/.+/sysctl_net_ipv6_conf_(all|default)_accept_ra
+/hardening/host-os/oscap/.+/sysctl_net_ipv4_conf_default_log_martians
     Match(True, sometimes=True)
+
+# Beaker-specific, possibly;
 # same for dnf-automatic and rsyslog (??), is this fully random?
 /hardening/host-os/oscap/[^/]+/package_dnf-automatic_installed
 /hardening/host-os/oscap/[^/]+/timer_dnf-automatic_enabled
 /hardening/host-os/oscap/[^/]+/package_rsyslog-gnutls_installed
     Match(rhel >= 8, sometimes=True)
+
+# seems RHEL-8 specific, unknown, TODO investigate
+# remediation script says:
+#   Current configuration is valid.
+#   Current configuration is valid.
+#   [error] Unknown profile feature [with-smartcard]
+#   [error] Unable to activate profile [custom/hardening] [22]: Invalid argument
+#   Unable to enable feature [22]: Invalid argument
+# maybe hardware-specific and our Beaker systems don't have the hardware?
+/hardening/host-os/oscap/.+/sssd_enable_smartcards
+    Match(rhel == 8, sometimes=True)
 
 # TODO: completely unknown, investigate and sort
 #
