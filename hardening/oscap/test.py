@@ -29,7 +29,8 @@ with g.snapshotted():
     g.copy_to(util.get_datastream(), 'contest-ds.xml')
 
     # remediate, reboot
-    g.ssh(f'oscap xccdf eval --profile {profile} --progress --remediate contest-ds.xml')
+    g.ssh(f'oscap xccdf eval --profile {profile} --progress '
+          '--report remediation.html --remediate contest-ds.xml')
     g.soft_reboot()
 
     # old RHEL-7 oscap mixes errors into --progress rule names without a newline
@@ -44,5 +45,6 @@ with g.snapshotted():
         raise RuntimeError("post-reboot oscap failed unexpectedly")
 
     g.copy_from('report.html')
+    g.copy_from('remediation.html')
 
-results.report_and_exit(logs=['report.html'])
+results.report_and_exit(logs=['report.html', 'remediation.html'])

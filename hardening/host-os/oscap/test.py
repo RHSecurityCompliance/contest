@@ -2,6 +2,7 @@
 
 import os
 import subprocess
+import shutil
 
 from pathlib import Path
 
@@ -15,15 +16,22 @@ profile = f'xccdf_org.ssgproject.content_profile_{profile}'
 ds = util.get_datastream()
 
 unique_name = util.get_test_name().lstrip('/').replace('/', '-')
-new_ds = Path(f'/var/tmp/contest-{unique_name}')
+
+# persistent across reboots
+tmpdir = Path(f'/var/tmp/contest-{unique_name}')
+new_ds = tmpdir / 'modified_datastream.xml'
 
 if util.get_reboot_count() == 0:
     util.log("first boot, doing remediation")
 
+    if tmpdir.exists():
+        shutil.rmtree(tmpdir)
+    tmpdir.mkdir()
+
     oscap.unselect_rules(ds, new_ds, remediation_excludes.host_os)
     cmd = [
         'oscap', 'xccdf', 'eval', '--profile', profile,
-        '--progress', '--remediate',
+        '--progress', '--remediate', '--report', tmpdir / 'remediation.html',
         new_ds,
     ]
     proc = util.subprocess_run(cmd)
@@ -55,4 +63,4 @@ else:
     if proc.returncode not in [0,2]:
         raise RuntimeError("post-reboot oscap failed unexpectedly")
 
-    results.report_and_exit(logs=['report.html'])
+    results.report_and_exit(logs=['report.html', tmpdir / 'remediation.html'])
