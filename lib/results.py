@@ -146,9 +146,9 @@ def report_beaker(status, name=None, note=None, logs=None):
         for log in logs:
             logpath = r.headers['Location'] + '/logs/' + Path(log).name
             with open(log, 'rb') as f:
-                r = requests.put(logpath, data=f)
-                if r.status_code != 204:
-                    util.log(f"uploading log {logpath} failed with {r.status_code}")
+                put = requests.put(logpath, data=f)
+                if put.status_code != 204:
+                    util.log(f"uploading log {logpath} failed with {put.status_code}")
 
 
 def report_plain(status, name=None, note=None, logs=None):
