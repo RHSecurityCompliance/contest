@@ -80,7 +80,6 @@ import time
 import subprocess
 import textwrap
 import contextlib
-import shutil
 import tempfile
 import requests
 import configparser
