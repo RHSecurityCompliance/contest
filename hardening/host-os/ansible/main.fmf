@@ -12,6 +12,8 @@ recommend+:
   # needed for the ini_file ansible plugin, and more
   - rhc-worker-playbook
 enabled: false
+tag:
+  - destructive
 
 /anssi_bp28_high:
     environment+:
