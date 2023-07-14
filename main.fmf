@@ -1,6 +1,10 @@
 require:
   - openscap-scanner
   - scap-security-guide
+  - type: file
+    pattern: /lib
+  - type: file
+    pattern: /conf
 
 # shared by all tests
 recommend:
