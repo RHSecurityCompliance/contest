@@ -1,4 +1,8 @@
 require:
+  - type: file
+    pattern: /lib
+  - type: file
+    pattern: /conf
   - scap-security-guide
 
 # shared by all tests
