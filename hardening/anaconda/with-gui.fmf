@@ -149,3 +149,12 @@ duration: 2h
     extra-summary: /CoreOS/scap-security-guide/hardening/anaconda/with-gui/stig_gui
     extra-nitrate: TC#0615417
     id: 3289b917-ca54-469c-8bce-f1db3c705239
+
+/ccn_advanced:
+    environment+:
+        PROFILE: ccn_advanced
+    adjust:
+        when: distro <= rhel-8
+        enabled: false
+        because: CNN Advanced profile is specific to RHEL 9
+    extra-summary: /CoreOS/scap-security-guide/hardening/anaconda/with-gui/ccn_advanced
