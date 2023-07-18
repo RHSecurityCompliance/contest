@@ -139,3 +139,12 @@ duration: 2h
     extra-summary: /CoreOS/scap-security-guide/hardening/oscap/with-gui/stig_gui
     extra-nitrate: TC#0615488
     id: 184a8acc-4759-480d-a0b6-948f6df720db
+
+/ccn_advanced:
+    environment+:
+        PROFILE: ccn_advanced
+    adjust:
+        when: distro <= rhel-8
+        enabled: false
+        because: CNN Advanced profile is specific to RHEL 9
+    extra-summary: /CoreOS/scap-security-guide/hardening/oscap/with-gui/ccn_advanced

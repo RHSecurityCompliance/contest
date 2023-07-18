@@ -138,3 +138,12 @@ tag:
     extra-summary: /CoreOS/scap-security-guide/hardening/host-os/ansible/stig_gui
     extra-nitrate: TC#0615459
     id: cfb0fe65-acf3-4239-8ff6-a4f74aefb591
+
+/ccn_advanced:
+    environment+:
+        PROFILE: ccn_advanced
+    adjust:
+        when: distro <= rhel-8
+        enabled: false
+        because: CNN Advanced profile is specific to RHEL 9
+    extra-summary: /CoreOS/scap-security-guide/hardening/host-os/ansible/ccn_advanced
