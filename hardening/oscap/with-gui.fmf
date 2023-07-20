@@ -1,7 +1,6 @@
 environment+:
     USE_SERVER_WITH_GUI: 1
 duration: 2h
-
 /anssi_bp28_high:
     environment+:
         PROFILE: anssi_bp28_high
@@ -12,7 +11,6 @@ duration: 2h
     extra-summary: /CoreOS/scap-security-guide/hardening/oscap/with-gui/anssi_bp28_high
     extra-nitrate: TC#0615475
     id: 5c1f431d-990f-4379-963e-924ef8bcf9b2
-
 /anssi_nt28_high:
     environment+:
         PROFILE: anssi_nt28_high
@@ -23,72 +21,61 @@ duration: 2h
     extra-summary: /CoreOS/scap-security-guide/hardening/oscap/with-gui/anssi_nt28_high
     extra-nitrate: TC#0615476
     id: 2590b9d4-12fa-4723-97d7-50da3d9e16be
-
 /cis:
     environment+:
         PROFILE: cis
     adjust:
         enabled: false
-        because: >
-            not supported on RHEL-8 or RHEL-9 according to RHEL documentation,
-            the "Profiles not compatible with Server with GUI" table
+        because: |
+            not supported on RHEL-8 or RHEL-9 according to RHEL documentation, the "Profiles not compatible with Server with GUI" table
     extra-summary: /CoreOS/scap-security-guide/hardening/oscap/with-gui/cis
     extra-nitrate: TC#0615477
     id: ca3b4846-1360-4c73-ad27-1a669bb2a46b
-
 /cis_server_l1:
     environment+:
         PROFILE: cis_server_l1
     adjust:
         enabled: false
-        because: >
-            not supported on RHEL-8 or RHEL-9 according to RHEL documentation,
-            the "Profiles not compatible with Server with GUI" table
+        because: |
+            not supported on RHEL-8 or RHEL-9 according to RHEL documentation, the "Profiles not compatible with Server with GUI" table
     extra-summary: /CoreOS/scap-security-guide/hardening/oscap/with-gui/cis_server_l1
     extra-nitrate: TC#0615478
     id: fb2a6fc0-fa80-468f-85ab-fce898e68af6
-
 /cis_workstation_l1:
     environment+:
         PROFILE: cis_workstation_l1
     extra-summary: /CoreOS/scap-security-guide/hardening/oscap/with-gui/cis_workstation_l1
     extra-nitrate: TC#0615479
     id: a8bf4338-a3c0-430d-8aea-e494d20cb75a
-
 /cis_workstation_l2:
     environment+:
         PROFILE: cis_workstation_l2
     extra-summary: /CoreOS/scap-security-guide/hardening/oscap/with-gui/cis_workstation_l2
     extra-nitrate: TC#0615480
     id: 087db3e2-3014-4f3a-8f36-7a2dc63af6a1
-
 /cui:
     environment+:
         PROFILE: cui
     adjust:
         when: distro <= rhel-8
         enabled: false
-        because: >
-            not supported on RHEL-8 according to RHEL documentation,
-            the "Profiles not compatible with Server with GUI" table
+        because: |
+            not supported on RHEL-8 according to RHEL documentation, the "Profiles not compatible with Server with GUI" table
     extra-summary: /CoreOS/scap-security-guide/hardening/oscap/with-gui/cui
     extra-nitrate: TC#0615481
     id: 79f376c2-e518-4d7d-b62b-44156da7dc79
-
 /e8:
     environment+:
         PROFILE: e8
     extra-summary: /CoreOS/scap-security-guide/hardening/oscap/with-gui/e8
     extra-nitrate: TC#0615482
     id: ce009bae-f18d-45a2-ace0-7e9b80f93c42
-
 /hipaa:
     environment+:
         PROFILE: hipaa
     extra-summary: /CoreOS/scap-security-guide/hardening/oscap/with-gui/hipaa
     extra-nitrate: TC#0615483
     id: f5c798e1-0c82-4886-a5d8-91f63929efae
-
 /ism_o:
     environment+:
         PROFILE: ism_o
@@ -99,47 +86,39 @@ duration: 2h
     extra-summary: /CoreOS/scap-security-guide/hardening/oscap/with-gui/ism_o
     extra-nitrate: TC#0615484
     id: 86e0eb89-aca8-4f3c-9dcd-274827153d02
-
 /ospp:
     environment+:
         PROFILE: ospp
     adjust:
         when: distro <= rhel-8
         enabled: false
-        because: >
-            not supported on RHEL-8 according to RHEL documentation,
-            the "Profiles not compatible with Server with GUI" table
+        because: |
+            not supported on RHEL-8 according to RHEL documentation, the "Profiles not compatible with Server with GUI" table
     extra-summary: /CoreOS/scap-security-guide/hardening/oscap/with-gui/ospp
     extra-nitrate: TC#0615485
     id: bf8a040e-23c5-489e-8202-7a2d39828adc
-
 /pci-dss:
     environment+:
         PROFILE: pci-dss
     extra-summary: /CoreOS/scap-security-guide/hardening/oscap/with-gui/pci-dss
     extra-nitrate: TC#0615486
     id: 358e4f83-4a83-442b-9f91-4480abe8b85e
-
 /stig:
     environment+:
         PROFILE: stig
     adjust:
         enabled: false
-        because: >
-            not supported with GUI, use stig_gui instead;
-            not supported on RHEL-8 or RHEL-9 according to RHEL documentation,
-            the "Profiles not compatible with Server with GUI" table
+        because: |
+            not supported with GUI, use stig_gui instead; not supported on RHEL-8 or RHEL-9 according to RHEL documentation, the "Profiles not compatible with Server with GUI" table
     extra-summary: /CoreOS/scap-security-guide/hardening/oscap/with-gui/stig
     extra-nitrate: TC#0615487
     id: 97922f22-f3a7-4e2a-9dd2-71c34d0400d4
-
 /stig_gui:
     environment+:
         PROFILE: stig_gui
     extra-summary: /CoreOS/scap-security-guide/hardening/oscap/with-gui/stig_gui
     extra-nitrate: TC#0615488
     id: 184a8acc-4759-480d-a0b6-948f6df720db
-
 /ccn_advanced:
     environment+:
         PROFILE: ccn_advanced
@@ -148,3 +127,5 @@ duration: 2h
         enabled: false
         because: CNN Advanced profile is specific to RHEL 9
     extra-summary: /CoreOS/scap-security-guide/hardening/oscap/with-gui/ccn_advanced
+    extra-nitrate: TC#0615557
+    id: f73289ae-643d-4cf0-bf01-e1b31cdefd40

@@ -5,7 +5,6 @@ environment+:
     PYTHONPATH: ../..
 duration: 1h
 require+:
-  # virt library dependencies
   - libvirt-daemon
   - libvirt-daemon-driver-qemu
   - libvirt-daemon-driver-storage-core
@@ -15,16 +14,12 @@ require+:
   - libvirt-client
   - virt-install
 recommend+:
-  # ansible-core is not available on RHEL-7
-  # ansible is not on RHEL-8+
   - ansible-core
   - ansible
-  # needed for the ini_file ansible plugin, and more
   - rhc-worker-playbook
 extra-hardware: |
     keyvalue = HVM=1
     hostrequire = memory>=3720
-
 /anssi_bp28_high:
     environment+:
         PROFILE: anssi_bp28_high
@@ -35,7 +30,6 @@ extra-hardware: |
     extra-summary: /CoreOS/scap-security-guide/hardening/ansible/anssi_bp28_high
     extra-nitrate: TC#0615418
     id: 7d851e6c-3e2f-45ba-8e6c-d65c026533e0
-
 /anssi_nt28_high:
     environment+:
         PROFILE: anssi_nt28_high
@@ -46,35 +40,30 @@ extra-hardware: |
     extra-summary: /CoreOS/scap-security-guide/hardening/ansible/anssi_nt28_high
     extra-nitrate: TC#0615419
     id: 002df673-ebd6-4eea-8cf0-3a33d9dc3036
-
 /cis:
     environment+:
         PROFILE: cis
     extra-summary: /CoreOS/scap-security-guide/hardening/ansible/cis
     extra-nitrate: TC#0615420
     id: c450feb4-8a84-458b-8076-c4fc34c6d420
-
 /cis_server_l1:
     environment+:
         PROFILE: cis_server_l1
     extra-summary: /CoreOS/scap-security-guide/hardening/ansible/cis_server_l1
     extra-nitrate: TC#0615421
     id: d8aac2ce-03f8-49cc-af32-7a762892b15b
-
 /cis_workstation_l1:
     environment+:
         PROFILE: cis_workstation_l1
     extra-summary: /CoreOS/scap-security-guide/hardening/ansible/cis_workstation_l1
     extra-nitrate: TC#0615422
     id: f66247b6-ad88-499f-999f-cee18b20736e
-
 /cis_workstation_l2:
     environment+:
         PROFILE: cis_workstation_l2
     extra-summary: /CoreOS/scap-security-guide/hardening/ansible/cis_workstation_l2
     extra-nitrate: TC#0615423
     id: 33ef4c07-f316-4fef-8319-bc92e674e9fc
-
 /cui:
     environment+:
         PROFILE: cui
@@ -85,21 +74,18 @@ extra-hardware: |
     extra-summary: /CoreOS/scap-security-guide/hardening/ansible/cui
     extra-nitrate: TC#0615424
     id: ecd81d95-db3c-4ce0-8bc2-0634a6d10891
-
 /e8:
     environment+:
         PROFILE: e8
     extra-summary: /CoreOS/scap-security-guide/hardening/ansible/e8
     extra-nitrate: TC#0615425
     id: 57fa0d26-5c60-4f1d-abeb-1fb01c2eea2a
-
 /hipaa:
     environment+:
         PROFILE: hipaa
     extra-summary: /CoreOS/scap-security-guide/hardening/ansible/hipaa
     extra-nitrate: TC#0615426
     id: a630571c-06e9-4d9f-b241-fceac07db427
-
 /ism_o:
     environment+:
         PROFILE: ism_o
@@ -110,35 +96,29 @@ extra-hardware: |
     extra-summary: /CoreOS/scap-security-guide/hardening/ansible/ism_o
     extra-nitrate: TC#0615427
     id: fdf874e0-b9c3-48aa-b72c-8744eb9e82c2
-
 /ospp:
     environment+:
         PROFILE: ospp
     extra-summary: /CoreOS/scap-security-guide/hardening/ansible/ospp
     extra-nitrate: TC#0615428
     id: 67fa598d-8e48-429c-9462-42b1314bc208
-
 /pci-dss:
     environment+:
         PROFILE: pci-dss
     adjust:
         when: distro == rhel-7
         enabled: false
-        because: >
-            RHEL-7 kickstart has a non-standard name and we decided that
-            it is too close to EOL to introduce a hacky logic specifically
-            for this case
+        because: |
+            RHEL-7 kickstart has a non-standard name and we decided that it is too close to EOL to introduce a hacky logic specifically for this case
     extra-summary: /CoreOS/scap-security-guide/hardening/ansible/pci-dss
     extra-nitrate: TC#0615429
     id: b110b2ec-1155-4b9c-a72c-d2430c376544
-
 /stig:
     environment+:
         PROFILE: stig
     extra-summary: /CoreOS/scap-security-guide/hardening/ansible/stig
     extra-nitrate: TC#0615430
     id: 557bc116-2952-469f-87a6-a1515df8baa8
-
 /stig_gui:
     environment+:
         PROFILE: stig_gui
@@ -148,7 +128,6 @@ extra-hardware: |
     extra-summary: /CoreOS/scap-security-guide/hardening/ansible/stig_gui
     extra-nitrate: TC#0615431
     id: 9a90982b-ce7f-471e-8ff2-217e7ab5c658
-
 /ccn_advanced:
     environment+:
         PROFILE: ccn_advanced
@@ -157,3 +136,5 @@ extra-hardware: |
         enabled: false
         because: CNN Advanced profile is specific to RHEL 9
     extra-summary: /CoreOS/scap-security-guide/hardening/ansible/ccn_advanced
+    extra-nitrate: TC#0615552
+    id: b9c5b67c-73a9-4aad-a4e1-aaadc0c6a18b
