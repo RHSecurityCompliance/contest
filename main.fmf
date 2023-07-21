@@ -12,3 +12,7 @@ recommend:
 - python36-rpm
 component:
 - scap-security-guide
+
+# don't test for SELinux AVCs in Beaker
+environment:
+    AVC_ERROR: +no_avc_check
