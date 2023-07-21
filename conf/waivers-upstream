@@ -31,6 +31,11 @@
 /hardening/host-os/oscap/[^/]+/accounts_password_pam_retry
     Match(rhel >= 8, sometimes=True)
 
+# another rule ordering issue - on s390x,
+# https://github.com/ComplianceAsCode/content/issues/10654
+/hardening/host-os/oscap/[^/]+/zipl_bootmap_is_up_to_date
+    Match(True, sometimes=True)
+
 # bz1828871, won't be fixed on rhel7
 # needs to be remediated more than once due to rule ordering issues
 /hardening/anaconda(/with-gui)?/[^/]+/postfix_network_listening_disabled
@@ -112,6 +117,7 @@
 /(hardening|scanning)/.+/ensure_gpgcheck_never_disabled
 # we don't control partitions on the host OS
 /hardening/host-os/oscap/.+/mount_option_(home|opt|srv|var|var_log|var_log_audit)_(noexec|nosuid|nodev|usrquota|grpquota)
+/hardening/host-os/oscap/.+/mount_option_boot_efi_nosuid
 # likely something caused by restraint / Beaker test env 
 /hardening/host-os/oscap/.+/file_permissions_unauthorized_world_writable
 # Beaker and host-os seem to randomly fail any services enabled
