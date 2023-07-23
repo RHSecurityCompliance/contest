@@ -6,12 +6,20 @@ environment+:
 duration: 1h
 tag:
   - destructive
+adjust:
+  - when: distro == rhel-7 and arch == s390x
+    enabled: false
+    because: >
+        RHEL-7 has no EPEL for s390x and we need python3,
+        remove this once we drop support for RHEL-7, and fully remove
+        the machine-hardening tests from the General plan, as they are now
+        only running on RHEL-7 && s390x to cover this gap
 
 /anssi_bp28_high:
     environment+:
         PROFILE: anssi_bp28_high
-    adjust:
-        when: distro == rhel-7
+    adjust+:
+      - when: distro == rhel-7
         enabled: false
         because: RHEL-7 has anssi_nt28_high instead
     extra-summary: /CoreOS/scap-security-guide/hardening/host-os/oscap/anssi_bp28_high
@@ -21,8 +29,8 @@ tag:
 /anssi_nt28_high:
     environment+:
         PROFILE: anssi_nt28_high
-    adjust:
-        when: distro >= rhel-8
+    adjust+:
+      - when: distro >= rhel-8
         enabled: false
         because: RHEL-8 and newer have anssi_bp28_high instead
     extra-summary: /CoreOS/scap-security-guide/hardening/host-os/oscap/anssi_nt28_high
@@ -81,8 +89,8 @@ tag:
 /ism_o:
     environment+:
         PROFILE: ism_o
-    adjust:
-        when: distro == rhel-7
+    adjust+:
+      - when: distro == rhel-7
         enabled: false
         because: doesn't exist on RHEL-7
     extra-summary: /CoreOS/scap-security-guide/hardening/host-os/oscap/ism_o
@@ -113,8 +121,8 @@ tag:
 /stig_gui:
     environment+:
         PROFILE: stig_gui
-    adjust:
-        enabled: false
+    adjust+:
+      - enabled: false
         because: not supported without GUI, use stig instead
     extra-summary: /CoreOS/scap-security-guide/hardening/host-os/oscap/stig_gui
     extra-nitrate: TC#0615473
@@ -123,8 +131,8 @@ tag:
 /ccn_advanced:
     environment+:
         PROFILE: ccn_advanced
-    adjust:
-        when: distro <= rhel-8
+    adjust+:
+      - when: distro <= rhel-8
         enabled: false
         because: CNN Advanced profile is specific to RHEL 9
     extra-summary: /CoreOS/scap-security-guide/hardening/host-os/oscap/ccn_advanced
