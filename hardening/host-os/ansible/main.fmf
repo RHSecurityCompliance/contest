@@ -11,9 +11,14 @@ recommend+:
   - ansible
   # needed for the ini_file ansible plugin, and more
   - rhc-worker-playbook
-enabled: false
 tag:
   - destructive
+
+# Disabled for now because most (all?) of the failures are identical with
+# VM-using tests, /hardening/ansible, and we would prefer the waivers for
+# those tests to be categorized or bugs fixed, before we extend the test
+# matrix with this host-os ansible test.
+enabled: false
 
 /anssi_bp28_high:
     environment+:
