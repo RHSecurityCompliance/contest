@@ -6,6 +6,7 @@ environment+:
 duration: 1h
 tag:
   - destructive
+  - CI-Beaker
 adjust:
   - when: distro == rhel-7 and arch == s390x
     enabled: false

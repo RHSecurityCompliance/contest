@@ -10,6 +10,8 @@ recommend+:
   - dnf-utils
   - yum-utils
   - yum-builddep
+tag:
+  - CI-Tier-1
 extra-summary: /CoreOS/scap-security-guide/static-checks/rpmbuild-ctest
 extra-nitrate: TC#0615490
 id: 87442db1-5e7a-4c3f-93fa-1e37b233721e

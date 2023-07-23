@@ -13,6 +13,7 @@ recommend+:
   - rhc-worker-playbook
 tag:
   - destructive
+  - CI-Beaker
 
 # Disabled for now because most (all?) of the failures are identical with
 # VM-using tests, /hardening/ansible, and we would prefer the waivers for
