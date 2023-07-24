@@ -18,6 +18,7 @@ extra-hardware: |
     keyvalue = HVM=1
     hostrequire = memory>=3720
 tag:
+  - Kickstarts
   - max1
 
 /anssi_bp28_high:
@@ -109,8 +110,6 @@ tag:
 /ospp:
     environment+:
         PROFILE: ospp
-    tag+:
-      - CI-Beaker-Optional
     extra-summary: /CoreOS/scap-security-guide/hardening/anaconda/ospp
     extra-nitrate: TC#0615174
     id: 2a02056b-9fd1-4de1-9f23-bc493f41b6c8
@@ -118,8 +117,6 @@ tag:
 /pci-dss:
     environment+:
         PROFILE: pci-dss
-    tag+:
-      - CI-Beaker-Optional
     adjust:
         when: distro == rhel-7
         enabled: false
@@ -134,8 +131,6 @@ tag:
 /stig:
     environment+:
         PROFILE: stig
-    tag+:
-      - CI-Beaker-Optional
     extra-summary: /CoreOS/scap-security-guide/hardening/anaconda/stig
     extra-nitrate: TC#0615180
     id: 156ae132-5eac-4063-8189-7bd2fdd32e21
