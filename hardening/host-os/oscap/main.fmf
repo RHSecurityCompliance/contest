@@ -137,3 +137,5 @@ adjust:
         enabled: false
         because: CNN Advanced profile is specific to RHEL 9
     extra-summary: /CoreOS/scap-security-guide/hardening/host-os/oscap/ccn_advanced
+    extra-nitrate: TC#0615555
+    id: d156c98b-30de-4af2-a4b7-5224079681da

@@ -158,3 +158,5 @@ duration: 2h
         enabled: false
         because: CNN Advanced profile is specific to RHEL 9
     extra-summary: /CoreOS/scap-security-guide/hardening/ansible/with-gui/ccn_advanced
+    extra-nitrate: TC#0615553
+    id: 585d1dbd-63c8-4d53-a217-eaf935f4a7ce
