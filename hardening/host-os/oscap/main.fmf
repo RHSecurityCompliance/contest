@@ -8,10 +8,10 @@ tag:
   - destructive
   - CI-Beaker
 adjust:
-  - when: distro == rhel-7 and arch == s390x
+  - when: distro == rhel-7 and arch == s390x or distro == rhel-7 and arch == ppc64
     enabled: false
     because: >
-        RHEL-7 has no EPEL for s390x and we need python3,
+        RHEL-7 has no EPEL for s390x/ppc64 and we need python3,
         remove this once we drop support for RHEL-7, and fully remove
         the machine-hardening tests from the General plan, as they are now
         only running on RHEL-7 && s390x to cover this gap
