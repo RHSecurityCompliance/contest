@@ -2,6 +2,10 @@ environment+:
     USE_SERVER_WITH_GUI: 1
 duration: 2h
 
+# do not run GUI tests in CI unless explicitly mentioned below
+tag-:
+  - Kickstarts
+
 /anssi_bp28_high:
     environment+:
         PROFILE: anssi_bp28_high
@@ -58,6 +62,8 @@ duration: 2h
 /cis_workstation_l2:
     environment+:
         PROFILE: cis_workstation_l2
+    tag+:
+      - Kickstarts
     extra-summary: /CoreOS/scap-security-guide/hardening/anaconda/with-gui/cis_workstation_l2
     extra-nitrate: TC#0615409
     id: 93c3eba2-b612-4c9f-a755-b440d66b1c90
@@ -146,6 +152,8 @@ duration: 2h
 /stig_gui:
     environment+:
         PROFILE: stig_gui
+    tag+:
+      - Kickstarts
     extra-summary: /CoreOS/scap-security-guide/hardening/anaconda/with-gui/stig_gui
     extra-nitrate: TC#0615417
     id: 3289b917-ca54-469c-8bce-f1db3c705239
