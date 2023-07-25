@@ -153,3 +153,5 @@ tag:
         enabled: false
         because: CNN Advanced profile is specific to RHEL 9
     extra-summary: /CoreOS/scap-security-guide/hardening/anaconda/ccn_advanced
+    extra-nitrate: TC#0615550
+    id: de88ef36-6433-4e03-83c5-cb234683cc88

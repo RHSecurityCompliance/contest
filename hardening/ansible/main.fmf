@@ -159,3 +159,5 @@ tag:
         enabled: false
         because: CNN Advanced profile is specific to RHEL 9
     extra-summary: /CoreOS/scap-security-guide/hardening/ansible/ccn_advanced
+    extra-nitrate: TC#0615552
+    id: b9c5b67c-73a9-4aad-a4e1-aaadc0c6a18b
