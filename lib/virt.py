@@ -797,10 +797,22 @@ def host_dnf_repos():
         c = configparser.ConfigParser()
         c.read(repofile)
         for section in c.sections():
-            if all(x in c[section] for x in ['name', 'baseurl', 'enabled']):
-                baseurl = c[section]['baseurl']
-                if c[section]['enabled'] == '1' and not baseurl.startswith('file://'):
-                    yield (section, c[section])
+            # we need at least these to be defined
+            if not all(x in c[section] for x in ['name', 'baseurl', 'enabled']):
+                continue
+            # no disabled repos
+            if c[section]['enabled'] != '1':
+                continue
+            baseurl = c[section]['baseurl']
+            # no local-only repos that a guest can't reach
+            if baseurl.startswith('file://'):
+                continue
+            # no http repos which return error (Anaconda aborts on this)
+            elif baseurl.startswith(('http://', 'https://')):
+                reply = requests.head(baseurl)
+                if not reply.ok:
+                    continue
+            yield (section, c[section])
 
 
 def ssh_keygen(path):
