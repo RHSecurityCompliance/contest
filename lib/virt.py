@@ -344,6 +344,7 @@ class Guest:
         if not location:
             for _, config in host_dnf_repos():
                 url = config['baseurl']
+                util.log(f"considering repo: {url}")
                 reply = requests.head(url + '/images/install.img', verify=False)
                 if reply.status_code == 200:
                     location = url
