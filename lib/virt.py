@@ -344,12 +344,12 @@ class Guest:
         if not location:
             for _, config in host_dnf_repos():
                 url = config['baseurl']
-                reply = requests.head(url + '/images/install.img')
+                reply = requests.head(url + '/images/install.img', verify=False)
                 if reply.status_code == 200:
                     location = url
                     break
                 if versions.rhel < 8:
-                    reply = requests.head(url + '/LiveOS/squashfs.img')
+                    reply = requests.head(url + '/LiveOS/squashfs.img', verify=False)
                     if reply.status_code == 200:
                         location = url
                         break
@@ -390,7 +390,7 @@ class Guest:
                 '--initrd-inject', ksfile, '--os-variant', 'rhel7-unknown',
                 '--extra-args', f'console=ttyS0 inst.ks=file:/{ksfile.name} '
                                 'systemd.journald.forward_to_console=1 '
-                                'inst.notmux inst.noninteractive inst.sshd',
+                                'inst.notmux inst.noninteractive inst.noverifyssl inst.sshd',
                 '--noreboot',
             ]
 
@@ -809,7 +809,7 @@ def host_dnf_repos():
                 continue
             # no http repos which return error (Anaconda aborts on this)
             elif baseurl.startswith(('http://', 'https://')):
-                reply = requests.head(baseurl)
+                reply = requests.head(baseurl, verify=False)
                 if not reply.ok:
                     continue
             yield (section, c[section])
