@@ -4,6 +4,7 @@ import re
 import runpy
 import signal
 import traceback
+import urllib3
 from pathlib import Path
 
 from . import util, results
@@ -57,6 +58,11 @@ def _setup_timeout_handling():
 
 if util.running_in_tmt():
     _setup_timeout_handling()
+
+# disable annoying warnings when using requests with verify=False,
+# we know we're disabling TLS verification, yes, it's a bad idea in production,
+# we don't need to have our logs spammed by good advice
+urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
 try:
     runpy.run_path(sys.argv[1], run_name='__main__')
