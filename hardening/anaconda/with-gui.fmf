@@ -9,7 +9,7 @@ tag-:
 /anssi_bp28_high:
     environment+:
         PROFILE: anssi_bp28_high
-    adjust:
+    adjust+:
         when: distro == rhel-7
         enabled: false
         because: RHEL-7 has anssi_nt28_high instead
@@ -20,7 +20,7 @@ tag-:
 /anssi_nt28_high:
     environment+:
         PROFILE: anssi_nt28_high
-    adjust:
+    adjust+:
         when: distro >= rhel-8
         enabled: false
         because: RHEL-8 and newer have anssi_bp28_high instead
@@ -31,7 +31,7 @@ tag-:
 /cis:
     environment+:
         PROFILE: cis
-    adjust:
+    adjust+:
         enabled: false
         because: >
             not supported on RHEL-8 or RHEL-9 according to RHEL documentation,
@@ -43,7 +43,7 @@ tag-:
 /cis_server_l1:
     environment+:
         PROFILE: cis_server_l1
-    adjust:
+    adjust+:
         enabled: false
         because: >
             not supported on RHEL-8 or RHEL-9 according to RHEL documentation,
@@ -71,7 +71,7 @@ tag-:
 /cui:
     environment+:
         PROFILE: cui
-    adjust:
+    adjust+:
       - when: distro == rhel-7
         enabled: false
         because: CUI doesn't have a kickstart on RHEL-7
@@ -101,7 +101,7 @@ tag-:
 /ism_o:
     environment+:
         PROFILE: ism_o
-    adjust:
+    adjust+:
         when: distro == rhel-7
         enabled: false
         because: doesn't exist on RHEL-7
@@ -112,7 +112,7 @@ tag-:
 /ospp:
     environment+:
         PROFILE: ospp
-    adjust:
+    adjust+:
         when: distro <= rhel-8
         enabled: false
         because: >
@@ -125,7 +125,7 @@ tag-:
 /pci-dss:
     environment+:
         PROFILE: pci-dss
-    adjust:
+    adjust+:
         when: distro == rhel-7
         enabled: false
         because: >
@@ -139,7 +139,7 @@ tag-:
 /stig:
     environment+:
         PROFILE: stig
-    adjust:
+    adjust+:
         enabled: false
         because: >
             not supported with GUI, use stig_gui instead;
@@ -161,7 +161,7 @@ tag-:
 /ccn_advanced:
     environment+:
         PROFILE: ccn_advanced
-    adjust:
+    adjust+:
         when: distro <= rhel-8
         enabled: false
         because: CNN Advanced profile is specific to RHEL 9
