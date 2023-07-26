@@ -10,7 +10,7 @@ tag-:
     environment+:
         PROFILE: anssi_bp28_high
     adjust+:
-        when: distro == rhel-7
+      - when: distro == rhel-7
         enabled: false
         because: RHEL-7 has anssi_nt28_high instead
     extra-summary: /CoreOS/scap-security-guide/hardening/anaconda/with-gui/anssi_bp28_high
@@ -21,7 +21,7 @@ tag-:
     environment+:
         PROFILE: anssi_nt28_high
     adjust+:
-        when: distro >= rhel-8
+      - when: distro >= rhel-8
         enabled: false
         because: RHEL-8 and newer have anssi_bp28_high instead
     extra-summary: /CoreOS/scap-security-guide/hardening/anaconda/with-gui/anssi_nt28_high
@@ -32,7 +32,7 @@ tag-:
     environment+:
         PROFILE: cis
     adjust+:
-        enabled: false
+      - enabled: false
         because: >
             not supported on RHEL-8 or RHEL-9 according to RHEL documentation,
             the "Profiles not compatible with Server with GUI" table
@@ -44,7 +44,7 @@ tag-:
     environment+:
         PROFILE: cis_server_l1
     adjust+:
-        enabled: false
+      - enabled: false
         because: >
             not supported on RHEL-8 or RHEL-9 according to RHEL documentation,
             the "Profiles not compatible with Server with GUI" table
@@ -102,7 +102,7 @@ tag-:
     environment+:
         PROFILE: ism_o
     adjust+:
-        when: distro == rhel-7
+      - when: distro == rhel-7
         enabled: false
         because: doesn't exist on RHEL-7
     extra-summary: /CoreOS/scap-security-guide/hardening/anaconda/with-gui/ism_o
@@ -113,7 +113,7 @@ tag-:
     environment+:
         PROFILE: ospp
     adjust+:
-        when: distro <= rhel-8
+      - when: distro <= rhel-8
         enabled: false
         because: >
             not supported on RHEL-8 according to RHEL documentation,
@@ -126,7 +126,7 @@ tag-:
     environment+:
         PROFILE: pci-dss
     adjust+:
-        when: distro == rhel-7
+      - when: distro == rhel-7
         enabled: false
         because: >
             RHEL-7 kickstart has a non-standard name and we decided that
@@ -140,7 +140,7 @@ tag-:
     environment+:
         PROFILE: stig
     adjust+:
-        enabled: false
+      - enabled: false
         because: >
             not supported with GUI, use stig_gui instead;
             not supported on RHEL-8 or RHEL-9 according to RHEL documentation,
@@ -162,7 +162,7 @@ tag-:
     environment+:
         PROFILE: ccn_advanced
     adjust+:
-        when: distro <= rhel-8
+      - when: distro <= rhel-8
         enabled: false
         because: CNN Advanced profile is specific to RHEL 9
     extra-summary: /CoreOS/scap-security-guide/hardening/anaconda/with-gui/ccn_advanced
