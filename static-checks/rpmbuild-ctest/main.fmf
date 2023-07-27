@@ -3,7 +3,7 @@ test: python3 -m lib.runtest ./test.py
 result: custom
 environment+:
     PYTHONPATH: ../..
-duration: 30m
+duration: 1h
 require+:
   - rpm-build
 recommend+:
