@@ -31,8 +31,4 @@ ansible_skip_tags = [
 host_os = [
     # required by TMT
     'package_rsync_removed',
-    # needed by restraint to install a Beaker test RPM containing
-    # /distribution/errata/cleanup on the hardened system, because the test RPM
-    # doesn't have any signatures
-    'ensure_gpgcheck_never_disabled',
 ]
