@@ -3,6 +3,11 @@
 # - see https://github.com/ComplianceAsCode/content/issues/9746
 /hardening/anaconda(/with-gui)?/[^/]+/firewalld_sshd_port_enabled
     rhel >= 8
+# similar case for RHEL 9
+# https://github.com/ComplianceAsCode/content/issues/10939
+/hardening/anaconda(/with-gui)?/[^/]+/firewalld_loopback_traffic_restricted
+/hardening/anaconda(/with-gui)?/[^/]+/firewalld_loopback_traffic_trusted
+    rhel >= 9
 
 # https://github.com/OpenSCAP/openscap/issues/1880
 # needs to be remediated more than once due to rule ordering issues
@@ -39,6 +44,8 @@
 # bz1828871, won't be fixed on rhel7
 # needs to be remediated more than once due to rule ordering issues
 /hardening/anaconda(/with-gui)?/[^/]+/postfix_network_listening_disabled
+# https://github.com/ComplianceAsCode/content/issues/10938
+/hardening/host-os/oscap/[^/]+/postfix_network_listening_disabled
     rhel == 7
 
 # caused by one of:
@@ -53,8 +60,9 @@
 # but apparently we don't really care about old releases
 /hardening/[^/]+/with-gui/stig_gui/sysctl_net_ipv4_ip_forward
     Match(rhel == 7, sometimes=True)
+# https://github.com/ComplianceAsCode/content/issues/10937
 /hardening/[^/]+/with-gui/cis_workstation_[^/]+/sysctl_net_ipv4_ip_forward
-    rhel == 8
+    Match(rhel <= 8, sometimes=True)
 
 # https://github.com/ComplianceAsCode/content/issues/10424
 # happens on host-os hardening too, probably because Beaker doesn't have
@@ -152,22 +160,16 @@
 # TODO: completely unknown, investigate and sort
 #
 # all RHELs
-/hardening/ansible/.+/aide_verify_acls
-/hardening/ansible/.+/aide_verify_ext_attributes
 /hardening/ansible/.+/mount_option_boot_noexec
 /hardening/ansible/.+/mount_option_boot_nosuid
 /hardening/ansible/.+/mount_option_home_noexec
-/hardening/ansible/.+/accounts_password_set_min_life_existing
 /hardening/ansible/.+/audit_rules_usergroup_modification
     True
 # RHEL-9 only
-/hardening/ansible/.+/aide_scan_notification
 /hardening/ansible/.+/dnf-automatic_apply_updates
 /hardening/ansible/.+/dnf-automatic_security_updates_only
 /hardening/ansible/.+/accounts_polyinstantiated_tmp
 /hardening/ansible/.+/accounts_polyinstantiated_var_tmp
-/hardening/ansible/.+/disable_ctrlaltdel_(burstaction|reboot)
-/hardening/ansible/.+/configure_opensc_card_drivers
 /hardening/ansible/.+/force_opensc_card_drivers
 /hardening/ansible/with-gui/.+/network_nmcli_permissions
     rhel == 9
@@ -200,15 +202,6 @@
 # only pci-dss, passes everywhere else
 /hardening/ansible(/with-gui)?/pci-dss/audit_rules_login_events
     rhel == 8 or rhel == 9
-
-# WARNING: UNPROTECTED PRIVATE KEY FILE!
-/hardening/ansible/with-gui/cis_workstation_l[12]
-    status == 'error'
-
-# ansible-playbook completed, but returned non-0, TODO: investigate
-/hardening/ansible/stig
-/hardening/ansible/with-gui/stig_gui
-    status == 'error' and rhel == 8
 
 # https://bugzilla.redhat.com/show_bug.cgi?id=1797653 WONTFIX
 /scanning/oscap-eval/ERROR
