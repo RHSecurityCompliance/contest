@@ -51,11 +51,13 @@ else:
     # old RHEL-7 oscap mixes errors into --progress rule names without a newline
     verbose = ['--verbose', 'INFO'] if versions.oscap >= 1.3 else []
     redir = {'stderr': subprocess.STDOUT} if versions.oscap >= 1.3 else {}
+    # RHEL-7 HTML report doesn't contain OVAL findings by default
+    oval_results = [] if versions.oscap >= 1.3 else ['--results', 'results.xml', '--oval-results']
 
     # scan the remediated system
     cmd = [
         'oscap', 'xccdf', 'eval', *verbose, '--profile', profile,
-        '--progress', '--report', 'report.html',
+        '--progress', '--report', 'report.html', *oval_results,
         new_ds,
     ]
     proc, lines = util.subprocess_stream(cmd, **redir)
