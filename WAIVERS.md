@@ -83,7 +83,7 @@ The waiving file format above therefore serves as a generic "matching logic",
 and it's up to the library code to interpret what a match means.
 
 - no match = no change
-- match + pass = error (unexpected pass)
+- match + pass = fail (unexpected pass)
 - match + fail = warn (waived fail)
 - match + error = warn (waived error)
 
@@ -121,7 +121,7 @@ returning `False` if the RPM is not installed.
 ### Expecting both `pass` and `fail`/`error`
 
 Sometimes, failures or errors are not reliable and happen only occassionally.
-This means a waive section might be throwing a lot of "unexpected pass" errors
+This means a waive section might be throwing a lot of "unexpected pass" failures
 and be rendered useless.
 
 To fix this, pass `sometimes=True` to `Match()`, which tells the waiving code
