@@ -1,13 +1,8 @@
 import os
 import time
+import shutil
 
 from .subprocess import subprocess_run
-
-
-def running_in_beaker():
-    """Return True if running in Beaker under the FMF wrapper."""
-    taskpath = os.environ.get('RSTRNT_TASKPATH')
-    return bool(taskpath and taskpath.endswith('/distribution/wrapper/fmf'))
 
 
 def running_in_tmt():
@@ -19,9 +14,9 @@ def reboot():
     """Reboot the system using whatever means appropriate."""
     # flush buffers to disk, just in case reboot doesn't do it
     os.sync()
-    if running_in_tmt():
+    if shutil.which('tmt-reboot'):
         subprocess_run('tmt-reboot')
-    elif running_in_beaker():
+    elif shutil.which('rstrnt-reboot'):
         subprocess_run('rstrnt-reboot')
     else:
         subprocess_run('reboot')
@@ -31,12 +26,11 @@ def reboot():
 
 def get_reboot_count():
     """Return the number of OS reboots the test underwent."""
-    if running_in_tmt():
-        return int(os.environ.get('TMT_REBOOT_COUNT'))
-    elif running_in_beaker():
-        return int(os.environ.get('RSTRNT_REBOOTCOUNT'))
-    else:
-        raise RuntimeError("not TMT/Beaker, could not determine reboot count")
+    for var in ['TMT_REBOOT_COUNT', 'RSTRNT_REBOOTCOUNT']:
+        count = os.environ.get(var)
+        if count:
+            return int(count)
+    raise RuntimeError("could not determine reboot count")
 
 
 def get_test_name():
@@ -44,9 +38,13 @@ def get_test_name():
     Return a full (absolute) test name of the currently running test.
     Ie. '/hardening/oscap/stig'.
     """
-    if running_in_tmt():
-        return os.environ.get('TMT_TEST_NAME')  # tmt natively
-    elif running_in_beaker():
-        return os.environ.get('TEST')
-    else:
-        raise RuntimeError("not TMT/Beaker, could not determine test name")
+    # natively running under TMT
+    name = os.environ.get('TMT_TEST_NAME')
+    if name:
+        return name
+    # FMF wrapper (Beaker, restraint, OSCI, etc.)
+    name = os.environ.get('FMF_PATH')
+    if name:
+        return f'/{name}'
+    # unknown
+    raise RuntimeError("could not determine test name")
