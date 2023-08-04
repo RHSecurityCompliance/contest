@@ -57,6 +57,11 @@ def _sanitize_yaml_id(string):
     return re.sub(r'[^\w/ _-]', '', string, flags=re.A).strip()
 
 
+def have_tmt_api():
+    """Return True if we can report results via TMT natively."""
+    return bool(os.environ.get('TMT_TEST_DATA'))
+
+
 def report_tmt(status, name=None, note=None, logs=None, *, add_output=True):
     report_plain(status, name, note, logs)
 
@@ -105,6 +110,14 @@ def report_tmt(status, name=None, note=None, logs=None, *, add_output=True):
         f.write(yaml_addition)
 
 
+def have_beaker_api():
+    """Return True if we have access to Beaker results API."""
+    required_vars = [
+        'LAB_CONTROLLER', 'RECIPEID', 'TASKID',
+    ]
+    return all(os.environ.get(x) for x in required_vars)
+
+
 def report_beaker(status, name=None, note=None, logs=None):
     report_plain(status, name, note, logs)
 
@@ -114,7 +127,6 @@ def report_beaker(status, name=None, note=None, logs=None):
             return
 
     labctl = os.environ['LAB_CONTROLLER']
-    taskid = os.environ['TASKID']
     recipeid = os.environ['RECIPEID']
     taskid = os.environ['TASKID']
 
@@ -195,9 +207,9 @@ def report(status, name=None, note=None, logs=None, *, add_output=True):
         global errored_count
         errored_count += 1
 
-    if util.running_in_beaker():
+    if have_beaker_api():
         report_beaker(status, name, note, logs)
-    elif util.running_in_tmt():
+    elif have_tmt_api():
         report_tmt(status, name, note, logs, add_output=add_output)
     else:
         report_plain(status, name, note, logs)
