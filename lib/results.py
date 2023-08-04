@@ -167,7 +167,7 @@ def report_plain(status, name=None, note=None, logs=None):
     if not name:
         name = '/'
     note = f' ({note})' if note else ''
-    logs = f' / {logs}' if logs else ''
+    logs = (' [' + ', '.join(str(x) for x in logs) + ']') if logs else ''
     util.log(f'{status.upper()} {name}{note}{logs}')
 
 
