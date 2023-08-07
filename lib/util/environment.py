@@ -1,4 +1,5 @@
 import os
+import re
 import time
 import shutil
 
@@ -42,9 +43,11 @@ def get_test_name():
     name = os.environ.get('TMT_TEST_NAME')
     if name:
         return name
-    # FMF wrapper (Beaker, restraint, OSCI, etc.)
-    name = os.environ.get('FMF_PATH')
-    if name:
-        return f'/{name}'
+    # under Restraint (Beaker, OSCI, etc.)
+    name = os.environ.get('RSTRNT_TASKNAME', '')
+    # - without leading '(gitrepo) '
+    match = re.fullmatch('\([^\)]*\) (/.+)', name)
+    if match:
+        return match.group(1)
     # unknown
     raise RuntimeError("could not determine test name")
