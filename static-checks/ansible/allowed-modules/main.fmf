@@ -23,6 +23,9 @@ adjust:
   - when: distro >= rhel-7 and arch == aarch64
     enabled: false
     because: RHEL-8+ requires rhc-worker-playbook which is not available for aarch64
+  - when: distro == rhel-7 and arch == s390x or distro == rhel-7 and arch == ppc64
+    enabled: false
+    because: EPEL is not available for s390x/ppc64
 extra-summary: /CoreOS/scap-security-guide/static-checks/ansible/allowed-modules
 extra-nitrate: TC#0615492
 id: 2081f398-38e2-4404-94c4-b88f2e73ccb0

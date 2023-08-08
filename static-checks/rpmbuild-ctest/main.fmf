@@ -12,6 +12,10 @@ recommend+:
   - yum-builddep
 tag:
   - CI-Tier-1
+adjust:
+  - when: distro == rhel-7 and arch == s390x or distro == rhel-7 and arch == ppc64
+    enabled: false
+    because: EPEL is not available for s390x/ppc64
 extra-summary: /CoreOS/scap-security-guide/static-checks/rpmbuild-ctest
 extra-nitrate: TC#0615490
 id: 87442db1-5e7a-4c3f-93fa-1e37b233721e
