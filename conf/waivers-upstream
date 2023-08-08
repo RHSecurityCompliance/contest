@@ -46,7 +46,7 @@
 /hardening/anaconda(/with-gui)?/[^/]+/postfix_network_listening_disabled
 # https://github.com/ComplianceAsCode/content/issues/10938
 /hardening/host-os/oscap/[^/]+/postfix_network_listening_disabled
-    rhel == 7
+    Match(rhel == 7, sometimes=True)
 
 # caused by one of:
 # - bz1778661 (abrt)
