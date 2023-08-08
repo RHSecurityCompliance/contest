@@ -6,6 +6,10 @@ environment+:
 duration: 15m
 tag:
   - CI-Beaker
+adjust:
+  - when: distro == rhel-7 and arch == s390x or distro == rhel-7 and arch == ppc64
+    enabled: false
+    because: EPEL is not available for s390x/ppc64
 extra-summary: /CoreOS/scap-security-guide/scanning/oscap-eval
 extra-nitrate: TC#0615489
 id: 12ccbda9-d7e4-4331-a74d-14f9abdd9374
