@@ -210,6 +210,6 @@
 # https://github.com/ComplianceAsCode/content/issues/10901
 # not sure what enables the service, but second remediation fixes the problem
 /hardening/anaconda/with-gui/cis_workstation_l2/service_rpcbind_disabled
-    rhel == 8
+    Match(rhel == 8, sometimes=True)
 
 # vim: syntax=python
