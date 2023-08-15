@@ -212,4 +212,10 @@
 /hardening/anaconda/with-gui/[^/]+/service_rpcbind_disabled
     Match(rhel == 8, sometimes=True)
 
+# https://github.com/ComplianceAsCode/content/issues/10938
+# fails only on ppc64, but we can't match on arch yet
+# therefore, sometimes=true is used
+/hardening/host-os/oscap/anssi_nt28_high/audit_rules_privileged_commands
+    Match(rhel == 7, sometimes=True)
+
 # vim: syntax=python
