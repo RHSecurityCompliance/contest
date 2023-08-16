@@ -5,6 +5,7 @@ a custom file format. See WAIVERS.md.
 
 import os
 import re
+import platform
 import textwrap
 from pathlib import Path
 
@@ -173,6 +174,7 @@ def match_result(status, name, note):
         'name': name,
         'note': note,
         # platform related
+        'arch': platform.machine(),
         'rhel': versions.rhel,
         'oscap': versions.oscap,
         'ssg': versions.ssg,

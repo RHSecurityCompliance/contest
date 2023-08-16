@@ -97,6 +97,7 @@ The expression has these globals available:
 - `status` - the original result status (`pass`, `fail`, `error`, etc.)
 - `name` - the result (test) name, empty string if unspecified
 - `note` - an optional note associated with the result, or empty string
+- `arch` - platform (architecture) name (`x86_64`, `ppc64le`, etc.)
 - `rhel` - an object capable of RHEL version comparison, see
   [versions.rhel](lib/versions.py)
 - `oscap` - an object capable of `openscap-scanner` RPM version comparisons,
