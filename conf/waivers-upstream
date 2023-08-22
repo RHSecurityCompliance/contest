@@ -58,10 +58,12 @@
 # bz1825810 or maybe bz1929805
 # can be reproduced mostly reliably (95%) both via anaconda and oscap CLI,
 # but apparently we don't really care about old releases
-/hardening/[^/]+/with-gui/stig_gui/sysctl_net_ipv4_ip_forward
-    Match(rhel == 7, sometimes=True)
-# https://github.com/ComplianceAsCode/content/issues/10937
-/hardening/[^/]+/with-gui/cis_workstation_[^/]+/sysctl_net_ipv4_ip_forward
+#
+# also re-discovered on RHEL-8 via
+#   https://github.com/ComplianceAsCode/content/issues/10937
+# and afterwards on other profiles (anssi_bp28_high), but still
+# only on GUI
+/hardening/[^/]+/with-gui/[^/]+/sysctl_net_ipv4_ip_forward
     Match(rhel <= 8, sometimes=True)
 
 # https://github.com/ComplianceAsCode/content/issues/10424
@@ -213,9 +215,11 @@
     Match(rhel == 8, sometimes=True)
 
 # https://github.com/ComplianceAsCode/content/issues/10938
-# fails only on ppc64, but we can't match on arch yet
-# therefore, sometimes=true is used
 /hardening/host-os/oscap/anssi_nt28_high/audit_rules_privileged_commands
-    Match(rhel == 7, sometimes=True)
+    rhel == 7 and arch == 'ppc64le'
+
+# https://github.com/ComplianceAsCode/content/issues/11018
+/hardening/.+/e8/sshd_use_strong_macs
+    rhel == 7 and status == 'error' and note == 'unknown'
 
 # vim: syntax=python
