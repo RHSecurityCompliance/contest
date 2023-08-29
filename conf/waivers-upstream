@@ -197,10 +197,6 @@
 /hardening/ansible/.+/mount_option_home_nosuid
     Match(True, sometimes=True)
 
-# only on ism_o, seems to pass everywhere else
-/hardening/ansible(/with-gui)?/ism_o/enable_fips_mode
-    rhel == 9
-
 # only pci-dss, passes everywhere else
 /hardening/ansible(/with-gui)?/pci-dss/audit_rules_login_events
     rhel == 8 or rhel == 9
