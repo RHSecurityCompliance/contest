@@ -40,6 +40,19 @@ on Red Hat Enterprise Linux.
     used for waiving results. Ie. `CONTEST_WAIVERS=upstream` to use
     `conf/waivers-upstream`. Defaults to `released`.
 
+- `CONTEST_LEAVE_GUEST_RUNNING`
+  - Set to `1` to break gurantees provided by `class Guest()`, that is make the
+    context manager not honor `__exit__` by leaving running guests (VMs) behind.
+  - This is useful for debugging a failing OpenSCAP rule as you get the running
+    virtual environment, as it was scanned, without an extra OS startup.
+  - SSH instructions will be provided on stdout (python log output).
+    - Alternatively, use `virsh domifaddr contest` to get the VM's IP address
+      and `ssh` into it as `root` with `contest` as password.
+  - However any tests that use more than 1 VM **and** rely on a shut-down VM
+    state between two context-managed blocks, will break.
+    - Because the VM was left running after the first context manager block.
+    - Fortunately, no such test currently exists (the use case is rare).
+
 ## Testing latest upstream content
 
 Note that as the

@@ -510,8 +510,9 @@ class Guest:
             self.orig_disk_format = driver.get('type')
             self.orig_disk_path = source.get('file')
 
-        # running domain left over from a crashed test?
-        self.destroy()
+        # running domain left over from a crashed test,
+        # or by CONTEST_LEAVE_GUEST_RUNNING
+        self._destroy_snapshotted()
 
         cmd = [
             'qemu-img', 'create', '-f', 'qcow2',
@@ -524,7 +525,16 @@ class Guest:
 
     def _destroy_snapshotted(self):
         self.destroy()
-        os.remove(self.snapshot_path)
+        if os.path.exists(self.snapshot_path):
+            os.remove(self.snapshot_path)
+
+    def _log_leave_running_notice(self):
+        out = textwrap.dedent(f"""\n
+            Leaving guest running, the test might break!
+            To ssh into it, log in (ssh) into the VM host first, then do:
+                ssh -i {self.ssh_keyfile_path} root@{self.ipaddr}
+            """)
+        util.log(textwrap.indent(out, '    '), skip_caller=True)
 
     @contextlib.contextmanager
     def snapshotted(self):
@@ -540,7 +550,10 @@ class Guest:
         try:
             yield self
         finally:
-            self._destroy_snapshotted()
+            if os.environ.get('CONTEST_LEAVE_GUEST_RUNNING') == '1':
+                self._log_leave_running_notice()
+            else:
+                self._destroy_snapshotted()
 
     @contextlib.contextmanager
     def booted(self):
@@ -554,12 +567,15 @@ class Guest:
         try:
             yield self
         finally:
-            try:
-                util.log(f"shutting down {self.name}")
-                self.shutdown()
-            except TimeoutError:
-                util.log(f"shutdown timed out, destroying {self.name}")
-                self.destroy()
+            if os.environ.get('CONTEST_LEAVE_GUEST_RUNNING') == '1':
+                self._log_leave_running_notice()
+            else:
+                try:
+                    util.log(f"shutting down {self.name}")
+                    self.shutdown()
+                except TimeoutError:
+                    util.log(f"shutdown timed out, destroying {self.name}")
+                    self.destroy()
 
     def _do_ssh(self, *cmd, func=util.subprocess_run, capture=False, **run_args):
         if capture:
