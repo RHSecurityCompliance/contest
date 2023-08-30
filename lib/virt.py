@@ -97,10 +97,11 @@ GUEST_SSH_USER = 'root'
 
 GUEST_IMG_DIR = '/var/lib/libvirt/images'
 
-# don't rely on 'default' being sane, define a new STP-less network
-NETWORK_NAME = 'contest-net'
-NETWORK_PREFIX = '192.168.121'
-NETWORK_HOST = f'{NETWORK_PREFIX}.1'
+NETWORK_NETMASK = '255.255.252.0'
+NETWORK_HOST = '192.168.120.1'
+# 1000 guest addrs, refreshing after a week, should be enough
+NETWORK_RANGE = ['192.168.120.2', '192.168.123.254']
+NETWORK_EXPIRY = 168
 
 KICKSTART_TEMPLATE = fr'''
 lang en_US.UTF-8
@@ -170,6 +171,52 @@ def check_host_virt():
     return False
 
 
+def _setup_host_network():
+    net_name = 'default'
+
+    # unfortunately, there's no easy way to tell if we have changed the
+    # libvirt-included default network - libvirt seems to silently erase both
+    # <title> and <description> and dump-xml ignores <metadata> too,
+    # so just rely on ip address ranges - in the case of a rare false positive
+    # match, we'll just re-define the network, no big deal
+    def is_our_network(xml):
+        return re.search(f'<range start=\'{NETWORK_RANGE[0]}\' end=\'{NETWORK_RANGE[1]}\'>', xml)
+
+    def define_our_network():
+        util.log(f"defining libvirt network: {net_name}")
+        net_xml = textwrap.dedent(f'''\
+            <network>
+              <name>{net_name}</name>
+              <forward mode='nat'/>
+              <bridge stp='off' delay='0'/>
+              <ip address='{NETWORK_HOST}' netmask='{NETWORK_NETMASK}'>
+                <dhcp>
+                  <range start='{NETWORK_RANGE[0]}' end='{NETWORK_RANGE[1]}'>
+                    <lease expiry='{NETWORK_EXPIRY}' unit='hours'/>
+                  </range>
+                </dhcp>
+              </ip>
+            </network>''')
+        with tempfile.NamedTemporaryFile(mode='w', suffix='.xml') as f:
+            f.write(net_xml)
+            f.flush()
+            virsh('net-define', f.name, check=True)
+        virsh('net-autostart', net_name, check=True)
+        virsh('net-start', net_name, check=True)
+
+    info = virsh('net-info', net_name, stdout=PIPE, stderr=DEVNULL, universal_newlines=True)
+    # if default already exists
+    if info.returncode == 0:
+        dumpxml = virsh('net-dumpxml', net_name, stdout=PIPE, universal_newlines=True)
+        if not is_our_network(dumpxml.stdout):
+            if re.search('\nActive: +yes\n', info.stdout):
+                virsh('net-destroy', net_name, check=True)
+            virsh('net-undefine', net_name, check=True)
+            define_our_network()
+    else:
+        define_our_network()
+
+
 def setup_host():
     if not check_host_virt():
         raise RuntimeError("host has no HVM virtualization support")
@@ -178,28 +225,7 @@ def setup_host():
     if ret.returncode != 0:
         util.subprocess_run(['systemctl', 'start', 'libvirtd'], check=True)
 
-    net_xml = textwrap.dedent(f'''\
-        <network>
-          <name>{NETWORK_NAME}</name>
-          <forward mode='nat'/>
-          <bridge stp='off' delay='0'/>
-          <ip address='{NETWORK_HOST}' netmask='255.255.255.0'>
-            <dhcp>
-              <range start='{NETWORK_PREFIX}.2' end='{NETWORK_PREFIX}.254'>
-                <lease expiry='0' unit='hours'/>
-              </range>
-            </dhcp>
-          </ip>
-        </network>''')
-    ret = virsh('net-info', NETWORK_NAME, stdout=DEVNULL, stderr=DEVNULL)
-    if ret.returncode != 0:
-        util.log(f"defining libvirt network: {NETWORK_NAME}")
-        with tempfile.NamedTemporaryFile(mode='w', suffix='.xml') as f:
-            f.write(net_xml)
-            f.flush()
-            virsh('net-define', f.name, check=True)
-        virsh('net-autostart', NETWORK_NAME, check=True)
-        virsh('net-start', NETWORK_NAME, check=True)
+    _setup_host_network()
 
 
 #
@@ -383,8 +409,7 @@ class Guest:
                 # installation - we reduce it down to 2000M after install
                 '--name', self.name, '--vcpus', str(cpus), '--memory', '3000',
                 '--disk', f'path={disk_path},size=20,format={disk_format},cache=unsafe',
-                '--network', f'network={NETWORK_NAME}',
-                '--location', location,
+                '--network', 'network=default', '--location', location,
                 '--graphics', 'none', '--console', 'pty', '--rng', '/dev/urandom',
                 # this has nothing to do with rhel7, it just tells v-i to use virtio
                 # and rhel7 was the first RHEL to do so, so it's the most compatible
