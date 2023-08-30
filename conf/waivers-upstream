@@ -14,6 +14,12 @@
 /hardening/oscap(/with-gui)?/[^/]+/configure_bashrc_exec_tmux
 /hardening/oscap(/with-gui)?/[^/]+/no_tmux_in_shells
 /hardening/oscap(/with-gui)?/[^/]+/configure_usbguard_auditbackend
+/hardening/oscap(/with-gui)?/[^/]+/configure_tmux_lock_after_time
+/hardening/oscap(/with-gui)?/[^/]+/configure_tmux_lock_command
+/hardening/oscap(/with-gui)?/[^/]+/configure_tmux_lock_keybinding
+/hardening/host-os/oscap/[^/]+/configure_tmux_lock_after_time
+/hardening/host-os/oscap/[^/]+/configure_tmux_lock_command
+/hardening/host-os/oscap/[^/]+/configure_tmux_lock_keybinding
     rhel >= 8
 /hardening/oscap(/with-gui)?/[^/]+/configure_bashrc_tmux
 /hardening/oscap(/with-gui)?/stig(_gui)?/postfix_prevent_unrestricted_relay
@@ -27,6 +33,8 @@
 /hardening/host-os/oscap/[^/]+/configure_bashrc_tmux
 /hardening/host-os/oscap/stig/postfix_prevent_unrestricted_relay
     Match(rhel == 8, sometimes=True)
+
+
 
 # rule ordering issue - accounts_password_pam_retry is checked first and passes,
 # and a later enable_authselect remediation breaks it
