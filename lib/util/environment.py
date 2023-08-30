@@ -46,7 +46,7 @@ def get_test_name():
     # under Restraint (Beaker, OSCI, etc.)
     name = os.environ.get('RSTRNT_TASKNAME', '')
     # - without leading '(gitrepo) '
-    match = re.fullmatch('\([^\)]*\) (/.+)', name)
+    match = re.fullmatch(r'\([^\)]*\) (/.+)', name)
     if match:
         return match.group(1)
     # unknown
