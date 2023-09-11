@@ -3,6 +3,11 @@
 # - see https://github.com/ComplianceAsCode/content/issues/9746
 /hardening/anaconda(/with-gui)?/[^/]+/firewalld_sshd_port_enabled
     rhel >= 8
+# similar case for RHEL 9
+# https://github.com/ComplianceAsCode/content/issues/10939
+/hardening/anaconda(/with-gui)?/[^/]+/firewalld_loopback_traffic_restricted
+/hardening/anaconda(/with-gui)?/[^/]+/firewalld_loopback_traffic_trusted
+    rhel >= 9
 
 # https://github.com/OpenSCAP/openscap/issues/1880
 # needs to be remediated more than once due to rule ordering issues
@@ -23,6 +28,8 @@
 /hardening/host-os/oscap/stig/postfix_prevent_unrestricted_relay
     Match(rhel == 8, sometimes=True)
 
+
+
 # rule ordering issue - accounts_password_pam_retry is checked first and passes,
 # and a later enable_authselect remediation breaks it
 # - see https://github.com/OpenSCAP/openscap/issues/1880
@@ -30,12 +37,6 @@
     rhel >= 8
 /hardening/host-os/oscap/[^/]+/accounts_password_pam_retry
     Match(rhel >= 8, sometimes=True)
-
-# https://github.com/ComplianceAsCode/content/pull/10499
-# these are missing the required partitions, making the oscap Anaconda addon
-# error out during remediaton
-/hardening/anaconda/cis_(server|workstation)_l1
-    status == 'error' and note.startswith('RuntimeError: installation failed')
 
 # another rule ordering issue - on s390x,
 # https://github.com/ComplianceAsCode/content/issues/10654
@@ -45,7 +46,9 @@
 # bz1828871, won't be fixed on rhel7
 # needs to be remediated more than once due to rule ordering issues
 /hardening/anaconda(/with-gui)?/[^/]+/postfix_network_listening_disabled
-    rhel == 7
+# https://github.com/ComplianceAsCode/content/issues/10938
+/hardening/host-os/oscap/[^/]+/postfix_network_listening_disabled
+    Match(rhel == 7, sometimes=True)
 
 # caused by one of:
 # - bz1778661 (abrt)
@@ -57,10 +60,20 @@
 # bz1825810 or maybe bz1929805
 # can be reproduced mostly reliably (95%) both via anaconda and oscap CLI,
 # but apparently we don't really care about old releases
-/hardening/[^/]+/with-gui/stig_gui/sysctl_net_ipv4_ip_forward
-    Match(rhel == 7, sometimes=True)
-/hardening/[^/]+/with-gui/cis_workstation_[^/]+/sysctl_net_ipv4_ip_forward
-    rhel == 8
+#
+# also re-discovered on RHEL-8 via
+#   https://github.com/ComplianceAsCode/content/issues/10937
+# and afterwards on other profiles (anssi_bp28_high), but still
+# only on GUI
+/hardening/[^/]+/with-gui/[^/]+/sysctl_net_ipv4_ip_forward
+    Match(rhel <= 8, sometimes=True)
+
+# https://github.com/ComplianceAsCode/content/issues/10424
+# happens on host-os hardening too, probably because Beaker doesn't have
+# firewall enabled or even installed
+/hardening/anaconda(/with-gui)?/[^/]+/service_nftables_disabled
+/hardening/host-os/oscap/[^/]+/service_nftables_disabled
+    Match(True, sometimes=True)
 
 # caused by us not caring whether the VM has it installed,
 # - remediation should fix it, but doesn't -- possibly caused by
@@ -79,9 +92,21 @@
 /hardening/anaconda/with-gui/[^/]+/service_avahi-daemon_disabled
     True
 
-# TODO: no clue, but not present in new upstream content
-/hardening/oscap/with-gui/pci-dss/smartcard_auth
-    Match(rhel == 7, sometimes=True)
+# https://github.com/ComplianceAsCode/content/issues/10613
+/hardening/anaconda(/with-gui)?/cis[^/]*/firewalld_loopback_traffic_(restricted|trusted)
+    rhel == 9
+
+# ssh either doesn't start up, or gets blocked, possibly related
+# to new firewalld rules being added?
+# https://github.com/ComplianceAsCode/content/pull/10573
+# (happens only with GUI)
+#
+# or perhaps one of
+# https://github.com/ComplianceAsCode/content/issues/10592
+# https://github.com/ComplianceAsCode/content/issues/10593
+# https://github.com/ComplianceAsCode/content/issues/10594
+/hardening/oscap/with-gui/cis_workstation_l[12]
+    status == 'error'
 
 # OAA just failed without an error, as usual
 # https://issues.redhat.com/browse/OPENSCAP-3321
@@ -139,22 +164,16 @@
 # TODO: completely unknown, investigate and sort
 #
 # all RHELs
-/hardening/ansible/.+/aide_verify_acls
-/hardening/ansible/.+/aide_verify_ext_attributes
 /hardening/ansible/.+/mount_option_boot_noexec
 /hardening/ansible/.+/mount_option_boot_nosuid
 /hardening/ansible/.+/mount_option_home_noexec
-/hardening/ansible/.+/accounts_password_set_min_life_existing
 /hardening/ansible/.+/audit_rules_usergroup_modification
     True
 # RHEL-9 only
-/hardening/ansible/.+/aide_scan_notification
 /hardening/ansible/.+/dnf-automatic_apply_updates
 /hardening/ansible/.+/dnf-automatic_security_updates_only
 /hardening/ansible/.+/accounts_polyinstantiated_tmp
 /hardening/ansible/.+/accounts_polyinstantiated_var_tmp
-/hardening/ansible/.+/disable_ctrlaltdel_(burstaction|reboot)
-/hardening/ansible/.+/configure_opensc_card_drivers
 /hardening/ansible/.+/force_opensc_card_drivers
 /hardening/ansible/with-gui/.+/network_nmcli_permissions
     rhel == 9
@@ -180,25 +199,21 @@
 /hardening/ansible/.+/mount_option_home_nosuid
     Match(True, sometimes=True)
 
-# only on ism_o, seems to pass everywhere else
-/hardening/ansible(/with-gui)?/ism_o/enable_fips_mode
-    rhel == 9
-
 # only pci-dss, passes everywhere else
 /hardening/ansible(/with-gui)?/pci-dss/audit_rules_login_events
     rhel == 8 or rhel == 9
 
-# WARNING: UNPROTECTED PRIVATE KEY FILE!
-/hardening/ansible/with-gui/cis_workstation_l[12]
-    status == 'error'
-
-# ansible-playbook completed, but returned non-0, TODO: investigate
-/hardening/ansible/stig
-/hardening/ansible/with-gui/stig_gui
-    status == 'error' and rhel == 8
-
 # https://bugzilla.redhat.com/show_bug.cgi?id=1797653 WONTFIX
 /scanning/oscap-eval/ERROR
     rhel <= 8 and note == 'E: oscap: Failed to convert OVAL state to SEXP, id: oval:ssg-state_file_groupowner_var_log_syslog_gid_4_0:ste:1.'
+
+# https://github.com/ComplianceAsCode/content/issues/10901
+# not sure what enables the service, but second remediation fixes the problem
+/hardening/anaconda/with-gui/[^/]+/service_rpcbind_disabled
+    Match(rhel == 8, sometimes=True)
+
+# https://github.com/ComplianceAsCode/content/issues/10938
+/hardening/host-os/oscap/anssi_nt28_high/audit_rules_privileged_commands
+    rhel == 7 and arch == 'ppc64le'
 
 # vim: syntax=python
