@@ -193,7 +193,6 @@
     rhel == 8
 # RHEL-7
 /hardening/ansible/.+/sshd_use_strong_ciphers
-/hardening/ansible/.+/sshd_use_strong_macs
 /hardening/ansible/.+/audit_rules_for_ospp
 /hardening/ansible/.+/aide_use_fips_hashes
 /hardening/ansible/.+/smartcard_auth
@@ -221,9 +220,5 @@
 # https://github.com/ComplianceAsCode/content/issues/10938
 /hardening/host-os/oscap/anssi_nt28_high/audit_rules_privileged_commands
     rhel == 7 and arch == 'ppc64le'
-
-# https://github.com/ComplianceAsCode/content/issues/11018
-/hardening/.+/e8/sshd_use_strong_macs
-    rhel == 7 and status == 'error' and note == 'unknown'
 
 # vim: syntax=python
