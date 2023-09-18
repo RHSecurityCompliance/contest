@@ -19,6 +19,7 @@ recommend+:
   - rhc-worker-playbook
 tag:
   - CI-Tier-1
+  - daily
 adjust:
   - when: distro >= rhel-7 and arch == aarch64
     enabled: false

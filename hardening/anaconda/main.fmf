@@ -24,6 +24,7 @@ adjust:
 tag:
   - Kickstarts
   - max1
+  - daily
 
 /anssi_bp28_high:
     environment+:
