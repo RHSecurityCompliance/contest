@@ -22,7 +22,6 @@ adjust:
     enabled: false
     because: we want to run virtualization on x86_64 only
 tag:
-  - Kickstarts
   - max1
   - daily
 
