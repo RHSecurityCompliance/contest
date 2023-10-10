@@ -11,6 +11,7 @@ recommend+:
   - yum-utils
   - yum-builddep
 tag:
+  - CI-Tier-1
   - daily
 adjust:
   - when: distro == rhel-7 and arch == s390x or distro == rhel-7 and arch == ppc64

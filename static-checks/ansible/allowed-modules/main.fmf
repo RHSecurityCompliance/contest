@@ -18,6 +18,7 @@ recommend+:
   # needed for the ini_file ansible plugin, and more
   - rhc-worker-playbook
 tag:
+  - CI-Tier-1
   - daily
 adjust:
   - when: distro >= rhel-7 and arch == aarch64
