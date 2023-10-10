@@ -6,7 +6,6 @@ environment+:
 duration: 1h
 tag:
   - destructive
-  - CI-Beaker
   - daily
 adjust:
   - when: distro == rhel-7 and arch == s390x or distro == rhel-7 and arch == ppc64

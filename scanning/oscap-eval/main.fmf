@@ -4,8 +4,6 @@ result: custom
 environment+:
     PYTHONPATH: ../..
 duration: 15m
-tag:
-  - CI-Beaker
 adjust:
   - when: distro == rhel-7 and arch == s390x or distro == rhel-7 and arch == ppc64
     enabled: false

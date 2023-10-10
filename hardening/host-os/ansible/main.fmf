@@ -13,7 +13,6 @@ recommend+:
   - rhc-worker-playbook
 tag:
   - destructive
-  - CI-Beaker
   - daily
 adjust:
   - when: distro >= rhel-7 and arch == aarch64
