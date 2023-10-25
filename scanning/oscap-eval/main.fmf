@@ -6,6 +6,7 @@ environment+:
 duration: 15m
 tag:
   - CI-Tier-1
+  - Errata
 adjust:
   - when: distro == rhel-7 and arch == s390x or distro == rhel-7 and arch == ppc64
     enabled: false
