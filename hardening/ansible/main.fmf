@@ -120,6 +120,8 @@ tag:
 /ospp:
     environment+:
         PROFILE: ospp
+    tag+:
+      - Errata
     extra-summary: /CoreOS/scap-security-guide/hardening/ansible/ospp
     extra-nitrate: TC#0615428
     id: 67fa598d-8e48-429c-9462-42b1314bc208

@@ -114,6 +114,8 @@ tag:
 /ospp:
     environment+:
         PROFILE: ospp
+    tag+:
+      - Errata
     extra-summary: /CoreOS/scap-security-guide/hardening/anaconda/ospp
     extra-nitrate: TC#0615174
     id: 2a02056b-9fd1-4de1-9f23-bc493f41b6c8
