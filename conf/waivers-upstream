@@ -102,6 +102,10 @@
 /hardening/anaconda(/with-gui)?/cis[^/]*/firewalld_loopback_traffic_(restricted|trusted)
     rhel == 9
 
+# RHEL-9 is not FIPS certified yet
+/hardening/.+/aide_use_fips_hashes
+    rhel == 9
+
 # ssh either doesn't start up, or gets blocked, possibly related
 # to new firewalld rules being added?
 # https://github.com/ComplianceAsCode/content/pull/10573
