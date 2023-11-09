@@ -221,8 +221,4 @@
 /hardening/anaconda/with-gui/[^/]+/service_rpcbind_disabled
     Match(rhel == 8, sometimes=True)
 
-# https://github.com/ComplianceAsCode/content/issues/10938
-/hardening/host-os/oscap/anssi_nt28_high/audit_rules_privileged_commands
-    rhel == 7 and arch == 'ppc64le'
-
 # vim: syntax=python
