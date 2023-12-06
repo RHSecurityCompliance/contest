@@ -313,6 +313,7 @@ class Kickstart:
         script = textwrap.dedent('''\
             sed '/^BLACKLIST_RPC=/s/=.*/=/' -i /etc/sysconfig/qemu-ga  # RHEL-7/8
             sed '/^BLOCK_RPCS=/s/=.*/=/' -i /etc/sysconfig/qemu-ga     # RHEL-9+
+            sed '/^FILTER_RPC_ARGS=/s/=.*/=/' -i /etc/sysconfig/qemu-ga  # RHEL-9.4+
             semanage permissive -a virt_qemu_ga_t''')
         self.add_post(script)
 
