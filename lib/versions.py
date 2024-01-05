@@ -74,8 +74,14 @@ class _Rhel(_RpmVerCmp):
             self.major = int(v[0])
             self.minor = int(v[1])
 
-    def __bool__(self):
+    def is_true_rhel(self):
         return _os_release['ID'] == 'rhel'
+
+    def is_centos(self):
+        return _os_release['ID'] == 'centos'
+
+    def __bool__(self):
+        return _os_release['ID'] in ['rhel', 'centos']
 
 
 class _Rpm(_RpmVerCmp):
