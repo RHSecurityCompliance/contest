@@ -177,7 +177,6 @@ def match_result(status, name, note):
         'arch': platform.machine(),
         'rhel': versions.rhel,
         'oscap': versions.oscap,
-        'ssg': versions.ssg,
         # environmental
         'env': os.environ.get,
         # special
