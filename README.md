@@ -53,6 +53,19 @@ on Red Hat Enterprise Linux.
     - Because the VM was left running after the first context manager block.
     - Fortunately, no such test currently exists (the use case is rare).
 
+- `CONTEST_DATASTREAM`
+  - Specify a filesystem path to a datastream XML to use for testing.
+
+- `CONTEST_PLAYBOOK`
+  - Specify a filesystem path to an Ansible YAML file to use as a playbook
+    for testing.  
+    A magical string of '{PROFILE}' expands to a profile name being tested.
+
+- `CONTEST_KICKSTART`
+  - Specify a filesystem path to an configuration file to use as an Anaconda
+    kickstart for testing.  
+    A magical string of '{PROFILE}' expands to a profile name being tested.
+
 ## Testing latest upstream content
 
 Note that as the
