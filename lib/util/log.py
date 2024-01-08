@@ -4,7 +4,7 @@ from pathlib import Path
 from datetime import datetime
 
 
-def log(msg, *, skip_caller=False):
+def log(msg, *, skip_frames=0):
     """
     An intelligent replacement for the basic functionality of the python
     'logging' module. Simply call this function from anywhere and it should
@@ -29,18 +29,17 @@ def log(msg, *, skip_caller=False):
     module.function instead of module.Class.function, due to Python stackframe
     limitations.
 
-    With 'skip_caller', report module or function that called the function
+    With 'skip_frames' > 0, report module or function that called the function
     which called log(), rather than the function which called log(). This is
     useful for lightweight wrappers, as the call of the wrapper gets logged,
     rather than log() inside the wrapper.
+    A value of 1 skips one stack frame, value of 2 skips 2 frames, etc.,
+    not counting the log() function itself.
     """
     stack = inspect.stack()
-    if skip_caller:
-        if stack[1].function == '<module>':
-            raise SyntaxError("can't use skip_caller when called directly from module code")
-        stack = stack[2:]
-    else:
-        stack = stack[1:]
+    if len(stack)-1 <= skip_frames:
+        raise SyntaxError("skip_frames exceeds call stack (frame count)")
+    stack = stack[skip_frames+1:]
 
     # bottom of the stack, or runpy executed module
     for frame_info in stack:

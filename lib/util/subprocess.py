@@ -19,7 +19,7 @@ def subprocess_run(cmd, **kwargs):
     """
     # when logging, skip current stack frame - report the place we were called
     # from, not util.subprocess_run itself
-    log(f'running: {_format_subprocess_cmd(cmd)}', skip_caller=True)
+    log(f'running: {_format_subprocess_cmd(cmd)}', skip_frames=1)
     return subprocess.run(cmd, **kwargs)
 
 
@@ -32,7 +32,7 @@ def subprocess_stream(cmd, check=False, **kwargs):
 
     To capture both stdout and stderr as yielded lines, use subprocess.STDOUT.
     """
-    log(f'running: {_format_subprocess_cmd(cmd)}', skip_caller=True)
+    log(f'running: {_format_subprocess_cmd(cmd)}', skip_frames=1)
     if versions.rhel == 7 and 'stderr' in kwargs and kwargs['stderr'] == subprocess.STDOUT:
         return _subprocess_stream_rhel7(cmd, check, **kwargs)
     proc = subprocess.Popen(cmd, stdout=subprocess.PIPE, universal_newlines=True, **kwargs)
