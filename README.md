@@ -66,32 +66,6 @@ on Red Hat Enterprise Linux.
     kickstart for testing.  
     A magical string of '{PROFILE}' expands to a profile name being tested.
 
-## Testing latest upstream content
-
-Note that as the
-[relevant TMT plan says in its description](plans/upstream-copr.fmf),
-this is just a convenience feature, it shouldn't be relied upon.
-
-Normally, you would run this test suite via `tmt` as ie.
-
-```
-tmt \
-    -c distro=rhel-9.2 \
-    run -vvva \
-        plans -n /plans/default \
-        provision -h ... \
-        discover -h fmf -t '/hardening/anaconda/stig$' \
-        report -h html
-```
-
-and this simply uses content shipped in whatever distro you specify to
-`provision`, or whatever distro is already installed if you use
-`provision -h connect ...`.
-
-To install latest available upstream content as an RPM (built cca 15 minutes
-after every push/merge to the upstream content repository), simply specify
-the `/plans/upstream-copr` TMT plan instead of `/plans/default`.
-
 ## Waiving failed results
 
 In this context, "to waive" means to label a failing result as known-bad,
