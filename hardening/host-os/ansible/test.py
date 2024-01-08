@@ -3,7 +3,7 @@
 import os
 import subprocess
 
-from lib import util, results, oscap, versions
+from lib import util, results, oscap, versions, ansible
 from conf import remediation_excludes
 
 
@@ -14,22 +14,10 @@ profile_full = f'xccdf_org.ssgproject.content_profile_{profile}'
 # on trying to accept its ssh key - tell it to ignore this
 os.environ['ANSIBLE_HOST_KEY_CHECKING'] = 'False'
 
-# rhc-worker-playbook modules, exported per official instructions on
-# https://access.redhat.com/articles/remediation
-os.environ['ANSIBLE_COLLECTIONS_PATH'] = \
-    '/usr/share/rhc-worker-playbook/ansible/collections/ansible_collections/'
-
-# this is an alternate way to get modules provided by rhc-worker-playbook,
-# a RPM which is not available on CentOS / Fedora - uncomment and use this
-# if we ever run on non-RHEL
-# https://issues.redhat.com/browse/OPENSCAP-2296
-#for collection in ['community.general', 'ansible.posix']:
-#    util.subprocess_run(
-#        ['ansible-galaxy', '-vvv', 'collection', 'install', collection],
-#        check=True)
-
 if util.get_reboot_count() == 0:
     util.log("first boot, remediating using ansible-playbook")
+
+    ansible.install_deps()
 
     playbook = util.get_playbook(profile)
     skip_tags = ','.join(remediation_excludes.ansible_skip_tags)

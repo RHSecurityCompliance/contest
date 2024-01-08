@@ -4,6 +4,8 @@
 #
 # do not use it to exclude expected failures, use the waiving logic instead
 
+from lib import versions
+
 # skip Ansible remediation for these rules
 ansible_skip_tags = [
     # TODO:
@@ -25,6 +27,11 @@ ansible_skip_tags = [
     #'sudo_add_noexec',
     #'accounts_password_set_max_life_existing',
 ]
+if versions.rhel.is_centos():
+    ansible_skip_tags += [
+        # https://github.com/ComplianceAsCode/content/issues/8480
+        'ensure_redhat_gpgkey_installed',
+    ]
 
 # host os "machine hardening" exclusions, the remediation of which would break
 # this test suite
