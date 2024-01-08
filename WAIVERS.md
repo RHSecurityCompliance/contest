@@ -28,7 +28,7 @@ Each section consists of two parts:
         True if some_other_condition else False
 
 /some/more/test/results
-    rhel < 9 and ssg < '0.1.66'
+    rhel < 9 and oscap < '1.3.6'
 ```
 
 When a new failing result is to be reported, the sections are evaluated
@@ -102,7 +102,6 @@ The expression has these globals available:
   [versions.rhel](lib/versions.py)
 - `oscap` - an object capable of `openscap-scanner` RPM version comparisons,
   see [versions.oscap](lib/versions.py)
-- `ssg` - same, but for the `scap-security-guide` RPM
 - `env` - environment variable retrieval function, same as `os.environ.get()`
 - `Match` - a class for complex waive results (see below)
 

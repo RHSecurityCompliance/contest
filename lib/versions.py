@@ -104,4 +104,3 @@ class _Rpm(_RpmVerCmp):
 
 rhel = _Rhel()
 oscap = _Rpm('openscap-scanner')
-ssg = _Rpm('scap-security-guide')
