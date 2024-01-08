@@ -560,7 +560,7 @@ class Guest:
             To ssh into it, log in (ssh) into the VM host first, then do:
                 ssh -i {self.ssh_keyfile_path} root@{self.ipaddr}
             """)
-        util.log(textwrap.indent(out, '    '), skip_caller=True)
+        util.log(textwrap.indent(out, '    '), skip_frames=1)
 
     @contextlib.contextmanager
     def snapshotted(self):
