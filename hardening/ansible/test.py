@@ -2,10 +2,11 @@
 
 import os
 
-from lib import util, results, virt, oscap, versions
+from lib import util, results, virt, oscap, versions, ansible
 from conf import remediation_excludes
 
 
+ansible.install_deps()
 virt.setup_host()
 
 profile = os.environ['PROFILE']
@@ -28,20 +29,6 @@ if not g.can_be_snapshotted():
 # the VM guest ssh code doesn't use $HOME/.known_hosts, so Ansible blocks
 # on trying to accept its ssh key - tell it to ignore this
 os.environ['ANSIBLE_HOST_KEY_CHECKING'] = 'False'
-
-# rhc-worker-playbook modules, exported per official instructions on
-# https://access.redhat.com/articles/remediation
-os.environ['ANSIBLE_COLLECTIONS_PATH'] = \
-    '/usr/share/rhc-worker-playbook/ansible/collections/ansible_collections/'
-
-# this is an alternate way to get modules provided by rhc-worker-playbook,
-# a RPM which is not available on CentOS / Fedora - uncomment and use this
-# if we ever run on non-RHEL
-# https://issues.redhat.com/browse/OPENSCAP-2296
-#for collection in ['community.general', 'ansible.posix']:
-#    util.subprocess_run(
-#        ['ansible-galaxy', '-vvv', 'collection', 'install', collection],
-#        check=True)
 
 with g.snapshotted():
     # remediate using a locally-run 'ansible-playbook', which connects

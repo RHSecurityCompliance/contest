@@ -1,6 +1,5 @@
 #!/usr/bin/python3
 
-import os
 import re
 import tempfile
 import subprocess
@@ -9,7 +8,7 @@ import json
 import contextlib
 from pathlib import Path
 
-from lib import util, results
+from lib import util, results, ansible
 
 
 # Obtained from
@@ -98,10 +97,7 @@ def get_all_allowed_modules():
     return set(re.sub(r'^.*\.', '', mod) for mod in json.loads(proc.stdout).keys())
 
 
-# rhc-worker-playbook modules, exported per official instructions on
-# https://access.redhat.com/articles/remediation
-os.environ['ANSIBLE_COLLECTIONS_PATH'] = \
-    '/usr/share/rhc-worker-playbook/ansible/collections/ansible_collections/'
+ansible.install_deps()
 
 with select_all_rules(util.get_datastream()) as ds_file:
     with open(ds_file) as ds:
