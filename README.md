@@ -30,10 +30,12 @@ on Red Hat Enterprise Linux.
 ## Parameters
 
 - `CONTEST_VERBOSE`
-  - Set to `1` to make Beaker/TMT report all results, incl. `pass`, `warn` and
-    `info`. These are suppressed by default to avoid huge result sets.  
-    This applies to sub-results (`/something` after a test name), results for
-    tests themselves (as seen by TMT) are always reported.
+  - Set to an integer value to control the verbosity of reported results.
+    This applies only to sub-results (`/something` after a test name), results
+    for tests themselves (as seen by TMT) are always reported.
+    - `0` outputs only `fail` and `error`
+    - `1` (default) is `fail`, `error` and `warn`
+    - `2` or greater to output everything
 
 - `CONTEST_WAIVERS`
   - Specify a `conf/waiver-` suffix for a waiver file name inside `conf` to be
