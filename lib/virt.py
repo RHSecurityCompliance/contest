@@ -81,15 +81,13 @@ import subprocess
 import textwrap
 import contextlib
 import tempfile
-import requests
-import configparser
 import json
 import base64
 import xml.etree.ElementTree as ET
 from datetime import datetime, timedelta
 from pathlib import Path
 
-from . import util, versions
+from . import util, versions, dnf
 
 GUEST_NAME = 'contest'
 GUEST_LOGIN_PASS = 'contest'
@@ -275,7 +273,7 @@ class Kickstart:
 
     def add_host_repos(self):
         installed_repos = []
-        for reponame, config in host_dnf_repos():
+        for reponame, config in dnf.repo_configs():
             baseurl = config['baseurl']
             self.appends.append(f'repo --name={reponame} --baseurl={baseurl}')
             installed_repos.append(
@@ -369,20 +367,7 @@ class Guest:
         # location (install URL) not given, try using first one found amongst host
         # repository URLs that has Anaconda stage2 image
         if not location:
-            for _, config in host_dnf_repos():
-                url = config['baseurl']
-                util.log(f"considering repo: {url}")
-                reply = requests.head(url + '/images/install.img', verify=False)
-                if reply.status_code == 200:
-                    location = url
-                    break
-                if versions.rhel < 8:
-                    reply = requests.head(url + '/LiveOS/squashfs.img', verify=False)
-                    if reply.status_code == 200:
-                        location = url
-                        break
-            if not location:
-                raise RuntimeError("did not find any install-capable repo amongst host repos")
+            location = dnf.installable_url()
 
         if not kickstart:
             kickstart = Kickstart()
@@ -823,39 +808,6 @@ def virsh(*virsh_args, **run_args):
     # --quiet just skips the buggy trailing newline
     cmd = ['virsh', '--quiet', *virsh_args]
     return subprocess.run(cmd, **run_args)
-
-
-# TODO:
-# - resolve metalinks via requests.get() + parse using elementtree XML,
-#   look for first <url protocol="http*", as they are sorted by preference already
-# - strip the tailing /repodata/repomd.xml
-# - cache all results in some global var, so we don't do this repeatedly
-def host_dnf_repos():
-    """
-    Yield tuples of (name,url) of all enabled yum/dnf repositories
-    on the host.
-    """
-    # FIXME: maybe add support for metalink / mirrorlist?
-    for repofile in Path('/etc/yum.repos.d').iterdir():
-        c = configparser.ConfigParser()
-        c.read(repofile)
-        for section in c.sections():
-            # we need at least these to be defined
-            if not all(x in c[section] for x in ['name', 'baseurl', 'enabled']):
-                continue
-            # no disabled repos
-            if c[section]['enabled'] != '1':
-                continue
-            baseurl = c[section]['baseurl']
-            # no local-only repos that a guest can't reach
-            if baseurl.startswith('file://'):
-                continue
-            # no http repos which return error (Anaconda aborts on this)
-            elif baseurl.startswith(('http://', 'https://')):
-                reply = requests.head(baseurl, verify=False)
-                if not reply.ok:
-                    continue
-            yield (section, c[section])
 
 
 def ssh_keygen(path):
