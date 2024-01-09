@@ -20,7 +20,7 @@ from pathlib import Path
 
 from . import util, waive
 
-_valid_statuses = ['pass', 'fail', 'warn', 'error', 'info']
+_valid_statuses = ['pass', 'fail', 'warn', 'error', 'info', 'skip']
 
 failed_count = 0
 errored_count = 0
@@ -62,13 +62,36 @@ def have_tmt_api():
     return bool(os.environ.get('TMT_TEST_DATA'))
 
 
+def have_beaker_api():
+    """Return True if we have access to Beaker results API."""
+    required_vars = [
+        'LAB_CONTROLLER', 'RECIPEID', 'TASKID',
+    ]
+    return all(os.environ.get(x) for x in required_vars)
+
+
+def _allowed_by_verbosity(status):
+    env = os.environ.get('CONTEST_VERBOSE')
+    if env:
+        level = int(env)
+    else:
+        # be non-verbose in Beaker by default
+        level = 0 if have_beaker_api() else 1
+
+    if level == 0:
+        if status not in ['fail', 'error']:
+            return False
+    elif level == 1:
+        if status not in ['fail', 'error', 'warn']:
+            return False
+    return True
+
+
 def report_tmt(status, name=None, note=None, logs=None, *, add_output=True):
     report_plain(status, name, note, logs)
 
-    # report these only in verbose mode
-    if status in ['pass', 'info'] and name:
-        if os.environ.get('CONTEST_VERBOSE') != '1':
-            return
+    if not _allowed_by_verbosity(status) and name:
+        return
 
     if not name:
         name = '/'  # https://github.com/teemtee/tmt/issues/1855
@@ -110,21 +133,11 @@ def report_tmt(status, name=None, note=None, logs=None, *, add_output=True):
         f.write(yaml_addition)
 
 
-def have_beaker_api():
-    """Return True if we have access to Beaker results API."""
-    required_vars = [
-        'LAB_CONTROLLER', 'RECIPEID', 'TASKID',
-    ]
-    return all(os.environ.get(x) for x in required_vars)
-
-
 def report_beaker(status, name=None, note=None, logs=None):
     report_plain(status, name, note, logs)
 
-    # report these only in verbose mode
-    if status in ['pass', 'warn', 'info'] and name:
-        if os.environ.get('CONTEST_VERBOSE') != '1':
-            return
+    if not _allowed_by_verbosity(status) and name:
+        return
 
     labctl = os.environ['LAB_CONTROLLER']
     recipeid = os.environ['RECIPEID']
@@ -241,7 +254,7 @@ def report_and_exit(status=None, note=None, logs=None):
     # exit based on the new status
     if status == 'fail':
         sys.exit(2)
-    elif status in ['pass', 'info', 'warn']:
+    elif status in ['pass', 'info', 'warn', 'skip']:
         sys.exit(0)
     else:
         sys.exit(1)
