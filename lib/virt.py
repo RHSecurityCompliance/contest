@@ -378,7 +378,7 @@ class Guest:
             kickstart.allow_guest_agent()
             kickstart.cache_dnf()
 
-            ssh_keygen(self.ssh_keyfile_path)
+            util.ssh_keygen(self.ssh_keyfile_path)
             with open(f'{self.ssh_keyfile_path}.pub') as f:
                 pubkey = f.read().rstrip()
             kickstart.add_authorized_key(pubkey)
@@ -808,13 +808,6 @@ def virsh(*virsh_args, **run_args):
     # --quiet just skips the buggy trailing newline
     cmd = ['virsh', '--quiet', *virsh_args]
     return subprocess.run(cmd, **run_args)
-
-
-def ssh_keygen(path):
-    """
-    Generate private/public keys prefixed by 'path'.
-    """
-    util.subprocess_run(['ssh-keygen', '-N', '', '-f', path], stdout=DEVNULL, check=True)
 
 
 def translate_ssg_kickstart(profile):
