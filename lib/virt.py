@@ -148,6 +148,32 @@ INSTALL_FAILURES = [
     br"Please respond ",
 ]
 
+FIRSTBOOT_SCRIPT = r'''#!/bin/bash
+# run only once (see ConditionPathExists)
+touch /var/tmp/contest_first_boot_done
+# hack sshd cmdline to allow root login,
+# also hack UseDNS on RHEL-7, otherwise login takes ~30sec
+echo "OPTIONS=-oPermitRootLogin=yes -oUseDNS=no" >> /etc/sysconfig/sshd
+# allow qemu-guest-agent to execute code
+sed '/^BLACKLIST_RPC=/s/=.*/=/'   -i /etc/sysconfig/qemu-ga  # RHEL-7/8
+sed '/^BLOCK_RPCS=/s/=.*/=/'      -i /etc/sysconfig/qemu-ga  # RHEL-9+
+sed '/^FILTER_RPC_ARGS=/s/=.*/=/' -i /etc/sysconfig/qemu-ga  # RHEL-9.4+
+semanage permissive -a virt_qemu_ga_t
+'''
+
+FIRSTBOOT_UNIT = r'''
+[Unit]
+Description=Contest first boot setup
+ConditionPathExists=!/var/tmp/contest_first_boot_done
+After=sysinit.target
+Before=basic.target
+DefaultDependencies=no
+[Service]
+Type=oneshot
+ExecStart=/usr/local/sbin/contest_first_boot.sh
+RemainAfterExit=yes
+'''
+
 PIPE = subprocess.PIPE
 DEVNULL = subprocess.DEVNULL
 
@@ -299,25 +325,26 @@ class Kickstart:
             chown {owner} -R {homedir}/.ssh''')
         self.add_post(script)
 
-    def allow_root_login(self):
-        """
-        Hack sshd cmdline to allow root login,
-        also hack UseDNS on RHEL-7, otherwise login takes ~30sec.
-        """
-        self.add_post('echo "OPTIONS=-oPermitRootLogin=yes -oUseDNS=no" >> /etc/sysconfig/sshd')
-
-    def allow_guest_agent(self):
-        """Allow qemu-guest-agent to execute code."""
+    def add_firstboot_setup(self):
         script = textwrap.dedent('''\
-            sed '/^BLACKLIST_RPC=/s/=.*/=/' -i /etc/sysconfig/qemu-ga  # RHEL-7/8
-            sed '/^BLOCK_RPCS=/s/=.*/=/' -i /etc/sysconfig/qemu-ga     # RHEL-9+
-            sed '/^FILTER_RPC_ARGS=/s/=.*/=/' -i /etc/sysconfig/qemu-ga  # RHEL-9.4+
-            semanage permissive -a virt_qemu_ga_t''')
+            # add the firstboot script
+            cat >> /usr/local/sbin/contest_first_boot.sh <<'EOF'
+            {FIRSTBOOT_SCRIPT}
+            EOF
+            chmod +x /usr/local/sbin/contest_first_boot.sh
+            # add the firstboot service unit
+            cat >> /etc/systemd/system/contest-first-boot.service <<'EOF'
+            {FIRSTBOOT_UNIT}
+            EOF
+            # make firstboot run early in boot
+            mkdir -p /etc/systemd/system/basic.target.requires
+            ln -s /etc/systemd/system/contest-first-boot.service \
+                /etc/systemd/system/basic.target.requires/''')
+        # do format() separately (no f-strings) because inserted variables
+        # are multi-line strings with no leading spaces, throwing off dedent()
+        script = script.format(
+            FIRSTBOOT_SCRIPT=FIRSTBOOT_SCRIPT, FIRSTBOOT_UNIT=FIRSTBOOT_UNIT)
         self.add_post(script)
-
-    def cache_dnf(self):
-        """(Would have been done by subscription-manager.)"""
-        self.add_post('{ dnf -y makecache || yum -y makecache; } 2>/dev/null')
 
 
 #
@@ -374,10 +401,7 @@ class Guest:
 
         if not ks_verbatim:
             kickstart.add_host_repos()
-            kickstart.allow_root_login()
-            kickstart.allow_guest_agent()
-            kickstart.cache_dnf()
-
+            kickstart.add_firstboot_setup()
             util.ssh_keygen(self.ssh_keyfile_path)
             with open(f'{self.ssh_keyfile_path}.pub') as f:
                 pubkey = f.read().rstrip()
