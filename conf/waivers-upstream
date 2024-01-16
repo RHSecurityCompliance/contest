@@ -221,4 +221,8 @@
 /hardening/anaconda/with-gui/[^/]+/service_rpcbind_disabled
     Match(rhel == 8, sometimes=True)
 
+# waive all failures of rules without remediation
+.*
+    Match(no_remediation(name), note='no remediation', sometimes=True)
+
 # vim: syntax=python

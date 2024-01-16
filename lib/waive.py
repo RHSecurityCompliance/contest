@@ -9,7 +9,7 @@ import platform
 import textwrap
 from pathlib import Path
 
-from . import util, versions
+from . import util, versions, oscap
 
 _sections_cache = None
 
@@ -136,6 +136,11 @@ def _open_waiver_file():
     return open(waiver_file)
 
 
+def _result_has_no_remediation(name):
+    rule = name.rpartition('/')[2]
+    return oscap.has_no_remediation(rule)
+
+
 class Match:
     """
     A True/False result with additional metadata, returned from
@@ -179,6 +184,7 @@ def match_result(status, name, note):
         'oscap': versions.oscap,
         # environmental
         'env': os.environ.get,
+        'no_remediation': _result_has_no_remediation,
         # special
         'Match': Match,
     }

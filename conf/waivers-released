@@ -220,4 +220,8 @@
 /hardening/host-os/oscap/anssi_nt28_high/audit_rules_privileged_commands
     rhel == 7 and arch == 'ppc64le'
 
+# waive all failures of rules without remediation
+.*
+    Match(no_remediation(name), note='no remediation', sometimes=True)
+
 # vim: syntax=python

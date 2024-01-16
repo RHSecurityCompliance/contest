@@ -88,10 +88,6 @@ def report_from_verbose(lines):
 
         if status in ['pass', 'error']:
             pass
-        elif status == 'fail':
-            if has_no_remediation(rule):
-                note = 'no remediation'
-                status = 'warn'
         elif status in ['notapplicable', 'notchecked', 'notselected', 'informational']:
             note = status
             status = 'info'

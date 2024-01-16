@@ -103,6 +103,8 @@ The expression has these globals available:
 - `oscap` - an object capable of `openscap-scanner` RPM version comparisons,
   see [versions.oscap](lib/versions.py)
 - `env` - environment variable retrieval function, same as `os.environ.get()`
+- `no_remediation` - function, extracts rule name from a passed result/test
+  name, returns `bool` whether the rule has a remediation script
 - `Match` - a class for complex waive results (see below)
 
 The version comparison objects also support a boolean evaluation, with
