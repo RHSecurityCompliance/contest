@@ -196,6 +196,23 @@ with workarounds that would use operators.
 
 Use `some_list.append(item)` instead of `some_list += [item]`.
 
+## Avoid getters/setters
+
+Prefer the pythonic approach of accessing class variables directly, even from
+the outside, if possible. Do not create `get()` / `set()` that just read/write
+the variable value.
+
+```
+obj = Class()
+obj.amount = 10
+obj.harvest()
+```
+
+However if the `get()` / `set()` would provide additional value (ie. formatting)
+feel free to use them (under some appropriate name).
+
+Avoid (for now) using `@property` to hack this, we don't have public APIs.
+
 ## TODOs
 
 Obsoletes/replaces when we drop support for Python 3.6:
