@@ -95,15 +95,13 @@ prefer referencing them via their import names.
 import os
 import subprocess
 import pathlib
-import textwrap
+import collections
 
 ...
 
 subprocess.run(...)
 x = pathlib.Path(...)
-y = textwrap.dedent("""\
-        foo
-          bar""")
+y = collections.namedtuple('Point', ['a', 'b'])
 ```
 
 However a unique enough identifier that is repeated several/many times

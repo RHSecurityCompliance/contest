@@ -101,7 +101,7 @@ NETWORK_HOST = '192.168.120.1'
 NETWORK_RANGE = ['192.168.120.2', '192.168.123.254']
 NETWORK_EXPIRY = 168
 
-KICKSTART_TEMPLATE = fr'''
+KICKSTART_TEMPLATE = util.dedent(fr'''
 lang en_US.UTF-8
 keyboard --vckeymap us
 network --onboot yes --bootproto dhcp
@@ -127,7 +127,7 @@ part /srv --size=100
 part /opt --size=100
 part /tmp --size=1000
 part /usr --size=8000
-'''
+''')
 
 KICKSTART_PACKAGES = [
     'openscap-scanner',
@@ -148,7 +148,8 @@ INSTALL_FAILURES = [
     br"Please respond ",
 ]
 
-FIRSTBOOT_SCRIPT = r'''#!/bin/bash
+FIRSTBOOT_SCRIPT = util.dedent(r'''
+#!/bin/bash
 # run only once (see ConditionPathExists)
 touch /var/tmp/contest_first_boot_done
 # hack sshd cmdline to allow root login,
@@ -159,9 +160,9 @@ sed '/^BLACKLIST_RPC=/s/=.*/=/'   -i /etc/sysconfig/qemu-ga  # RHEL-7/8
 sed '/^BLOCK_RPCS=/s/=.*/=/'      -i /etc/sysconfig/qemu-ga  # RHEL-9+
 sed '/^FILTER_RPC_ARGS=/s/=.*/=/' -i /etc/sysconfig/qemu-ga  # RHEL-9.4+
 semanage permissive -a virt_qemu_ga_t
-'''
+''')
 
-FIRSTBOOT_UNIT = r'''
+FIRSTBOOT_UNIT = util.dedent(r'''
 [Unit]
 Description=Contest first boot setup
 ConditionPathExists=!/var/tmp/contest_first_boot_done
@@ -172,7 +173,7 @@ DefaultDependencies=no
 Type=oneshot
 ExecStart=/usr/local/sbin/contest_first_boot.sh
 RemainAfterExit=yes
-'''
+''')
 
 PIPE = subprocess.PIPE
 DEVNULL = subprocess.DEVNULL
@@ -208,7 +209,7 @@ def _setup_host_network():
 
     def define_our_network():
         util.log(f"defining libvirt network: {net_name}")
-        net_xml = textwrap.dedent(f'''\
+        net_xml = util.dedent(fr'''
             <network>
               <name>{net_name}</name>
               <forward mode='nat'/>
@@ -220,7 +221,8 @@ def _setup_host_network():
                   </range>
                 </dhcp>
               </ip>
-            </network>''')
+            </network>
+        ''')
         with tempfile.NamedTemporaryFile(mode='w', suffix='.xml') as f:
             f.write(net_xml)
             f.flush()
@@ -316,17 +318,18 @@ class Kickstart:
         self.append(f'%addon {section}\n{lines}\n%end')
 
     def add_authorized_key(self, pubkey, homedir='/root', owner='root'):
-        script = textwrap.dedent(f'''\
+        script = util.dedent(fr'''
             mkdir -m 0700 -p {homedir}/.ssh
             cat >> {homedir}/.ssh/authorized_keys <<EOF
             {pubkey}
             EOF
             chmod 0600 {homedir}/.ssh/authorized_keys
-            chown {owner} -R {homedir}/.ssh''')
+            chown {owner} -R {homedir}/.ssh
+        ''')
         self.add_post(script)
 
     def add_firstboot_setup(self):
-        script = textwrap.dedent('''\
+        script = util.dedent(r'''
             # add the firstboot script
             cat >> /usr/local/sbin/contest_first_boot.sh <<'EOF'
             {FIRSTBOOT_SCRIPT}
@@ -339,7 +342,8 @@ class Kickstart:
             # make firstboot run early in boot
             mkdir -p /etc/systemd/system/basic.target.requires
             ln -s /etc/systemd/system/contest-first-boot.service \
-                /etc/systemd/system/basic.target.requires/''')
+                /etc/systemd/system/basic.target.requires/
+        ''')
         # do format() separately (no f-strings) because inserted variables
         # are multi-line strings with no leading spaces, throwing off dedent()
         script = script.format(
