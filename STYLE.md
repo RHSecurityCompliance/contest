@@ -196,6 +196,49 @@ with workarounds that would use operators.
 
 Use `some_list.append(item)` instead of `some_list += [item]`.
 
+## Close blocks on the same indent level
+
+Use the alternate (C-style) blocks allowed by PEP8, same for function calls
+if the argument list is too long.
+```
+my_list = [
+    1,
+    2,
+]
+ret = func_call(
+    some_long_arg="probably useless long text that should be in a variable",
+    another_arg=123,
+)
+```
+
+If a multiline dict/str/other constant is specified as a single argument,
+combine the opening `(` and closing `)` of the function call with the opening
+and closing of the constant.
+```
+ret = func_call({
+    'x': 123,
+    'y': 234,
+})
+```
+However do not use this syntax if you would pass extra arguments to `func_call`
+after the dict.
+
+## Use comma on the last line
+
+In list/dict/etc. and even function definitions and calls spread across multiple
+lines, always use `,` on the last line, even if it's technically unnecessary.
+```
+my_list = [
+    1,
+    2,
+]
+```
+This ensures easy editing of the contents without somebody forgetting to add `,`
+to an existing line, and simplifies git diffs as they won't display the `,`
+addition on the unchanged line.
+
+(This applies to all modern-ish languages, incl. C89.)
+
 ## Avoid getters/setters
 
 Prefer the pythonic approach of accessing class variables directly, even from
