@@ -11,6 +11,7 @@ libdir = Path(inspect.getfile(inspect.currentframe())).parent.parent
 from .content      import *  # noqa
 from .dedent       import *  # noqa
 from .environment  import *  # noqa
+from .httpsrv      import *  # noqa
 from .log          import *  # noqa
 from .sanitization import *  # noqa
 from .ssh          import *  # noqa
