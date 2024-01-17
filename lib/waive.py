@@ -6,7 +6,6 @@ a custom file format. See WAIVERS.md.
 import os
 import re
 import platform
-import textwrap
 from pathlib import Path
 
 from . import util, versions
@@ -55,7 +54,7 @@ def _compile_eval(meta, code):
     if not code.strip():
         raise WaiveParseError(meta, "empty python block code ending here")
     try:
-        return compile(textwrap.dedent(code), 'waivercode', 'eval')
+        return compile(util.dedent(code), 'waivercode', 'eval')
     except Exception:
         raise WaiveParseError(meta, "compiling waiver python code failed")
 
