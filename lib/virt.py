@@ -148,10 +148,8 @@ INSTALL_FAILURES = [
     br"Please respond ",
 ]
 
-FIRSTBOOT_SCRIPT = util.dedent(r'''
-#!/bin/bash
-# run only once (see ConditionPathExists)
-touch /var/tmp/contest_first_boot_done
+# custom post-install setup to allow smooth login and qemu-qa command execution
+GUEST_SETUP = util.dedent(r'''
 # hack sshd cmdline to allow root login,
 # also hack UseDNS on RHEL-7, otherwise login takes ~30sec
 echo "OPTIONS=-oPermitRootLogin=yes -oUseDNS=no" >> /etc/sysconfig/sshd
@@ -161,19 +159,7 @@ sed '/^BLOCK_RPCS=/s/=.*/=/'      -i /etc/sysconfig/qemu-ga  # RHEL-9+
 sed '/^FILTER_RPC_ARGS=/s/=.*/=/' -i /etc/sysconfig/qemu-ga  # RHEL-9.4+
 semanage permissive -a virt_qemu_ga_t
 ''')
-
-FIRSTBOOT_UNIT = util.dedent(r'''
-[Unit]
-Description=Contest first boot setup
-ConditionPathExists=!/var/tmp/contest_first_boot_done
-After=sysinit.target
-Before=basic.target
-DefaultDependencies=no
-[Service]
-Type=oneshot
-ExecStart=/usr/local/sbin/contest_first_boot.sh
-RemainAfterExit=yes
-''')
+GUEST_SETUP_REQUIRES = ['openssh-server', 'qemu-guest-agent']
 
 PIPE = subprocess.PIPE
 DEVNULL = subprocess.DEVNULL
@@ -299,6 +285,9 @@ class Kickstart:
         else:
             self.packages.append(f'@{group}')
 
+    def add_install_only_repo(self, name, baseurl):
+        self.appends.append(f'repo --name={name} --baseurl={baseurl}')
+
     def add_host_repos(self):
         installed_repos = []
         for reponame, config in dnf.repo_configs():
@@ -326,28 +315,6 @@ class Kickstart:
             chmod 0600 {homedir}/.ssh/authorized_keys
             chown {owner} -R {homedir}/.ssh
         ''')
-        self.add_post(script)
-
-    def add_firstboot_setup(self):
-        script = util.dedent(r'''
-            # add the firstboot script
-            cat >> /usr/local/sbin/contest_first_boot.sh <<'EOF'
-            {FIRSTBOOT_SCRIPT}
-            EOF
-            chmod +x /usr/local/sbin/contest_first_boot.sh
-            # add the firstboot service unit
-            cat >> /etc/systemd/system/contest-first-boot.service <<'EOF'
-            {FIRSTBOOT_UNIT}
-            EOF
-            # make firstboot run early in boot
-            mkdir -p /etc/systemd/system/basic.target.requires
-            ln -s /etc/systemd/system/contest-first-boot.service \
-                /etc/systemd/system/basic.target.requires/
-        ''')
-        # do format() separately (no f-strings) because inserted variables
-        # are multi-line strings with no leading spaces, throwing off dedent()
-        script = script.format(
-            FIRSTBOOT_SCRIPT=FIRSTBOOT_SCRIPT, FIRSTBOOT_UNIT=FIRSTBOOT_UNIT)
         self.add_post(script)
 
 
@@ -403,19 +370,33 @@ class Guest:
         if not kickstart:
             kickstart = Kickstart()
 
+        http_port = 8090
+
         if not ks_verbatim:
             kickstart.add_host_repos()
-            kickstart.add_firstboot_setup()
             util.ssh_keygen(self.ssh_keyfile_path)
             with open(f'{self.ssh_keyfile_path}.pub') as f:
                 pubkey = f.read().rstrip()
             kickstart.add_authorized_key(pubkey)
+            kickstart.add_install_only_repo('rpmpack', f'http://{NETWORK_HOST}:{http_port}/repo')
+            kickstart.add_packages([util.RPMPACK_NAME])
 
         disk_path = f'{GUEST_IMG_DIR}/{self.name}.img'
         disk_format = 'raw'
-
         cpus = os.cpu_count() or 1
-        with kickstart.to_tmpfile() as ksfile:
+
+        pack = util.RpmPack()
+        pack.post.append(GUEST_SETUP)
+        pack.requires += GUEST_SETUP_REQUIRES
+
+        srv = util.BackgroundHTTPServer(NETWORK_HOST, http_port)
+
+        with contextlib.ExitStack() as stack:
+            repo = stack.enter_context(pack.build_as_repo())
+            srv.add_dir(repo, 'repo')
+            stack.enter_context(srv)
+            ksfile = stack.enter_context(kickstart.to_tmpfile())
+
             virt_install = [
                 'pseudotty', 'virt-install',
                 # installing from HTTP URL leads to Anaconda downloading stage2

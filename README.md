@@ -80,6 +80,10 @@ automatically waive failures.
 
 (TODO: Find a better place for this?)
 
+If you need to use `lib.util.httpsrv` from a test, use a port between
+8080 and 8089. Libraries (`lib`) should use a port between 8090 and 8099.
+See also TODOs in [STYLE.md](STYLE.md), this is a temporary limitation.
+
 ### Virtual machines and logging in
 
 The VM-using `/hardening` tests do two hacks to allow login after hardening:

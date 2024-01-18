@@ -14,6 +14,8 @@ require+:
   - qemu-kvm
   - libvirt-client
   - virt-install
+  - rpm-build
+  - createrepo
 extra-hardware: |
     keyvalue = HVM=1
     hostrequire = memory>=3720
