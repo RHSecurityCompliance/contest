@@ -101,40 +101,6 @@ NETWORK_HOST = '192.168.120.1'
 NETWORK_RANGE = ['192.168.120.2', '192.168.123.254']
 NETWORK_EXPIRY = 168
 
-KICKSTART_TEMPLATE = util.dedent(fr'''
-lang en_US.UTF-8
-keyboard --vckeymap us
-network --onboot yes --bootproto dhcp
-rootpw {GUEST_LOGIN_PASS}
-firstboot --disable
-selinux --enforcing
-timezone --utc Europe/Prague
-bootloader --append="console=ttyS0,115200 mitigations=off"
-reboot
-zerombr
-clearpart --all --initlabel
-
-# commonly used partitions by some content profiles
-#autopart --type=plain --nohome
-part /boot --size=700
-part / --size=1000
-part /home --size=100
-part /var --size=6000
-part /var/log --size=1000
-part /var/log/audit --size=1000
-part /var/tmp --size=1000
-part /srv --size=100
-part /opt --size=100
-part /tmp --size=1000
-part /usr --size=8000
-''')
-
-KICKSTART_PACKAGES = [
-    'openscap-scanner',
-    # because of semanage permissive -a virt_qemu_ga_t
-    'policycoreutils-python' if versions.rhel < 8 else 'policycoreutils-python-utils',
-]
-
 # as byte-strings
 INSTALL_FAILURES = [
     br"org\.fedoraproject\.Anaconda\.Addons\.OSCAP\.*: The installation should be aborted",
@@ -147,19 +113,6 @@ INSTALL_FAILURES = [
     # RHEL-7 ignores inst.noninteractive
     br"Please respond ",
 ]
-
-# custom post-install setup to allow smooth login and qemu-qa command execution
-GUEST_SETUP = util.dedent(r'''
-# hack sshd cmdline to allow root login,
-# also hack UseDNS on RHEL-7, otherwise login takes ~30sec
-echo "OPTIONS=-oPermitRootLogin=yes -oUseDNS=no" >> /etc/sysconfig/sshd
-# allow qemu-guest-agent to execute code
-sed '/^BLACKLIST_RPC=/s/=.*/=/'   -i /etc/sysconfig/qemu-ga  # RHEL-7/8
-sed '/^BLOCK_RPCS=/s/=.*/=/'      -i /etc/sysconfig/qemu-ga  # RHEL-9+
-sed '/^FILTER_RPC_ARGS=/s/=.*/=/' -i /etc/sysconfig/qemu-ga  # RHEL-9.4+
-semanage permissive -a virt_qemu_ga_t
-''')
-GUEST_SETUP_REQUIRES = ['openssh-server', 'qemu-guest-agent']
 
 PIPE = subprocess.PIPE
 DEVNULL = subprocess.DEVNULL
@@ -245,7 +198,39 @@ def setup_host():
 #
 
 class Kickstart:
-    def __init__(self, template=KICKSTART_TEMPLATE, packages=KICKSTART_PACKAGES):
+    TEMPLATE = util.dedent(fr'''
+        lang en_US.UTF-8
+        keyboard --vckeymap us
+        network --onboot yes --bootproto dhcp
+        rootpw {GUEST_LOGIN_PASS}
+        firstboot --disable
+        selinux --enforcing
+        timezone --utc Europe/Prague
+        bootloader --append="console=ttyS0,115200 mitigations=off"
+        reboot
+        zerombr
+        clearpart --all --initlabel
+
+        # commonly used partitions by some content profiles
+        #autopart --type=plain --nohome
+        part /boot --size=700
+        part / --size=1000
+        part /home --size=100
+        part /var --size=6000
+        part /var/log --size=1000
+        part /var/log/audit --size=1000
+        part /var/tmp --size=1000
+        part /srv --size=100
+        part /opt --size=100
+        part /tmp --size=1000
+        part /usr --size=8000
+    ''')
+
+    PACKAGES = [
+        'openscap-scanner',
+    ]
+
+    def __init__(self, template=self.TEMPLATE, packages=self.PACKAGES):
         self.ks = template
         self.appends = []
         self.packages = packages
@@ -291,6 +276,7 @@ class Kickstart:
     def add_host_repos(self):
         installed_repos = []
         for reponame, config in dnf.repo_configs():
+            # TODO: repo --metalink support, don't assume baseurl exists
             baseurl = config['baseurl']
             self.appends.append(f'repo --name={reponame} --baseurl={baseurl}')
             installed_repos.append(
@@ -331,6 +317,24 @@ class Guest:
     when it finds an already installed guest using the same tag.
     Tag-less guests cannot be shared across tests.
     """
+
+    # custom post-install setup to allow smooth login and qemu-qa command execution
+    SETUP = util.dedent(r'''
+        # hack sshd cmdline to allow root login,
+        # also hack UseDNS on RHEL-7, otherwise login takes ~30sec
+        echo "OPTIONS=-oPermitRootLogin=yes -oUseDNS=no" >> /etc/sysconfig/sshd
+        # allow qemu-guest-agent to execute code
+        sed '/^BLACKLIST_RPC=/s/=.*/=/'   -i /etc/sysconfig/qemu-ga  # RHEL-7/8
+        sed '/^BLOCK_RPCS=/s/=.*/=/'      -i /etc/sysconfig/qemu-ga  # RHEL-9+
+        sed '/^FILTER_RPC_ARGS=/s/=.*/=/' -i /etc/sysconfig/qemu-ga  # RHEL-9.4+
+        semanage permissive -a virt_qemu_ga_t
+    ''')
+    SETUP_REQUIRES = (
+        ['openssh-server', 'qemu-guest-agent']
+        # because of semanage in SETUP
+        + (['policycoreutils-python'] if versions.rhel < 8 else ['policycoreutils-python-utils'])
+    )
+
     def __init__(self, tag=None, *, name=GUEST_NAME):
         self.tag = tag
         self.name = name
@@ -386,8 +390,8 @@ class Guest:
         cpus = os.cpu_count() or 1
 
         pack = util.RpmPack()
-        pack.post.append(GUEST_SETUP)
-        pack.requires += GUEST_SETUP_REQUIRES
+        pack.post.append(self.SETUP)
+        pack.requires += self.SETUP_REQUIRES
 
         srv = util.BackgroundHTTPServer(NETWORK_HOST, http_port)
 
