@@ -8,6 +8,8 @@ result: custom
 environment+:
     PYTHONPATH: ../../..
 duration: 15m
+require+:
+  - openscap-scanner
 recommend+:
   # python3-PyYAML is needed on RHEL-7
   - python3-PyYAML

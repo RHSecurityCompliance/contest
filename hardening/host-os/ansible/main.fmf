@@ -4,6 +4,8 @@ result: custom
 environment+:
     PYTHONPATH: ../../..
 duration: 1h
+require+:
+  - openscap-scanner
 recommend+:
   # ansible-core is not available on RHEL-7
   # ansible is not on RHEL-8+

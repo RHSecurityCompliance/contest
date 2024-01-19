@@ -1,5 +1,4 @@
 require:
-  - openscap-scanner
   - scap-security-guide
 
 # shared by all tests
