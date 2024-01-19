@@ -213,6 +213,19 @@ feel free to use them (under some appropriate name).
 
 Avoid (for now) using `@property` to hack this, we don't have public APIs.
 
+## Log tactically
+
+Use `util.log('something')` when something
+
+- will take a long time with no output
+- will perform notable changes to an OS
+- is a significant workflow step
+
+Use the `util.subprocess_run(...)` function (instead of `subprocess.run(...)`)
+when you want the execution to be automatically logged.  
+For insignificant or harmless (read-only) commands, use `subprocess.run(...)`
+to not flood the logs.
+
 ## TODOs
 
 Obsoletes/replaces when we drop support for Python 3.6:
