@@ -198,6 +198,20 @@ def setup_host():
 #
 
 class Kickstart:
+    PARTITIONS = [
+        ('/boot', 700),
+        ('/', 1000),
+        ('/home', 100),
+        ('/var', 6000),
+        ('/var/log', 1000),
+        ('/var/log/audit', 1000),
+        ('/var/tmp', 1000),
+        ('/srv', 100),
+        ('/opt', 100),
+        ('/tmp', 1000),
+        ('/usr', 8000),
+    ]
+
     TEMPLATE = util.dedent(fr'''
         lang en_US.UTF-8
         keyboard --vckeymap us
@@ -210,36 +224,25 @@ class Kickstart:
         reboot
         zerombr
         clearpart --all --initlabel
-
-        # commonly used partitions by some content profiles
-        #autopart --type=plain --nohome
-        part /boot --size=700
-        part / --size=1000
-        part /home --size=100
-        part /var --size=6000
-        part /var/log --size=1000
-        part /var/log/audit --size=1000
-        part /var/tmp --size=1000
-        part /srv --size=100
-        part /opt --size=100
-        part /tmp --size=1000
-        part /usr --size=8000
     ''')
 
     PACKAGES = [
         'openscap-scanner',
     ]
 
-    def __init__(self, template=self.TEMPLATE, packages=self.PACKAGES):
+    def __init__(self, template=TEMPLATE, packages=PACKAGES):
         self.ks = template
         self.appends = []
         self.packages = packages
 
     def _assemble_ks(self):
+        partitions_block = '\n'.join(
+            (f'part {mountpoint} --size={size}' for mountpoint, size in self.PARTITIONS),
+        )
         appends_block = '\n'.join(self.appends)
         packages_block = '\n'.join(self.packages)
         packages_block = f'%packages\n{packages_block}\n%end'
-        return '\n\n'.join([self.ks, appends_block, packages_block])
+        return '\n\n'.join([self.ks, partitions_block, appends_block, packages_block])
         # self.ks + self.packages + self.scripts
 
     @contextlib.contextmanager
@@ -382,23 +385,30 @@ class Guest:
             with open(f'{self.ssh_keyfile_path}.pub') as f:
                 pubkey = f.read().rstrip()
             kickstart.add_authorized_key(pubkey)
-            kickstart.add_install_only_repo('rpmpack', f'http://{NETWORK_HOST}:{http_port}/repo')
+            kickstart.add_install_only_repo(
+                'contest-rpmpack',
+                f'http://{NETWORK_HOST}:{http_port}/repo',
+            )
             kickstart.add_packages([util.RPMPACK_NAME])
 
         disk_path = f'{GUEST_IMG_DIR}/{self.name}.img'
         disk_format = 'raw'
         cpus = os.cpu_count() or 1
 
-        pack = util.RpmPack()
-        pack.post.append(self.SETUP)
-        pack.requires += self.SETUP_REQUIRES
-
-        srv = util.BackgroundHTTPServer(NETWORK_HOST, http_port)
-
         with contextlib.ExitStack() as stack:
+            # create a custom RPM to run guest setup scripts via RPM scriptlets
+            # and install it during Anaconda installation
+            pack = util.RpmPack()
+            pack.post.append(self.SETUP)
+            pack.requires += self.SETUP_REQUIRES
             repo = stack.enter_context(pack.build_as_repo())
+
+            # host the custom RPM on a HTTP server, as Anaconda needs a YUM repo
+            # to pull packages from
+            srv = util.BackgroundHTTPServer(NETWORK_HOST, http_port)
             srv.add_dir(repo, 'repo')
             stack.enter_context(srv)
+
             ksfile = stack.enter_context(kickstart.to_tmpfile())
 
             virt_install = [
