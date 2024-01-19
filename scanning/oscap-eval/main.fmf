@@ -4,6 +4,8 @@ result: custom
 environment+:
     PYTHONPATH: ../..
 duration: 15m
+require+:
+  - openscap-scanner
 tag:
   - CI-Tier-1
   - Errata

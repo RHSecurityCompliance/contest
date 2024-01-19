@@ -4,6 +4,8 @@ result: custom
 environment+:
     PYTHONPATH: ../../..
 duration: 1h
+require+:
+  - openscap-scanner
 tag:
   - destructive
   - daily

@@ -12,6 +12,8 @@ def download_source(package):
 
     'package' is name of package to download.
     """
+    # TODO: drop yum-utils and dnf-utils deps after RHEL-7,
+    #       switch to 'dnf download --source'
     util.subprocess_run(['yumdownloader', '--source', package], check=True)
     package_glob = package + '*.src.rpm'
     try:
