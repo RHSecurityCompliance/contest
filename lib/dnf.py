@@ -89,7 +89,6 @@ def repo_configs():
     where 'dict' represents repository .conf contents.
     """
     for repo in _get_repos():
-        util.log(f"yielding: {repo.name} / {repo.data}")
         yield (repo.name, repo.data)
 
 
