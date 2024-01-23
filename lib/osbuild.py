@@ -214,6 +214,12 @@ class Blueprint:
             name = "{name}"
         ''') + '\n'
 
+    def add_package_group(self, name):
+        self.assembled += util.dedent(fr'''
+            [[groups]]
+            name = "{name}"
+        ''') + '\n'
+
     def add_partition(self, mountpoint, minsize):
         self.assembled += util.dedent(fr'''
             [[customizations.filesystem]]
