@@ -22,7 +22,8 @@ import multiprocessing
 from pathlib import Path
 from http.server import HTTPServer, SimpleHTTPRequestHandler
 
-from lib import util
+from .log import log
+from .subprocess import subprocess_run
 
 
 class _BackgroundHTTPServerHandler(SimpleHTTPRequestHandler):
@@ -60,7 +61,7 @@ class _BackgroundHTTPServerHandler(SimpleHTTPRequestHandler):
         self.end_headers()
 
     def log_message(self, form, *args):
-        util.log(form % args)
+        log(form % args)
 
 
 class BackgroundHTTPServer(HTTPServer):
@@ -104,18 +105,18 @@ class BackgroundHTTPServer(HTTPServer):
         self.dir_mapping[url_path] = Path(fs_path)
 
     def __enter__(self):
-        util.log(f"starting with: {self.file_mapping}")
+        log(f"starting with: {self.file_mapping}")
         # allow the target port on the firewall
         if shutil.which('firewall-cmd'):
-            res = util.subprocess_run(
+            res = subprocess_run(
                 ['firewall-cmd', '--state'], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
             if res.returncode == 0:
-                res = util.subprocess_run(
+                res = subprocess_run(
                     ['firewall-cmd', '--get-zones'], stdout=subprocess.PIPE,
                     universal_newlines=True, check=True)
                 self.firewalld_zones = res.stdout.strip().split(' ')
                 for zone in self.firewalld_zones:
-                    util.subprocess_run(
+                    subprocess_run(
                         ['firewall-cmd', f'--zone={zone}', f'--add-port={self.listen_port}/tcp'],
                         stdout=subprocess.DEVNULL, check=True)
         proc = multiprocessing.Process(target=self.serve_forever)
@@ -123,13 +124,13 @@ class BackgroundHTTPServer(HTTPServer):
         proc.start()
 
     def __exit__(self, exc_type, exc_value, traceback):
-        util.log("ending")
+        log("ending")
         # TODO: this actually doesn't close the socket, fix this on python 3.7 with
         #       ThreadingHTTPServer and just call .stop() on the serving thread
         self.process.terminate()
         self.process.join()
         # remove allow rules from the firewall
         for zone in self.firewalld_zones:
-            util.subprocess_run(
+            subprocess_run(
                 ['firewall-cmd', f'--zone={zone}', f'--remove-port={self.listen_port}/tcp'],
                 stdout=subprocess.DEVNULL, check=True)
