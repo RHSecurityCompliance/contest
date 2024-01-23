@@ -3,7 +3,10 @@ import tempfile
 import contextlib
 from pathlib import Path
 
-from .. import util, dnf
+from .. import dnf
+from .log import log
+from .subprocess import subprocess_run
+from .dedent import dedent
 
 # we could use '%{_datadir}/%{name}' in the specfile, but this is more
 # deterministic when used from other libs / tests
@@ -12,7 +15,7 @@ RPMPACK_DATA = '/usr/share/contest-pack'
 
 
 class RpmPack:
-    HEADER = util.dedent(fr'''
+    HEADER = dedent(fr'''
         Name: {RPMPACK_NAME}
         Summary: RPM content pack for the Contest test suite
         Version: 1
@@ -81,7 +84,7 @@ class RpmPack:
     def build(self):
         """Build the binary RPM and return a path to a temporary .rpm file."""
         spec = self.create_spec()
-        util.log(f"using specfile:\n{textwrap.indent(spec, '    ')}")
+        log(f"using specfile:\n{textwrap.indent(spec, '    ')}")
         with tempfile.TemporaryDirectory() as tmpdir:
             tmpdir = Path(tmpdir)
             # write down the spec file
@@ -94,7 +97,7 @@ class RpmPack:
                 'rpmbuild', '--define', f'_topdir {tmpdir.absolute()}',
                 '-ba', specfile.absolute(),
             ]
-            util.subprocess_run(cmd, check=True)
+            subprocess_run(cmd, check=True)
             # yield it to caller
             binrpm = tmpdir / 'RPMS' / 'noarch' / f'{RPMPACK_NAME}-1-1.noarch.rpm'
             if not binrpm.exists():
@@ -109,5 +112,5 @@ class RpmPack:
         """
         with self.build() as binrpm:
             repodir = binrpm.parent
-            util.subprocess_run(['createrepo', repodir], check=True)
+            subprocess_run(['createrepo', repodir], check=True)
             yield repodir
