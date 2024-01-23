@@ -3,7 +3,7 @@ import tempfile
 import contextlib
 from pathlib import Path
 
-from .. import util
+from .. import util, dnf
 
 # we could use '%{_datadir}/%{name}' in the specfile, but this is more
 # deterministic when used from other libs / tests
@@ -21,8 +21,6 @@ class RpmPack:
         BuildArch: noarch
 
         %global source_date_epoch_from_changelog 0
-        %global contest_data {RPMPACK_DATA}
-        %global build_data %{{buildroot}}{RPMPACK_DATA}
 
         %description
     ''')
@@ -37,18 +35,34 @@ class RpmPack:
         # no hard RPM require dependencies, just run %post after these
         self.softreq = []
 
-    def add_file(self, path, name=None):
-        path = Path(path)
-        if not name:
-            name = path.name
-        self.files.append((path, name))
+    # we intentionally don't track %dir and directories in general in %files
+    # for simplicity reasons
+    # - RPM does auto-create them on install, so the only issue is them being
+    #   left there after RPM uninstall, which we don't care about here
+    def add_file(self, source, target):
+        """
+        Add a file path to the RPM, 'source' specifies a file path on the host,
+        'target' is the installed path in the RPM.
+        """
+        target = Path(target)
+        if not target.is_absolute():
+            raise SyntaxError(f"target {target} not an absolute path")
+        self.files.append((Path(source).absolute(), target))
+
+    def add_host_repos(self):
+        for repofile in dnf.repo_files():
+            self.add_file(repofile, repofile)
 
     def create_spec(self):
-        install_block = 'mkdir -p "%{build_data}"\n'
-        files_block = '%attr(0755,root,root) %dir %{contest_data}\n'
-        for path, name in self.files:
-            install_block += f'cp "{path.absolute()}" "%{{build_data}}/{name}"\n'
-            files_block += f'%attr(0644,root,root) %{{contest_data}}/{name}\n'
+        install_block = files_block = ''
+        created_dirs = set()
+        for source, target in self.files:
+            if target.parent not in created_dirs:
+                install_block += f'mkdir -p "%{{buildroot}}{target.parent}"\n'
+                created_dirs.add(target.parent)
+            install_block += f'cp -r "{source}" "%{{buildroot}}{target}"\n'
+            mode = '0755' if source.is_dir() else '0644'
+            files_block += f'%attr({mode},root,root) {target}\n'
         # on rpm install only, not on upgrade
         post_block = '[ "$1" != 1 ] && exit 0\n'
         for script in self.post:

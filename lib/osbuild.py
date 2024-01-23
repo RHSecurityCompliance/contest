@@ -67,7 +67,7 @@ class ComposerRepos:
     def __init__(self):
         self.repos = []
 
-    def add_host_repositories(self):
+    def add_host_repos(self):
         for reponame, config in dnf.repo_configs():
             new = {
                 'name': reponame,
@@ -187,32 +187,6 @@ class Blueprint:
         if ssh_pubkey:
             self.assembled += f'key = "{ssh_pubkey}"\n'
 
-    def add_repository(self, name, *, baseurl=None, metalink=None, gpgkey=None, gpgcheck=False):
-        self.assembled += util.dedent(fr'''
-            [[customizations.repositories]]
-            id = "{name}"
-            name = "{name}"
-            enabled = true
-            gpgcheck = {'true' if gpgcheck else 'false'}
-        ''') + '\n'
-        if baseurl:
-            self.assembled += f'baseurls = [ "{baseurl}" ]\n'
-        if metalink:
-            self.assembled += f'metalink = "{metalink}"\n'
-        if gpgkey:
-            self.assembled += f'gpgkeys = [ "{gpgkey}" ]\n'
-
-    def add_host_repositories(self):
-        for reponame, config in dnf.repo_configs():
-            # TODO: ask on #osbuild
-            #kwargs = {}
-            #for key in ['baseurl', 'metalink', 'gpgcheck', 'gpgkey']:
-            kwargs = {'gpgcheck': False}
-            for key in ['baseurl', 'metalink']:
-                if key in config:
-                    kwargs[key] = config[key]
-            self.add_repository(reponame, **kwargs)
-
     def add_package(self, name):
         self.assembled += util.dedent(fr'''
             [[packages]]
@@ -305,7 +279,6 @@ class Guest(virt.Guest):
             blueprint = Blueprint()
 
         if not bp_verbatim:
-            blueprint.add_host_repositories()
             # copy our default package list from virt.Kickstart
             for pkg in virt.Kickstart.PACKAGES:
                 blueprint.add_package(pkg)
@@ -332,10 +305,11 @@ class Guest(virt.Guest):
             # scripts, the only way to run additional shell code is via
             # RPM scriptlets, so add custom guest setup via RpmPack
             pack = util.RpmPack()
+            pack.add_host_repos()
             # inherited from virt.Guest
             pack.post.append(self.SETUP)
             pack.requires += self.SETUP_REQUIRES
-            pack.add_file(util.get_datastream(), self.DATASTREAM.name)
+            pack.add_file(util.get_datastream(), self.DATASTREAM)
             repo = stack.enter_context(pack.build_as_repo())
             # ensure the custom RPM is added during image building
             blueprint.add_package(util.RPMPACK_NAME)
@@ -348,7 +322,7 @@ class Guest(virt.Guest):
 
             # overwrite default Red Hat CDN host repos, add HTTP server above
             repos = ComposerRepos()
-            repos.add_host_repositories()
+            repos.add_host_repos()
             repos.repos.append({
                 'name': 'contest-rpmpack',
                 'baseurl': f'http://127.0.0.1:{http_port}/repo',
