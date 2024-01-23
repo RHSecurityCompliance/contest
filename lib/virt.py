@@ -230,14 +230,15 @@ class Kickstart:
         'openscap-scanner',
     ]
 
-    def __init__(self, template=TEMPLATE, packages=PACKAGES):
+    def __init__(self, template=TEMPLATE, packages=PACKAGES, partitions=PARTITIONS):
         self.ks = template
         self.appends = []
         self.packages = packages
+        self.partitions = partitions
 
     def _assemble_ks(self):
         partitions_block = '\n'.join(
-            (f'part {mountpoint} --size={size}' for mountpoint, size in self.PARTITIONS),
+            (f'part {mountpoint} --size={size}' for mountpoint, size in self.partitions),
         )
         appends_block = '\n'.join(self.appends)
         packages_block = '\n'.join(self.packages)
@@ -869,9 +870,9 @@ def translate_ssg_kickstart(profile):
     ks_text = re.sub(r'\n%addon .+?_oscap\n.+?\n%end[^\n]*', '', ks_text, flags=re.DOTALL)
 
     # leave original %packages - Anaconda can handle multiple %packages sections
-    # just fine (when we later add ours during installation)
-
-    return Kickstart(template=ks_text)
+    # just fine (when we later add ours during installation),
+    # however clear out partitions as content-provided kickstarts have their own
+    return Kickstart(template=ks_text, partitions=[])
 
 
 #
