@@ -11,7 +11,7 @@ except ModuleNotFoundError as e:
     if versions.rhel != 7:
         raise e from None
 
-_Repo = collections.namedtuple('Repo', ['name', 'baseurl', 'data'])
+_Repo = collections.namedtuple('Repo', ['name', 'baseurl', 'data', 'file'])
 
 
 # legacy manual parsing due to RHEL-7 having yum
@@ -35,7 +35,7 @@ def _get_repos_yum():
                 reply = requests.head(baseurl, verify=False)
                 if not reply.ok:
                     continue
-            yield _Repo(name=section, baseurl=baseurl, data=c[section])
+            yield _Repo(name=section, baseurl=baseurl, data=c[section], file=repofile)
 
 
 # dnf up to dnf4
@@ -57,7 +57,7 @@ def _get_repos_dnf():
             if not reply.ok:
                 continue
         data = dict(repo.cfg.items(name))
-        yield _Repo(name=name, baseurl=baseurl, data=data)
+        yield _Repo(name=name, baseurl=baseurl, data=data, file=repo.repofile)
 
 
 # TODO: the dnf4 API will change (confirmed by developers)
@@ -98,6 +98,15 @@ def repo_urls():
     """
     for repo in _get_repos():
         yield (repo.name, repo.baseurl)
+
+
+def repo_files():
+    """
+    Yield Paths of all enabled repository files (yum.repos.d) on the host.
+    """
+    # deduplicate paths
+    files = set(repo.file for repo in _get_repos())
+    yield from files
 
 
 def installable_url():
