@@ -1,4 +1,27 @@
 """
+Provides utilities for creating, importing and using Image Builder made images
+for virtual machines, and a context manager to use them as VMs.
+
+The classes and methods are derived from lib.virt, but instead of installing
+VMs via Guest.install(), they are created from images via Guest.create().
+
+    import osbuild
+
+    osbuild.Host.setup()
+    g = osbuild.Guest()
+    profile = 'stig'
+
+    # optional
+    blueprint = osbuild.Blueprint(profile)
+    blueprint.add_something( ... )
+
+    g.create(profile=profile, blueprint=blueprint)
+
+    with g.booted():
+        g.ssh( ... )
+        g.ssh( ... )
+
+Snapshotting is currently not supported/tested with this approach.
 """
 
 import os
@@ -16,7 +39,6 @@ from datetime import datetime, timedelta
 from pathlib import Path
 
 from . import util, dnf, virt
-#from .. import conf
 
 
 class Host:
@@ -159,7 +181,6 @@ class Blueprint:
         self.assembled += f'name = "{name}"\n'
         if password:
             self.assembled += f'password = "{password}"\n'
-            #self.assembled += f'password = "{_crypt_password(password)}"\n'
         if groups:
             groups_str = ','.join(f'"{x}"' for x in groups)
             self.assembled += f'groups = [ {groups_str} ]\n'
@@ -246,9 +267,6 @@ class Blueprint:
 
 
 class Guest(virt.Guest):
-    """
-    TODO document
-    """
     DATASTREAM = Path(util.RPMPACK_DATA) / 'ds.xml'
 
     def __init__(self, *args, **kwargs):
@@ -266,7 +284,17 @@ class Guest(virt.Guest):
 
     def create(self, *, blueprint=None, bp_verbatim=None, profile=None):
         """
-        ... creates an image .. imports via virt-install
+        Create a guest disk image via osbuild, and import it as a new guest
+        domain into libvirt.
+
+        If 'blueprint' is given as a 'class Blueprint' instance, it is used
+        for further customizations instead of a fresh Blueprint instance.
+
+        'bp_verbatim' further prevents these customizations, using the
+        blueprint as-provided by test code.
+
+        If 'profile' is specified, the created image will be hardened using
+        openscap via the specified profile.
         """
         util.log(f"creating guest {self.name}")
 
@@ -300,18 +328,25 @@ class Guest(virt.Guest):
         disk_path = Path(f'{virt.GUEST_IMG_DIR}/{self.name}.img')
 
         with contextlib.ExitStack() as stack:
-            blueprint.add_package(util.RPMPACK_NAME)
+            # osbuild doesn't support running Anaconda %post-style custom
+            # scripts, the only way to run additional shell code is via
+            # RPM scriptlets, so add custom guest setup via RpmPack
             pack = util.RpmPack()
             # inherited from virt.Guest
             pack.post.append(self.SETUP)
             pack.requires += self.SETUP_REQUIRES
             pack.add_file(util.get_datastream(), self.DATASTREAM.name)
             repo = stack.enter_context(pack.build_as_repo())
+            # ensure the custom RPM is added during image building
+            blueprint.add_package(util.RPMPACK_NAME)
 
+            # osbuild-composer doesn't support file:// repos, so host
+            # the custom RPM on a HTTP server
             srv = util.BackgroundHTTPServer('127.0.0.1', http_port)
             srv.add_dir(repo, 'repo')
             stack.enter_context(srv)
 
+            # overwrite default Red Hat CDN host repos, add HTTP server above
             repos = ComposerRepos()
             repos.add_host_repositories()
             repos.repos.append({
@@ -330,6 +365,8 @@ class Guest(virt.Guest):
                 os.remove(disk_path)
             composer_cli('compose', 'image', ident, '--filename', disk_path)
 
+            # get image building log, try to limit its size by cutting off
+            # everything before openscap
             log = composer_cli_out('compose', 'log', ident)
             idx = log.find('Stage: org.osbuild.oscap')
             if idx != -1:
