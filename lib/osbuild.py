@@ -44,7 +44,7 @@ from . import util, dnf, virt
 class Host:
     @staticmethod
     def setup():
-        virt.setup_host()
+        virt.Host.setup()
         for unit in ['osbuild-composer.socket', 'osbuild-local-worker.socket']:
             ret = subprocess.run(['systemctl', 'is-active', '--quiet', unit])
             if ret.returncode != 0:

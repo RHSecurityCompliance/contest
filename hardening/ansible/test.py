@@ -7,7 +7,7 @@ from conf import remediation
 
 
 ansible.install_deps()
-virt.setup_host()
+virt.Host.setup()
 
 profile = os.environ['PROFILE']
 profile_full = f'xccdf_org.ssgproject.content_profile_{profile}'
