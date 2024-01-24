@@ -39,7 +39,7 @@ Example using snapshots:
 
     import virt
 
-    virt.setup_host()
+    virt.Host.setup()
     g = virt.Guest('gui')
 
     # reuse if it already exists from previous tests, reinstall if not
@@ -60,7 +60,7 @@ Example using plain one-time-use guest:
 
     import virt
 
-    virt.setup_host()
+    virt.Host.setup()
     g = virt.Guest()
 
     ks = virt.Kickstart()
@@ -118,79 +118,83 @@ PIPE = subprocess.PIPE
 DEVNULL = subprocess.DEVNULL
 
 
-#
-# host system preparation - installing libvirt, setting it up, etc.
-#
-
-def check_host_virt():
+class Host:
     """
-    Return True if the host has HW-accelerated virtualization support (HVM).
-    Else return False.
+    Utilities for host system preparation.
     """
-    with open('/proc/cpuinfo') as f:
-        cpuinfo = f.read()
-    for virt_type in ['vmx', 'svm']:
-        if re.search(f'\nflags\t+:.* {virt_type}( |$)', cpuinfo):
-            return True
-    return False
+    @staticmethod
+    def check_virt_capability():
+        """
+        Return True if the host has HW-accelerated virtualization support (HVM).
+        Else return False.
+        """
+        with open('/proc/cpuinfo') as f:
+            cpuinfo = f.read()
+        for virt_type in ['vmx', 'svm']:
+            if re.search(fr'\nflags\t+:.* {virt_type}( |$)', cpuinfo):
+                return True
+        return False
 
+    @staticmethod
+    def setup_network():
+        net_name = 'default'
 
-def _setup_host_network():
-    net_name = 'default'
+        # unfortunately, there's no easy way to tell if we have changed the
+        # libvirt-included default network - libvirt seems to silently erase both
+        # <title> and <description> and dump-xml ignores <metadata> too,
+        # so just rely on ip address ranges - in the case of a rare false positive
+        # match, we'll just re-define the network, no big deal
+        def is_our_network(xml):
+            return re.search(
+                f'''<range start='{NETWORK_RANGE[0]}' end='{NETWORK_RANGE[1]}'>''',
+                xml,
+            )
 
-    # unfortunately, there's no easy way to tell if we have changed the
-    # libvirt-included default network - libvirt seems to silently erase both
-    # <title> and <description> and dump-xml ignores <metadata> too,
-    # so just rely on ip address ranges - in the case of a rare false positive
-    # match, we'll just re-define the network, no big deal
-    def is_our_network(xml):
-        return re.search(f'<range start=\'{NETWORK_RANGE[0]}\' end=\'{NETWORK_RANGE[1]}\'>', xml)
+        def define_our_network():
+            util.log(f"defining libvirt network: {net_name}")
+            net_xml = util.dedent(fr'''
+                <network>
+                  <name>{net_name}</name>
+                  <forward mode='nat'/>
+                  <bridge stp='off' delay='0'/>
+                  <ip address='{NETWORK_HOST}' netmask='{NETWORK_NETMASK}'>
+                    <dhcp>
+                      <range start='{NETWORK_RANGE[0]}' end='{NETWORK_RANGE[1]}'>
+                        <lease expiry='{NETWORK_EXPIRY}' unit='hours'/>
+                      </range>
+                    </dhcp>
+                  </ip>
+                </network>
+            ''')
+            with tempfile.NamedTemporaryFile(mode='w', suffix='.xml') as f:
+                f.write(net_xml)
+                f.flush()
+                virsh('net-define', f.name, check=True)
+            virsh('net-autostart', net_name, check=True)
+            virsh('net-start', net_name, check=True)
 
-    def define_our_network():
-        util.log(f"defining libvirt network: {net_name}")
-        net_xml = util.dedent(fr'''
-            <network>
-              <name>{net_name}</name>
-              <forward mode='nat'/>
-              <bridge stp='off' delay='0'/>
-              <ip address='{NETWORK_HOST}' netmask='{NETWORK_NETMASK}'>
-                <dhcp>
-                  <range start='{NETWORK_RANGE[0]}' end='{NETWORK_RANGE[1]}'>
-                    <lease expiry='{NETWORK_EXPIRY}' unit='hours'/>
-                  </range>
-                </dhcp>
-              </ip>
-            </network>
-        ''')
-        with tempfile.NamedTemporaryFile(mode='w', suffix='.xml') as f:
-            f.write(net_xml)
-            f.flush()
-            virsh('net-define', f.name, check=True)
-        virsh('net-autostart', net_name, check=True)
-        virsh('net-start', net_name, check=True)
-
-    info = virsh('net-info', net_name, stdout=PIPE, stderr=DEVNULL, universal_newlines=True)
-    # if default already exists
-    if info.returncode == 0:
-        dumpxml = virsh('net-dumpxml', net_name, stdout=PIPE, universal_newlines=True)
-        if not is_our_network(dumpxml.stdout):
-            if re.search('\nActive: +yes\n', info.stdout):
-                virsh('net-destroy', net_name, check=True)
-            virsh('net-undefine', net_name, check=True)
+        info = virsh('net-info', net_name, stdout=PIPE, stderr=DEVNULL, universal_newlines=True)
+        # if default already exists
+        if info.returncode == 0:
+            dumpxml = virsh('net-dumpxml', net_name, stdout=PIPE, universal_newlines=True)
+            if not is_our_network(dumpxml.stdout):
+                if re.search(r'\nActive: +yes\n', info.stdout):
+                    virsh('net-destroy', net_name, check=True)
+                virsh('net-undefine', net_name, check=True)
+                define_our_network()
+        else:
             define_our_network()
-    else:
-        define_our_network()
 
+    @classmethod
+    def setup(self):
+        if not self.check_virt_capability():
+            raise RuntimeError("host has no HVM virtualization support")
 
-def setup_host():
-    if not check_host_virt():
-        raise RuntimeError("host has no HVM virtualization support")
+        ret = subprocess.run(['systemctl', 'is-active', '--quiet', 'libvirtd'])
+        if ret.returncode != 0:
+            util.subprocess_run(['systemctl', 'start', 'libvirtd'], check=True)
 
-    ret = subprocess.run(['systemctl', 'is-active', '--quiet', 'libvirtd'])
-    if ret.returncode != 0:
-        util.subprocess_run(['systemctl', 'start', 'libvirtd'], check=True)
-
-    _setup_host_network()
+        self.setup_network()
 
 
 #

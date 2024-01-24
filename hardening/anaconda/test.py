@@ -5,7 +5,7 @@ import os
 from lib import util, results, virt, oscap, versions
 
 
-virt.setup_host()
+virt.Host.setup()
 
 g = virt.Guest()
 

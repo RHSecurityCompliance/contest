@@ -5,7 +5,7 @@ import os
 from lib import util, results, virt, oscap, versions
 
 
-virt.setup_host()
+virt.Host.setup()
 
 profile = os.environ['PROFILE']
 profile = f'xccdf_org.ssgproject.content_profile_{profile}'
