@@ -9,12 +9,12 @@ import re
 from lib import versions, util
 
 
-rule_excludes = []
+excludes = []
 test_name = util.get_test_name()
 
 # Hardenings via Ansible
 if re.fullmatch('/hardening.*/ansible/.*', test_name):
-    rule_excludes = [
+    excludes = [
         # TODO:
         #'ensure_gpgcheck_globally_activated',
         #'ensure_gpgcheck_local_packages',
@@ -35,14 +35,14 @@ if re.fullmatch('/hardening.*/ansible/.*', test_name):
         #'accounts_password_set_max_life_existing',
     ]
     if versions.rhel.is_centos():
-        rule_excludes += [
+        excludes += [
             # https://github.com/ComplianceAsCode/content/issues/8480
             'ensure_redhat_gpgkey_installed',
         ]
 
 # Host hardenings
 if re.fullmatch('/hardening/host-os/.*', test_name):
-    rule_excludes += [
+    excludes += [
         # required by TMT
         'package_rsync_removed',
     ]

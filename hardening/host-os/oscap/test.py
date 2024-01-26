@@ -7,7 +7,7 @@ import shutil
 from pathlib import Path
 
 from lib import util, results, oscap, versions
-from conf.remediation_excludes import rule_excludes
+from conf import remediation
 
 
 profile = os.environ['PROFILE']
@@ -28,7 +28,7 @@ if util.get_reboot_count() == 0:
         shutil.rmtree(tmpdir)
     tmpdir.mkdir()
 
-    oscap.unselect_rules(ds, new_ds, rule_excludes)
+    oscap.unselect_rules(ds, new_ds, remediation.excludes)
     cmd = [
         'oscap', 'xccdf', 'eval', '--profile', profile,
         '--progress', '--remediate', '--report', tmpdir / 'remediation.html',
