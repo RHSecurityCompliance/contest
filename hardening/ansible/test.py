@@ -3,7 +3,7 @@
 import os
 
 from lib import util, results, virt, oscap, versions, ansible
-from conf import remediation_excludes
+from conf.remediation_excludes import rule_excludes
 
 
 ansible.install_deps()
@@ -34,7 +34,7 @@ with g.snapshotted():
     # remediate using a locally-run 'ansible-playbook', which connects
     # to the guest using ssh
     playbook = util.get_playbook(profile)
-    skip_tags = ','.join(remediation_excludes.ansible_skip_tags)
+    skip_tags = ','.join(rule_excludes)
     skip_tags_arg = ['--skip-tags', skip_tags] if skip_tags else []
     ansible_cmd = [
         'ansible-playbook', '-v', '-i', f'{g.ipaddr},',
