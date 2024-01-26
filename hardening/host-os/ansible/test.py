@@ -4,7 +4,7 @@ import os
 import subprocess
 
 from lib import util, results, oscap, versions, ansible
-from conf.remediation_excludes import rule_excludes
+from conf import remediation
 
 
 profile = os.environ['PROFILE']
@@ -20,7 +20,7 @@ if util.get_reboot_count() == 0:
     ansible.install_deps()
 
     playbook = util.get_playbook(profile)
-    skip_tags = ','.join(rule_excludes)
+    skip_tags = ','.join(remediation.excludes)
     skip_tags_arg = ['--skip-tags', skip_tags] if skip_tags else []
     cmd = [
         'ansible-playbook', '-v', '-c', 'local', '-i', 'localhost,',
