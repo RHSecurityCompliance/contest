@@ -32,8 +32,11 @@ def _get_repos_yum():
                 continue
             # sanity check for (in)valid URLs as Anaconda fails on broken ones
             elif baseurl.startswith(('http://', 'https://')):
-                reply = requests.head(baseurl, verify=False)
-                if not reply.ok:
+                try:
+                    reply = requests.head(baseurl, verify=False, allow_redirects=True)
+                    reply.raise_for_status()
+                except requests.exceptions.RequestException as e:
+                    util.log(f"skipping: {e}")
                     continue
             yield _Repo(name=section, baseurl=baseurl, data=c[section], file=repofile)
 
@@ -53,8 +56,11 @@ def _get_repos_dnf():
             continue
         # sanity check for (in)valid URLs as Anaconda fails on broken ones
         if baseurl.startswith(('http://', 'https://')):
-            reply = requests.head(baseurl, verify=False)
-            if not reply.ok:
+            try:
+                reply = requests.head(baseurl, verify=False, allow_redirects=True)
+                reply.raise_for_status()
+            except requests.exceptions.RequestException as e:
+                util.log(f"skipping: {e}")
                 continue
         data = dict(repo.cfg.items(name))
         yield _Repo(name=name, baseurl=baseurl, data=data, file=repo.repofile)
