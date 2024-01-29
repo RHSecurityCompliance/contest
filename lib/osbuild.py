@@ -174,9 +174,13 @@ class Blueprint:
     ''')
 
     def __init__(self, profile=None):
-        self.assembled = f'{self.HEADER}\n\n'
         if profile:
-            self.assembled += f'{self.from_oscap(profile)}\n'
+            self.assembled = (
+                self.from_oscap(profile)
+                + '\n# ---------- oscap blueprint ends here ----------\n'
+            )
+        else:
+            self.assembled = f'{self.HEADER}\n\n'
 
     def from_oscap(self, profile):
         cmd = [
@@ -185,17 +189,10 @@ class Blueprint:
             util.get_datastream(),
         ]
         ret = util.subprocess_run(cmd, check=True, universal_newlines=True, stdout=subprocess.PIPE)
-        # post-process - remove leading comment, strip name/description/version
-        lines = iter(ret.stdout.strip('\n').splitlines())
-        for line in lines:
-            if not line or line.startswith('#'):
-                continue
-            if line.startswith(('name', 'description', 'version')):
-                continue
-            processed = [line]
-            break
-        processed += list(line for line in lines if line)
-        return '\n'.join(processed)
+        # replace blueprint name, it's an unique identifier for composer-cli,
+        # however replace only the first occurence of 'name', as later sections
+        # like [[packages]] would also match ^name=...
+        return re.sub('^name = .*', f'name = "{self.NAME}"', ret.stdout, count=1, flags=re.M)
 
     def add_user(self, name, *, password=None, groups=None, ssh_pubkey=None):
         self.assembled += '[[customizations.user]]\n'
