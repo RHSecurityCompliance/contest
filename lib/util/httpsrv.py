@@ -61,16 +61,17 @@ class _BackgroundHTTPServerHandler(SimpleHTTPRequestHandler):
         self.end_headers()
 
     def log_message(self, form, *args):
-        log(form % args)
+        addr, port = self.server.listen_addr_port
+        log(f'{addr}:{port}: ' + form % args)
 
 
 class BackgroundHTTPServer(HTTPServer):
     def __init__(self, host, port):
         self.file_mapping = {}
         self.dir_mapping = {}
-        self.listen_port = port
+        self.listen_addr_port = (host, port)
         self.firewalld_zones = []
-        super().__init__((host, port), _BackgroundHTTPServerHandler)
+        super().__init__(self.listen_addr_port, _BackgroundHTTPServerHandler)
 
     def add_file(self, fs_path, url_path):
         """
@@ -105,7 +106,10 @@ class BackgroundHTTPServer(HTTPServer):
         self.dir_mapping[url_path] = Path(fs_path)
 
     def __enter__(self):
-        log(f"starting with: {self.file_mapping}")
+        addr, port = self.listen_addr_port
+        log(f"starting: {addr}:{port}")
+        log(f"using file mapping: {self.file_mapping}")
+        log(f"using dir mapping: {self.dir_mapping}")
         # allow the target port on the firewall
         if shutil.which('firewall-cmd'):
             res = subprocess_run(
@@ -117,14 +121,15 @@ class BackgroundHTTPServer(HTTPServer):
                 self.firewalld_zones = res.stdout.strip().split(' ')
                 for zone in self.firewalld_zones:
                     subprocess_run(
-                        ['firewall-cmd', f'--zone={zone}', f'--add-port={self.listen_port}/tcp'],
+                        ['firewall-cmd', f'--zone={zone}', f'--add-port={port}/tcp'],
                         stdout=subprocess.DEVNULL, check=True)
         proc = multiprocessing.Process(target=self.serve_forever)
         self.process = proc
         proc.start()
 
     def __exit__(self, exc_type, exc_value, traceback):
-        log("ending")
+        addr, port = self.listen_addr_port
+        log(f"ending: {addr}:{port}")
         # TODO: this actually doesn't close the socket, fix this on python 3.7 with
         #       ThreadingHTTPServer and just call .stop() on the serving thread
         self.process.terminate()
@@ -132,5 +137,5 @@ class BackgroundHTTPServer(HTTPServer):
         # remove allow rules from the firewall
         for zone in self.firewalld_zones:
             subprocess_run(
-                ['firewall-cmd', f'--zone={zone}', f'--remove-port={self.listen_port}/tcp'],
+                ['firewall-cmd', f'--zone={zone}', f'--remove-port={port}/tcp'],
                 stdout=subprocess.DEVNULL, check=True)
