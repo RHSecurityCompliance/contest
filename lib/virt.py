@@ -264,6 +264,11 @@ class Kickstart:
         """Append arbitrary string content to the kickstart template."""
         self.appends.append(content)
 
+    def add_pre(self, content):
+        new = ('%pre --interpreter=/bin/bash --erroronfail\n'
+               'set -xe; exec >/dev/tty 2>&1\n' + content + '\n%end')
+        self.append(new)
+
     def add_post(self, content):
         new = ('%post --interpreter=/bin/bash --erroronfail\n'
                'set -xe; exec >/dev/tty 2>&1\n' + content + '\n%end')
