@@ -4,7 +4,6 @@ result: custom
 environment+:
     PYTHONPATH: ../..
 duration: 1h
-enabled: false
 require+:
   - openscap-scanner
   # virt library dependencies
@@ -32,8 +31,8 @@ adjust:
     enabled: false
     because: there is no OSBuild or Image Builder on RHEL-7
 tag:
-  - max1
-  - daily
+  - NoProductization
+  - NoStabilization
 
 /anssi_bp28_high:
     environment+:
