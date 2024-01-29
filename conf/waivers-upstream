@@ -2,12 +2,10 @@
 # which are not available in their final form in the Anaconda environment
 # - see https://github.com/ComplianceAsCode/content/issues/9746
 /hardening/anaconda(/with-gui)?/[^/]+/firewalld_sshd_port_enabled
-    rhel >= 8
-# similar case for RHEL 9
 # https://github.com/ComplianceAsCode/content/issues/10939
 /hardening/anaconda(/with-gui)?/[^/]+/firewalld_loopback_traffic_restricted
 /hardening/anaconda(/with-gui)?/[^/]+/firewalld_loopback_traffic_trusted
-    rhel >= 9
+    rhel >= 8
 
 # https://github.com/OpenSCAP/openscap/issues/1880
 # needs to be remediated more than once due to rule ordering issues
