@@ -265,7 +265,7 @@ class Blueprint:
 
 
 class Guest(virt.Guest):
-    DATASTREAM = Path(util.RPMPACK_DATA) / 'ds.xml'
+    DATASTREAM = '/root/contest-ds.xml'
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -333,7 +333,7 @@ class Guest(virt.Guest):
             pack.add_file(util.get_datastream(), self.DATASTREAM)
             repo = stack.enter_context(pack.build_as_repo())
             # ensure the custom RPM is added during image building
-            blueprint.add_package(util.RPMPACK_NAME)
+            blueprint.add_package(util.RpmPack.NAME)
 
             # osbuild-composer doesn't support file:// repos, so host
             # the custom RPM on a HTTP server

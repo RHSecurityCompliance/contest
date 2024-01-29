@@ -8,26 +8,26 @@ from .log import log
 from .subprocess import subprocess_run
 from .dedent import dedent
 
-# we could use '%{_datadir}/%{name}' in the specfile, but this is more
-# deterministic when used from other libs / tests
-RPMPACK_NAME = 'contest-pack'
-RPMPACK_FILE = 'contest-pack-1-1.noarch.rpm'
-RPMPACK_DATA = '/usr/share/contest-pack'
-
 
 class RpmPack:
+    NAME = 'contest-pack'
+    VERSION = 1
+    RELEASE = 1
+    ARCH = 'noarch'
     HEADER = dedent(fr'''
-        Name: {RPMPACK_NAME}
+        Name: {NAME}
         Summary: RPM content pack for the Contest test suite
-        Version: 1
-        Release: 1
+        Version: {VERSION}
+        Release: {RELEASE}
         License: GPLv3
-        BuildArch: noarch
+        BuildArch: {ARCH}
 
         %global source_date_epoch_from_changelog 0
 
         %description
     ''')
+    NVR = f'{NAME}-{VERSION}-{RELEASE}'
+    FILE = f'{NVR}.{ARCH}.rpm'
 
     def __init__(self):
         # strings, bash scripts to be run during/after RPM installation
@@ -91,7 +91,7 @@ class RpmPack:
             # write down the spec file
             specdir = tmpdir / 'SPECS'
             specdir.mkdir()
-            specfile = specdir / f'{RPMPACK_NAME}.spec'
+            specfile = specdir / f'{self.NAME}.spec'
             specfile.write_text(spec)
             # build it via rpmbuild
             cmd = [
@@ -100,7 +100,7 @@ class RpmPack:
             ]
             subprocess_run(cmd, check=True)
             # yield it to caller
-            binrpm = tmpdir / 'RPMS' / 'noarch' / f'{RPMPACK_NAME}-1-1.noarch.rpm'
+            binrpm = tmpdir / 'RPMS' / self.ARCH / self.FILE
             if not binrpm.exists():
                 raise RuntimeError("rpmbuild did not build the binary RPM")
             yield binrpm
