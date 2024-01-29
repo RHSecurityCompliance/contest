@@ -306,9 +306,6 @@ class Guest(virt.Guest):
             # copy our default package list from virt.Kickstart
             for pkg in virt.Kickstart.PACKAGES:
                 blueprint.add_package(pkg)
-            # copy partitions too
-            for mountpoint, size in virt.Kickstart.PARTITIONS:
-                blueprint.add_partition(mountpoint, size*1024*1024)
             # generate the ssh key on the same place as virt.Guest
             util.ssh_keygen(self.ssh_keyfile_path)
             with open(f'{self.ssh_keyfile_path}.pub') as f:
