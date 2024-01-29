@@ -11,6 +11,7 @@ from .dedent import dedent
 # we could use '%{_datadir}/%{name}' in the specfile, but this is more
 # deterministic when used from other libs / tests
 RPMPACK_NAME = 'contest-pack'
+RPMPACK_FILE = 'contest-pack-1-1.noarch.rpm'
 RPMPACK_DATA = '/usr/share/contest-pack'
 
 

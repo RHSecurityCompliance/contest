@@ -399,7 +399,14 @@ class Guest:
                 'contest-rpmpack',
                 f'http://{NETWORK_HOST}:{http_port}/repo',
             )
-            kickstart.add_packages([util.RPMPACK_NAME])
+            if versions.rhel == 7:
+                cmd = [
+                    'yum', '-y', '--nogpgcheck', 'install',
+                    f'http://{NETWORK_HOST}:{http_port}/repo/{util.RPMPACK_FILE}'
+                ]
+                kickstart.add_post(' '.join(cmd))
+            else:
+                kickstart.add_packages([util.RPMPACK_NAME])
 
         disk_path = f'{GUEST_IMG_DIR}/{self.name}.img'
         disk_format = 'raw'
