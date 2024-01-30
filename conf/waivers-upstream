@@ -96,6 +96,10 @@
 /hardening/anaconda/with-gui/[^/]+/service_avahi-daemon_disabled
     True
 
+# https://github.com/ComplianceAsCode/content/issues/11498
+/hardening/anaconda/with-gui/[^/]+/service_bluetooth_disabled
+    True
+
 # https://github.com/ComplianceAsCode/content/issues/10613
 /hardening/anaconda(/with-gui)?/cis[^/]*/firewalld_loopback_traffic_(restricted|trusted)
     rhel == 9
