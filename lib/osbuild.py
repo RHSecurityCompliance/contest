@@ -35,7 +35,6 @@ import platform
 import shutil
 import time
 import collections
-from datetime import datetime, timedelta
 from pathlib import Path
 
 from . import util, dnf, virt
@@ -121,20 +120,18 @@ class Compose:
         return None
 
     @classmethod
-    def _wait_for_finished(self, blueprint_name, timeout=600, sleep=1):
+    def _wait_for_finished(self, blueprint_name, sleep=1):
         entry = self._get_status(lambda x: x.blueprint == blueprint_name)
         if not entry:
             raise FileNotFoundError(f"compose for {blueprint_name} not found in list")
         util.log(f"waiting for compose {entry.id} to be built")
-        end_time = datetime.now() + timedelta(seconds=timeout)
-        while datetime.now() < end_time:
+        new = entry
+        while new.status not in self.FINISHED_STATUSES:
             new = self._get_status(lambda x: x.id == entry.id)
             if not new:
                 raise FileNotFoundError(f"compose {entry.id} disappeared")
-            if new.status in self.FINISHED_STATUSES:
-                return new
             time.sleep(sleep)
-        raise TimeoutError("wait for compose timed out")
+        return new
 
     @classmethod
     @contextlib.contextmanager
