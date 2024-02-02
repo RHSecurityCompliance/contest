@@ -115,17 +115,16 @@ class Compose:
         lines = iter(out.strip('\n').split('\n'))
         next(lines)  # skip header (first line)
         for line in lines:
-            #util.log(f'GOT LINE: {line}')
-            #util.log(fr'''GOT LINE SPLIT: {repr(re.split('[ ]+', line))}''')
             entry = self._Entry(*re.split(r'[ \t]+', line))
             if filter(entry):
                 return entry
         return None
-        #raise FileNotFoundError(f"no compose with blueprint {blueprint_name} found")
 
     @classmethod
     def _wait_for_finished(self, blueprint_name, timeout=600, sleep=1):
         entry = self._get_status(lambda x: x.blueprint == blueprint_name)
+        if not entry:
+            raise FileNotFoundError(f"compose for {blueprint_name} not found in list")
         util.log(f"waiting for compose {entry.id} to be built")
         end_time = datetime.now() + timedelta(seconds=timeout)
         while datetime.now() < end_time:
