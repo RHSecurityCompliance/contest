@@ -97,8 +97,10 @@
     True
 
 # https://github.com/ComplianceAsCode/content/issues/11498
+# On RHEL 7, this rule accidentally passes due to a bug in OpenSCAP
+# https://issues.redhat.com/browse/RHEL-24335
 /hardening/anaconda/with-gui/[^/]+/service_bluetooth_disabled
-    True
+    rhel >= 8
 
 # https://github.com/ComplianceAsCode/content/issues/10613
 /hardening/anaconda(/with-gui)?/cis[^/]*/firewalld_loopback_traffic_(restricted|trusted)
