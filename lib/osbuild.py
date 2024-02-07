@@ -37,6 +37,7 @@ import time
 import collections
 from pathlib import Path
 
+from conf import remediation
 from . import util, dnf, virt
 
 
@@ -310,9 +311,7 @@ class Guest(virt.Guest):
             # add openscap hardening, honor global excludes
             if profile:
                 blueprint.add_openscap(self.DATASTREAM, profile)
-                #excludes = conf.remediation_excludes.host_os  # TEMP, TODO
-                excludes = []
-                blueprint.add_openscap_tailoring(unselected=excludes)
+                blueprint.add_openscap_tailoring(unselected=remediation.excludes)
 
         http_port = 8091
         disk_path = Path(f'{virt.GUEST_IMG_DIR}/{self.name}.img')
