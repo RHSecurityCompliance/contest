@@ -1,6 +1,10 @@
 environment+:
     USE_SERVER_WITH_GUI: 1
 duration: 2h
+# TODO: remove these https://issues.redhat.com/browse/RHEL-24246 is fixed
+tag:
+  - NoProductization
+  - NoStabilization
 
 /anssi_bp28_high:
     environment+:

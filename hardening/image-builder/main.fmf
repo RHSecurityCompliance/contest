@@ -31,8 +31,8 @@ adjust:
     enabled: false
     because: there is no OSBuild or Image Builder on RHEL-7
 tag:
-  - NoProductization
-  - NoStabilization
+  - max1
+  - daily
 
 /anssi_bp28_high:
     environment+:
