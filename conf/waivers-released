@@ -1,13 +1,15 @@
 # requires running firewalld (firewall-cmd) and NetworkManager,
 # which are not available in their final form in the Anaconda environment
 # - see https://github.com/ComplianceAsCode/content/issues/9746
+#       https://github.com/ComplianceAsCode/content/issues/11318
 /hardening/anaconda(/with-gui)?/[^/]+/firewalld_sshd_port_enabled
-    rhel >= 8
-# similar case for RHEL 9
+/hardening/image-builder(/with-gui)?/[^/]+/firewalld_sshd_port_enabled
 # https://github.com/ComplianceAsCode/content/issues/10939
-/hardening/anaconda(/with-gui)?/[^/]+/firewalld_loopback_traffic_restricted
-/hardening/anaconda(/with-gui)?/[^/]+/firewalld_loopback_traffic_trusted
-    rhel >= 9
+# https://github.com/ComplianceAsCode/content/issues/10613
+/hardening/anaconda(/with-gui)?/[^/]+/firewalld_loopback_traffic_(restricted|trusted)
+# https://github.com/ComplianceAsCode/content/issues/11564
+/hardening/image-builder(/with-gui)?/[^/]+/firewalld_loopback_traffic_(restricted|trusted)
+    rhel >= 8
 
 # https://github.com/OpenSCAP/openscap/issues/1880
 # needs to be remediated more than once due to rule ordering issues
@@ -27,8 +29,6 @@
 /hardening/host-os/oscap/[^/]+/configure_bashrc_tmux
 /hardening/host-os/oscap/stig/postfix_prevent_unrestricted_relay
     Match(rhel == 8, sometimes=True)
-
-
 
 # rule ordering issue - accounts_password_pam_retry is checked first and passes,
 # and a later enable_authselect remediation breaks it
@@ -91,10 +91,6 @@
 # RHEL-9: https://bugzilla.redhat.com/show_bug.cgi?id=1999587
 /hardening/anaconda/with-gui/[^/]+/service_avahi-daemon_disabled
     True
-
-# https://github.com/ComplianceAsCode/content/issues/10613
-/hardening/anaconda(/with-gui)?/cis[^/]*/firewalld_loopback_traffic_(restricted|trusted)
-    rhel == 9
 
 # RHEL-9 is not FIPS certified yet
 /hardening/.+/aide_use_fips_hashes
@@ -219,5 +215,50 @@
 # https://github.com/ComplianceAsCode/content/issues/10938
 /hardening/host-os/oscap/anssi_nt28_high/audit_rules_privileged_commands
     rhel == 7 and arch == 'ppc64le'
+
+# Image Builder errors
+#
+# https://issues.redhat.com/browse/RHEL-24246
+/hardening/image-builder/anssi_bp28_high
+    status == 'error' and 'TimeoutError' in note
+# 'composer-cli compose start' fails with:
+# OpenSCAP unsupported profile: xccdf_org.ssgproject.content_profile_ccn_advanced
+/hardening/image-builder/ccn_advanced
+    status == 'error'
+# https://github.com/ComplianceAsCode/content/issues/11344
+/hardening/image-builder/cis[^/]*
+    rhel == 9 and status == 'error'
+# https://issues.redhat.com/browse/RHEL-24246
+/hardening/image-builder/cui
+    rhel == 8 and status == 'error'
+# https://issues.redhat.com/browse/RHEL-24441 on 'squid'
+/hardening/image-builder/e8
+    rhel == 9 and status == 'error'
+# https://issues.redhat.com/browse/RHEL-24441 on 'telnet'
+/hardening/image-builder/hipaa
+    rhel == 9 and status == 'error'
+# RHEL-9: https://issues.redhat.com/browse/RHEL-24441 on 'snmpd'
+/hardening/image-builder/ism_o
+    rhel == 9 and status == 'error'
+# https://issues.redhat.com/browse/RHEL-24246
+/hardening/image-builder/ospp
+    rhel == 8 and status == 'error'
+# RHEL-9: https://issues.redhat.com/browse/RHEL-24441 on 'autofs'
+# RHEL-8: https://issues.redhat.com/browse/RHEL-24246
+/hardening/image-builder/stig
+    status == 'error'
+
+# Image Builder failures
+#
+# https://github.com/ComplianceAsCode/content/issues/11565
+/hardening/image-builder/.*/audit_rules_privileged_commands
+    True
+# https://github.com/ComplianceAsCode/content/issues/11566
+/hardening/image-builder/hipaa/sebool_selinuxuser_execstack
+    rhel == 8
+# https://github.com/ComplianceAsCode/content/issues/11567
+/hardening/image-builder/.*/enable_dracut_fips_module
+/hardening/image-builder/.*/enable_fips_mode
+    True
 
 # vim: syntax=python
