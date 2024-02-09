@@ -3,24 +3,7 @@
 import re
 from pathlib import Path
 
-from lib import util, results, versions
-
-
-def download_source(package):
-    """
-    Download src rpm and return Path of the file.
-
-    'package' is name of package to download.
-    """
-    # TODO: drop yum-utils and dnf-utils deps after RHEL-7,
-    #       switch to 'dnf download --source'
-    util.subprocess_run(['yumdownloader', '--source', package], check=True)
-    package_glob = package + '*.src.rpm'
-    try:
-        src_path = next(Path.cwd().glob(package_glob))
-    except StopIteration:
-        raise FileNotFoundError(f".src.rpm not found for {package}")
-    return src_path
+from lib import util, results, versions, dnf
 
 
 def build_source(src_rpm, path=None):
@@ -45,8 +28,8 @@ def build_source(src_rpm, path=None):
 
 
 # Get src rpm and build from it
-src_rpm = download_source('scap-security-guide')
-rpm_build = build_source(src_rpm)
+with dnf.download_rpm('scap-security-guide', source=True) as src_rpm:
+    rpm_build = build_source(src_rpm)
 ssg_build = next((rpm_build / 'BUILD').glob('*/build'))
 
 # ctest

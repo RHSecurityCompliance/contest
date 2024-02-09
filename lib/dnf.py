@@ -1,5 +1,7 @@
+import contextlib
 import collections
 import configparser
+import tempfile
 import requests
 from pathlib import Path
 
@@ -129,3 +131,27 @@ def installable_url():
             if reply.status_code == 200:
                 return url
     raise RuntimeError("did not find any install-capable repo amongst host repos")
+
+
+@contextlib.contextmanager
+def download_rpm(nvr, source=False):
+    """
+    Downloads a single RPM by its NVR (which can be just name or any other
+    version/release string accepted by DNF) and yields the result as a temporary
+    file path.
+
+    'source' specifies whether to download a binary or a source RPM.
+    """
+    with tempfile.TemporaryDirectory() as tmpdir:
+        if versions.rhel == 7:
+            cmd = ['yumdownloader', '--destdir', tmpdir]
+        else:
+            cmd = ['dnf', 'download', '--downloaddir', tmpdir]
+        if source:
+            cmd.append('--source')
+        cmd.append(nvr)
+        util.subprocess_run(cmd, check=True)
+        # unfortunately, these commands mix debug output into stdout, before the
+        # printed out NVR of the downloaded package, so just glob it afterwards
+        rpmfile = next(Path(tmpdir).glob('*.rpm'))
+        yield rpmfile
