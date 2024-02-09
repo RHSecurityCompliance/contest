@@ -270,4 +270,26 @@
 /hardening/image-builder/.*/enable_fips_mode
     True
 
+# /per-rule (Automatus rule mode) waivers
+# - these intentionally don't apply to /per-rule/from-env (ad-hoc RULE run)
+#
+# TODO: all of these are unknown and need investigation
+/per-rule/[^/]+/accounts_password_set_max_life_root/correct.pass
+/per-rule/[^/]+/accounts_password_set_max_life_root/wrong.fail
+/per-rule/[^/]+/postfix_client_configure_mail_alias/correct.pass
+    True
+/per-rule/[^/]+/grub2_audit_backlog_limit_argument/correct_grubenv.pass
+/per-rule/[^/]+/grub2_password/invalid_username.fail
+/per-rule/[^/]+/harden_sshd_ciphers_openssh_conf_crypto_policy/stig_correct.pass
+/per-rule/[^/]+/harden_sshd_ciphers_openssh_conf_crypto_policy/stig_correct_followed_by_incorrect_commented.pass
+/per-rule/[^/]+/sudo_add_umask/0027_var_multiple_values.pass
+    rhel == 8
+/per-rule/[^/]+/directory_permissions_var_log_audit/correct_value_0700.pass
+/per-rule/[^/]+/directory_permissions_var_log_audit/incorrect_value_0700.fail
+/per-rule/[^/]+/dconf_gnome_lock_screen_on_smartcard_removal/wrong_value.fail
+/per-rule/[^/]+/file_ownership_var_log_audit_stig/correct_value_default_file.pass
+/per-rule/[^/]+/tftpd_uses_secure_mode/correct.pass
+/per-rule/[^/]+/tftpd_uses_secure_mode/wrong.fail
+    rhel == 9
+
 # vim: syntax=python

@@ -142,3 +142,39 @@ def unselect_rules(orig_ds, new_ds, rules):
                     line = line.replace('selected="true"', 'selected="false"')
                     util.log(f'unselected {line.strip()}')
                 new_ds_f.write(line)
+
+
+def get_all_profiles():
+    """
+    Yield all profile names present in the datastream.
+    """
+    cmd = ['oscap', 'info', '--profiles', util.get_datastream()]
+    _, lines = util.subprocess_stream(cmd, check=True)
+    for line in lines:
+        # xccdf_org.ssgproject.content_profile_stig:DISA STIG for Red Hat Enterprise Linux 9
+        yield line.partition(':')[0]
+
+
+def get_all_rules(profile):
+    """
+    Yield all rules in a profile.
+    """
+    pattern = re.compile(r"# BEGIN fix .* for 'xccdf_org\.ssgproject\.content_rule_([^']+)'")
+    # oscap doesn't have any "list all rules" command
+    cmd = ['oscap', 'xccdf', 'generate', '--profile', profile, 'fix', util.get_datastream()]
+    _, lines = util.subprocess_stream(cmd, check=True)
+    for line in lines:
+        match = pattern.fullmatch(line)
+        if match:
+            yield match.group(1)
+
+
+def get_all_profiles_rules():
+    """
+    Return a deduplicated unified list of all rules from all profiles.
+    """
+    all_rules = set()
+    for profile in get_all_profiles():
+        for rule in get_all_rules(profile):
+            all_rules.add(rule)
+    return sorted(all_rules)
