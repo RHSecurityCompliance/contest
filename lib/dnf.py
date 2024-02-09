@@ -2,6 +2,7 @@ import contextlib
 import collections
 import configparser
 import tempfile
+import subprocess
 import requests
 from pathlib import Path
 
@@ -155,3 +156,23 @@ def download_rpm(nvr, source=False):
         # printed out NVR of the downloaded package, so just glob it afterwards
         rpmfile = next(Path(tmpdir).glob('*.rpm'))
         yield rpmfile
+
+
+@contextlib.contextmanager
+def extract_rpm(rpmfile):
+    """
+    Extracts a binary or source RPM using rpm2cpio into a temporary directory,
+    yielding a path to that directory.
+    """
+    with tempfile.TemporaryDirectory() as tmpdir:
+        rpm2cpio = util.subprocess_Popen(['rpm2cpio', rpmfile], stdout=subprocess.PIPE)
+        cpio_cmd = ['cpio', '-idmv', '--no-absolute-filenames', '-D', tmpdir]
+        cpio = util.subprocess_run(cpio_cmd, stdin=rpm2cpio.stdout)
+        # safety for when 'cpio' exits before parsing all input,
+        # trigger write error for 'rpm2cpio' rather than infinite hang
+        rpm2cpio.stdout.close()
+        if rpm2cpio.wait() != 0:
+            raise RuntimeError(f"rpm2cpio returned non-zero for {rpmfile}")
+        if cpio.returncode != 0:
+            raise RuntimeError(f"cpio returned non-zero for {rpmfile}")
+        yield tmpdir

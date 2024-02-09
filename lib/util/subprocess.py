@@ -22,6 +22,14 @@ def subprocess_run(cmd, **kwargs):
     return subprocess.run(cmd, **kwargs)
 
 
+def subprocess_Popen(cmd, **kwargs):
+    """
+    A simple wrapper for the real subprocess.Popen() that logs the command used.
+    """
+    util.log(f'running: {_format_subprocess_cmd(cmd)}', skip_frames=1)
+    return subprocess.Popen(cmd, **kwargs)
+
+
 def subprocess_stream(cmd, check=False, **kwargs):
     """
     Run 'cmd' via subprocess.Popen() and return an iterator over any lines
