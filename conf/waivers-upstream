@@ -10,6 +10,7 @@
 # https://github.com/OpenSCAP/openscap/issues/1880
 # needs to be remediated more than once due to rule ordering issues
 /hardening/oscap(/with-gui)?/[^/]+/configure_bashrc_exec_tmux
+/hardening/oscap(/with-gui)?/[^/]+/configure_bashrc_tmux
 /hardening/oscap(/with-gui)?/[^/]+/no_tmux_in_shells
 /hardening/oscap(/with-gui)?/[^/]+/configure_usbguard_auditbackend
 /hardening/oscap(/with-gui)?/[^/]+/configure_tmux_lock_after_time
@@ -19,16 +20,15 @@
 /hardening/host-os/oscap/[^/]+/configure_tmux_lock_command
 /hardening/host-os/oscap/[^/]+/configure_tmux_lock_keybinding
     rhel >= 8
-/hardening/oscap(/with-gui)?/[^/]+/configure_bashrc_tmux
 /hardening/oscap(/with-gui)?/stig(_gui)?/postfix_prevent_unrestricted_relay
     rhel == 8
 
 # same issue, but host-os seems to be a lot more random in this
 /hardening/host-os/oscap/[^/]+/configure_bashrc_exec_tmux
+/hardening/host-os/oscap/[^/]+/configure_bashrc_tmux
 /hardening/host-os/oscap/[^/]+/no_tmux_in_shells
 /hardening/host-os/oscap/[^/]+/configure_usbguard_auditbackend
     Match(rhel >= 8, sometimes=True)
-/hardening/host-os/oscap/[^/]+/configure_bashrc_tmux
 /hardening/host-os/oscap/stig/postfix_prevent_unrestricted_relay
     Match(rhel == 8, sometimes=True)
 
