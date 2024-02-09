@@ -1,0 +1,126 @@
+summary: Runs content unit tests for every rule in every supported RHEL profile
+description: |-
+    Downloads and builds a content source, unless provided via CONTENT_SOURCE
+    as a path to a directory. This can be either built (with 'build') or unbuilt
+    source code - the test will detect and build the content if necessary.
+    It then runs automatus.py in rule mode on every rule from every profile
+    built for the current platform.
+    The RULE variable (with space-separated one or more rule names) can be used
+    to override this and run tests for only specific rule(s).
+test: python3 -m lib.runtest ./test.py
+result: custom
+environment+:
+    PYTHONPATH: ..
+    TOTAL_SLICES: 15
+duration: 3h
+require+:
+  # virt library dependencies
+  - libvirt-daemon
+  - libvirt-daemon-driver-qemu
+  - libvirt-daemon-driver-storage-core
+  - libvirt-daemon-driver-network
+  - firewalld
+  - qemu-kvm
+  - libvirt-client
+  - virt-install
+  - rpm-build
+  - createrepo
+  # for builddep on scap-security-guide.spec
+  - python-srpm-macros
+  # automatus dependencies (oscap-ssh, etc.)
+  - openscap-utils
+extra-hardware: |
+    keyvalue = HVM=1
+    hostrequire = memory>=3720
+adjust:
+  - when: arch != x86_64
+    enabled: false
+    because: we want to run virtualization on x86_64 only
+  - when: distro == rhel-7
+    enabled: false
+    because: the code is not compatible with RHEL-7 yum/python
+tag:
+  - max1
+  - daily
+
+# for use with the RULE environment variable
+/from-env:
+    tag:
+      - NoProductization
+      - NoStabilization
+    extra-summary: /CoreOS/scap-security-guide/per-rule/from-env
+
+/1:
+    environment+:
+        SLICE: 1
+    extra-summary: /CoreOS/scap-security-guide/per-rule/1
+
+/2:
+    environment+:
+        SLICE: 2
+    extra-summary: /CoreOS/scap-security-guide/per-rule/2
+
+/3:
+    environment+:
+        SLICE: 3
+    extra-summary: /CoreOS/scap-security-guide/per-rule/3
+
+/4:
+    environment+:
+        SLICE: 4
+    extra-summary: /CoreOS/scap-security-guide/per-rule/4
+
+/5:
+    environment+:
+        SLICE: 5
+    extra-summary: /CoreOS/scap-security-guide/per-rule/5
+
+/6:
+    environment+:
+        SLICE: 6
+    extra-summary: /CoreOS/scap-security-guide/per-rule/6
+
+/7:
+    environment+:
+        SLICE: 7
+    extra-summary: /CoreOS/scap-security-guide/per-rule/7
+
+/8:
+    environment+:
+        SLICE: 8
+    extra-summary: /CoreOS/scap-security-guide/per-rule/8
+
+/9:
+    environment+:
+        SLICE: 9
+    extra-summary: /CoreOS/scap-security-guide/per-rule/9
+
+/10:
+    environment+:
+        SLICE: 10
+    extra-summary: /CoreOS/scap-security-guide/per-rule/10
+
+/11:
+    environment+:
+        SLICE: 11
+    extra-summary: /CoreOS/scap-security-guide/per-rule/11
+
+/12:
+    environment+:
+        SLICE: 12
+    extra-summary: /CoreOS/scap-security-guide/per-rule/12
+
+/13:
+    environment+:
+        SLICE: 13
+    extra-summary: /CoreOS/scap-security-guide/per-rule/13
+
+/14:
+    environment+:
+        SLICE: 14
+    extra-summary: /CoreOS/scap-security-guide/per-rule/14
+
+/15:
+    environment+:
+        SLICE: 15
+    extra-summary: /CoreOS/scap-security-guide/per-rule/15
