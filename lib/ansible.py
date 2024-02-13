@@ -1,6 +1,6 @@
 import os
 
-from . import util, versions
+from lib import util, versions
 
 
 def install_deps():

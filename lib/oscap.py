@@ -3,7 +3,7 @@ import re
 import contextlib
 from pathlib import Path
 
-from . import util, results
+from lib import util, results
 
 _no_remediation_cache = None
 

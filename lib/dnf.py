@@ -3,7 +3,7 @@ import configparser
 import requests
 from pathlib import Path
 
-from . import util, versions
+from lib import util, versions
 
 try:
     import dnf

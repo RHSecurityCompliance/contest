@@ -18,7 +18,7 @@ import shutil
 import requests
 from pathlib import Path
 
-from . import util, waive
+from lib import util, waive
 
 _valid_statuses = ['pass', 'fail', 'warn', 'error', 'info', 'skip']
 

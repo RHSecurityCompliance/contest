@@ -8,7 +8,7 @@ import re
 import platform
 from pathlib import Path
 
-from . import util, versions
+from lib import util, versions
 
 _sections_cache = None
 
