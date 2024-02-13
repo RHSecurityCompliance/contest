@@ -127,6 +127,11 @@ These have some unfortunate metadata, such as
 
 which are removed by `translate_ssg_kickstart()` [in virt.py](lib/virt.py).
 
+## Referencing library code
+
+See https://rhsecuritycompliance.github.io/contest/ for online Sphinx version
+of the modules present in `lib`.
+
 ## Debugging
 
 (TODO: probably move to its own document?)
