@@ -110,6 +110,7 @@ INSTALL_FAILURES = [
     br"There was an error running the kickstart script",
     br"Aborting the installation",
     br"Something went wrong during the final hardening",
+    br"Non interactive installation failed",
     # RHEL-7 ignores inst.noninteractive
     br"Please respond ",
 ]
