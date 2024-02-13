@@ -37,8 +37,8 @@ import time
 import collections
 from pathlib import Path
 
+from lib import util, dnf, virt
 from conf import remediation
-from . import util, dnf, virt
 
 
 class Host:

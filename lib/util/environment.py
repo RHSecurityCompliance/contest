@@ -3,7 +3,7 @@ import re
 import time
 import shutil
 
-from .subprocess import subprocess_run
+from lib import util
 
 
 def running_in_tmt():
@@ -16,11 +16,11 @@ def reboot():
     # flush buffers to disk, just in case reboot doesn't do it
     os.sync()
     if shutil.which('tmt-reboot'):
-        subprocess_run('tmt-reboot')
+        util.subprocess_run('tmt-reboot')
     elif shutil.which('rstrnt-reboot'):
-        subprocess_run('rstrnt-reboot')
+        util.subprocess_run('rstrnt-reboot')
     else:
-        subprocess_run('reboot')
+        util.subprocess_run('reboot')
     while True:
         time.sleep(1000000)
 

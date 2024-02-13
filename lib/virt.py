@@ -87,7 +87,7 @@ import xml.etree.ElementTree as ET
 from datetime import datetime, timedelta
 from pathlib import Path
 
-from . import util, versions, dnf
+from lib import util, versions, dnf
 
 GUEST_NAME = 'contest'
 GUEST_LOGIN_PASS = 'contest'

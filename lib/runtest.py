@@ -7,7 +7,7 @@ import traceback
 import urllib3
 from pathlib import Path
 
-from . import util, results
+from lib import util, results
 
 
 # handle test duration on our own, don't rely on TMT -

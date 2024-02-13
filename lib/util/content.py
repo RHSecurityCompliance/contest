@@ -1,7 +1,7 @@
 import os
 from pathlib import Path
 
-from ..versions import rhel
+from lib.versions import rhel
 
 
 def get_datastream():
