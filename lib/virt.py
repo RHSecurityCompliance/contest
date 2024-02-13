@@ -634,24 +634,31 @@ class Guest:
         return self._do_ssh(*cmd, func=util.subprocess_stream, **kwargs)
 
     def _do_scp(self, *args):
-        scp_cmdline = [
+        cmd = [
             'scp', '-q', '-i', self.ssh_keyfile_path, '-o', 'BatchMode=yes',
             '-o', 'StrictHostKeyChecking=no', '-o', 'UserKnownHostsFile=/dev/null',
             *args
         ]
-        return util.subprocess_run(scp_cmdline, check=True)
+        return util.subprocess_run(cmd, check=True)
 
-    def copy_from(self, remote_file, local_file=None):
-        if not local_file:
-            local_file = '.'
-        util.log(f"copying {remote_file} from guest, to {local_file}")
+    def copy_from(self, remote_file, local_file='.'):
         self._do_scp(f'{GUEST_SSH_USER}@{self.ipaddr}:{remote_file}', local_file)
 
-    def copy_to(self, local_file, remote_file=None):
-        if not remote_file:
-            remote_file = '.'
-        util.log(f"copying {local_file} to guest, to {remote_file}")
+    def copy_to(self, local_file, remote_file='.'):
         self._do_scp(local_file, f'{GUEST_SSH_USER}@{self.ipaddr}:{remote_file}')
+
+    def _do_rsync(self, *args):
+        ssh = (
+            f'ssh -i {self.ssh_keyfile_path}'
+            ' -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null'
+        )
+        return util.subprocess_run(['rsync', '-a', '-e', ssh, *args], check=True)
+
+    def rsync_from(self, remote_path, local_path='.'):
+        self._do_rsync(f'{GUEST_SSH_USER}@{self.ipaddr}:{remote_path}', local_path)
+
+    def rsync_to(self, local_path, remote_path='.'):
+        self._do_rsync(local_path, f'{GUEST_SSH_USER}@{self.ipaddr}:{remote_path}')
 
     def guest_agent_cmd(self, cmd, args=None, blind=False):
         """
