@@ -20,7 +20,7 @@ if util.get_reboot_count() == 0:
     ansible.install_deps()
 
     playbook = util.get_playbook(profile)
-    skip_tags = ','.join(remediation.excludes)
+    skip_tags = ','.join(remediation.excludes())
     skip_tags_arg = ['--skip-tags', skip_tags] if skip_tags else []
     cmd = [
         'ansible-playbook', '-v', '-c', 'local', '-i', 'localhost,',

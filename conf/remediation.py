@@ -9,20 +9,23 @@ import re
 from lib import versions, util
 
 
-excludes = []
-test_name = util.get_test_name()
+def excludes():
+    rules = []
+    test_name = util.get_test_name()
 
-# Hardenings via Ansible
-if re.fullmatch('/hardening.*/ansible/.*', test_name):
-    if versions.rhel.is_centos():
-        excludes += [
-            # https://github.com/ComplianceAsCode/content/issues/8480
-            'ensure_redhat_gpgkey_installed',
+    # Hardenings via Ansible
+    if re.fullmatch('/hardening.*/ansible/.*', test_name):
+        if versions.rhel.is_centos():
+            rules += [
+                # https://github.com/ComplianceAsCode/content/issues/8480
+                'ensure_redhat_gpgkey_installed',
+            ]
+
+    # Host hardenings
+    if re.fullmatch('/hardening/host-os/.*', test_name):
+        rules += [
+            # required by TMT
+            'package_rsync_removed',
         ]
 
-# Host hardenings
-if re.fullmatch('/hardening/host-os/.*', test_name):
-    excludes += [
-        # required by TMT
-        'package_rsync_removed',
-    ]
+    return rules

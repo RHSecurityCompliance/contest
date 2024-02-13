@@ -34,7 +34,7 @@ with g.snapshotted():
     # remediate using a locally-run 'ansible-playbook', which connects
     # to the guest using ssh
     playbook = util.get_playbook(profile)
-    skip_tags = ','.join(remediation.excludes)
+    skip_tags = ','.join(remediation.excludes())
     skip_tags_arg = ['--skip-tags', skip_tags] if skip_tags else []
     ansible_cmd = [
         'ansible-playbook', '-v', '-i', f'{g.ipaddr},',

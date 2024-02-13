@@ -28,7 +28,7 @@ if util.get_reboot_count() == 0:
         shutil.rmtree(tmpdir)
     tmpdir.mkdir()
 
-    oscap.unselect_rules(ds, new_ds, remediation.excludes)
+    oscap.unselect_rules(ds, new_ds, remediation.excludes())
     cmd = [
         'oscap', 'xccdf', 'eval', '--profile', profile,
         '--progress', '--remediate', '--report', tmpdir / 'remediation.html',
