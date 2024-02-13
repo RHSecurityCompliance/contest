@@ -1,8 +1,10 @@
-# this file contains rules that should NOT be remediated under certain
-# conditions, as their remediation would lead to a broken OS, unable to
-# report test results
-#
-# do not use it to exclude expected failures, use the waiving logic instead
+"""
+This file contains rules that should NOT be remediated under certain
+conditions, as their remediation would lead to a broken OS, unable to
+report test results.
+
+Do not use it to exclude expected failures, use the waiving logic instead.
+"""
 
 import re
 
