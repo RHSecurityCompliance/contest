@@ -3,7 +3,7 @@
 import os
 
 from lib import util, results, virt, oscap, versions, ansible
-from conf import remediation
+from conf import remediation, partitions
 
 
 ansible.install_deps()
@@ -20,7 +20,7 @@ else:
     g = virt.Guest('minimal_with_oscap')
 
 if not g.can_be_snapshotted():
-    ks = virt.Kickstart()
+    ks = virt.Kickstart(partitions=partitions.partitions)
     if use_gui:
         ks.add_package_group('Server with GUI')
     g.install(kickstart=ks)
