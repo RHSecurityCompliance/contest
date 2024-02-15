@@ -14,6 +14,8 @@ tag:
         enabled: false
         because: RHEL-7 has anssi_nt28_high instead
     extra-summary: /CoreOS/scap-security-guide/hardening/image-builder/with-gui/anssi_bp28_high
+    extra-nitrate: TC#0617149
+    id: cb2c65bd-fd28-451f-8c4e-25e6cdea2fd0
 
 /anssi_nt28_high:
     environment+:
@@ -23,6 +25,8 @@ tag:
         enabled: false
         because: RHEL-8 and newer have anssi_bp28_high instead
     extra-summary: /CoreOS/scap-security-guide/hardening/image-builder/with-gui/anssi_nt28_high
+    extra-nitrate: TC#0617150
+    id: eea73de0-330b-43c3-b334-b5d751499013
 
 /cis:
     environment+:
@@ -48,11 +52,15 @@ tag:
     environment+:
         PROFILE: cis_workstation_l1
     extra-summary: /CoreOS/scap-security-guide/hardening/image-builder/with-gui/cis_workstation_l1
+    extra-nitrate: TC#0617152
+    id: 3c66e210-ed50-4481-be41-4ad8a8bd59be
 
 /cis_workstation_l2:
     environment+:
         PROFILE: cis_workstation_l2
     extra-summary: /CoreOS/scap-security-guide/hardening/image-builder/with-gui/cis_workstation_l2
+    extra-nitrate: TC#0617153
+    id: 69c51184-0c95-461a-8612-968ac04c953a
 
 /cui:
     environment+:
@@ -64,16 +72,22 @@ tag:
             not supported on RHEL-8 according to RHEL documentation,
             the "Profiles not compatible with Server with GUI" table
     extra-summary: /CoreOS/scap-security-guide/hardening/image-builder/with-gui/cui
+    extra-nitrate: TC#0617154
+    id: 42415192-8ab7-4dd4-afdf-0552601e9e3d
 
 /e8:
     environment+:
         PROFILE: e8
     extra-summary: /CoreOS/scap-security-guide/hardening/image-builder/with-gui/e8
+    extra-nitrate: TC#0617155
+    id: 3e9fd5f5-a86f-4bce-b47b-ef1bbb6c4fdf
 
 /hipaa:
     environment+:
         PROFILE: hipaa
     extra-summary: /CoreOS/scap-security-guide/hardening/image-builder/with-gui/hipaa
+    extra-nitrate: TC#0617156
+    id: 62fa5781-e231-43e9-9a5e-d56db0a23872
 
 /ism_o:
     environment+:
@@ -83,6 +97,8 @@ tag:
         enabled: false
         because: doesn't exist on RHEL-7
     extra-summary: /CoreOS/scap-security-guide/hardening/image-builder/with-gui/ism_o
+    extra-nitrate: TC#0617157
+    id: 4e25db52-814a-4652-8e23-36ede03b954f
 
 /ospp:
     environment+:
@@ -94,11 +110,15 @@ tag:
             not supported on RHEL-8 according to RHEL documentation,
             the "Profiles not compatible with Server with GUI" table
     extra-summary: /CoreOS/scap-security-guide/hardening/image-builder/with-gui/ospp
+    extra-nitrate: TC#0617158
+    id: 411b3aab-ed5d-4f2b-a9ff-56897d8b58ba
 
 /pci-dss:
     environment+:
         PROFILE: pci-dss
     extra-summary: /CoreOS/scap-security-guide/hardening/image-builder/with-gui/pci-dss
+    extra-nitrate: TC#0617159
+    id: f5576dd5-2b10-4012-9a60-f0609c193e08
 
 /stig:
     environment+:
@@ -115,6 +135,8 @@ tag:
     environment+:
         PROFILE: stig_gui
     extra-summary: /CoreOS/scap-security-guide/hardening/image-builder/with-gui/stig_gui
+    extra-nitrate: TC#0617160
+    id: 6c7d3373-3733-4652-9a09-2340dfccf9ca
 
 /ccn_advanced:
     environment+:
@@ -124,3 +146,5 @@ tag:
         enabled: false
         because: CNN Advanced profile is specific to RHEL 9
     extra-summary: /CoreOS/scap-security-guide/hardening/image-builder/with-gui/ccn_advanced
+    extra-nitrate: TC#0617151
+    id: da7e3e1f-cdb9-469b-9f71-64bf4ee74164
