@@ -347,7 +347,7 @@ class Guest:
         # if exists, all snapshot preparation processes were successful
         self.snapshot_ready_path = f'{GUEST_IMG_DIR}/{name}.ready'
 
-    def install(self, location=None, kickstart=None, ks_verbatim=False):
+    def install(self, location=None, kickstart=None, ks_verbatim=False, disk_format='raw'):
         """
         Install a new guest, to a shut down state.
 
@@ -395,8 +395,8 @@ class Guest:
             else:
                 kickstart.add_packages([util.RpmPack.NAME])
 
-        disk_path = f'{GUEST_IMG_DIR}/{self.name}.img'
-        disk_format = 'raw'
+        disk_extension = 'qcow2' if disk_format == 'qcow2' else 'img'
+        disk_path = f'{GUEST_IMG_DIR}/{self.name}.{disk_extension}'
         cpus = os.cpu_count() or 1
 
         with contextlib.ExitStack() as stack:
