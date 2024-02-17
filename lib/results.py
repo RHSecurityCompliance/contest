@@ -13,7 +13,6 @@ Beaker uses the HTTP API, connecting to a local labcontroller.
 
 import os
 import sys
-import re
 import shutil
 import requests
 from pathlib import Path
@@ -43,18 +42,10 @@ def _compose_results_yaml(keyvals):
     it = iter(keyvals.items())
     # prefix first item with '-'
     key, value = next(it)
-    out = f'- {key}: {printval(value)}\n'
+    out = f'- "{key}": {printval(value)}\n'
     for key, value in it:
-        out += f'  {key}: {printval(value)}\n'
+        out += f'  "{key}": {printval(value)}\n'
     return out
-
-
-def _sanitize_yaml_id(string):
-    """
-    Remove anything that shouldn't appear in a YAML identifier (ie. key name),
-    whether the limitation comes from YAML itself, or its use by TMT.
-    """
-    return re.sub(r'[^\w/ _-]', '', string, flags=re.A).strip()
 
 
 def have_tmt_api():
@@ -206,7 +197,7 @@ def report(status, name=None, note=None, logs=None, *, add_output=True):
 
     # apply to all report variants
     if name:
-        name = _sanitize_yaml_id(name)
+        name = util.make_printable(name)
     if note:
         note = util.make_printable(note)
 
