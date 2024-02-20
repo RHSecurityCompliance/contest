@@ -228,12 +228,12 @@
     status == 'error' and 'TimeoutError' in note
 # 'composer-cli compose start' fails with:
 # OpenSCAP unsupported profile: xccdf_org.ssgproject.content_profile_ccn_advanced
-# TODO: Evgeny will discuss this with Marek
+# https://issues.redhat.com/browse/RHEL-25574
 /hardening/image-builder/ccn_advanced
     status == 'error'
 # compose building fails on oscap with:
 # Fatal: can't open /dev/urandom: No such file or directory
-# TODO: Evgeny will investigate
+# https://github.com/osbuild/osbuild/pull/1590
 /hardening/image-builder/cui
     rhel == 8 and status == 'error'
 # https://issues.redhat.com/browse/RHEL-24441 on 'squid'
