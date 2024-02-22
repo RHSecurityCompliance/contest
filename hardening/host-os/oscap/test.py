@@ -39,7 +39,6 @@ if util.get_reboot_count() == 0:
         raise RuntimeError("remediation oscap failed unexpectedly")
 
     # restore basic login functionality
-    util.subprocess_run(['chage', '-d', '99999', 'root'], check=True)
     with open('/etc/sysconfig/sshd', 'a') as f:
         f.write('\nOPTIONS=-oPermitRootLogin=yes\n')
 

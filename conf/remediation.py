@@ -12,8 +12,14 @@ from lib import versions, util
 
 
 def excludes():
-    rules = []
     test_name = util.get_test_name()
+
+    rules = [
+        # avoid this globally, so we don't have to change passwords
+        # or call 'chage' in every type of remediation
+        'accounts_password_set_max_life_existing',
+        'accounts_password_set_max_life_root',
+    ]
 
     # Hardenings via Ansible
     if re.fullmatch('/hardening.*/ansible/.*', test_name):
