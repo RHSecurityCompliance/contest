@@ -29,14 +29,18 @@ if util.get_reboot_count() == 0:
     tmpdir.mkdir()
 
     oscap.unselect_rules(ds, new_ds, remediation.excludes())
-    cmd = [
-        'oscap', 'xccdf', 'eval', '--profile', profile,
-        '--progress', '--remediate', '--report', tmpdir / 'remediation.html',
-        new_ds,
-    ]
-    proc = util.subprocess_run(cmd)
-    if proc.returncode not in [0,2]:
-        raise RuntimeError("remediation oscap failed unexpectedly")
+
+    # remediate twice due to some rules being 'notapplicable'
+    # on the first pass
+    for html_report in ['remediation.html', 'remediation2.html']:
+        cmd = [
+            'oscap', 'xccdf', 'eval', '--profile', profile,
+            '--progress', '--report', tmpdir / html_report,
+            '--remediate', new_ds,
+        ]
+        proc = util.subprocess_run(cmd)
+        if proc.returncode not in [0,2]:
+            raise RuntimeError(f"remediation oscap failed with {proc.returncode}")
 
     # restore basic login functionality
     with open('/etc/sysconfig/sshd', 'a') as f:
@@ -64,4 +68,6 @@ else:
     if proc.returncode not in [0,2]:
         raise RuntimeError("post-reboot oscap failed unexpectedly")
 
-    results.report_and_exit(logs=['report.html', tmpdir / 'remediation.html'])
+    results.report_and_exit(
+        logs=['report.html', tmpdir / 'remediation.html', tmpdir / 'remediation2.html'],
+    )

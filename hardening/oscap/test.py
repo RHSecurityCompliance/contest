@@ -30,10 +30,18 @@ with g.snapshotted():
     oscap.unselect_rules(util.get_datastream(), 'modified_ds.xml', remediation.excludes())
     g.copy_to('modified_ds.xml', 'contest-ds.xml')
 
-    # remediate, reboot
-    g.ssh(f'oscap xccdf eval --profile {profile} --progress '
-          '--report remediation.html --remediate contest-ds.xml')
-    g.soft_reboot()
+    # - remediate twice due to some rules being 'notapplicable'
+    #   on the first pass
+    for html_report in ['remediation.html', 'remediation2.html']:
+        cmd = [
+            'oscap', 'xccdf', 'eval', '--profile', profile,
+            '--progress', '--report', html_report,
+            '--remediate', 'contest-ds.xml',
+        ]
+        proc = g.ssh(' '.join(cmd))
+        if proc.returncode not in [0,2]:
+            raise RuntimeError(f"remediation oscap failed with {proc.returncode}")
+        g.soft_reboot()
 
     # old RHEL-7 oscap mixes errors into --progress rule names without a newline
     verbose = '--verbose INFO' if versions.oscap >= 1.3 else ''
@@ -50,5 +58,6 @@ with g.snapshotted():
 
     g.copy_from('report.html')
     g.copy_from('remediation.html')
+    g.copy_from('remediation2.html')
 
-results.report_and_exit(logs=['report.html', 'remediation.html'])
+results.report_and_exit(logs=['report.html', 'remediation.html', 'remediation2.html'])
