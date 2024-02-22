@@ -52,9 +52,11 @@ with g.snapshotted():
     oval_results = '' if versions.oscap >= 1.3 else '--results results.xml --oval-results'
 
     # scan the remediated system
-    g.copy_to(util.get_datastream(), 'contest-ds.xml')
-    proc, lines = g.ssh_stream(f'oscap xccdf eval {verbose} --profile {profile_full} --progress '
-                               f'--report report.html {oval_results} contest-ds.xml {redir}')
+    g.copy_to(util.get_datastream(), 'scan-ds.xml')
+    proc, lines = g.ssh_stream(
+        f'oscap xccdf eval {verbose} --profile {profile_full} --progress'
+        f' --report report.html {oval_results} scan-ds.xml {redir}'
+    )
     oscap.report_from_verbose(lines)
     if proc.returncode not in [0,2]:
         raise RuntimeError("post-reboot oscap failed unexpectedly")
