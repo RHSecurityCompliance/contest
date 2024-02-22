@@ -82,7 +82,6 @@ import textwrap
 import contextlib
 import tempfile
 import json
-import base64
 import xml.etree.ElementTree as ET
 from datetime import datetime, timedelta
 from pathlib import Path
@@ -323,11 +322,6 @@ class Guest:
         # hack sshd cmdline to allow root login,
         # also hack UseDNS on RHEL-7, otherwise login takes ~30sec
         echo "OPTIONS=-oPermitRootLogin=yes -oUseDNS=no" >> /etc/sysconfig/sshd
-        # allow qemu-guest-agent to execute code
-        sed '/^BLACKLIST_RPC=/s/=.*/=/'   -i /etc/sysconfig/qemu-ga  # RHEL-7/8
-        sed '/^BLOCK_RPCS=/s/=.*/=/'      -i /etc/sysconfig/qemu-ga  # RHEL-9+
-        sed '/^FILTER_RPC_ARGS=/s/=.*/=/' -i /etc/sysconfig/qemu-ga  # RHEL-9.4+
-        semanage permissive -a virt_qemu_ga_t
     ''')
     SETUP_REQUIRES = (
         ['openssh-server', 'qemu-guest-agent']
@@ -476,11 +470,8 @@ class Guest:
     # we cannot shutdown/start a snapshotted guest as that would start it from
     # the persistent non-snapshotted disk - we must somehow reboot the guest OS
     # without exiting the QEMU process - hard 'reset' or ssh/qemu-ga reboot
-    def soft_reboot(self, fix_login=True):
+    def soft_reboot(self):
         """Reboot by issuing 'reboot' via ssh."""
-        if fix_login:
-            self.guest_agent_exec('/sbin/setenforce', '0', check=True)
-            self.guest_agent_exec('/bin/chage', '-d', '99999', 'root', check=True)
         util.log("rebooting using qemu-guest-agent")
         self.guest_agent_cmd('guest-shutdown', {'mode': 'reboot'}, blind=True)
         wait_for_ssh(self.ipaddr, to_shutdown=True)
@@ -675,51 +666,6 @@ class Guest:
         if blind:
             return
         return json.loads(ret.stdout)['return']
-
-    def guest_agent_exec(self, *args, capture=False, check=False, **kwargs):
-        """
-        Execute a remote command using qemu-guest-agent running on the guest.
-
-        The first argument must be a full absolute path to the executable.
-
-        A subprocess.CompletedProcess instance is returned with returncode and
-        optionally stdout/stderr if 'capture' is True.
-        """
-        request = {
-            'path': args[0],
-            'arg': args[1:],
-            'capture-output': capture,
-        }
-        util.log(f"sending {request}")
-        ret = self.guest_agent_cmd('guest-exec', request, **kwargs)
-        pid = ret['pid']
-
-        while True:
-            ret_json = self.guest_agent_cmd('guest-exec-status', {'pid': pid})
-            if ret_json['exited']:
-                break
-            time.sleep(0.1)
-
-        completed = subprocess.CompletedProcess(args, -1)
-
-        # qemu-ga splits exit into into 'exitcode' and 'signal',
-        # translate it back to emulate a shell-style exitcode
-        if 'signal' in ret_json:
-            completed.returncode = ret_json['signal'] + 128
-        else:
-            completed.returncode = ret_json['exitcode']
-
-        if capture:
-            # if the command returns empty output, qemu-ga will omit the key!
-            if 'out-data' in ret_json:
-                completed.stdout = base64.b64decode(ret_json['out-data'])
-            if 'err-data' in ret_json:
-                completed.stderr = base64.b64decode(ret_json['err-data'])
-
-        util.log(f"ended with {completed}")
-        if check:
-            completed.check_returncode()
-        return completed
 
     def wipe(self):
         """

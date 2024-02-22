@@ -1,3 +1,8 @@
+# remediation for this is globally disabled in Contest,
+# see conf/remediation.py
+/hardening/.*/accounts_password_set_max_life_existing
+    True
+
 # requires running firewalld (firewall-cmd) and NetworkManager,
 # which are not available in their final form in the Anaconda environment
 # - see https://github.com/ComplianceAsCode/content/issues/9746

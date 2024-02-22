@@ -3,7 +3,7 @@
 import os
 
 from lib import util, results, virt, oscap, versions
-from conf import partitions
+from conf import remediation, partitions
 
 
 virt.Host.setup()
@@ -27,7 +27,8 @@ if not g.can_be_snapshotted():
 
 with g.snapshotted():
     # copy our datastream to the guest
-    g.copy_to(util.get_datastream(), 'contest-ds.xml')
+    oscap.unselect_rules(util.get_datastream(), 'modified_ds.xml', remediation.excludes())
+    g.copy_to('modified_ds.xml', 'contest-ds.xml')
 
     # remediate, reboot
     g.ssh(f'oscap xccdf eval --profile {profile} --progress '

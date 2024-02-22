@@ -16,8 +16,6 @@ ks = virt.translate_ssg_kickstart(profile)
 
 profile = f'xccdf_org.ssgproject.content_profile_{profile}'
 
-ks.add_post('chage -d 99999 root')
-
 if os.environ.get('USE_SERVER_WITH_GUI'):
     ks.add_package_group('Server with GUI')
 
