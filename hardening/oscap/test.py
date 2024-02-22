@@ -27,8 +27,8 @@ if not g.can_be_snapshotted():
 
 with g.snapshotted():
     # copy our datastream to the guest
-    oscap.unselect_rules(util.get_datastream(), 'modified_ds.xml', remediation.excludes())
-    g.copy_to('modified_ds.xml', 'contest-ds.xml')
+    oscap.unselect_rules(util.get_datastream(), 'remediation-ds.xml', remediation.excludes())
+    g.copy_to('remediation-ds.xml')
 
     # - remediate twice due to some rules being 'notapplicable'
     #   on the first pass
@@ -36,7 +36,7 @@ with g.snapshotted():
         cmd = [
             'oscap', 'xccdf', 'eval', '--profile', profile,
             '--progress', '--report', html_report,
-            '--remediate', 'contest-ds.xml',
+            '--remediate', 'remediation-ds.xml',
         ]
         proc = g.ssh(' '.join(cmd))
         if proc.returncode not in [0,2]:
@@ -49,9 +49,13 @@ with g.snapshotted():
     # RHEL-7 HTML report doesn't contain OVAL findings by default
     oval_results = '' if versions.oscap >= 1.3 else '--results results.xml --oval-results'
 
+    # copy the original DS to the guest
+    g.copy_to(util.get_datastream(), 'scan-ds.xml')
     # scan the remediated system
-    proc, lines = g.ssh_stream(f'oscap xccdf eval {verbose} --profile {profile} --progress '
-                               f'--report report.html {oval_results} contest-ds.xml {redir}')
+    proc, lines = g.ssh_stream(
+        f'oscap xccdf eval {verbose} --profile {profile} --progress'
+        f' --report report.html {oval_results} scan-ds.xml {redir}'
+    )
     oscap.report_from_verbose(lines)
     if proc.returncode not in [0,2]:
         raise RuntimeError("post-reboot oscap failed unexpectedly")

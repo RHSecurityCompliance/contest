@@ -72,7 +72,7 @@ class BackgroundHTTPServer(HTTPServer):
         self.firewalld_zones = []
         super().__init__(self.listen_addr_port, _BackgroundHTTPServerHandler)
 
-    def add_file(self, fs_path, url_path):
+    def add_file(self, fs_path, url_path=None):
         """
         Map a filesystem path to a file to virtual location on the HTTP server,
         so that requests to the virtual location get the contents of the real
@@ -86,11 +86,13 @@ class BackgroundHTTPServer(HTTPServer):
             .add_file('/etc/passwd', 'users')
             # GET /some/file will get contents of tmpfile (relative to CWD)
             .add_file('tmpfile', 'some/file')
+            # GET /testfile will get the contents of testfile (in CWD)
+            .add_file('testfile')
         """
-        url_path = Path(url_path.lstrip('/'))
+        url_path = Path(fs_path) if url_path is None else Path(url_path.lstrip('/'))
         self.file_mapping[url_path] = Path(fs_path)
 
-    def add_dir(self, fs_path, url_path):
+    def add_dir(self, fs_path, url_path=None):
         """
         Map a filesystem directory to a virtual location on the HTTP server,
         see add_file() for details.
@@ -100,8 +102,10 @@ class BackgroundHTTPServer(HTTPServer):
             .add_dir('/etc', 'config')
             # GET /repo/repodata/repomd.xml gets /tmp/tmp.12345/repodata/repomd.xml
             .add_dir('/tmp/tmp.12345', 'repo')
+            # GET /testdir/123 will get the contents of testdir/123 (in CWD)
+            .add_dir('testdir')
         """
-        url_path = Path(url_path.lstrip('/'))
+        url_path = Path(fs_path) if url_path is None else Path(url_path.lstrip('/'))
         self.dir_mapping[url_path] = Path(fs_path)
 
     def __enter__(self):
