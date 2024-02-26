@@ -54,13 +54,14 @@ def log(msg, *, skip_frames=0):
     parent = stack[0]
     function = parent.function
 
-    # if the function has 'self' and it looks like a class instance,
+    # if the function has 'self' and it looks like a class (instance),
     # prepend it to the function name
     p_locals = parent.frame.f_locals
     if 'self' in p_locals:
         self = p_locals['self']
         if hasattr(self, '__class__') and inspect.isclass(self.__class__):
-            function = f'{self.__class__.__name__}.{function}'
+            name = self.__name__ if isinstance(self, type) else self.__class__.__name__
+            function = f'{name}.{function}'
 
     # don't report module name of a function if it's the same as running module
     if parent.filename != module.filename:
