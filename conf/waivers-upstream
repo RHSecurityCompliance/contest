@@ -171,6 +171,10 @@
 /hardening/host-os/oscap/.+/sssd_enable_smartcards
     Match(rhel == 8, sometimes=True)
 
+# https://github.com/ComplianceAsCode/content/issues/11609
+/hardening/host-os/oscap/stig/chronyd_or_ntpd_set_maxpoll
+    rhel >= 8
+
 # TODO: completely unknown, investigate and sort
 #
 # all RHELs
