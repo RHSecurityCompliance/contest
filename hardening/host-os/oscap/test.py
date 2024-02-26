@@ -19,6 +19,22 @@ unique_name = util.get_test_name().lstrip('/').replace('/', '-')
 tmpdir = Path(f'/var/tmp/contest-{unique_name}')
 remediation_ds = tmpdir / 'remediation-ds.xml'
 
+
+def do_one_remediation(ds, profile, html_report):
+    cmd = [
+        'oscap', 'xccdf', 'eval', '--profile', profile, '--progress',
+        '--report', html_report, '--remediate', ds,
+    ]
+    proc = util.subprocess_run(cmd)
+    if proc.returncode not in [0,2]:
+        raise RuntimeError(f"remediation oscap failed with {proc.returncode}")
+    # restore basic login functionality
+    cfg_path = Path('/etc/sysconfig/sshd')
+    if 'OPTIONS=-oPermitRootLogin=yes' not in cfg_path.read_text():
+        with cfg_path.open('a') as f:
+            f.write('\nOPTIONS=-oPermitRootLogin=yes\n')
+
+
 if util.get_reboot_count() == 0:
     util.log("first boot, doing remediation")
 
@@ -28,26 +44,21 @@ if util.get_reboot_count() == 0:
 
     oscap.unselect_rules(util.get_datastream(), remediation_ds, remediation.excludes())
 
-    # remediate twice due to some rules being 'notapplicable'
-    # on the first pass
-    for html_report in ['remediation.html', 'remediation2.html']:
-        cmd = [
-            'oscap', 'xccdf', 'eval', '--profile', profile,
-            '--progress', '--report', tmpdir / html_report,
-            '--remediate', remediation_ds,
-        ]
-        proc = util.subprocess_run(cmd)
-        if proc.returncode not in [0,2]:
-            raise RuntimeError(f"remediation oscap failed with {proc.returncode}")
+    do_one_remediation(remediation_ds, profile, tmpdir / 'remediation.html')
 
-    # restore basic login functionality
-    with open('/etc/sysconfig/sshd', 'a') as f:
-        f.write('\nOPTIONS=-oPermitRootLogin=yes\n')
+    util.reboot()
+
+# remediate twice due to some rules being 'notapplicable'
+# on the first pass
+elif util.get_reboot_count() == 1:
+    util.log("second boot, doing second remediation")
+
+    do_one_remediation(remediation_ds, profile, tmpdir / 'remediation2.html')
 
     util.reboot()
 
 else:
-    util.log("second boot, scanning")
+    util.log("third boot, scanning")
 
     # old RHEL-7 oscap mixes errors into --progress rule names without a newline
     verbose = ['--verbose', 'INFO'] if versions.oscap >= 1.3 else []
