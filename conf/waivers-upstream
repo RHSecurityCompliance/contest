@@ -2,6 +2,8 @@
 # which are not available in their final form in the Anaconda environment
 # - see https://github.com/ComplianceAsCode/content/issues/9746
 /hardening/anaconda(/with-gui)?/[^/]+/firewalld_sshd_port_enabled
+# https://github.com/ComplianceAsCode/content/issues/11625
+/hardening/image-builder(/with-gui)?/[^/]+/firewalld_sshd_port_enabled
 # https://github.com/ComplianceAsCode/content/issues/10939
 # https://github.com/ComplianceAsCode/content/issues/10613
 /hardening/anaconda(/with-gui)?/[^/]+/firewalld_loopback_traffic_(restricted|trusted)
