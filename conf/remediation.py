@@ -30,9 +30,9 @@ def excludes():
             ]
 
     # Host hardenings
-    if re.fullmatch('/hardening/host-os/.*', test_name):
+    if versions.rhel == 7 and re.fullmatch('/hardening/host-os/.*', test_name):
         rules += [
-            # required by TMT
+            # required by TMT, see waivers
             'package_rsync_removed',
         ]
 
