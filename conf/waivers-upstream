@@ -2,6 +2,11 @@
 # see conf/remediation.py
 /hardening/.*/accounts_password_set_max_life_(existing|root)
     True
+# RHEL-7 only, because RHEL-8+ check for rsync-daemon,
+# while TMT only needs the 'rsync' command executed via ssh,
+# so remove the remediation exception + waiver on RHEL-8+
+/hardening/host-os/oscap/[^/]+/package_rsync_removed
+    rhel == 7
 
 # requires running firewalld (firewall-cmd) and NetworkManager,
 # which are not available in their final form in the Anaconda environment
