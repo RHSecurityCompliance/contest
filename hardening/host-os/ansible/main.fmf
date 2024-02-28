@@ -21,12 +21,6 @@ adjust:
     enabled: false
     because: RHEL-8+ requires rhc-worker-playbook which is not available for aarch64
 
-# Disabled for now because most (all?) of the failures are identical with
-# VM-using tests, /hardening/ansible, and we would prefer the waivers for
-# those tests to be categorized or bugs fixed, before we extend the test
-# matrix with this host-os ansible test.
-enabled: false
-
 /anssi_bp28_high:
     environment+:
         PROFILE: anssi_bp28_high
