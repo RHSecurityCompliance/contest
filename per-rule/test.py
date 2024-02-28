@@ -4,71 +4,12 @@ import os
 import sys
 import re
 import subprocess
-import contextlib
 import tempfile
 import textwrap
-import distutils.dir_util
 from pathlib import Path
 
-from lib import util, results, oscap, virt, versions, dnf
+from lib import util, results, oscap, virt, versions
 from conf import partitions
-
-
-@contextlib.contextmanager
-def get_content():
-    from_env = os.environ.get('CONTENT_SOURCE')
-    if from_env:
-        content = Path(from_env)
-        build_dir = content / 'build'
-
-        # if it has built content
-        if (build_dir / 'Makefile').exists():
-            util.log(f"using pre-built content: {build_dir}")
-            yield content
-
-        # manually build the source
-        else:
-            util.log(f"building content from source: {content}")
-            with tempfile.TemporaryDirectory() as tmpdir:
-                # TODO: this should be shutil.copytree(.., dirs_exist_ok=True) on python 3.8+
-                distutils.dir_util.copy_tree(content, tmpdir)
-                util.log(f"using {tmpdir} as content source")
-                # install dependencies
-                cmd = ['dnf', '-y', 'builddep', '--spec', 'scap-security-guide.spec']
-                util.subprocess_run(cmd, check=True, cwd=tmpdir)
-                # build content
-                cmd = ['./build_product', f'rhel{versions.rhel.major}']
-                util.subprocess_run(cmd, check=True, cwd=tmpdir)
-                yield Path(tmpdir)
-
-    else:
-        # fall back to SRPM
-        with dnf.download_rpm('scap-security-guide', source=True) as src_rpm:
-            with tempfile.TemporaryDirectory() as tmpdir:
-                # install dependencies
-                cmd = ['dnf', '-y', 'builddep', '--srpm', src_rpm]
-                util.subprocess_run(cmd, check=True, cwd=tmpdir)
-                # extract + patch SRPM
-                cmd = ['rpmbuild', '-rp', '--define', f'_topdir {tmpdir}', src_rpm]
-                util.subprocess_run(cmd, check=True)
-                # get path to the extracted content
-                # - parse name+version from the SRPM instead of glob(BUILD/*)
-                #   because of '-rhel6' content on RHEL-8
-                ret = util.subprocess_run(
-                    ['rpm', '-q', '--qf', '%{NAME}-%{VERSION}', '-p', src_rpm],
-                    check=True, stdout=subprocess.PIPE, universal_newlines=True, cwd=tmpdir,
-                )
-                name_version = ret.stdout.strip()
-                extracted = Path(tmpdir) / 'BUILD' / name_version
-                util.log(f"using {extracted} as content source")
-                if not extracted.exists():
-                    raise FileNotFoundError(f"{extracted} not in extracted/patched SRPM")
-                # build content
-                # TODO: temporary, see https://github.com/ComplianceAsCode/content/pull/11606
-                (extracted / 'build').mkdir(exist_ok=True)
-                cmd = ['./build_product', f'rhel{versions.rhel.major}']
-                util.subprocess_run(cmd, check=True, cwd=extracted)
-                yield extracted
 
 
 def slice_list(full_list, divident, divisor):
@@ -126,7 +67,7 @@ def report_test_with_log(status, note, log_dir, rule_name, test_name):
 
 virt.Host.setup()
 
-with get_content() as content_dir:
+with util.get_content() as content_dir:
     test_basename = util.get_test_name().rsplit('/', 1)[1]
     if test_basename == 'from-env':
         our_rules = os.environ.get('RULE')
