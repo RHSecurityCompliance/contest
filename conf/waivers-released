@@ -1,7 +1,7 @@
 # remediation for this is globally disabled in Contest,
 # see conf/remediation.py
 /hardening/.*/accounts_password_set_max_life_existing
-    True
+    Match(True, sometimes=True)
 
 # requires running firewalld (firewall-cmd) and NetworkManager,
 # which are not available in their final form in the Anaconda environment
@@ -110,7 +110,7 @@
 /hardening/host-os/oscap/.+/mount_option_(home|opt|srv|var|var_log|var_log_audit)_(noexec|nosuid|nodev|usrquota|grpquota)
 /hardening/host-os/oscap/.+/mount_option_boot_efi_nosuid
 # likely something caused by restraint / Beaker test env 
-/hardening/host-os/oscap/.+/file_permissions_unauthorized_world_writable
+/hardening/host-os/.+/file_permissions_unauthorized_world_writable
 # Beaker and host-os seem to randomly fail any services enabled
 # or packages installed - TODO investigate remediation script outputs
 # to figure out why
@@ -154,27 +154,27 @@
 /hardening/ansible/.+/audit_rules_usergroup_modification
     True
 # RHEL-9 only
-/hardening/ansible/.+/dnf-automatic_apply_updates
-/hardening/ansible/.+/dnf-automatic_security_updates_only
-/hardening/ansible/.+/accounts_polyinstantiated_tmp
-/hardening/ansible/.+/accounts_polyinstantiated_var_tmp
-/hardening/ansible/.+/force_opensc_card_drivers
+/hardening(/host-os)?/ansible/.+/dnf-automatic_apply_updates
+/hardening(/host-os)?/ansible/.+/dnf-automatic_security_updates_only
+/hardening(/host-os)?/ansible/.+/accounts_polyinstantiated_tmp
+/hardening(/host-os)?/ansible/.+/accounts_polyinstantiated_var_tmp
+/hardening(/host-os)?/ansible/.+/force_opensc_card_drivers
 /hardening/ansible/with-gui/.+/network_nmcli_permissions
     rhel == 9
 # RHEL-8 or 9
-/hardening/ansible/.+/no_tmux_in_shells
-/hardening/ansible/.+/configure_usbguard_auditbackend
-/hardening/ansible/.+/audit_rules_unsuccessful_file_modification
+/hardening(/host-os)?/ansible/.+/no_tmux_in_shells
+/hardening(/host-os)?/ansible/.+/configure_usbguard_auditbackend
+/hardening(/host-os)?/ansible/.+/audit_rules_unsuccessful_file_modification
     rhel == 8 or rhel == 9
 # RHEL-8
 /hardening/ansible/with-gui/stig_gui/sysctl_net_ipv4_conf_all_forwarding
     rhel == 8
 # RHEL-7
-/hardening/ansible/.+/sshd_use_strong_ciphers
-/hardening/ansible/.+/sshd_use_strong_macs
-/hardening/ansible/.+/audit_rules_for_ospp
-/hardening/ansible/.+/aide_use_fips_hashes
-/hardening/ansible/.+/smartcard_auth
+/hardening(/host-os)?/ansible/.+/sshd_use_strong_ciphers
+/hardening(/host-os)?/ansible/.+/sshd_use_strong_macs
+/hardening(/host-os)?/ansible/.+/audit_rules_for_ospp
+/hardening(/host-os)?/ansible/.+/aide_use_fips_hashes
+/hardening(/host-os)?/ansible/.+/smartcard_auth
     rhel == 7
 
 # unknown as well, but happens only rarely
