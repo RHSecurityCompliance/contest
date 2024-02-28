@@ -55,18 +55,15 @@ on Red Hat Enterprise Linux.
     - Because the VM was left running after the first context manager block.
     - Fortunately, no such test currently exists (the use case is rare).
 
-- `CONTEST_DATASTREAM`
-  - Specify a filesystem path to a datastream XML to use for testing.
-
-- `CONTEST_PLAYBOOK`
-  - Specify a filesystem path to an Ansible YAML file to use as a playbook
-    for testing.  
-    A magical string of '{PROFILE}' expands to a profile name being tested.
-
-- `CONTEST_KICKSTART`
-  - Specify a filesystem path to an configuration file to use as an Anaconda
-    kickstart for testing.  
-    A magical string of '{PROFILE}' expands to a profile name being tested.
+- `CONTEST_CONTENT`
+  - Specify a path to a content source directory (as cloned from
+    [CaC/content](https://github.com/ComplianceAsCode/content/)) to be used
+    for testing.
+  - The content should be already built (at least for the product under test).
+    If it is not, an attempt will be made to build it in-place (rather than
+    in a temporary directory) so that any future tests benefit from the built
+    content.
+    - Note that this may fail if the content is located on a read-only path.
 
 ## Waiving failed results
 
