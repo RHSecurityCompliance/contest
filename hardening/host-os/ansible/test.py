@@ -46,7 +46,7 @@ else:
 
     # scan the remediated system
     cmd = [
-        'oscap', 'xccdf', 'eval', *verbose, '--profile', profile,
+        'oscap', 'xccdf', 'eval', *verbose, '--profile', profile_full,
         '--progress', '--report', 'report.html', *oval_results,
         util.get_datastream(),
     ]
