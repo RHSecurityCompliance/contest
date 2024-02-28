@@ -1,11 +1,11 @@
 # remediation for this is globally disabled in Contest,
 # see conf/remediation.py
 /hardening/.*/accounts_password_set_max_life_(existing|root)
-    True
+    Match(True, sometimes=True)
 # RHEL-7 only, because RHEL-8+ check for rsync-daemon,
 # while TMT only needs the 'rsync' command executed via ssh,
 # so remove the remediation exception + waiver on RHEL-8+
-/hardening/host-os/oscap/[^/]+/package_rsync_removed
+/hardening/host-os/.+/[^/]+/package_rsync_removed
     rhel == 7
 
 # requires running firewalld (firewall-cmd) and NetworkManager,
@@ -121,7 +121,7 @@
 /hardening/host-os/oscap/.+/mount_option_(home|opt|srv|var|var_log|var_log_audit)_(noexec|nosuid|nodev|usrquota|grpquota)
 /hardening/host-os/oscap/.+/mount_option_boot_efi_nosuid
 # likely something caused by restraint / Beaker test env 
-/hardening/host-os/oscap/.+/file_permissions_unauthorized_world_writable
+/hardening/host-os/.+/file_permissions_unauthorized_world_writable
 # Beaker and host-os seem to randomly fail any services enabled
 # or packages installed - TODO investigate remediation script outputs
 # to figure out why
@@ -165,26 +165,26 @@
 /hardening/ansible/.+/audit_rules_usergroup_modification
     True
 # RHEL-9 only
-/hardening/ansible/.+/dnf-automatic_apply_updates
-/hardening/ansible/.+/dnf-automatic_security_updates_only
-/hardening/ansible/.+/accounts_polyinstantiated_tmp
-/hardening/ansible/.+/accounts_polyinstantiated_var_tmp
-/hardening/ansible/.+/force_opensc_card_drivers
+/hardening(/host-os)?/ansible/.+/dnf-automatic_apply_updates
+/hardening(/host-os)?/ansible/.+/dnf-automatic_security_updates_only
+/hardening(/host-os)?/ansible/.+/accounts_polyinstantiated_tmp
+/hardening(/host-os)?/ansible/.+/accounts_polyinstantiated_var_tmp
+/hardening(/host-os)?/ansible/.+/force_opensc_card_drivers
 /hardening/ansible/with-gui/.+/network_nmcli_permissions
     rhel == 9
 # RHEL-8 or 9
-/hardening/ansible/.+/no_tmux_in_shells
-/hardening/ansible/.+/configure_usbguard_auditbackend
-/hardening/ansible/.+/audit_rules_unsuccessful_file_modification
+/hardening(/host-os)?/ansible/.+/no_tmux_in_shells
+/hardening(/host-os)?/ansible/.+/configure_usbguard_auditbackend
+/hardening(/host-os)?/ansible/.+/audit_rules_unsuccessful_file_modification
     rhel == 8 or rhel == 9
 # RHEL-8
 /hardening/ansible/with-gui/stig_gui/sysctl_net_ipv4_conf_all_forwarding
     rhel == 8
 # RHEL-7
-/hardening/ansible/.+/sshd_use_strong_ciphers
-/hardening/ansible/.+/audit_rules_for_ospp
-/hardening/ansible/.+/aide_use_fips_hashes
-/hardening/ansible/.+/smartcard_auth
+/hardening(/host-os)?/ansible/.+/sshd_use_strong_ciphers
+/hardening(/host-os)?/ansible/.+/audit_rules_for_ospp
+/hardening(/host-os)?/ansible/.+/aide_use_fips_hashes
+/hardening(/host-os)?/ansible/.+/smartcard_auth
     rhel == 7
 
 # unknown as well, but happens only rarely
@@ -303,5 +303,24 @@
 /static-checks/html-links/http://www.cnss.gov/Assets/pdf/CNSSI-1253.pdf
     True
 
+# CentOS-specific waivers
+#
+# Rules checking if OS is FIPS certified
+/hardening/host-os/.+/sshd_use_approved_.+
+/hardening/host-os/.+/package_dracut-fips_installed
+/hardening/host-os/.+/grub2_enable_fips_mode
+/hardening/host-os/.+/aide_use_fips_hashes
+    rhel.is_centos()
+
+# Remediations are unselected for CentOS, but they might pass outside Testing Farm
+/hardening/host-os/.+/ensure_gpgcheck_globally_activated
+/hardening/host-os/.+/ensure_gpgcheck_local_packages
+/hardening/host-os/.+/ensure_gpgcheck_never_disabled
+/hardening/host-os/.+/ensure_gpgcheck_repo_metadata
+    Match(rhel.is_centos(), sometimes=True)
+
+/hardening/host-os/.+/ospp/enable_fips_mode
+/hardening/host-os/.*/ospp/configure_crypto_policy
+    rhel.is_centos() and rhel == 9
 
 # vim: syntax=python
