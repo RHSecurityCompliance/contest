@@ -25,8 +25,6 @@ require+:
   - virt-install
   - rpm-build
   - createrepo
-  # for builddep on scap-security-guide.spec
-  - python-srpm-macros
   # automatus dependencies (oscap-ssh, etc.)
   - openscap-utils
 extra-hardware: |
