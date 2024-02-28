@@ -36,4 +36,16 @@ def excludes():
             'package_rsync_removed',
         ]
 
+    # CentOS specific
+    if versions.rhel.is_centos():
+        rules += [
+            # https://github.com/ComplianceAsCode/content/issues/8480
+            'ensure_redhat_gpgkey_installed',
+            # Testing Farm repositories are without GPG signature
+            'ensure_gpgcheck_globally_activated',
+            'ensure_gpgcheck_local_packages',
+            'ensure_gpgcheck_never_disabled',
+            'ensure_gpgcheck_repo_metadata',
+        ]
+
     return rules
