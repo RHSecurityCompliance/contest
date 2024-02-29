@@ -7,10 +7,6 @@ duration: 1h
 require+:
   - openscap-scanner
 recommend+:
-  # ansible-core is not available on RHEL-7
-  # ansible is not on RHEL-8+
-  - ansible-core
-  - ansible
   # needed for the ini_file ansible plugin, and more
   - rhc-worker-playbook
 tag:
@@ -20,6 +16,12 @@ adjust:
   - when: distro >= rhel-7 and arch == aarch64
     enabled: false
     because: RHEL-8+ requires rhc-worker-playbook which is not available for aarch64
+  - when: distro == rhel-7 or distro == centos-7
+    require+:
+      - ansible
+  - when: distro >= rhel-8 or distro >= centos-8
+    require+:
+      - ansible-core
 
 /anssi_bp28_high:
     environment+:
