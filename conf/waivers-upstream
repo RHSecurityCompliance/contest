@@ -151,10 +151,6 @@
 /hardening/host-os/oscap/.+/sssd_enable_smartcards
     Match(rhel == 8, sometimes=True)
 
-# https://github.com/ComplianceAsCode/content/issues/11609
-/hardening/host-os/oscap/stig/chronyd_or_ntpd_set_maxpoll
-    rhel >= 8
-
 # visible on double reboot (double remediation)
 # /usr/libexec/abrt-action-install-debuginfo-to-abrt-cache
 /hardening/oscap/with-gui/e8/file_ownership_binary_dirs
