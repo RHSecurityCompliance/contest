@@ -280,18 +280,18 @@
 # DISA Alignment waivers
 #
 # https://github.com/ComplianceAsCode/content/issues/9307 (DISA issue)
-/scanning/disa-alignment/oscap/sysctl_kernel_yama_ptrace_scope
+/scanning/disa-alignment/.*/sysctl_kernel_yama_ptrace_scope
 # https://github.com/ComplianceAsCode/content/issues/9308 (DISA issue)
-/scanning/disa-alignment/oscap/sysctl_kernel_core_pattern
+/scanning/disa-alignment/.*/sysctl_kernel_core_pattern
 # https://github.com/ComplianceAsCode/content/issues/10044 (DISA issue)
-/scanning/disa-alignment/oscap/accounts_password_pam_pwhistory_remember_password_auth
+/scanning/disa-alignment/.*/accounts_password_pam_pwhistory_remember_password_auth
 # https://github.com/ComplianceAsCode/content/issues/11197 (DISA issue)
-/scanning/disa-alignment/oscap/display_login_attempts
+/scanning/disa-alignment/.*/display_login_attempts
     rhel == 8
 # https://github.com/ComplianceAsCode/content/issues/11649 (DISA issue)
-/scanning/disa-alignment/oscap/installed_OS_is_vendor_supported
+/scanning/disa-alignment/.*/installed_OS_is_vendor_supported
 # https://github.com/ComplianceAsCode/content/issues/11650
-/scanning/disa-alignment/oscap/kernel_module_tipc_disabled
+/scanning/disa-alignment/.*/kernel_module_tipc_disabled
     rhel == 9
 
 
