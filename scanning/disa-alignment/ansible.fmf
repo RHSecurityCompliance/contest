@@ -1,21 +1,12 @@
 summary: Compare SSG and DISA STIG benchmark scan results after Ansible remediation
-test: python3 -m lib.runtest ./test.py
+test: python3 -m lib.runtest ./ansible.py
 result: custom
 environment+:
-    PYTHONPATH: ../../..
+    PYTHONPATH: ../..
 require+:
-  # virt library dependencies
-  - libvirt-daemon
-  - libvirt-daemon-driver-qemu
-  - libvirt-daemon-driver-storage-core
-  - libvirt-daemon-driver-network
-  - firewalld
-  - qemu-kvm
-  - libvirt-client
-  - virt-install
-  - rpm-build
-  - createrepo
+  # ansible-core replaced ansible on RHEL-8+
   - ansible-core
+  # needed for the ini_file ansible plugin, and more
   - rhc-worker-playbook
 duration: 1h
 extra-hardware: |
