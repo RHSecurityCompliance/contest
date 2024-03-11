@@ -294,5 +294,14 @@
 /scanning/disa-alignment/oscap/kernel_module_tipc_disabled
     rhel == 9
 
+# HTML links from datastreams waivers
+#
+# Inaccessible until form is filled:
+/static-checks/html-links/https://docs-prv.pcisecuritystandards.org/PCI%20DSS/Standard/PCI-DSS-v4_0.pdf
+    True
+# https://github.com/ComplianceAsCode/content/issues/11678
+/static-checks/html-links/http://www.cnss.gov/Assets/pdf/CNSSI-1253.pdf
+    True
+
 
 # vim: syntax=python
