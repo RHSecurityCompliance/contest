@@ -1,20 +1,8 @@
 summary: Compare SSG and DISA STIG benchmark scan results after Bash remediation
-test: python3 -m lib.runtest ./test.py
+test: python3 -m lib.runtest ./oscap.py
 result: custom
 environment+:
-    PYTHONPATH: ../../..
-require+:
-  # virt library dependencies
-  - libvirt-daemon
-  - libvirt-daemon-driver-qemu
-  - libvirt-daemon-driver-storage-core
-  - libvirt-daemon-driver-network
-  - firewalld
-  - qemu-kvm
-  - libvirt-client
-  - virt-install
-  - rpm-build
-  - createrepo
+    PYTHONPATH: ../..
 duration: 1h
 extra-hardware: |
     keyvalue = HVM=1
