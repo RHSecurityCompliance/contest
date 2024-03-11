@@ -1,0 +1,19 @@
+summary: Compare SSG and DISA STIG benchmark scan results after Anaconda installation
+test: python3 -m lib.runtest ./anaconda.py
+result: custom
+environment+:
+    PYTHONPATH: ../..
+duration: 1h
+extra-hardware: |
+    keyvalue = HVM=1
+    hostrequire = memory>=3720
+adjust:
+  - when: arch != x86_64
+    enabled: false
+    because: run virtualization on x86_64 only
+  - when: distro == rhel-7
+    enabled: false
+    because: the code is not compatible with RHEL-7
+tag:
+  - max1
+  - daily
