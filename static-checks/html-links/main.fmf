@@ -1,0 +1,15 @@
+summary: Verify that HTML links from datastream are accessible.
+test: python3 -m lib.runtest ./test.py
+result: custom
+environment+:
+    PYTHONPATH: ../..
+duration: 5m
+recommend+:
+  - python3-requests
+tag:
+  - daily
+adjust:
+  - enabled: false
+    when: arch != x86_64
+    continue: false
+extra-summary: /CoreOS/scap-security-guide/static-checks/html-links
