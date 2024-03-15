@@ -118,7 +118,7 @@
 # all Beaker repositories have gpgcheck=0 and they get copied to nested VMs too
 /(hardening|scanning)/.+/ensure_gpgcheck_never_disabled
 # we don't control partitions on the host OS
-/hardening/host-os/oscap/.+/mount_option_(home|opt|srv|var|var_log|var_log_audit)_(noexec|nosuid|nodev|usrquota|grpquota)
+/hardening/host-os/oscap/.+/mount_option_(home|opt|srv|var|var_log|var_log_audit|tmp)_(noexec|nosuid|nodev|usrquota|grpquota)
 /hardening/host-os/oscap/.+/mount_option_boot_efi_nosuid
 # likely something caused by restraint / Beaker test env 
 /hardening/host-os/.+/file_permissions_unauthorized_world_writable
