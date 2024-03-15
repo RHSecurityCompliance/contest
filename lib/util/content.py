@@ -65,7 +65,7 @@ def get_kickstart(profile):
 
 
 def content_is_built(path):
-    return (Path(path) / 'build' / 'Makefile').exists()
+    return (Path(path) / 'build' / f'ssg-rhel{rhel.major}-ds.xml').exists()
 
 
 def build_content(path):
