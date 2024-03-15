@@ -50,15 +50,24 @@ with g.snapshotted():
     g.copy_to(util.get_datastream(), 'scan-ds.xml')
     # scan the remediated system
     proc, lines = g.ssh_stream(
-        f'oscap xccdf eval --profile {profile} --progress'
-        f' --report report.html {oval_results} scan-ds.xml'
+        f'oscap xccdf eval --profile {profile} --progress --report report.html'
+        f' {oval_results} --results-arf results-arf.xml scan-ds.xml'
     )
     oscap.report_from_verbose(lines)
     if proc.returncode not in [0,2]:
         raise RuntimeError("post-reboot oscap failed unexpectedly")
 
     g.copy_from('report.html')
+    g.copy_from('results-arf.xml')
     g.copy_from('remediation.html')
     g.copy_from('remediation2.html')
 
-results.report_and_exit(logs=['report.html', 'remediation.html', 'remediation2.html'])
+util.subprocess_run(['gzip', '-9', 'results-arf.xml'], check=True)
+
+logs = [
+    'report.html',
+    'results-arf.xml.gz',
+    'remediation.html',
+    'remediation2.html',
+]
+results.report_and_exit(logs=logs)
