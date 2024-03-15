@@ -1,7 +1,6 @@
 #!/usr/bin/python3
 
 import os
-import subprocess
 import shutil
 
 from pathlib import Path
@@ -60,20 +59,17 @@ elif util.get_reboot_count() == 1:
 else:
     util.log("third boot, scanning")
 
-    # old RHEL-7 oscap mixes errors into --progress rule names without a newline
-    verbose = ['--verbose', 'INFO'] if versions.oscap >= 1.3 else []
-    redir = {'stderr': subprocess.STDOUT} if versions.oscap >= 1.3 else {}
     # RHEL-7 HTML report doesn't contain OVAL findings by default
     oval_results = [] if versions.oscap >= 1.3 else ['--results', 'results.xml', '--oval-results']
 
     # scan the remediated system
     # - use the original unmodified datastream
     cmd = [
-        'oscap', 'xccdf', 'eval', *verbose, '--profile', profile,
+        'oscap', 'xccdf', 'eval', '--profile', profile,
         '--progress', '--report', 'report.html', *oval_results,
         util.get_datastream(),
     ]
-    proc, lines = util.subprocess_stream(cmd, **redir)
+    proc, lines = util.subprocess_stream(cmd)
     oscap.report_from_verbose(lines)
     if proc.returncode not in [0,2]:
         raise RuntimeError("post-reboot oscap failed unexpectedly")
