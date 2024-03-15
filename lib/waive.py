@@ -214,7 +214,7 @@ def rewrite_result(status, name, note, new_status='warn'):
         if matched.sometimes:
             return (status, name, add_note(f"waived {status}"))
         else:
-            return ('fail', name, add_note("waive: expected fail/error, got pass"))
+            return ('error', name, add_note("waive: expected fail/error, got pass"))
 
     # fail or error
     return (new_status, name, add_note(f"waived {status}"))
