@@ -55,6 +55,12 @@ on Red Hat Enterprise Linux.
     - Because the VM was left running after the first context manager block.
     - Fortunately, no such test currently exists (the use case is rare).
 
+- `CONTEST_VERBATIM_RESULTS`
+  - Set to `1` to avoid waiving known failures, leaving results exactly as
+    tests reported them.
+  - Useful when you want the *actual* result of ie. `/per-rule/from-env`,
+    rather than the waived one.
+
 - `CONTEST_CONTENT`
   - Specify a path to a content source directory (as cloned from
     [CaC/content](https://github.com/ComplianceAsCode/content/)) to be used

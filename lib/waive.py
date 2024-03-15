@@ -200,7 +200,7 @@ def match_result(status, name, note):
 
 
 def rewrite_result(status, name, note, new_status='warn'):
-    if status in ['info', 'warn']:
+    if os.environ.get('CONTEST_VERBATIM_RESULTS') == '1' or status in ['info', 'warn']:
         return (status, name, note)
 
     matched = match_result(status, name, note)
