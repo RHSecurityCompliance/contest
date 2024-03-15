@@ -65,8 +65,8 @@ else:
     # scan the remediated system
     # - use the original unmodified datastream
     cmd = [
-        'oscap', 'xccdf', 'eval', '--profile', profile,
-        '--progress', '--report', 'report.html', *oval_results,
+        'oscap', 'xccdf', 'eval', '--profile', profile, '--progress',
+        '--report', 'report.html', *oval_results, '--results-arf', 'results-arf.xml',
         util.get_datastream(),
     ]
     proc, lines = util.subprocess_stream(cmd)
@@ -74,6 +74,12 @@ else:
     if proc.returncode not in [0,2]:
         raise RuntimeError("post-reboot oscap failed unexpectedly")
 
-    results.report_and_exit(
-        logs=['report.html', tmpdir / 'remediation.html', tmpdir / 'remediation2.html'],
-    )
+    util.subprocess_run(['gzip', '-9', 'results-arf.xml'], check=True)
+
+    logs = [
+        'report.html',
+        'results-arf.xml.gz',
+        tmpdir / 'remediation.html',
+        tmpdir / 'remediation2.html',
+    ]
+    results.report_and_exit(logs=logs)

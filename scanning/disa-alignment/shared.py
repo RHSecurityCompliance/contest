@@ -6,8 +6,6 @@ from lib import results, versions
 profile = 'stig'
 profile_full = f'xccdf_org.ssgproject.content_profile_{profile}'
 
-# old RHEL-7 oscap mixes errors into --progress rule names without a newline
-redir = '2>&1' if versions.oscap >= 1.3 else ''
 # RHEL-7 HTML report doesn't contain OVAL findings by default
 oval_results = '' if versions.oscap >= 1.3 else '--results results.xml --oval-results'
 
@@ -24,7 +22,7 @@ def content_scan(host, ds, html, arf):
         '--profile', profile_full,
         '--report', html,
         '--stig-viewer', arf,
-        ds, redir,
+        ds,
     ]
     proc = host.ssh(' '. join(cmd))
     if proc.returncode not in [0,2]:
@@ -41,7 +39,7 @@ def disa_scan(host, ds, html, arf):
         '--profile', '\'(all)\'',
         '--report', html,
         '--results-arf', arf,
-        ds, redir
+        ds,
     ]
     proc = host.ssh(' '. join(cmd))
     if proc.returncode not in [0,2]:
