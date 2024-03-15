@@ -4,6 +4,7 @@ import re
 import runpy
 import signal
 import traceback
+import tempfile
 import urllib3
 from pathlib import Path
 
@@ -64,11 +65,22 @@ if util.running_in_tmt():
 # we don't need to have our logs spammed by good advice
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
-try:
-    runpy.run_path(sys.argv[1], run_name='__main__')
-except Exception as e:
-    traceback.print_exc()
-    results.report_and_exit('error', note=f'{type(e).__name__}: {str(e)}')
+# run inside a temporary directory
+# - this is because TMT is happy to run multiple tests inside the same dir,
+#   if all the tests are defined in .fmf files inside one directory
+# - yes, it means tests now can't access local files directly, but you can
+#   import local modules just fine (because python remembers the test.py path,
+#   it doesn't rely on CWD) and you can access non-module files via either
+#   importlib.resources or (more realistically) by using the current file:
+#   Path(inspect.getfile(inspect.currentframe())).parent
+test_script = Path(sys.argv[1]).absolute()
+with tempfile.TemporaryDirectory() as tmpdir:
+    os.chdir(tmpdir)
+    try:
+        runpy.run_path(str(test_script), run_name='__main__')
+    except Exception as e:
+        traceback.print_exc()
+        results.report_and_exit('error', note=f'{type(e).__name__}: {str(e)}')
 
 # here we rely on the test to report pass/fail for itself, as its control flow
 # reached an end successfully - we care only about it ending prematurely due to
