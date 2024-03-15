@@ -53,5 +53,10 @@ def excludes():
                 'configure_crypto_policy',
                 'enable_fips_mode',
             ]
+        if versions.rhel.major == 7:
+            rules += [
+                # On Testing Farm, login as 'root' doesn't work with fips enabled in grub2
+                'grub2_enable_fips_mode',
+            ]
 
     return rules
