@@ -1,11 +1,10 @@
 #!/usr/bin/python3
 import os
-import re
 import subprocess
 
 import shared
 from lib import util, results, virt, oscap, versions
-from conf import partitions, remediation
+from conf import remediation
 
 
 virt.Host.setup()
