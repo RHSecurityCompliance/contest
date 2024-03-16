@@ -51,7 +51,7 @@ with g.snapshotted():
     # scan the remediated system
     g.copy_to(util.get_datastream(), 'scan-ds.xml')
     proc, lines = g.ssh_stream(
-        f'oscap xccdf eval --profile {profile} --progress --report report.html'
+        f'oscap xccdf eval --profile {profile_full} --progress --report report.html'
         f' {oval_results} --results-arf results-arf.xml scan-ds.xml'
     )
     oscap.report_from_verbose(lines)
