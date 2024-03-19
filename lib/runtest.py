@@ -65,6 +65,16 @@ if util.running_in_tmt():
 # we don't need to have our logs spammed by good advice
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
+# get test.py absolute path now, as we're changing CWD below
+test_script = Path(sys.argv[1]).absolute()
+
+# RHEL-8 (seemingly all python versions, even ones that are fine on RHEL-9+)
+# has broken sys.path handling by runpy, which inserts empty '' into it,
+# rather than the directory containing the script
+# work around this by doing the insertion ourselves here - at worst, it'll be
+# there twice, causing no harm
+sys.path.insert(0, str(test_script.parent))
+
 # run inside a temporary directory
 # - this is because TMT is happy to run multiple tests inside the same dir,
 #   if all the tests are defined in .fmf files inside one directory
@@ -73,7 +83,6 @@ urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 #   it doesn't rely on CWD) and you can access non-module files via either
 #   importlib.resources or (more realistically) by using the current file:
 #   Path(inspect.getfile(inspect.currentframe())).parent
-test_script = Path(sys.argv[1]).absolute()
 with tempfile.TemporaryDirectory() as tmpdir:
     os.chdir(tmpdir)
     try:
