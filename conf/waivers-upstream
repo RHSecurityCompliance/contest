@@ -212,39 +212,10 @@
 
 # Image Builder errors
 #
-# https://issues.redhat.com/browse/RHEL-24246
-/hardening/image-builder/anssi_bp28_high
-    status == 'error' and 'TimeoutError' in note
-# 'composer-cli compose start' fails with:
-# OpenSCAP unsupported profile: xccdf_org.ssgproject.content_profile_ccn_advanced
-# https://issues.redhat.com/browse/RHEL-25574
-/hardening/image-builder/ccn_advanced
-    status == 'error'
-# compose building fails on oscap with:
-# Fatal: can't open /dev/urandom: No such file or directory
-# https://github.com/osbuild/osbuild/pull/1590
-/hardening/image-builder/cui
-    rhel == 8 and status == 'error'
-# https://issues.redhat.com/browse/RHEL-24441 on 'squid'
-/hardening/image-builder/e8
-    rhel == 9 and status == 'error'
-# https://issues.redhat.com/browse/RHEL-24441 on 'telnet'
-/hardening/image-builder/hipaa
-    rhel == 9 and status == 'error'
-# RHEL-9: https://issues.redhat.com/browse/RHEL-24441 on 'snmpd'
-# RHEL-8: Fatal: can't open /dev/urandom: No such file or directory
-/hardening/image-builder/ism_o
-    status == 'error'
-# Fatal: can't open /dev/urandom: No such file or directory
-/hardening/image-builder/ospp
-    rhel == 8 and status == 'error'
-# https://github.com/ComplianceAsCode/content/issues/11568
-/hardening/image-builder/pci-dss
-    status == 'error'
-# RHEL-9: https://issues.redhat.com/browse/RHEL-24441 on 'autofs'
-# RHEL-8: Fatal: can't open /dev/urandom: No such file or directory
-/hardening/image-builder/stig
-    status == 'error'
+# ignore errors for now, until 'openscap generate fix' syntax stabilizes
+# and blocker bugs are resolved
+/hardening/image-builder/.+
+    Match(status == 'error', sometimes=True)
 
 # Image Builder failures
 #
