@@ -103,17 +103,24 @@ def report_tmt(status, name=None, note=None, logs=None, *, add_output=True):
     if add_output and name == '/':
         log_entries.append('../output.txt')
 
+    # put logs into a name-based subdir tree inside the data dir,
+    # so that multiple results can have the same log names
+    dst = test_data / name[1:]
     # copy logs to tmt test data dir
     if logs:
+        dst.mkdir(parents=True, exist_ok=True)
         for log in logs:
             log = Path(log)
-            # put logs into a name-based subdir tree inside the data dir,
-            # so that multiple results can have the same log names
-            dst = test_data / name[1:]
-            dst.mkdir(parents=True, exist_ok=True)
             dstfile = dst / log.name
             shutil.copyfile(log, dstfile)
             log_entries.append(str(dstfile.relative_to(test_data)))
+    # add an empty log if none are present, to work around Testing Farm
+    # and its Oculus result viewer expecting at least something
+    elif os.environ.get('TESTING_FARM_REQUEST_ID'):
+        dst.mkdir(parents=True, exist_ok=True)
+        dummy = (dst / 'dummy.txt')
+        dummy.touch()
+        log_entries.append(str(dummy.relative_to(test_data)))
 
     if log_entries:
         new_result['log'] = log_entries
