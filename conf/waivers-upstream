@@ -7,6 +7,10 @@
 # so remove the remediation exception + waiver on RHEL-8+
 /hardening/host-os/.+/[^/]+/package_rsync_removed
     rhel == 7
+# the service_sssd_enabled will be failing even if the service is enabled
+# because it requires manual configuration which cannot be attained with our rules
+/hardening/.+/service_sssd_enabled
+    True
 
 # requires running firewalld (firewall-cmd) and NetworkManager,
 # which are not available in their final form in the Anaconda environment
