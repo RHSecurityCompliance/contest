@@ -1,5 +1,1 @@
 summary: Default plan (simple for now)
-discover:
-    how: fmf
-execute:
-    how: tmt

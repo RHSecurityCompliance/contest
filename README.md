@@ -71,6 +71,24 @@ on Red Hat Enterprise Linux.
     content.
     - Note that this may fail if the content is located on a read-only path.
 
+- `CONTEST_CONTENT_PR`
+  - Specify a numerical Pull Request ID (no `#` or other letters) of the
+    [CaC/content](https://github.com/ComplianceAsCode/content/) project.
+  - This will download content from the specified PR and automatically pre-set
+    `CONTEST_CONTENT` to point to it.
+  - Do not specify `CONTEST_CONTENT` in addition to `CONTEST_CONTENT_PR`,
+    use one or the other.
+
+- `CONTEST_OSCAP_PR`
+  - Specify a numerical Pull Request ID (no `#` or other letters) of the
+    [OpenSCAP](https://github.com/OpenSCAP/openscap/) project.
+  - This will add a Packit DNF repository (specific for the PR) to the target
+    system, and upgrade `openscap-scanner`.
+  - As such, `openscap-scanner` built by Packit has to have a newer NVR
+    than the RPM provided by regular OS repositories.
+  - Wait for Packit to build the RPM before running tests with this variable,
+    otherwise the test run will fail.
+
 ## Waiving failed results
 
 In this context, "to waive" means to label a failing result as known-bad,

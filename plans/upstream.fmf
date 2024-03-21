@@ -1,22 +1,22 @@
 summary: Test against a fresh build of upstream content
 
-discover:
-    how: fmf
-execute:
-    how: tmt
+prepare+:
+  - how: install
+    package:
+      - git-core
+  - how: shell
+    name: Download and build latest content
+    script: |
+        set -xe
+        [ -n "$CONTEST_CONTENT_PR" ] && ref="refs/pull/$CONTEST_CONTENT_PR/head" || ref=HEAD
+        content_dir=/root/upstream-content
+        [ -e "$content_dir" ] || git init "$content_dir"
+        cd "$content_dir"
+        git fetch --depth=1 https://github.com/ComplianceAsCode/content.git "$ref"
+        # remove any previously built content
+        git clean -ffdx
+        git checkout FETCH_HEAD
 
-adjust+:
-  - prepare+:
-      - how: install
-        package:
-          - git-core
-      - how: shell
-        name: Download and build latest content
-        script: |
-            if [ ! -e /root/content ]; then
-                git clone --depth=1 https://github.com/ComplianceAsCode/content.git /root/content
-            fi
-
-  - environment+:
-        CONTEST_CONTENT: /root/content
-        CONTEST_WAIVERS: upstream
+environment+:
+    CONTEST_CONTENT: /root/upstream-content
+    CONTEST_WAIVERS: upstream
