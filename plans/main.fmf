@@ -2,15 +2,66 @@
 /:
     inherit: false
 
+discover:
+    how: fmf
+
+execute:
+    how: tmt
+
 adjust:
-  - prepare:
+  - prepare+:
       - how: shell
         name: install-epel-on-rhel7
         because: python3 is not on RHEL 7 by default
         script: |
+            set -xe
             if ! rpm -q epel-release; then
-                curl -o epel-release.rpm --retry 10 https://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm
+                curl --retry 10 -sSfkL -o epel-release.rpm https://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm
                 rpm -ivh epel-release.rpm
                 rm -f epel-release.rpm
             fi
     when: distro < rhel-8
+
+  - prepare+:
+      - how: shell
+        name: Update OpenSCAP from Packit (if specified)
+        script: |
+            set -xe
+            [ -n "$CONTEST_OSCAP_PR" ] || exit 0
+            repofile=/etc/yum.repos.d/openscap-packit-pr.repo
+            rm -f "$repofile"
+            if rpm -q openscap-scanner; then
+                # the RPM might have been upgraded from another PR, sanitize it
+                dnf -q -y downgrade openscap-scanner
+            else
+                # this runs before test dependencies are installed
+                dnf -q -y install openscap-scanner
+            fi
+            # download Packit-provided per-PR repository
+            major=$(. /etc/os-release && echo "${VERSION_ID%%.*}")
+            repourl="https://copr.fedorainfracloud.org/coprs/packit/OpenSCAP-openscap-$CONTEST_OSCAP_PR/repo/centos-stream-$major/packit-OpenSCAP-openscap-$CONTEST_OSCAP_PR-centos-stream-$major.repo"
+            curl --retry 10 -sSfkL -o "$repofile" "$repourl"
+            trap "rm -f \"$repofile\"" ERR
+            # check that the per-PR repo contains a newer build
+            rc=0
+            dnf -q check-upgrade openscap-scanner || rc=$?
+            if [ "$rc" -ne 100 ]; then  # see dnf(8)
+                nvr=$(rpm -q openscap-scanner)
+                echo "openscap-scanner from PR#$CONTEST_OSCAP_PR doesn't upgrade existing $nvr" >&2
+                false  # exit with ERR
+            fi
+            dnf -q -y upgrade openscap-scanner
+            # invalidate VM snapshots
+            rm -f /var/lib/libvirt/images/*.ready
+    when: distro > rhel-7
+  - finish+:
+      - how: shell
+        name: Restore original OpenSCAP (if upgraded from Packit)
+        script: |
+            set -xe
+            repofile=/etc/yum.repos.d/openscap-packit-pr.repo
+            if [ -f "$repofile" ]; then
+                dnf -q -y downgrade openscap-scanner
+                rm -f "$repofile"
+            fi
+    when: distro > rhel-7
