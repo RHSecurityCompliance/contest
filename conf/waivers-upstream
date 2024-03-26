@@ -185,6 +185,9 @@
 /hardening(/host-os)?/ansible/.+/aide_use_fips_hashes
 /hardening(/host-os)?/ansible/.+/smartcard_auth
     rhel == 7
+# sssd_enable_pam_services is missing Ansible remediation
+/hardening(/host-os)?/ansible/.+/sssd_enable_pam_services
+    True
 
 # unknown as well, but happens only rarely
 /hardening/ansible/.+/configure_bashrc_exec_tmux
