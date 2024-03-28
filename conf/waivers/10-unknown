@@ -1,0 +1,125 @@
+# put freshly discovered, un-investigated issues here, to suppress them
+# from failing during regular runs
+#
+# it is expected that somebody will go over these soon(ish), investigating
+# their root cause, filing isseus/bugs or fixing tests as appropriate,
+# eventually either removing the waivers or moving them to other files
+
+# TODO: something new? .. RHEL-8 on e8 and ism_o, RHEL-7 e8
+#  - seems to not happen on latest 8.9 nightlies ??
+#  - on latest 7.9, but upstream 2023/05 content
+/hardening/oscap/[^/]+/package_rear_installed
+    Match(rhel <= 8, sometimes=True)
+
+# ssh either doesn't start up, or gets blocked, possibly related
+# to new firewalld rules being added?
+# https://github.com/ComplianceAsCode/content/pull/10573
+# (happens only with GUI)
+#
+# or perhaps one of
+# https://github.com/ComplianceAsCode/content/issues/10592
+# https://github.com/ComplianceAsCode/content/issues/10593
+# https://github.com/ComplianceAsCode/content/issues/10594
+/hardening/oscap/with-gui/cis_workstation_l[12]
+    status == 'error'
+
+# happened in Beaker, but uses VMs, so it shouldn't be Beaker-specific
+# TODO: investigate, seems to be RHEL-9.3+ but unsure
+/hardening/oscap/with-gui/.+/package_aide_installed
+/hardening/oscap/with-gui/.+/aide_build_database
+/hardening/oscap/with-gui/.+/aide_periodic_cron_checking
+/hardening/oscap/with-gui/.+/aide_scan_notification
+/hardening/oscap/with-gui/.+/aide_verify_acls
+/hardening/oscap/with-gui/.+/aide_verify_ext_attributes
+    Match(True, sometimes=True)
+
+# seems RHEL-8 specific, unknown, TODO investigate
+# remediation script says:
+#   Current configuration is valid.
+#   Current configuration is valid.
+#   [error] Unknown profile feature [with-smartcard]
+#   [error] Unable to activate profile [custom/hardening] [22]: Invalid argument
+#   Unable to enable feature [22]: Invalid argument
+# maybe hardware-specific and our Beaker systems don't have the hardware?
+/hardening/host-os/oscap/.+/sssd_enable_smartcards
+    Match(rhel == 8, sometimes=True)
+
+# Ansible TODO: completely unknown, investigate and sort
+#
+# all RHELs
+/hardening/ansible/.+/mount_option_boot_noexec
+/hardening/ansible/.+/mount_option_boot_nosuid
+/hardening/ansible/.+/mount_option_home_noexec
+/hardening/ansible/.+/audit_rules_usergroup_modification
+    True
+# RHEL-9 only
+/hardening/ansible/with-gui/.+/network_nmcli_permissions
+    rhel == 9
+# RHEL-8 or 9
+/hardening(/host-os)?/ansible/.+/no_tmux_in_shells
+/hardening(/host-os)?/ansible/.+/configure_usbguard_auditbackend
+/hardening(/host-os)?/ansible/.+/audit_rules_unsuccessful_file_modification
+    rhel == 8 or rhel == 9
+# RHEL-8
+/hardening/ansible/with-gui/stig_gui/sysctl_net_ipv4_conf_all_forwarding
+    rhel == 8
+# RHEL-7
+/hardening(/host-os)?/ansible/.+/sshd_use_strong_ciphers
+/hardening(/host-os)?/ansible/.+/audit_rules_for_ospp
+/hardening(/host-os)?/ansible/.+/aide_use_fips_hashes
+/hardening(/host-os)?/ansible/.+/smartcard_auth
+    rhel == 7
+# unknown as well, but happens only rarely
+/hardening/ansible/.+/configure_bashrc_exec_tmux
+    Match(True, sometimes=True)
+# only pci-dss, passes everywhere else
+/hardening/ansible(/with-gui)?/pci-dss/audit_rules_login_events
+    rhel == 8 or rhel == 9
+
+# home_nosuid failures are just really random across RHEL versions and nightlies
+/hardening/ansible/.+/mount_option_home_nosuid
+    Match(True, sometimes=True)
+
+# https://github.com/ComplianceAsCode/content/issues/10901
+# not sure what enables the service, but second remediation fixes the problem
+# TODO: we do run double remediation, but this still sometimes fails,
+#       investigate why
+/hardening/anaconda/with-gui/[^/]+/service_rpcbind_disabled
+    Match(rhel == 8, sometimes=True)
+
+# /per-rule (Automatus rule mode) waivers
+#
+# TODO: all of these are unknown and need investigation
+/per-rule/[^/]+/accounts_password_set_max_life_root/correct.pass
+/per-rule/[^/]+/accounts_password_set_max_life_root/wrong.fail
+/per-rule/[^/]+/postfix_client_configure_mail_alias/correct.pass
+    True
+/per-rule/[^/]+/grub2_audit_backlog_limit_argument/correct_grubenv.pass
+/per-rule/[^/]+/grub2_password/invalid_username.fail
+/per-rule/[^/]+/harden_sshd_ciphers_openssh_conf_crypto_policy/stig_correct.pass
+/per-rule/[^/]+/harden_sshd_ciphers_openssh_conf_crypto_policy/stig_correct_followed_by_incorrect_commented.pass
+/per-rule/[^/]+/sudo_add_umask/0027_var_multiple_values.pass
+    rhel == 8
+/per-rule/[^/]+/directory_permissions_var_log_audit/correct_value_0700.pass
+/per-rule/[^/]+/directory_permissions_var_log_audit/incorrect_value_0700.fail
+/per-rule/[^/]+/dconf_gnome_lock_screen_on_smartcard_removal/wrong_value.fail
+/per-rule/[^/]+/file_ownership_var_log_audit_stig/correct_value_default_file.pass
+/per-rule/[^/]+/tftpd_uses_secure_mode/correct.pass
+/per-rule/[^/]+/tftpd_uses_secure_mode/wrong.fail
+    rhel == 9
+
+# likely something caused by restraint / Beaker test env
+# TODO: investigate
+/hardening/host-os/.+/file_permissions_unauthorized_world_writable
+# Beaker and host-os seem to randomly fail any services enabled
+# or packages installed - TODO investigate remediation script outputs
+# to figure out why
+/hardening/host-os/oscap/[^/]+/service_.+_enabled
+/hardening/host-os/oscap/[^/]+/timer_.+_enabled
+/hardening/host-os/oscap/[^/]+/package_.+_installed
+# TODO: unknown, probably worth investigating
+/hardening/host-os/oscap/.+/sysctl_net_ipv6_conf_(all|default)_accept_ra
+/hardening/host-os/oscap/.+/sysctl_net_ipv4_conf_default_log_martians
+    Match(True, sometimes=True)
+
+# vim: syntax=python

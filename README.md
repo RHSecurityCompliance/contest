@@ -37,10 +37,14 @@ on Red Hat Enterprise Linux.
     - `1` (default) is `fail`, `error` and `warn`
     - `2` or greater to output everything
 
-- `CONTEST_WAIVERS`
-  - Specify a `conf/waiver-` suffix for a waiver file name inside `conf` to be
-    used for waiving results. Ie. `CONTEST_WAIVERS=upstream` to use
-    `conf/waivers-upstream`. Defaults to `released`.
+- `CONTEST_WAIVER_DIR`
+  - Specify a relative path to a waiver directory containing waiver files.
+    - The directory itself is traversed recursively (may contain further
+      sub-directories).
+  - All files and directories are read in a locale-specific sorted order,
+    and their contents combined to a final list of waiver rules.
+  - Files and directories starting with `.` are ignored.
+  - Defaults to `conf/waivers`.
 
 - `CONTEST_LEAVE_GUEST_RUNNING`
   - Set to `1` to break gurantees provided by `class Guest()`, that is make the

@@ -1,0 +1,63 @@
+# these tests are always expected to fail, because there's no reasonable way
+# to fix them, or because we intentionally expect the failure and a pass should
+# trigger alarms and be invetigated
+
+# remediation for this is globally disabled in Contest,
+# see conf/remediation.py
+/hardening/.*/accounts_password_set_max_life_(existing|root)
+    Match(True, sometimes=True)
+
+# the service_sssd_enabled will be failing even if the service is enabled
+# because it requires manual configuration which cannot be attained with our rules
+/hardening/.+/service_sssd_enabled
+    True
+
+# Beaker-specific:
+# all Beaker repositories have gpgcheck=0 and they get copied to nested VMs too
+/(hardening|scanning)/.+/ensure_gpgcheck_never_disabled
+# we don't control partitions on the host OS
+/hardening/host-os/oscap/.+/mount_option_(home|opt|srv|var|var_log|var_log_audit|tmp)_(noexec|nosuid|nodev|usrquota|grpquota)
+/hardening/host-os/oscap/.+/mount_option_boot_efi_nosuid
+
+# Beaker-specific, possibly;
+# same for dnf-automatic and rsyslog (??), is this fully random?
+/hardening/host-os/oscap/[^/]+/package_dnf-automatic_installed
+/hardening/host-os/oscap/[^/]+/timer_dnf-automatic_enabled
+/hardening/host-os/oscap/[^/]+/package_rsyslog-gnutls_installed
+    Match(rhel >= 8, sometimes=True)
+
+# https://bugzilla.redhat.com/show_bug.cgi?id=1797653 WONTFIX
+/scanning/oscap-eval/ERROR
+    rhel <= 8 and note == 'E: oscap: Failed to convert OVAL state to SEXP, id: oval:ssg-state_file_groupowner_var_log_syslog_gid_4_0:ste:1.'
+
+# HTML links from datastreams waivers
+#
+# ignore SSL certificate expirations in html-links - these are generally
+# harmless (expiration is not MITM) while being the biggest contributor
+# to false positives, so just ignore them, avoiding frequent random fails
+/static-checks/html-links/.+
+    Match("failed: certificate has expired" in note, sometimes=True)
+# Inaccessible until form is filled:
+/static-checks/html-links/https://docs-prv.pcisecuritystandards.org/PCI%20DSS/Standard/PCI-DSS-v4_0.pdf
+    True
+
+# CentOS-specific waivers
+#
+# Rules checking if OS is FIPS certified
+/hardening/host-os/.+/sshd_use_approved_.+
+/hardening/host-os/.+/package_dracut-fips_installed
+/hardening/host-os/.+/grub2_enable_fips_mode
+/hardening/host-os/.+/aide_use_fips_hashes
+    rhel.is_centos()
+# Remediations are unselected for CentOS, but they might pass outside Testing Farm
+/hardening/host-os/.+/ensure_gpgcheck_globally_activated
+/hardening/host-os/.+/ensure_gpgcheck_local_packages
+/hardening/host-os/.+/ensure_gpgcheck_never_disabled
+/hardening/host-os/.+/ensure_gpgcheck_repo_metadata
+    Match(rhel.is_centos(), sometimes=True)
+# Presumably not valid for CentOS
+/hardening/host-os/.+/ospp/enable_fips_mode
+/hardening/host-os/.*/ospp/configure_crypto_policy
+    rhel.is_centos() and rhel == 9
+
+# vim: syntax=python

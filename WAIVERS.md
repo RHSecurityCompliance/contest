@@ -1,9 +1,28 @@
 # Waiving known failures
 
+## Directory structure
+
+The files inside the [waivers directory](conf/waivers) are read in
+an alphanumeric order, including (sub)directories and any files inside them,
+forming a contiguous list of `<section>`s (as described below) from their
+contents.
+
+By convention, file names inside the waivers directory have specific meaning:
+
+- `unknown` - these are for waiving not-yet-known failures that we simply
+  don't want failing in daily runs while somebody investigates them
+- `long-term` - these are for investigated issues, which typically have
+  bugs or issues filed, and are waiting for a fix
+- `permanent` - these are never expected to be fixed, as they are a result
+  of the test infrastructure specifics, or other test or technology
+  limitations
+  - note that they may still disappear over time, ie. by dropping support
+    for an old OS release, which had the limitation
+
 ## Custom file format
 
-The [waivers file](conf/waivers) uses a custom file format to specify when
-a failure is expected.  
+The files inside the waivers directory use a custom file format to specify
+when a failure is expected.  
 This format consists of so-called "sections", optionally separated by any
 number of empty lines. Any lines beginning with `#` are skipped.
 

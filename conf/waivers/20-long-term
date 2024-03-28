@@ -1,0 +1,139 @@
+# these are either technology limitations that may be fixed in a distant
+# future, or other "unfixable" issues caused by the nature of the software
+# we use
+#
+# ie. failures that we don't expect to fix until a big feature is implemented,
+# even if it might take a year or two for the feature to be done
+
+# RHEL-7 only, because RHEL-8+ check for rsync-daemon,
+# while TMT only needs the 'rsync' command executed via ssh,
+# so remove the remediation exception + waiver on RHEL-8+
+/hardening/host-os/.+/[^/]+/package_rsync_removed
+    rhel == 7
+
+# requires running firewalld (firewall-cmd) and NetworkManager,
+# which are not available in their final form in the Anaconda environment
+# - see https://github.com/ComplianceAsCode/content/issues/9746
+/hardening/anaconda(/with-gui)?/[^/]+/firewalld_sshd_port_enabled
+# https://github.com/ComplianceAsCode/content/issues/11625
+/hardening/image-builder(/with-gui)?/[^/]+/firewalld_sshd_port_enabled
+# https://github.com/ComplianceAsCode/content/issues/10939
+# https://github.com/ComplianceAsCode/content/issues/10613
+/hardening/anaconda(/with-gui)?/[^/]+/firewalld_loopback_traffic_(restricted|trusted)
+# https://github.com/ComplianceAsCode/content/issues/11564
+/hardening/image-builder(/with-gui)?/[^/]+/firewalld_loopback_traffic_(restricted|trusted)
+    rhel >= 8
+
+# rule ordering issue - accounts_password_pam_retry is checked first and passes,
+# and a later enable_authselect remediation breaks it
+# - see https://github.com/OpenSCAP/openscap/issues/1880
+/hardening/anaconda/.+/accounts_password_pam_retry
+    rhel >= 8
+
+# bz1828871, won't be fixed on rhel7
+# - likely NOT related to rule ordering, double remediation doesn't help
+/hardening/anaconda(/with-gui)?/[^/]+/postfix_network_listening_disabled
+# https://github.com/ComplianceAsCode/content/issues/10938
+/hardening/host-os/oscap/[^/]+/postfix_network_listening_disabled
+    Match(rhel == 7, sometimes=True)
+
+# caused by one of:
+# - bz1778661 (abrt)
+# - bz2209266 (RHEL-9 gdm)
+# - bz2209294 (RHEL-7 gdm, different issue)
+/hardening/.+/rpm_verify_(ownership|permissions)
+    Match(True, sometimes=True)
+
+# bz1825810 or maybe bz1929805
+# can be reproduced mostly reliably (95%) both via anaconda and oscap CLI,
+# but apparently we don't really care about old releases
+#
+# also re-discovered on RHEL-8 via
+#   https://github.com/ComplianceAsCode/content/issues/10937
+# and afterwards on other profiles (anssi_bp28_high), but still
+# only on GUI
+/hardening/[^/]+/with-gui/[^/]+/sysctl_net_ipv4_ip_forward
+    Match(rhel <= 8, sometimes=True)
+
+# https://github.com/ComplianceAsCode/content/issues/10424
+# happens on host-os hardening too, probably because Beaker doesn't have
+# firewall enabled or even installed
+/hardening/anaconda(/with-gui)?/[^/]+/service_nftables_disabled
+/hardening/host-os/oscap/[^/]+/service_nftables_disabled
+    Match(True, sometimes=True)
+
+# caused by us not caring whether the VM has it installed,
+# - remediation should fix it, but doesn't -- possibly caused by
+#   https://github.com/RHSecurityCompliance/contest/issues/15
+/hardening/oscap(/with-gui)?/[^/]+/package_scap-security-guide_installed
+    Match(True, sometimes=True)
+
+# RHEL-8: https://bugzilla.redhat.com/show_bug.cgi?id=1834716
+# RHEL-9: https://bugzilla.redhat.com/show_bug.cgi?id=1999587
+/hardening/anaconda/with-gui/[^/]+/service_avahi-daemon_disabled
+    True
+
+# https://github.com/ComplianceAsCode/content/issues/11498
+# On RHEL 7, this rule accidentally passes due to a bug in OpenSCAP
+# https://issues.redhat.com/browse/RHEL-24335
+/hardening/anaconda/with-gui/[^/]+/service_bluetooth_disabled
+    rhel >= 8
+
+# RHEL-9 is not FIPS certified yet
+/hardening/.+/aide_use_fips_hashes
+    rhel == 9
+
+# OAA just failed without an error, as usual
+# https://issues.redhat.com/browse/OPENSCAP-3321
+# seems to be happening much more reliably with GUI
+/hardening/anaconda/with-gui/cis_workstation_l[12]
+    Match(status == 'error', sometimes=True)
+
+# visible on double reboot (double remediation)
+# /usr/libexec/abrt-action-install-debuginfo-to-abrt-cache
+/hardening/oscap/with-gui/e8/file_ownership_binary_dirs
+    rhel == 7
+
+# Image Builder errors
+#
+# ignore errors for now, until 'openscap generate fix' syntax stabilizes
+# and blocker bugs are resolved
+/hardening/image-builder/.+
+    Match(status == 'error', sometimes=True)
+
+# Image Builder failures
+#
+# https://github.com/ComplianceAsCode/content/issues/11565
+/hardening/image-builder/.*/audit_rules_privileged_commands
+    True
+# https://github.com/ComplianceAsCode/content/issues/11566
+/hardening/image-builder/hipaa/sebool_selinuxuser_execstack
+    rhel == 8
+# https://github.com/ComplianceAsCode/content/issues/11567
+/hardening/image-builder/.*/enable_dracut_fips_module
+/hardening/image-builder/.*/enable_fips_mode
+    True
+
+# DISA Alignment waivers
+#
+# https://github.com/ComplianceAsCode/content/issues/9307 (DISA issue)
+/scanning/disa-alignment/.*/sysctl_kernel_yama_ptrace_scope
+# https://github.com/ComplianceAsCode/content/issues/9308 (DISA issue)
+/scanning/disa-alignment/.*/sysctl_kernel_core_pattern
+# https://github.com/ComplianceAsCode/content/issues/10044 (DISA issue)
+/scanning/disa-alignment/.*/accounts_password_pam_pwhistory_remember_password_auth
+# https://github.com/ComplianceAsCode/content/issues/11197 (DISA issue)
+/scanning/disa-alignment/.*/display_login_attempts
+    rhel == 8
+# https://github.com/ComplianceAsCode/content/issues/11649 (DISA issue)
+/scanning/disa-alignment/.*/installed_OS_is_vendor_supported
+# https://github.com/ComplianceAsCode/content/issues/11650
+/scanning/disa-alignment/.*/kernel_module_tipc_disabled
+    rhel == 9
+
+# sssd_enable_pam_services is missing Ansible remediation
+# https://github.com/RHSecurityCompliance/contest/issues/87
+/hardening(/host-os)?/ansible/.+/sssd_enable_pam_services
+    True
+
+# vim: syntax=python

@@ -126,13 +126,30 @@ def _parse_waiver_file(stream):
     return sections
 
 
-def _open_waiver_file():
-    preferred = os.environ.get('CONTEST_WAIVERS', 'released')
-    waiver_file = Path(util.libdir).parent / 'conf' / f'waivers-{preferred}'
-    if not waiver_file.exists():
-        raise FileNotFoundError(f"{waiver_file.name} doesn't exist in 'conf'")
-    util.log(f"using {waiver_file} for waiving")
-    return open(waiver_file)
+def _collect_waivers():
+    """
+    Recursively walk a directory of waiver files/directories,
+    yielding waiver sections.
+    """
+    # note: we don't use os.walk() because it splits files and directories
+    # into two lists, breaking sorting - we want to treat both equally, so that
+    # files can interleave directories in the sorted order
+    dir_name = os.environ.get('CONTEST_WAIVER_DIR', 'conf/waivers')
+    dir_path = Path(util.libdir).parent / dir_name
+    util.log(f"using {dir_path} for waiving")
+
+    def _collect_files(in_dir):
+        for item in sorted(in_dir.iterdir()):
+            if item.name.startswith('.'):
+                continue
+            if item.is_dir():
+                yield from _collect_files(item)
+            elif item.is_file():
+                yield item
+
+    for file in _collect_files(dir_path):
+        with open(file) as f:
+            yield from _parse_waiver_file(f)
 
 
 class Match:
@@ -151,8 +168,7 @@ class Match:
 def match_result(status, name, note):
     global _sections_cache
     if _sections_cache is None:
-        with _open_waiver_file() as f:
-            _sections_cache = _parse_waiver_file(f)
+        _sections_cache = list(_collect_waivers())
 
     # make sure "'someting' in name" always works
     if name is None:
