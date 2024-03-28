@@ -1,0 +1,7 @@
+# these tests are always expected to fail, because there's no reasonable way
+# to fix them, or because we intentionally expect the failure and a pass should
+# trigger alarms and be invetigated
+
+# ...
+
+# vim: syntax=python

@@ -1,0 +1,10 @@
+# put freshly discovered, un-investigated issues here, to suppress them
+# from failing during regular runs
+#
+# it is expected that somebody will go over these soon(ish), investigating
+# their root cause, filing isseus/bugs or fixing tests as appropriate,
+# eventually either removing the waivers or moving them to other files
+
+# ...
+
+# vim: syntax=python

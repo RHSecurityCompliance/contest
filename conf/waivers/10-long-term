@@ -1,0 +1,10 @@
+# these are either technology limitations that may be fixed in a distant
+# future, or other "unfixable" issues caused by the nature of the software
+# we use
+#
+# ie. failures that we don't expect to fix until a big feature is implemented,
+# even if it might take a year or two for the feature to be done
+
+# ...
+
+# vim: syntax=python
