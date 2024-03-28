@@ -169,10 +169,6 @@
 /hardening/ansible/.+/audit_rules_usergroup_modification
     True
 # RHEL-9 only
-/hardening(/host-os)?/ansible/.+/dnf-automatic_apply_updates
-/hardening(/host-os)?/ansible/.+/dnf-automatic_security_updates_only
-/hardening(/host-os)?/ansible/.+/accounts_polyinstantiated_var_tmp
-/hardening(/host-os)?/ansible/.+/force_opensc_card_drivers
 /hardening/ansible/with-gui/.+/network_nmcli_permissions
     rhel == 9
 # RHEL-8 or 9
