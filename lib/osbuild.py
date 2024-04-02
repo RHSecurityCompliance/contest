@@ -176,6 +176,7 @@ class Blueprint:
                 self.from_oscap(profile)
                 + '\n# ---------- oscap blueprint ends here ----------\n'
             )
+            util.log(f"generated blueprint from oscap:\n{textwrap.indent(self.assembled, '    ')}")
         else:
             self.assembled = f'{self.HEADER}\n\n'
 
@@ -221,14 +222,16 @@ class Blueprint:
             minsize = {minsize}
         ''') + '\n'
 
-    def add_openscap(self, ds_file, profile):
-        if '[customizations.openscap]' in self.assembled:
-            raise SyntaxError("openscap section already exists")
-        self.assembled += util.dedent(fr'''
-            [customizations.openscap]
-            profile_id = "xccdf_org.ssgproject.content_profile_{profile}"
-            datastream = "{ds_file}"
-        ''') + '\n'
+    def set_openscap_datastream(self, ds_file):
+        pre, header, post = self.assembled.partition('\n[customizations.openscap]\n')
+        if not header:
+            raise SyntaxError("openscap section not found")
+        self.assembled = '\n'.join([
+            pre,
+            header.strip('\n'),
+            f'datastream = "{ds_file}"',
+            post,
+        ])
 
     def add_openscap_tailoring(self, *, selected=None, unselected=None):
         if '[customizations.openscap.tailoring]' in self.assembled:
@@ -310,7 +313,7 @@ class Guest(virt.Guest):
             blueprint.add_user('root', password=virt.GUEST_LOGIN_PASS, ssh_pubkey=pubkey)
             # add openscap hardening, honor global excludes
             if profile:
-                blueprint.add_openscap(self.DATASTREAM, profile)
+                blueprint.set_openscap_datastream(self.DATASTREAM)
                 blueprint.add_openscap_tailoring(unselected=remediation.excludes())
 
         http_port = 8091
