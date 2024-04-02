@@ -269,6 +269,11 @@
 
 # HTML links from datastreams waivers
 #
+# ignore SSL certificate expirations in html-links - these are generally
+# harmless (expiration is not MITM) while being the biggest contributor
+# to false positives, so just ignore them, avoiding frequent random fails
+/static-checks/html-links/.+
+    Match("failed: certificate has expired" in note, sometimes=True)
 # Inaccessible until form is filled:
 /static-checks/html-links/https://docs-prv.pcisecuritystandards.org/PCI%20DSS/Standard/PCI-DSS-v4_0.pdf
     True
