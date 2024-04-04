@@ -52,11 +52,11 @@ def comparison_report(comparison_output):
       Same result format:      CCE CCI - DISA_RULE_ID SSG_RULE_ID     RESULT
       Different result format: CCE CCI - DISA_RULE_ID SSG_RULE_ID     SSG_RESULT - DISA_RESULT
     """
-    result_regex = re.compile(r'[\w-]+ [\w-]+ - [\w-]+ (\w*)\s+(\w+)(?: - *(\w+))*')
+    result_regex = re.compile(r'([\w-]+) [\w-]+ - [\w-]+ (\w*)\s+(\w+)(?: - *(\w+))*')
     for match in result_regex.finditer(comparison_output):
-        rule_id, ssg_result, disa_result = match.groups()
+        rule_cce, rule_id, ssg_result, disa_result = match.groups()
         if not rule_id:
-            rule_id = 'rule_id_not_found'
+            rule_id = rule_cce
         # Only 1 result matched - same results
         if not disa_result:
             results.report('pass', rule_id)
