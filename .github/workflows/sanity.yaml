@@ -23,3 +23,12 @@ jobs:
               print(str(e))
               sys.exit(1)
             EOF
+  flake8:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Install flake8
+        run: python3 -m pip install flake8
+      - name: Run flake8
+        run: flake8 -v
