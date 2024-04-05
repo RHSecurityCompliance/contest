@@ -32,3 +32,14 @@ jobs:
         run: python3 -m pip install flake8
       - name: Run flake8
         run: flake8 -v
+  tmt:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Install tmt
+        run: python3 -m pip install tmt
+      - name: Run tmt lint
+        run: tmt lint --failed-only
+      - name: Run basic tmt run discover
+        run: tmt run -v plans -n /plans/default discover -h fmf
