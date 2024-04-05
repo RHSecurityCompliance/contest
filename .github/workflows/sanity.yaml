@@ -1,0 +1,25 @@
+name: Sanity self-tests
+
+on:
+  pull_request:
+
+jobs:
+  waivers-syntax-check:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Install Contest deps
+        run: sudo apt-get install -y python3-rpm
+      - name: Collect waivers
+        run: |
+            python3 <<'EOF'
+            import sys
+            from lib import waive
+            try:
+              list(waive.collect_waivers())
+              sys.exit(0)
+            except waive.WaiveParseError as e:
+              print(str(e))
+              sys.exit(1)
+            EOF
