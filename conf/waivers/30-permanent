@@ -18,6 +18,7 @@
 # we don't control partitions on the host OS
 /hardening/host-os/oscap/.+/mount_option_(home|opt|srv|var|var_log|var_log_audit|tmp)_(noexec|nosuid|nodev|usrquota|grpquota)
 /hardening/host-os/oscap/.+/mount_option_boot_efi_nosuid
+    Match(True, sometimes=True)
 
 # Beaker-specific, possibly;
 # same for dnf-automatic and rsyslog (??), is this fully random?

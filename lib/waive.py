@@ -46,8 +46,9 @@ class WaiveParseError(SyntaxError):
     Easy waiver file syntax error reporting, with line numbers derived
     from _PushbackIterator style counter.
     """
-    def __init__(self, meta, msg):
-        super().__init__(f"waiver line {meta.counter}: {msg}")
+    def __init__(self, filedesc, msg):
+        file, line = filedesc
+        super().__init__(f"waiver {file}:{line}: {msg}")
 
 
 def _compile_eval(meta, code):
@@ -59,7 +60,7 @@ def _compile_eval(meta, code):
         raise WaiveParseError(meta, "compiling waiver python code failed")
 
 
-def _parse_waiver_file(stream):
+def _parse_waiver_file(stream, filename):
     sections = []
     regexes = set()
     python_code = ''
@@ -70,6 +71,7 @@ def _parse_waiver_file(stream):
         if line.startswith('#'):
             continue
         line = line.rstrip('\n')
+        filedesc = (filename, lines.counter)
 
         # between regex+python blocks
         if state == 'skipping_empty_lines':
@@ -82,7 +84,7 @@ def _parse_waiver_file(stream):
         # collecting adjacent/subsequent regex lines
         elif state == 'reading_regex':
             if not line:
-                raise WaiveParseError(lines, "unexpected empty line between regexes")
+                raise WaiveParseError(filedesc, "unexpected empty line between regexes")
 
             # until we see an indented line (beginning with space), just collect
             # regex lines into a buffer
@@ -90,11 +92,11 @@ def _parse_waiver_file(stream):
                 try:
                     regexes.add(re.compile(line))
                 except re.error as e:
-                    raise WaiveParseError(lines, f"regex failed: {e}")
+                    raise WaiveParseError(filedesc, f"regex failed: {e}")
             else:
                 # indented line found, which means it's a python code - parse it
                 if not regexes:
-                    raise WaiveParseError(lines, "python block without a preceding regexp")
+                    raise WaiveParseError(filedesc, "python block without a preceding regexp")
                 state = 'reading_python'
                 lines.pushback()
 
@@ -114,7 +116,7 @@ def _parse_waiver_file(stream):
                 lines.pushback()
 
     if regexes and not python_code:
-        raise WaiveParseError(lines, "no python block follows the regexp")
+        raise WaiveParseError(filedesc, "no python block follows the regexp")
 
     # still inside last python block - the append & cleanup section did not
     # get to run because the iterator stopped because there was nothing left
@@ -126,7 +128,7 @@ def _parse_waiver_file(stream):
     return sections
 
 
-def _collect_waivers():
+def collect_waivers():
     """
     Recursively walk a directory of waiver files/directories,
     yielding waiver sections.
@@ -148,8 +150,9 @@ def _collect_waivers():
                 yield item
 
     for file in _collect_files(dir_path):
+        relative = file.relative_to(dir_path)
         with open(file) as f:
-            yield from _parse_waiver_file(f)
+            yield from _parse_waiver_file(f, str(relative))
 
 
 class Match:
@@ -168,7 +171,7 @@ class Match:
 def match_result(status, name, note):
     global _sections_cache
     if _sections_cache is None:
-        _sections_cache = list(_collect_waivers())
+        _sections_cache = list(collect_waivers())
 
     # make sure "'someting' in name" always works
     if name is None:
