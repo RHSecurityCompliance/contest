@@ -193,7 +193,7 @@ class Blueprint:
         return re.sub('^name = .*', f'name = "{self.NAME}"', ret.stdout, count=1, flags=re.M)
 
     def add_user(self, name, *, password=None, groups=None, ssh_pubkey=None):
-        self.assembled += '[[customizations.user]]\n'
+        self.assembled += f'[[customizations.user]]\n'
         self.assembled += f'name = "{name}"\n'
         if password:
             self.assembled += f'password = "{password}"\n'
