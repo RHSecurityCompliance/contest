@@ -124,4 +124,10 @@
 /hardening/host-os/oscap/.+/sysctl_net_ipv4_conf_default_log_martians
     Match(True, sometimes=True)
 
+# HTML links
+#
+# https://github.com/ComplianceAsCode/content/issues/11801
+/static-checks/html-links/http://chrony.tuxfamily.org/
+    True
+
 # vim: syntax=python
