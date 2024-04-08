@@ -103,12 +103,16 @@ on Red Hat Enterprise Linux.
   - Wait for Packit to build the RPM before running tests with this variable,
     otherwise the test run will fail.
 
+## Included test categories
+
+See [TESTS.md](docs/TESTS.md).
+
 ## Waiving failed results
 
 In this context, "to waive" means to label a failing result as known-bad,
 something we have seen before and expect to fail.
 
-Read [WAIVERS.md](WAIVERS.md) to see where/how you can set up rules to
+Read [WAIVERS.md](docs/WAIVERS.md) to see where/how you can set up rules to
 automatically waive failures.
 
 ## Workarounds
@@ -117,7 +121,7 @@ automatically waive failures.
 
 If you need to use `lib.util.httpsrv` from a test, use a port between
 8080 and 8089. Libraries (`lib`) should use a port between 8090 and 8099.
-See also TODOs in [STYLE.md](STYLE.md), this is a temporary limitation.
+See also TODOs in [STYLE.md](docs/STYLE.md), this is a temporary limitation.
 
 ### Virtual machines and logging in
 
