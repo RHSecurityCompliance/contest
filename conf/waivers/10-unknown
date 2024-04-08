@@ -59,8 +59,6 @@
 /hardening(/host-os)?/ansible/.+/no_tmux_in_shells
 /hardening(/host-os)?/ansible/.+/configure_usbguard_auditbackend
 /hardening(/host-os)?/ansible/.+/audit_rules_unsuccessful_file_modification
-# https://github.com/ComplianceAsCode/content/issues/11752
-/hardening(/host-os)?/ansible/.+/audit_rules_privileged_commands
     rhel == 8 or rhel == 9
 # RHEL-8
 /hardening/ansible/with-gui/stig_gui/sysctl_net_ipv4_conf_all_forwarding
@@ -77,6 +75,9 @@
 # only pci-dss, passes everywhere else
 /hardening/ansible(/with-gui)?/pci-dss/audit_rules_login_events
     rhel == 8 or rhel == 9
+# https://github.com/ComplianceAsCode/content/issues/11752
+/hardening(/host-os)?/ansible/.+/audit_rules_privileged_commands
+    Match(rhel == 8 or rhel == 9, sometimes=True)
 
 # home_nosuid failures are just really random across RHEL versions and nightlies
 /hardening/ansible/.+/mount_option_home_nosuid
