@@ -106,12 +106,13 @@ def unselect_rules(orig_ds, new_ds, rules):
     if new_ds.exists():
         new_ds.unlink()
 
+    util.log(f"reading {orig_ds}, writing to {new_ds}")
     with open(orig_ds) as orig_ds_f:
         with open(new_ds, 'w') as new_ds_f:
             for line in orig_ds_f:
                 if any(x.search(line) for x in exprs):
                     line = line.replace('selected="true"', 'selected="false"')
-                    util.log(f'unselected {line.strip()}')
+                    util.log(f"unselected {line.strip()}")
                 new_ds_f.write(line)
 
 
