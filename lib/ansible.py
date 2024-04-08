@@ -55,16 +55,17 @@ def report_from_output(lines):
         sys.stdout.flush()
 
         # match and parse task name
-        m = re.fullmatch(r'TASK \[(.+)\] \*+', line, flags=re.M)
+        m = re.fullmatch(r'TASK \[(.+)\] \*+', line)
         if m:
             task = m.group(1)
             continue
 
         # match and parse a module status line
-        m = re.fullmatch(r'([\w]+): \[.+\](: [^ ]+)? => (.+)', line)
+        # - note that 'failed:' doesn't use =>
+        m = re.fullmatch(r'([\w]+): \[.+\](: [^ ]+)?( =>)? (.+)', line, flags=re.DOTALL)
         if m:
-            status, _, data = m.groups()
-            if status == 'fatal':
+            status, _, _, data = m.groups()
+            if status in ['failed', 'fatal']:
                 results.report('error', f'playbook: {task}', data)
                 failed = True
             continue
