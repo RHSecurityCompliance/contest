@@ -145,6 +145,8 @@
 /scanning/disa-alignment/.*/file_permissions_library_dirs
 # https://github.com/ComplianceAsCode/content/issues/11803
 /scanning/disa-alignment/.*/CCE-90811-1
+# https://github.com/ComplianceAsCode/content/issues/11693
+/scanning/disa-alignment/(oscap|ansible)/accounts_password_pam_retry
     rhel == 9
 
 # HTML links
