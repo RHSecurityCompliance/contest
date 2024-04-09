@@ -116,10 +116,11 @@
 
 # DISA Alignment waivers
 #
-# https://github.com/ComplianceAsCode/content/issues/9307 (DISA issue)
-/scanning/disa-alignment/.*/sysctl_kernel_yama_ptrace_scope
 # https://github.com/ComplianceAsCode/content/issues/9308 (DISA issue)
 /scanning/disa-alignment/.*/sysctl_kernel_core_pattern
+    rhel == 8
+# https://github.com/ComplianceAsCode/content/issues/9307 (DISA issue)
+/scanning/disa-alignment/.*/sysctl_kernel_yama_ptrace_scope
 # https://github.com/ComplianceAsCode/content/issues/10044 (DISA issue)
 /scanning/disa-alignment/.*/accounts_password_pam_pwhistory_remember_password_auth
 # https://github.com/ComplianceAsCode/content/issues/11197 (DISA issue)
