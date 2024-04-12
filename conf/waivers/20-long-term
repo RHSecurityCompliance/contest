@@ -130,9 +130,4 @@
 /scanning/disa-alignment/.*/installed_OS_is_vendor_supported
     rhel == 9
 
-# sssd_enable_pam_services is missing Ansible remediation
-# https://github.com/RHSecurityCompliance/contest/issues/87
-/hardening(/host-os)?/ansible/.+/sssd_enable_pam_services
-    True
-
 # vim: syntax=python
