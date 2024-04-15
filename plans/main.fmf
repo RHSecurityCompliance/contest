@@ -31,8 +31,8 @@ adjust:
         name: Download and build latest or pull request content
         script: |
             set -xe
-            if [ -n "$CONTEST_CONTENT_LATEST" ]; then
-                ref=HEAD
+            if [ -n "$CONTEST_CONTENT_BRANCH" ]; then
+                ref="refs/heads/$CONTEST_CONTENT_BRANCH"
             elif [ -n "$CONTEST_CONTENT_PR" ]; then
                 ref="refs/pull/$CONTEST_CONTENT_PR/head"
             else
