@@ -56,8 +56,15 @@ adjust:
         name: Update OpenSCAP from Packit (if specified)
         script: |
             set -xe
-            [ -n "$CONTEST_OSCAP_PR" ] || exit 0
-            repofile=/etc/yum.repos.d/openscap-packit-pr.repo
+            # both result in the same URL on fedoraproject.org
+            if [ -n "$CONTEST_OSCAP_BRANCH" ]; then
+                ref="$CONTEST_OSCAP_BRANCH"
+            elif [ -n "$CONTEST_OSCAP_PR" ]; then
+                ref="$CONTEST_OSCAP_PR"
+            else
+                exit 0
+            fi
+            repofile=/etc/yum.repos.d/openscap-upstream-packit.repo
             rm -f "$repofile"
             if rpm -q openscap-scanner; then
                 # the RPM might have been upgraded from another PR, sanitize it
@@ -66,9 +73,9 @@ adjust:
                 # this runs before test dependencies are installed
                 dnf -q -y install openscap-scanner
             fi
-            # download Packit-provided per-PR repository
+            # download a Packit-provided repository
             major=$(. /etc/os-release && echo "${VERSION_ID%%.*}")
-            repourl="https://copr.fedorainfracloud.org/coprs/packit/OpenSCAP-openscap-$CONTEST_OSCAP_PR/repo/centos-stream-$major/packit-OpenSCAP-openscap-$CONTEST_OSCAP_PR-centos-stream-$major.repo"
+            repourl="https://copr.fedorainfracloud.org/coprs/packit/OpenSCAP-openscap-$ref/repo/centos-stream-$major/packit-OpenSCAP-openscap-$ref-centos-stream-$major.repo"
             curl --retry 10 -sSfkL -o "$repofile" "$repourl"
             trap "rm -f \"$repofile\"" ERR
             # check that the per-PR repo contains a newer build
@@ -76,7 +83,7 @@ adjust:
             dnf -q check-upgrade openscap-scanner || rc=$?
             if [ "$rc" -ne 100 ]; then  # see dnf(8)
                 nvr=$(rpm -q openscap-scanner)
-                echo "openscap-scanner from PR#$CONTEST_OSCAP_PR doesn't upgrade existing $nvr" >&2
+                echo "openscap-scanner from $ref doesn't upgrade existing $nvr" >&2
                 false  # exit with ERR
             fi
             dnf -q -y upgrade openscap-scanner
@@ -88,7 +95,7 @@ adjust:
         name: Restore original OpenSCAP (if upgraded from Packit)
         script: |
             set -xe
-            repofile=/etc/yum.repos.d/openscap-packit-pr.repo
+            repofile=/etc/yum.repos.d/openscap-upstream-packit.repo
             if [ -f "$repofile" ]; then
                 dnf -q -y downgrade openscap-scanner
                 rm -f "$repofile"

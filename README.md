@@ -93,13 +93,19 @@ on Red Hat Enterprise Linux.
     branch, it checks out repository contents specific to the pull request.
   - Do not specify `CONTEST_CONTENT` in combination with this option.
 
+- `CONTEST_OSCAP_BRANCH`
+  - Specify a branch name of the
+    [OpenSCAP](https://github.com/OpenSCAP/openscap/) project.
+  - This will add a Packit DNF repository (specific for the branch) to
+    the target system, and upgrade `openscap-scanner`.
+  - As such, `openscap-scanner` built by Packit has to have a newer NVR
+    than the RPM provided by regular OS repositories.
+
 - `CONTEST_OSCAP_PR`
   - Specify a numerical Pull Request ID (no `#` or other letters) of the
     [OpenSCAP](https://github.com/OpenSCAP/openscap/) project.
-  - This will add a Packit DNF repository (specific for the PR) to the target
-    system, and upgrade `openscap-scanner`.
-  - As such, `openscap-scanner` built by Packit has to have a newer NVR
-    than the RPM provided by regular OS repositories.
+  - This works like `CONTEST_OSCAP_BRANCH`, but it upgrades to a Packit-built
+    version from the pull request, instead of a branch.
   - Wait for Packit to build the RPM before running tests with this variable,
     otherwise the test run will fail.
 
