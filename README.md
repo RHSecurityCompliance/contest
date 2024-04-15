@@ -75,11 +75,11 @@ on Red Hat Enterprise Linux.
     content.
     - Note that this may fail if the content is located on a read-only path.
 
-- `CONTEST_CONTENT_LATEST`
-  - Set to `1` to use latest content available in the
+- `CONTEST_CONTENT_BRANCH`
+  - Specify a branch name of the
     [CaC/content](https://github.com/ComplianceAsCode/content/) project.
-  - This will download content from the default branch and automatically pre-set
-    `CONTEST_CONTENT` to point to it.
+  - This will download content from the specified branch and automatically
+    pre-set `CONTEST_CONTENT` to point to it.
   - Essentially, this is like `CONTEST_CONTENT` but without you having to
     provide a cloned directory, Contest automatically clones it for you.
   - Do not specify `CONTEST_CONTENT` in combination with this option.
@@ -87,10 +87,8 @@ on Red Hat Enterprise Linux.
 - `CONTEST_CONTENT_PR`
   - Specify a numerical Pull Request ID (no `#` or other letters) of the
     [CaC/content](https://github.com/ComplianceAsCode/content/) project.
-  - This will download content from the specified PR and automatically pre-set
-    `CONTEST_CONTENT` to point to it.
-  - This is like `CONTEST_CONTENT_LATEST`, but instead of using the default
-    branch, it checks out repository contents specific to the pull request.
+  - This is like `CONTEST_CONTENT_BRANCH`, but it uses content from the
+    pull request instead of a branch.
   - Do not specify `CONTEST_CONTENT` in combination with this option.
 
 - `CONTEST_OSCAP_BRANCH`
