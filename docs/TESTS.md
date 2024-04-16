@@ -68,3 +68,47 @@ they don't install virtual machines.
 
 These are things like `grep`-ing for specific strings (not) present in the built
 content, syntax-checking Ansible playbooks, or verifying HTTP URLs.
+
+# Test tags
+
+These are some of the commonly-used tags amongst tests.
+
+Note that we use tags to indicate properties of tests, not to categorize them
+(think: "needs virtualization", not: "runs during release testing").
+
+## `needs-param`
+
+This indicates a test that is used as a "tool" in automation-assisted use
+cases. It should not run automatically in regular "all tests" runs, as it
+requires the user to give it input via environment variables (parameters).
+
+## `always-fails`
+
+This is a test that uses the `fail` status to indicate some unwanted findings,
+expecting the user to review the list manually. These `fail`s should not be
+waived automatically as they are specific to the configuration the user
+requested.
+
+A test like this is another form of a "tool" and should not be run regularly
+in use cases that expect `pass` to be the norm and `fail` to be a regression.
+
+## `broken`
+
+This is a perfectly valid working test, but the functionality it tests is
+either completely broken, or under very active development, creating interface
+incompatibilities, such as config directive changes, and frequently breaking
+the test.
+
+Despite this, we don't want to disable the test outright, as it is useful for
+debugging and stabilizing the tested functionality via manual use.
+
+However a test like this should not be run by automation, it is not useful
+for preventing regressions.
+
+## `destructive`
+
+A destructive tests modifies the OS it runs on to the point where it is
+unusable for further testing, typically by hardening it.
+
+A test that just installs extra RPMs from the package manager, or enables
+extra services, is not considered destructive.

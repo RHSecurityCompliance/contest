@@ -5,6 +5,7 @@ duration: 2h
 tag:
   - NoProductization
   - NoStabilization
+  - broken
 
 /anssi_bp28_high:
     environment+:

@@ -2,9 +2,6 @@
 /:
     inherit: false
 
-discover:
-    how: fmf
-
 execute:
     how: tmt
 
@@ -101,3 +98,5 @@ adjust:
                 rm -f "$repofile"
             fi
     when: distro > rhel-7
+
+# vim: syntax=yaml

@@ -49,6 +49,7 @@ tag:
     tag:
       - NoProductization
       - NoStabilization
+      - needs-param
     /oscap:
         extra-summary: /CoreOS/scap-security-guide/per-rule/from-env/oscap
         extra-nitrate: TC#0617199

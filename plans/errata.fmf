@@ -1,0 +1,16 @@
+summary: Testing builds added to errata
+discover:
+    how: fmf
+    filter:
+      - tag:-needs-param
+      - tag:-always-fails
+      - tag:-broken
+    test:
+      # just some basic smoke testing that should never fail
+      - /scanning/oscap-eval
+      - /static-checks
+    exclude:
+      # often fails on temporary retrieval issues
+      - /static-checks/html-links
+
+# vim: syntax=yaml

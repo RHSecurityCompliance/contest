@@ -1,0 +1,9 @@
+summary: Pre-release "stabilization" testing
+discover:
+    how: fmf
+    # all tests are included by default, except these
+    filter:
+      - tag:-needs-param
+      - tag:-broken
+
+# vim: syntax=yaml
