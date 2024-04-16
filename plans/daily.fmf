@@ -1,0 +1,31 @@
+summary: Regular daily "productization" testing
+discover:
+    how: fmf
+    filter:
+      - tag:-needs-param
+      - tag:-always-fails
+      - tag:-broken
+    test:
+      # every remediation method, but only the basic reference environment,
+      # without GUI/UEFI/etc. variants
+      - /hardening/oscap/[^/]+$
+      - /hardening/anaconda/[^/]+$
+      - /hardening/ansible/[^/]+$
+      - /hardening/image-builder/[^/]+$
+      # add stig_gui as an exception here, since it needs to be tested somehow
+      # but the only way to do it is via GUI
+      - /hardening/oscap/with-gui/stig_gui
+      - /hardening/anaconda/with-gui/stig_gui
+      - /hardening/ansible/with-gui/stig_gui
+      - /hardening/image-builder/with-gui/stig_gui
+      # run host-os as well - not because it would be very useful compared to
+      # the above, but because we use it for CaC/content TestingFarm and want to
+      # detect impact of waivers on RHEL early after an upstream-related change
+      - /hardening/host-os
+      # run /per-rule as oscap only - this almost halves the runtime (for now)
+      - /per-rule/[^/]+/oscap$
+      # the rest is cheap to run
+      - /scanning
+      - /static-checks
+
+# vim: syntax=yaml

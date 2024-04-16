@@ -1,0 +1,10 @@
+summary: Regular weekly "productization" testing
+discover:
+    how: fmf
+    # all tests are included by default, except these
+    filter:
+      - tag:-needs-param
+      - tag:-always-fails
+      - tag:-broken
+
+# vim: syntax=yaml

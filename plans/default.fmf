@@ -1,1 +1,5 @@
-summary: Default plan (simple for now)
+summary: Default plan discovering all tests for ad-hoc use
+discover:
+    how: fmf
+
+# vim: syntax=yaml
