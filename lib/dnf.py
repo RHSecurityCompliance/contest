@@ -47,6 +47,12 @@ def _get_repos_yum():
 # dnf up to dnf4
 def _get_repos_dnf():
     db = dnf.Base()
+    # black magic to make the dnf python API load /etc/dnf/dnf.conf
+    # and variables from /etc/dnf/vars/*, used by CentOS Stream to
+    # define $stream, used in metalinks
+    # source: https://bugzilla.redhat.com/show_bug.cgi?id=1920735#c2
+    db.conf.read(priority=dnf.conf.PRIO_MAINCONFIG)
+    db.conf.substitutions.update_from_etc(installroot=db.conf.installroot, varsdir=db.conf.varsdir)
     db.read_all_repos()
     for name, repo in db.repos.items():
         # no disabled repos
