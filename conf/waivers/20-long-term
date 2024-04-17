@@ -126,8 +126,5 @@
 # https://github.com/ComplianceAsCode/content/issues/11197 (DISA issue)
 /scanning/disa-alignment/.*/display_login_attempts
     rhel == 8 or rhel == 9
-# https://github.com/ComplianceAsCode/content/issues/11649 (DISA issue)
-/scanning/disa-alignment/.*/installed_OS_is_vendor_supported
-    rhel == 9
 
 # vim: syntax=python
