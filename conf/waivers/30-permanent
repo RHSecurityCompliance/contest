@@ -42,6 +42,13 @@
 /static-checks/html-links/https://docs-prv.pcisecuritystandards.org/PCI%20DSS/Standard/PCI-DSS-v4_0.pdf
     True
 
+# DISA Alignment waivers
+#
+# DISA benchmark allows only released OS versions. Our content is fine with unreleased versions.
+# https://github.com/ComplianceAsCode/content/issues/11649
+/scanning/disa-alignment/.*/installed_OS_is_vendor_supported
+    Match(True, sometimes=True)
+
 # CentOS-specific waivers
 #
 # Rules checking if OS is FIPS certified
