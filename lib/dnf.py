@@ -66,7 +66,8 @@ def _get_repos_dnf():
         # sanity check for (in)valid URLs as Anaconda fails on broken ones
         if baseurl.startswith(('http://', 'https://')):
             try:
-                reply = requests.head(baseurl, verify=False, allow_redirects=True)
+                repomd = baseurl.rstrip('/') + '/repodata/repomd.xml'
+                reply = requests.head(repomd, verify=False, allow_redirects=True)
                 reply.raise_for_status()
             except requests.exceptions.RequestException as e:
                 util.log(f"skipping: {e}")
@@ -129,6 +130,7 @@ def installable_url():
     Return one baseurl usable for installing the currently-running system.
     """
     for _, url in repo_urls():
+        url = url.rstrip('/')
         util.log(f"considering: {url}")
         reply = requests.head(url + '/images/install.img', verify=False)
         if reply.status_code == 200:
