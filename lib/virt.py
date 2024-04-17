@@ -26,7 +26,7 @@ be used in two ways, both using a context manager ('g' is an instance):
      - Assumes (1) was done and just boots and waits for ssh.
 
 Any host yum.repos.d repositories are given to Anaconda via kickstart 'repo'
-upon guest installation. Only baseurl is supported for now, Fedora won't work.
+upon guest installation.
 
 Step (1) can be replaced by importing a pre-existing ImageBuilder image, with
 (2) and (3), or Guest() usage, remaining unaffected / compatible.
@@ -275,9 +275,12 @@ class Kickstart:
     def add_host_repos(self):
         installed_repos = []
         for reponame, config in dnf.repo_configs():
-            # TODO: repo --metalink support, don't assume baseurl exists
-            baseurl = config['baseurl']
-            self.appends.append(f'repo --name={reponame} --baseurl={baseurl}')
+            if 'metalink' in config:
+                metalink = config['metalink']
+                self.appends.append(f'repo --name={reponame} --metalink={metalink}')
+            else:
+                baseurl = config['baseurl']
+                self.appends.append(f'repo --name={reponame} --baseurl={baseurl}')
             installed_repos.append(
                 f'cat > /etc/yum.repos.d/{reponame}.repo <<\'EOF\'\n' +
                 f'[{reponame}]\n' +
