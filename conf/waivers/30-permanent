@@ -58,14 +58,14 @@
 /hardening/host-os/.+/aide_use_fips_hashes
     rhel.is_centos()
 # Remediations are unselected for CentOS, but they might pass outside Testing Farm
-/hardening/host-os/.+/ensure_gpgcheck_globally_activated
-/hardening/host-os/.+/ensure_gpgcheck_local_packages
-/hardening/host-os/.+/ensure_gpgcheck_never_disabled
-/hardening/host-os/.+/ensure_gpgcheck_repo_metadata
+/hardening/.+/ensure_gpgcheck_globally_activated
+/hardening/.+/ensure_gpgcheck_local_packages
+/hardening/.+/ensure_gpgcheck_never_disabled
+/hardening/.+/ensure_gpgcheck_repo_metadata
     Match(rhel.is_centos(), sometimes=True)
 # Presumably not valid for CentOS
-/hardening/host-os/.+/ospp/enable_fips_mode
-/hardening/host-os/.*/ospp/configure_crypto_policy
+/hardening/.+/ospp/enable_fips_mode
+/hardening/.*/ospp/configure_crypto_policy
     rhel.is_centos() and rhel == 9
 
 # vim: syntax=python
