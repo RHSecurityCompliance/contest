@@ -21,14 +21,6 @@ def excludes():
         'accounts_password_set_max_life_root',
     ]
 
-    # Hardenings via Ansible
-    if re.fullmatch('/hardening.*/ansible/.*', test_name):
-        if versions.rhel.is_centos():
-            rules += [
-                # https://github.com/ComplianceAsCode/content/issues/8480
-                'ensure_redhat_gpgkey_installed',
-            ]
-
     # Host hardenings
     if versions.rhel == 7 and re.fullmatch('/hardening/host-os/.*', test_name):
         rules += [
