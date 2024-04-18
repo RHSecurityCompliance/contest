@@ -48,7 +48,7 @@ def excludes():
             'ensure_gpgcheck_repo_metadata',
         ]
         # Remove when CentOS repos use at least 3072b RSA key
-        if versions.rhel.major == 9 and re.fullmatch('/hardening/host-os/.*/ospp', test_name):
+        if versions.rhel.major == 9 and re.fullmatch('/hardening/.+/ospp', test_name):
             rules += [
                 'configure_crypto_policy',
                 'enable_fips_mode',
