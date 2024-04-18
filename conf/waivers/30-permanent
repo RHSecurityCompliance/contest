@@ -62,6 +62,7 @@
 /hardening/.+/ensure_gpgcheck_local_packages
 /hardening/.+/ensure_gpgcheck_never_disabled
 /hardening/.+/ensure_gpgcheck_repo_metadata
+/hardening/.+/ensure_redhat_gpgkey_installed
     Match(rhel.is_centos(), sometimes=True)
 # Presumably not valid for CentOS
 /hardening/.+/ospp/enable_fips_mode
