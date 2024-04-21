@@ -29,7 +29,7 @@ with g.snapshotted():
             raise RuntimeError(f"remediation oscap failed with {proc.returncode}")
         g.soft_reboot()
 
-    with util.get_content() as content_dir:
+    with util.get_content(build=False) as content_dir:
         g.copy_to(util.get_datastream(), 'ssg-ds.xml')
         shared.content_scan(g, 'ssg-ds.xml', html='ssg-report.html', arf='ssg-arf.xml')
         g.copy_from('ssg-report.html')

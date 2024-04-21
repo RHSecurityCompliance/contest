@@ -28,7 +28,7 @@ srv.add_file('remediation-ds.xml')
 with srv:
     g.install(kickstart=ks)
 
-with g.booted(), util.get_content() as content_dir:
+with g.booted(), util.get_content(build=False) as content_dir:
     g.copy_to(util.get_datastream(), 'ssg-ds.xml')
     shared.content_scan(g, 'ssg-ds.xml', html='ssg-report.html', arf='ssg-arf.xml')
     g.copy_from('ssg-report.html')
