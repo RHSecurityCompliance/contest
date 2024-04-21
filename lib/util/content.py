@@ -12,19 +12,23 @@ if user_content:
     user_content = Path(user_content)
 
 
+def find_datastream_in(root):
+    base_dir = root / Path('usr/share/xml/scap/ssg/content')
+    if rhel.is_true_rhel():
+        return base_dir / f'ssg-rhel{rhel.major}-ds.xml'
+    elif rhel.is_centos():
+        if rhel <= 8:
+            return base_dir / f'ssg-centos{rhel.major}-ds.xml'
+        else:
+            return base_dir / f'ssg-cs{rhel.major}-ds.xml'
+
+
 def get_datastream():
     if user_content:
         build_content(user_content)
         datastream = user_content / 'build' / f'ssg-rhel{rhel.major}-ds.xml'
     else:
-        base_dir = Path('/usr/share/xml/scap/ssg/content')
-        if rhel.is_true_rhel():
-            datastream = base_dir / f'ssg-rhel{rhel.major}-ds.xml'
-        elif rhel.is_centos():
-            if rhel <= 8:
-                datastream = base_dir / f'ssg-centos{rhel.major}-ds.xml'
-            else:
-                datastream = base_dir / f'ssg-cs{rhel.major}-ds.xml'
+        datastream = find_datastream_in('/')
     if not datastream.exists():
         raise RuntimeError(f"could not find datastream as {datastream}")
     return datastream
