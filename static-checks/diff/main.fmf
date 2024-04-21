@@ -1,0 +1,30 @@
+result: custom
+environment+:
+    PYTHONPATH: ../..
+duration: 10m
+tag:
+  - NoProductization
+adjust:
+  - when: distro == rhel-7
+    enabled: false
+    because: the code is not compatible with RHEL-7
+
+/profiles:
+    summary: Diff datastreams, output added/removed profiles
+    test: python3 -m lib.runtest ./profiles.py
+
+/profile-titles:
+    summary: Diff datastreams, output profile title differences
+    test: python3 -m lib.runtest ./profile-titles.py
+
+/profile-rules:
+    summary: Diff datastreams, output profile rule/variable differences
+    test: python3 -m lib.runtest ./profile-rules.py
+
+/profile-variables:
+    summary: Diff datastreams, output profile variable refine differences
+    test: python3 -m lib.runtest ./profile-variables.py
+
+/removed-rules:
+    summary: Diff datastreams, check that no rule has been removed
+    test: python3 -m lib.runtest ./removed-rules.py
