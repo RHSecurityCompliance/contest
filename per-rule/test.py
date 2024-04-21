@@ -67,115 +67,114 @@ def report_test_with_log(status, note, log_dir, rule_name, test_name):
 
 virt.Host.setup()
 
-with util.get_content() as content_dir:
-    test_basename = util.get_test_name().rsplit('/', 1)[1]
-    if test_basename == 'from-env':
-        our_rules = os.environ.get('RULE')
-        if our_rules:
-            our_rules = our_rules.split()  # space-separated
-        else:
-            raise RuntimeError("RULE env variable not defined or empty")
+test_basename = util.get_test_name().rsplit('/', 1)[1]
+if test_basename == 'from-env':
+    our_rules = os.environ.get('RULE')
+    if our_rules:
+        our_rules = our_rules.split()  # space-separated
     else:
-        our_rules = slice_list(
-            oscap.get_all_profiles_rules(),
-            int(os.environ['SLICE']),
-            int(os.environ['TOTAL_SLICES'])
-        )
+        raise RuntimeError("RULE env variable not defined or empty")
+else:
+    our_rules = slice_list(
+        oscap.get_all_profiles_rules(),
+        int(os.environ['SLICE']),
+        int(os.environ['TOTAL_SLICES'])
+    )
 
-    our_rules_textblock = textwrap.indent(('\n'.join(our_rules)), '    ')
-    util.log(f"testing rules:\n{our_rules_textblock}")
+our_rules_textblock = textwrap.indent(('\n'.join(our_rules)), '    ')
+util.log(f"testing rules:\n{our_rules_textblock}")
 
-    g = virt.Guest()
+g = virt.Guest()
 
-    # install a qcow2-backed VM, so automatus.py can snapshot it
-    # - use hardening-style partitions, automatus tests need them
-    ks = virt.Kickstart(partitions=partitions.partitions)
-    g.install(kickstart=ks, disk_format='qcow2')
+# install a qcow2-backed VM, so automatus.py can snapshot it
+# - use hardening-style partitions, automatus tests need them
+ks = virt.Kickstart(partitions=partitions.partitions)
+g.install(kickstart=ks, disk_format='qcow2')
 
-    with g.booted():
-        env = os.environ.copy()
-        env['SSH_ADDITIONAL_OPTIONS'] = f'-o IdentityFile={g.ssh_keyfile_path}'
-        cmd = [
-            './automatus.py', 'rule',
-            '--libvirt', 'qemu:///system', virt.GUEST_NAME,
-            '--product', f'rhel{versions.rhel.major}',
-            *our_rules,
-        ]
-        _, lines = util.subprocess_stream(
-            cmd, check=True, stderr=subprocess.STDOUT,
-            env=env, cwd=(content_dir / 'tests'),
-        )
+with util.get_content() as content_dir, g.booted():
+    env = os.environ.copy()
+    env['SSH_ADDITIONAL_OPTIONS'] = f'-o IdentityFile={g.ssh_keyfile_path}'
+    cmd = [
+        './automatus.py', 'rule',
+        '--libvirt', 'qemu:///system', virt.GUEST_NAME,
+        '--product', f'rhel{versions.rhel.major}',
+        *our_rules,
+    ]
+    _, lines = util.subprocess_stream(
+        cmd, check=True, stderr=subprocess.STDOUT,
+        env=env, cwd=(content_dir / 'tests'),
+    )
 
-        log_file = rule_name = None
-        for line in lines:
-            # copy the exact output to console
-            sys.stdout.write(f'{line}\n')
-            sys.stdout.flush()
+    log_file = rule_name = None
+    for line in lines:
+        # copy the exact output to console
+        sys.stdout.write(f'{line}\n')
+        sys.stdout.flush()
 
-            # cut off log level
-            line = re.sub('^[A-Z]+ - ', '', line, count=1, flags=re.M)
+        # cut off log level
+        line = re.sub('^[A-Z]+ - ', '', line, count=1, flags=re.M)
 
-            # rule without remediation
-            match = re.fullmatch(r'''No remediation is available for rule 'xccdf_org\.ssgproject\.content_rule_(.+)'\.''', line)  # noqa
-            if match:
-                rule_name = match.group(1)
-                results.report('info', rule_name, 'no remediation')
-                continue
+        # rule without remediation
+        match = re.fullmatch(r'''No remediation is available for rule 'xccdf_org\.ssgproject\.content_rule_(.+)'\.''', line)  # noqa
+        if match:
+            rule_name = match.group(1)
+            results.report('info', rule_name, 'no remediation')
+            continue
 
-            # remember the log file for log parsing/upload
-            #   INFO - Logging into /tmp/.../logs/rule-custom-2024-02-17-1859/test_suite.log
-            match = re.fullmatch('Logging into (.+)', line)
-            if match:
-                log_dir = Path(match.group(1)).parent
-                util.log(f"using automatus log dir: {log_dir}")
-                continue
+        # remember the log file for log parsing/upload
+        #   INFO - Logging into /tmp/.../logs/rule-custom-2024-02-17-1859/test_suite.log
+        match = re.fullmatch('Logging into (.+)', line)
+        if match:
+            log_dir = Path(match.group(1)).parent
+            util.log(f"using automatus log dir: {log_dir}")
+            continue
 
-            # running tests for a new rule
-            #   INFO - xccdf_org.ssgproject.content_rule_timer_dnf-automatic_enabled
-            match = re.fullmatch(r'xccdf_org\.ssgproject\.content_rule_(.+)', line)
-            if match:
-                rule_name = match.group(1)
-                util.log(f"running for rule: {rule_name}")
-                continue
+        # running tests for a new rule
+        #   INFO - xccdf_org.ssgproject.content_rule_timer_dnf-automatic_enabled
+        match = re.fullmatch(r'xccdf_org\.ssgproject\.content_rule_(.+)', line)
+        if match:
+            rule_name = match.group(1)
+            util.log(f"running for rule: {rule_name}")
+            continue
 
-            # result for one test - report it under the current rule:
-            #   INFO - Script line_missing.fail.sh using profile (all) OK
-            #   WARNING - Script correct_option.pass.sh using profile (all) notapplicable
-            #   ERROR - Script correct.pass.sh using profile (all) found issue:
-            match = re.fullmatch(r'Script (.+).sh using profile ([^ ]+) (.+)', line)
-            if match:
-                test_name, profile, status = match.groups()
-                # TODO: python 3.9+
-                #profile = profile.removeprefix('xccdf_org.ssgproject.content_profile_')
-                profile = re.sub('^xccdf_org.ssgproject.content_profile_', '', profile, count=1)
+        # result for one test - report it under the current rule:
+        #   INFO - Script line_missing.fail.sh using profile (all) OK
+        #   WARNING - Script correct_option.pass.sh using profile (all) notapplicable
+        #   ERROR - Script correct.pass.sh using profile (all) found issue:
+        match = re.fullmatch(r'Script (.+).sh using profile ([^ ]+) (.+)', line)
+        if match:
+            test_name, profile, status = match.groups()
+            # TODO: python 3.9+
+            #profile = profile.removeprefix('xccdf_org.ssgproject.content_profile_')
+            profile = re.sub('^xccdf_org.ssgproject.content_profile_', '', profile, count=1)
 
-                if status == 'OK':
-                    status = 'pass'
-                    note = f'profile:{profile}' if profile != '(all)' else None
-                elif status == 'notapplicable':
-                    status = 'info'
-                    note = 'not applicable'
-                elif status == 'found issue:':
-                    status = 'fail'
-                    note = f'profile:{profile}' if profile != '(all)' else None
-                else:
-                    status = 'error'
-                    note = "unknown Script status"
+            if status == 'OK':
+                status = 'pass'
+                note = f'profile:{profile}' if profile != '(all)' else None
+            elif status == 'notapplicable':
+                status = 'info'
+                note = 'not applicable'
+            elif status == 'found issue:':
+                status = 'fail'
+                note = f'profile:{profile}' if profile != '(all)' else None
+            else:
+                status = 'error'
+                note = "unknown Script status"
 
-                report_test_with_log(status, note, log_dir, rule_name, test_name)
-                continue
+            report_test_with_log(status, note, log_dir, rule_name, test_name)
+            continue
 
-            # this is separate, because Automatus prints 4 ERROR lines for this,
-            # using a non-standard format (unlike the above):
-            #   ERROR - Rule evaluation resulted in error, instead of expected fixed during remediation stage        # noqa
-            #   ERROR - The remediation failed for rule 'xccdf_org.ssgproject.content_rule_tftpd_uses_secure_mode'.  # noqa
-            #   ERROR - Rule 'tftpd_uses_secure_mode' test setup script 'wrong.fail.sh' failed with exit code 1      # noqa
-            #   ERROR - Environment failed to prepare, skipping test
-            # so we parse just the one important line and ignore the rest
-            match = re.fullmatch(r'''Rule '[^']+' test setup script '(.+).sh' failed with exit code [0-9]+''', line)  # noqa
-            if match:
-                test_name = match.group(1)
-                report_test_with_log('fail', None, log_dir, rule_name, test_name)
-                continue
+        # this is separate, because Automatus prints 4 ERROR lines for this,
+        # using a non-standard format (unlike the above):
+        #   ERROR - Rule evaluation resulted in error, instead of expected fixed during remediation stage        # noqa
+        #   ERROR - The remediation failed for rule 'xccdf_org.ssgproject.content_rule_tftpd_uses_secure_mode'.  # noqa
+        #   ERROR - Rule 'tftpd_uses_secure_mode' test setup script 'wrong.fail.sh' failed with exit code 1      # noqa
+        #   ERROR - Environment failed to prepare, skipping test
+        # so we parse just the one important line and ignore the rest
+        match = re.fullmatch(r'''Rule '[^']+' test setup script '(.+).sh' failed with exit code [0-9]+''', line)  # noqa
+        if match:
+            test_name = match.group(1)
+            report_test_with_log('fail', None, log_dir, rule_name, test_name)
+            continue
 
 results.report_and_exit()
