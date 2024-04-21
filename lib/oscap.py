@@ -1,28 +1,161 @@
 import sys
 import re
+import enum
 import contextlib
+import collections
+import types
+import xml.etree.ElementTree as ET
 from pathlib import Path
 
 from lib import util, results
 
-_no_remediation_cache = None
+
+class Datastream:
+    FixType = enum.Flag('FixType', ['bash', 'ansible'])
+
+    def __init__(self, xml_file=None):
+        # extracted datastream metadata
+        #   self.profiles = {
+        #     'ospp': namespace(
+        #       .title = 'Some text',
+        #       .rules = set( 'audit_delete_success' , 'service_firewalld_enabled' , ...),
+        #       .values = set( ('var_rekey_limit_size','1G') , ...),
+        #     ),
+        #   }
+        #   self.rules = {
+        #     'configure_crypto_policy': namespace(
+        #       .fixes = FixType.bash | FixType.ansible,
+        #     ),
+        #     'account_password_selinux_faillock_dir': namespace(
+        #       .fixes = FixType.bash,
+        #     ),
+        #   }
+        def make_profile():
+            return types.SimpleNamespace(title=None, rules=set(), values=set())
+        self.profiles = collections.defaultdict(make_profile)
+        def make_rule():
+            return types.SimpleNamespace(fixes=self.FixType(0))
+        self.rules = collections.defaultdict(make_rule)
+        if xml_file:
+            self.parse_xml(xml_file)
+
+    def parse_xml(self, xml_file):
+        # parse input XML datastream in 10KB binary chunks (arbitrary
+        # reasonable value), pass them to the ElementTree parser, which
+        # returns element start/end events
+        parser = ET.XMLPullParser(events=['start', 'end'])
+        # this is a stack of parsed XML elements - it gets filled up as we
+        # recurse deeper into the XML element tree
+        stack = []
+        with open(xml_file, 'rb') as f:
+            while True:
+                chunk = f.read(10000)
+                if not chunk:
+                    break
+                parser.feed(chunk)
+
+                for event, elem in parser.read_events():
+                    if event == 'start':
+                        stack.append(elem)
+                    else:
+                        # optimize a bit - filter out elements too shallow for anything below
+                        if len(stack) < 4:
+                            stack.pop()
+                            continue
+
+                        # the logic below tries to match the last one/two elements
+                        # in the stack, to hopefully limit false positive matches
+                        # elsewhere in the XML tree (if only element name was used)
+                        # - note that this runs on the 'end' parser event, so child
+                        #   elements will appear before parent ones
+
+                        # transform stack elements into namespace-free tag names, for
+                        # easier tag name matching
+                        frames = [elem.tag.partition('}')[2] or elem.tag for elem in stack]
+
+                        # profiles
+                        if frames[-1] == 'Profile':
+                            profile = stack[-1].get('id')
+                            # TODO: use str.removeprefix after RHEL-7
+                            profile = re.sub('^xccdf_org.ssgproject.content_profile_', '', profile)
+                            self.profiles[profile]  # let defaultdict fill in the values
+
+                        # profile contents
+                        elif frames[-2] == 'Profile':
+                            profile = stack[-2].get('id')
+                            # TODO: use str.removeprefix after RHEL-7
+                            profile = re.sub('^xccdf_org.ssgproject.content_profile_', '', profile)
+                            # title
+                            if frames[-1] == 'title':
+                                text = stack[-1].text
+                                self.profiles[profile].title = text
+                            # rule selection
+                            elif frames[-1] == 'select':
+                                if elem.get('selected') == 'true':
+                                    rule = stack[-1].get('idref')
+                                    # TODO: use str.removeprefix after RHEL-7
+                                    rule = re.sub('^xccdf_org.ssgproject.content_rule_', '', rule)
+                                    self.profiles[profile].rules.add(rule)
+                            # variable refinement
+                            elif frames[-1] == 'refine-value':
+                                name = stack[-1].get('idref')
+                                # TODO: use str.removeprefix after RHEL-7
+                                name = re.sub('^xccdf_org.ssgproject.content_value_', '', name)
+                                contents = stack[-1].get('selector')
+                                self.profiles[profile].values.add((name, contents))
+
+                        # rules
+                        elif frames[-1] == 'Rule':
+                            rule_id = stack[-1].get('id')
+                            # TODO: use str.removeprefix after RHEL-7
+                            rule_id = re.sub('^xccdf_org.ssgproject.content_rule_', '', rule_id)
+                            self.rules[rule]  # let defaultdict fill in the values
+
+                        # fixes / remediations
+                        elif frames[-2:] == ['Rule', 'fix']:
+                            system = stack[-1].get('system')
+                            if system == 'urn:xccdf:fix:script:sh':
+                                fix_type = self.FixType.bash
+                            elif system == 'urn:xccdf:fix:script:ansible':
+                                fix_type = self.FixType.ansible
+                            else:
+                                fix_type = None
+                            if fix_type:
+                                for_rule = stack[-1].get('id')
+                                self.rules[for_rule].fixes |= fix_type
+                        stack.pop()
+
+    def has_no_remediation(self, rule):
+        """
+        Return True if 'rule' has no bash remediation, False otherwise.
+        """
+        if rule not in self.rules:
+            return False
+        # TODO: come up with a different way of handling "no remediation" cases,
+        #       retain the current "has no *bash* remediation" behavior for now
+        return self.rules[rule].fixes & self.FixType.bash
+
+    def get_all_profiles_rules(self):
+        """
+        Return a deduplicated unified set of all rules from all profiles.
+        """
+        return set(rule for profile in self.profiles.values() for rule in profile.rules)
 
 
-def _rules_without_remediation():
-    # TODO: parse this info from datastream XML
-    cmd = ['oscap', 'xccdf', 'generate', '--profile', '(all)', 'fix', util.get_datastream()]
-    _, lines = util.subprocess_stream(cmd, check=True)
-    for line in lines:
-        match = re.search('FIX FOR THIS RULE \'xccdf_org.ssgproject.content_rule_(.+)\' IS MISSING!', line)  # noqa
-        if match:
-            yield match.group(1)
+# "global" datastream singleton, based on a xml file location decided by
+# util/content.py, useful for the vast majority of tests that work with only
+# one datastream, as provided by an installed RPM, or via a user-specified
+# environment variable
+# - any tests that work with .xml files directly (and need access to profiles
+#   or rules inside them) should instantiate class Datastream() themselves
+_cached_global_ds = None
 
 
-def has_no_remediation(rule):
-    global _no_remediation_cache
-    if _no_remediation_cache is None:
-        _no_remediation_cache = set(_rules_without_remediation())
-    return rule in _no_remediation_cache
+def global_ds():
+    global _cached_global_ds
+    if _cached_global_ds is None:
+        _cached_global_ds = Datastream(util.get_datastream())
+    return _cached_global_ds
 
 
 def rule_from_verbose(line):
@@ -65,7 +198,7 @@ def report_from_verbose(lines):
         if status in ['pass', 'error']:
             pass
         elif status == 'fail':
-            if has_no_remediation(rule):
+            if global_ds().has_no_remediation(rule):
                 note = 'no remediation'
                 status = 'warn'
         elif status in ['notapplicable', 'notchecked', 'notselected', 'informational']:
@@ -114,39 +247,3 @@ def unselect_rules(orig_ds, new_ds, rules):
                     line = line.replace('selected="true"', 'selected="false"')
                     util.log(f"unselected {line.strip()}")
                 new_ds_f.write(line)
-
-
-def get_all_profiles():
-    """
-    Yield all profile names present in the datastream.
-    """
-    cmd = ['oscap', 'info', '--profiles', util.get_datastream()]
-    _, lines = util.subprocess_stream(cmd, check=True)
-    for line in lines:
-        # xccdf_org.ssgproject.content_profile_stig:DISA STIG for Red Hat Enterprise Linux 9
-        yield line.partition(':')[0]
-
-
-def get_all_rules(profile):
-    """
-    Yield all rules in a profile.
-    """
-    pattern = re.compile(r"# BEGIN fix .* for 'xccdf_org\.ssgproject\.content_rule_([^']+)'")
-    # oscap doesn't have any "list all rules" command
-    cmd = ['oscap', 'xccdf', 'generate', '--profile', profile, 'fix', util.get_datastream()]
-    _, lines = util.subprocess_stream(cmd, check=True)
-    for line in lines:
-        match = pattern.fullmatch(line)
-        if match:
-            yield match.group(1)
-
-
-def get_all_profiles_rules():
-    """
-    Return a deduplicated unified list of all rules from all profiles.
-    """
-    all_rules = set()
-    for profile in get_all_profiles():
-        for rule in get_all_rules(profile):
-            all_rules.add(rule)
-    return sorted(all_rules)

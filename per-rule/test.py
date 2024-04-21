@@ -76,7 +76,7 @@ if test_basename == 'from-env':
         raise RuntimeError("RULE env variable not defined or empty")
 else:
     our_rules = slice_list(
-        oscap.get_all_profiles_rules(),
+        sorted(oscap.global_ds().get_all_profiles_rules()),
         int(os.environ['SLICE']),
         int(os.environ['TOTAL_SLICES'])
     )
