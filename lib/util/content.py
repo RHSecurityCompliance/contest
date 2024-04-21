@@ -81,13 +81,17 @@ def build_content(path):
 
 
 @contextlib.contextmanager
-def get_content():
+def get_content(build=True):
     """
     Acquire and return a path to a fully built content source,
     from either a user-provided directory or a SRPM.
+
+    Optionally, specify build=False to save some time if you're accessing
+    plain files or executing utils and need just the content source.
     """
     if user_content:
-        build_content(user_content)
+        if build:
+            build_content(user_content)
         yield user_content
     else:
         # fall back to SRPM
@@ -112,8 +116,7 @@ def get_content():
                 if not extracted.exists():
                     raise FileNotFoundError(f"{extracted} not in extracted/patched SRPM")
                 # build content
-                # TODO: temporary, see https://github.com/ComplianceAsCode/content/pull/11606
-                (extracted / 'build').mkdir(exist_ok=True)
-                cmd = ['./build_product', f'rhel{rhel.major}']
-                util.subprocess_run(cmd, check=True, cwd=extracted)
+                if build:
+                    cmd = ['./build_product', f'rhel{rhel.major}']
+                    util.subprocess_run(cmd, check=True, cwd=extracted)
                 yield extracted
