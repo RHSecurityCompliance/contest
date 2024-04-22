@@ -2,8 +2,6 @@ result: custom
 environment+:
     PYTHONPATH: ../..
 duration: 10m
-tag:
-  - NoProductization
 adjust:
   - when: distro == rhel-7
     enabled: false
@@ -12,18 +10,22 @@ adjust:
 /profiles:
     summary: Diff datastreams, output added/removed profiles
     test: python3 -m lib.runtest ./profiles.py
+    tag: [NoProductization]
 
 /profile-titles:
     summary: Diff datastreams, output profile title differences
     test: python3 -m lib.runtest ./profile-titles.py
+    tag: [NoProductization]
 
 /profile-rules:
     summary: Diff datastreams, output profile rule/variable differences
     test: python3 -m lib.runtest ./profile-rules.py
+    tag: [NoProductization]
 
 /profile-variables:
     summary: Diff datastreams, output profile variable refine differences
     test: python3 -m lib.runtest ./profile-variables.py
+    tag: [NoProductization]
 
 /removed-rules:
     summary: Diff datastreams, check that no rule has been removed
