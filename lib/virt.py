@@ -226,7 +226,7 @@ class Kickstart:
         self.packages = packages
         self.partitions = partitions if partitions else []
 
-    def _assemble_ks(self):
+    def assemble(self):
         partitions_block = '\n'.join(
             (f'part {mountpoint} --size={size}' for mountpoint, size in self.partitions),
         )
@@ -238,7 +238,7 @@ class Kickstart:
 
     @contextlib.contextmanager
     def to_tmpfile(self):
-        final_ks = self._assemble_ks()
+        final_ks = self.assemble()
         util.log(f"writing:\n{textwrap.indent(final_ks, '    ')}")
         with tempfile.NamedTemporaryFile(mode='w', suffix='.ks.cfg') as f:
             f.write(final_ks)
@@ -344,7 +344,7 @@ class Guest:
         # if exists, all snapshot preparation processes were successful
         self.snapshot_ready_path = f'{GUEST_IMG_DIR}/{name}.ready'
 
-    def install(self, location=None, kickstart=None, ks_verbatim=False, disk_format='raw'):
+    def install(self, location=None, kickstart=None, disk_format='raw'):
         """
         Install a new guest, to a shut down state.
 
@@ -353,10 +353,8 @@ class Guest:
 
         If custom 'kickstart' is used, it is passed to virt-install. It should be
         a Kickstart class instance.
-
-        If 'ks_verbatim' is true, the kickstart is used as-is, otherwise host
-        repositories are added to it, and a new ssh keypair is generated, with
-        the public key added to the kickstart.
+        To customize the instance (ie. add code before/after code added by
+        member functions), subclass Kickstart and set __init__() or assemble().
         """
         util.log(f"installing guest {self.name}")
 
@@ -373,24 +371,23 @@ class Guest:
 
         http_port = 8090
 
-        if not ks_verbatim:
-            kickstart.add_host_repos()
-            util.ssh_keygen(self.ssh_keyfile_path)
-            with open(f'{self.ssh_keyfile_path}.pub') as f:
-                pubkey = f.read().rstrip()
-            kickstart.add_authorized_key(pubkey)
-            kickstart.add_install_only_repo(
-                'contest-rpmpack',
-                f'http://{NETWORK_HOST}:{http_port}/repo',
-            )
-            if versions.rhel == 7:
-                cmd = [
-                    'yum', '-y', '--nogpgcheck', 'install',
-                    f'http://{NETWORK_HOST}:{http_port}/repo/{util.RpmPack.FILE}'
-                ]
-                kickstart.add_post(' '.join(cmd))
-            else:
-                kickstart.add_packages([util.RpmPack.NAME])
+        kickstart.add_host_repos()
+        util.ssh_keygen(self.ssh_keyfile_path)
+        with open(f'{self.ssh_keyfile_path}.pub') as f:
+            pubkey = f.read().rstrip()
+        kickstart.add_authorized_key(pubkey)
+        kickstart.add_install_only_repo(
+            'contest-rpmpack',
+            f'http://{NETWORK_HOST}:{http_port}/repo',
+        )
+        if versions.rhel == 7:
+            cmd = [
+                'yum', '-y', '--nogpgcheck', 'install',
+                f'http://{NETWORK_HOST}:{http_port}/repo/{util.RpmPack.FILE}'
+            ]
+            kickstart.add_post(' '.join(cmd))
+        else:
+            kickstart.add_packages([util.RpmPack.NAME])
 
         disk_extension = 'qcow2' if disk_format == 'qcow2' else 'img'
         disk_path = f'{GUEST_IMG_DIR}/{self.name}.{disk_extension}'
