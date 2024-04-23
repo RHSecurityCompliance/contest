@@ -344,7 +344,7 @@ class Guest:
         # if exists, all snapshot preparation processes were successful
         self.snapshot_ready_path = f'{GUEST_IMG_DIR}/{name}.ready'
 
-    def install(self, location=None, kickstart=None, disk_format='raw'):
+    def install(self, location=None, kickstart=None, rpmpack=None, disk_format='raw'):
         """
         Install a new guest, to a shut down state.
 
@@ -355,6 +355,9 @@ class Guest:
         a Kickstart class instance.
         To customize the instance (ie. add code before/after code added by
         member functions), subclass Kickstart and set __init__() or assemble().
+
+        If custom 'rpmpack' is specified (RpmPack instance), it is used instead
+        of a self-made instance.
         """
         util.log(f"installing guest {self.name}")
 
@@ -396,7 +399,7 @@ class Guest:
         with contextlib.ExitStack() as stack:
             # create a custom RPM to run guest setup scripts via RPM scriptlets
             # and install it during Anaconda installation
-            pack = util.RpmPack()
+            pack = rpmpack or util.RpmPack()
             pack.post.append(self.SETUP)
             pack.requires += self.SETUP_REQUIRES
             repo = stack.enter_context(pack.build_as_repo())
