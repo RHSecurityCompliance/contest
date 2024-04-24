@@ -85,12 +85,14 @@ else:
 our_rules_textblock = textwrap.indent(('\n'.join(our_rules)), '    ')
 util.log(f"testing rules:\n{our_rules_textblock}")
 
-g = virt.Guest()
+# tag named after the tool that modifies the VM/image
+g = virt.Guest('automatus')
 
-# install a qcow2-backed VM, so automatus.py can snapshot it
-# - use hardening-style partitions, automatus tests need them
-ks = virt.Kickstart(partitions=partitions.partitions)
-g.install(kickstart=ks, disk_format='qcow2')
+if not g.is_installed():
+    # install a qcow2-backed VM, so automatus.py can snapshot it
+    # - use hardening-style partitions, automatus tests need them
+    ks = virt.Kickstart(partitions=partitions.partitions)
+    g.install(kickstart=ks, disk_format='qcow2')
 
 with util.get_content() as content_dir, g.booted():
     env = os.environ.copy()
