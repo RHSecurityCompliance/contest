@@ -67,7 +67,8 @@ def report_test_with_log(status, note, log_dir, rule_name, test_name):
 
 virt.Host.setup()
 
-test_basename = util.get_test_name().rsplit('/', 1)[1]
+# /per-rule/from-env/oscap --> test_basename=from-env, fix_type=oscap
+test_basename, fix_type = util.get_test_name().rsplit('/')[-2:]
 if test_basename == 'from-env':
     our_rules = os.environ.get('RULE')
     if our_rules:
@@ -77,7 +78,7 @@ if test_basename == 'from-env':
 else:
     our_rules = slice_list(
         sorted(oscap.global_ds().get_all_profiles_rules()),
-        int(os.environ['SLICE']),
+        int(test_basename),
         int(os.environ['TOTAL_SLICES'])
     )
 
@@ -98,6 +99,7 @@ with util.get_content() as content_dir, g.booted():
         './automatus.py', 'rule',
         '--libvirt', 'qemu:///system', virt.GUEST_NAME,
         '--product', f'rhel{versions.rhel.major}',
+        '--remediate-using', fix_type,
         *our_rules,
     ]
     _, lines = util.subprocess_stream(
