@@ -341,8 +341,10 @@ class Guest:
         self.orig_disk_format = None
         self.state_file_path = f'{GUEST_IMG_DIR}/{name}.state'
         self.snapshot_path = f'{GUEST_IMG_DIR}/{name}-snap.qcow2'
+        # if it exists, guest was successfully installed
+        self.install_ready_path = Path(f'{GUEST_IMG_DIR}/{name}.install_ready')
         # if exists, all snapshot preparation processes were successful
-        self.snapshot_ready_path = f'{GUEST_IMG_DIR}/{name}.ready'
+        self.snapshot_ready_path = Path(f'{GUEST_IMG_DIR}/{name}.snapshot_ready')
 
     def install(self, location=None, kickstart=None, rpmpack=None, disk_format='raw'):
         """
@@ -453,6 +455,9 @@ class Guest:
         # installed system doesn't need as much RAM, alleviate swap pressure
         set_domain_memory(self.name, 2000)
 
+        if self.tag is not None:
+            self.install_ready_path.write_text(self.tag)
+
         self.orig_disk_path = disk_path
         self.orig_disk_format = disk_format
 
@@ -491,11 +496,16 @@ class Guest:
             virsh('undefine', self.name, '--nvram', '--snapshots-metadata',
                   *storage, check=True)
 
+    def is_installed(self):
+        if not os.path.exists(self.install_ready_path):
+            return False
+        tag = self.install_ready_path.read_text()
+        return tag == self.tag
+
     def can_be_snapshotted(self):
         if not os.path.exists(self.snapshot_ready_path):
             return False
-        with open(self.snapshot_ready_path) as f:
-            tag = f.read().rstrip()
+        tag = self.snapshot_ready_path.read_text()
         return tag == self.tag
 
     def prepare_for_snapshot(self):
@@ -529,8 +539,7 @@ class Guest:
         set_state_image_disk(self.state_file_path, self.snapshot_path, 'qcow2')
 
         if self.tag is not None:
-            with open(self.snapshot_ready_path, 'w') as f:
-                f.write(self.tag)
+            self.snapshot_ready_path.write_text(self.tag)
 
     def _restore_snapshotted(self):
         # reused guest from another test, install() or prepare_for_snapshot()
@@ -681,7 +690,8 @@ class Guest:
         self.undefine(incl_storage=True)
         files = [
             self.ssh_keyfile_path, f'{self.ssh_keyfile_path}.pub',
-            self.snapshot_path, self.state_file_path, self.snapshot_ready_path,
+            self.snapshot_path, self.state_file_path,
+            self.install_ready_path, self.snapshot_ready_path,
         ]
         for f in files:
             if os.path.exists(f):
