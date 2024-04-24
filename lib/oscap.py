@@ -125,15 +125,15 @@ class Datastream:
                                 self.rules[for_rule].fixes |= fix_type
                         stack.pop()
 
-    def has_no_remediation(self, rule):
+    def has_remediation(self, rule):
         """
-        Return True if 'rule' has no bash remediation, False otherwise.
+        Return True if 'rule' has bash remediation, False otherwise.
         """
         if rule not in self.rules:
             return False
         # TODO: come up with a different way of handling "no remediation" cases,
         #       retain the current "has no *bash* remediation" behavior for now
-        return self.rules[rule].fixes & self.FixType.bash
+        return bool(self.rules[rule].fixes & self.FixType.bash)
 
     def get_all_profiles_rules(self):
         """
@@ -198,7 +198,7 @@ def report_from_verbose(lines):
         if status in ['pass', 'error']:
             pass
         elif status == 'fail':
-            if global_ds().has_no_remediation(rule):
+            if not global_ds().has_remediation(rule):
                 note = 'no remediation'
                 status = 'warn'
         elif status in ['notapplicable', 'notchecked', 'notselected', 'informational']:
