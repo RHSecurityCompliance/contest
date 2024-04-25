@@ -32,9 +32,12 @@ def _available_ssg_versions():
     ]
     ret = util.subprocess_run(cmd, check=True, stdout=subprocess.PIPE, universal_newlines=True)
     versions = ret.stdout.rstrip('\n').split('\n')
+    # transform a list of NVRs to (name, version, release) tuples,
+    # older rpm.labelCompare requires it
+    versions = ((None, x, None) for x in versions)
     # sort from newest to oldest
-    versions.sort(key=functools.cmp_to_key(rpm.labelCompare), reverse=True)
-    return versions
+    ordered = sorted(versions, key=functools.cmp_to_key(rpm.labelCompare), reverse=True)
+    return [version for _, version, _ in ordered]
 
 
 @contextlib.contextmanager
