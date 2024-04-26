@@ -8,7 +8,7 @@ import tempfile
 import textwrap
 from pathlib import Path
 
-from lib import util, results, oscap, virt, versions
+from lib import util, results, oscap, virt, versions, ansible
 from conf import partitions
 
 
@@ -81,6 +81,9 @@ else:
         int(test_basename),
         int(os.environ['TOTAL_SLICES'])
     )
+
+if fix_type == 'ansible':
+    ansible.install_deps()
 
 our_rules_textblock = textwrap.indent(('\n'.join(our_rules)), '    ')
 util.log(f"testing rules:\n{our_rules_textblock}")
