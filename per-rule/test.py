@@ -12,27 +12,6 @@ from lib import util, results, oscap, virt, versions, ansible
 from conf import partitions
 
 
-def slice_list(full_list, divident, divisor):
-    """
-    Slice a 'full_list' into approx. equally-sized 'divisor' parts,
-    return the 'divident' slice.
-    """
-    total = len(full_list)
-    quotient = int(total / divisor)
-    remainder = total % divisor
-    # add 1 to the first dividents, up until all the added 1s
-    # are consumed (they add up to a value equal to remainder)
-    count = quotient + (1 if remainder >= divident else 0)
-    # starting index, from 0, with remainder gradually added,
-    # capped by max remainder value
-    start = (divident-1)*quotient + min(remainder, (divident-1))
-    # end = start of current slice + amount
-    # (as last valid index + 1, for python slice end)
-    end = start + count
-    # return a slice of the original list rather than copying it
-    return full_list[start:end]
-
-
 def between_strings(full_text, before, after):
     """
     Cut off a middle section of a 'full_text' string between the
@@ -76,11 +55,14 @@ if test_basename == 'from-env':
     else:
         raise RuntimeError("RULE env variable not defined or empty")
 else:
-    our_rules = slice_list(
-        sorted(oscap.global_ds().get_all_profiles_rules()),
-        int(test_basename),
-        int(os.environ['TOTAL_SLICES'])
-    )
+    all_rules = sorted(oscap.global_ds().get_all_profiles_rules())
+    start = int(test_basename) - 1
+    total = int(os.environ['TOTAL_SLICES'])
+    # slice all_rules, get every total-th member
+    our_rules = all_rules[start::total]
+
+if not our_rules:
+    raise RuntimeError("no rules to test")
 
 if fix_type == 'ansible':
     ansible.install_deps()
