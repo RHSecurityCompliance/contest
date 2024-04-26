@@ -12,25 +12,12 @@ from lib import util, results, oscap, virt, versions, ansible
 from conf import partitions
 
 
-def slice_list(full_list, divident, divisor):
+def slice_list(full_list, start, modulus):
     """
-    Slice a 'full_list' into approx. equally-sized 'divisor' parts,
-    return the 'divident' slice.
+    Slice a 'full_list' into approx. equally-sized parts, created from
+    every N-th ('modulus') item from 'start' - 1 (index 0) position.
     """
-    total = len(full_list)
-    quotient = int(total / divisor)
-    remainder = total % divisor
-    # add 1 to the first dividents, up until all the added 1s
-    # are consumed (they add up to a value equal to remainder)
-    count = quotient + (1 if remainder >= divident else 0)
-    # starting index, from 0, with remainder gradually added,
-    # capped by max remainder value
-    start = (divident-1)*quotient + min(remainder, (divident-1))
-    # end = start of current slice + amount
-    # (as last valid index + 1, for python slice end)
-    end = start + count
-    # return a slice of the original list rather than copying it
-    return full_list[start:end]
+    return full_list[start-1::modulus]
 
 
 def between_strings(full_text, before, after):
