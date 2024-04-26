@@ -135,8 +135,6 @@
 /scanning/disa-alignment/.*/service_pcscd_enabled
 # https://github.com/ComplianceAsCode/content/issues/11698
 /scanning/disa-alignment/.*/no_shelllogin_for_systemaccounts
-# https://github.com/ComplianceAsCode/content/issues/11700
-/scanning/disa-alignment/.*/accounts_umask_etc_bashrc
 # https://github.com/ComplianceAsCode/content/issues/11802
 /scanning/disa-alignment/.*/CCE-88173-0
 # https://github.com/ComplianceAsCode/content/issues/11703
