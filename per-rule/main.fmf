@@ -27,6 +27,9 @@ require+:
   - createrepo
   # automatus dependencies (oscap-ssh, etc.)
   - openscap-utils
+  # for ansible variant
+  - ansible-core
+  - rhc-worker-playbook
 extra-hardware: |
     keyvalue = HVM=1
     hostrequire = memory>=3720
