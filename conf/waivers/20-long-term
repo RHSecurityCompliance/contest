@@ -89,25 +89,28 @@
 /hardening/oscap/with-gui/e8/file_ownership_binary_dirs
     rhel == 7
 
-# Image Builder errors
+# Image Builder
 #
 # ignore errors for now, until 'openscap generate fix' syntax stabilizes
 # and blocker bugs are resolved
 /hardening/image-builder/.+
-    Match(status == 'error', sometimes=True)
+    Match(rhel == 8 and status == 'error', sometimes=True)
 
-# Image Builder failures
-#
 # https://github.com/ComplianceAsCode/content/issues/11565
 /hardening/image-builder/.*/audit_rules_privileged_commands
-    True
 # https://github.com/ComplianceAsCode/content/issues/11566
-/hardening/image-builder/hipaa/sebool_selinuxuser_execstack
-    rhel == 8
+/hardening/image-builder/(hipaa|anssi_bp28_high)/sebool_selinuxuser_execstack
 # https://github.com/ComplianceAsCode/content/issues/11567
 /hardening/image-builder/.*/enable_dracut_fips_module
 /hardening/image-builder/.*/enable_fips_mode
     True
+# OpenSCAP unsupported profile: xccdf_org.ssgproject.content_profile_ccn_advanced
+# https://issues.redhat.com/browse/RHEL-25574
+/hardening/image-builder/ccn_advanced
+    rhel == 9 and status == 'error'
+# https://github.com/ComplianceAsCode/content/pull/11903
+/hardening/image-builder/stig/auditd_audispd_configure_sufficiently_large_partition
+    status == 'error'
 
 # DISA Alignment waivers
 #
