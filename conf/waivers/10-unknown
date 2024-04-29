@@ -165,4 +165,9 @@
 /static-checks/html-links/http://chrony.tuxfamily.org/
     True
 
+# https://github.com/ComplianceAsCode/content/issues/11891
+/hardening/(anaconda|ansible|oscap)/(stig|with_gui/stig_gui)/auditd_audispd_configure_sufficiently_large_partition
+/scanning/disa-alignment/[^/]+/auditd_audispd_configure_sufficiently_large_partition
+    True
+
 # vim: syntax=python
