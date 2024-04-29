@@ -109,7 +109,6 @@
 /per-rule/.+/file_ownership_var_log_audit_stig/correct_value_default_file.pass
 /per-rule/.+/tftpd_uses_secure_mode/correct.pass
 /per-rule/.+/tftpd_uses_secure_mode/wrong.fail
-/per-rule/.+/ansible/rsyslog_files_groupownership/mixed_lenient_attr_cloudinit.fail
     rhel == 9
 # unit tests that try installing packages that don't even exist in the repos,
 # or messing with services of packages that are not installed
