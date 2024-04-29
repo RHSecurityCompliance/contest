@@ -17,8 +17,6 @@
 /hardening/anaconda(/with-gui)?/[^/]+/firewalld_sshd_port_enabled
 # https://github.com/ComplianceAsCode/content/issues/11625
 /hardening/image-builder(/with-gui)?/[^/]+/firewalld_sshd_port_enabled
-# https://github.com/ComplianceAsCode/content/issues/11564
-/hardening/image-builder(/with-gui)?/[^/]+/firewalld_loopback_traffic_(restricted|trusted)
     rhel >= 8
 
 # rule ordering issue - accounts_password_pam_retry is checked first and passes,
