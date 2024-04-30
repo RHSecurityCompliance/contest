@@ -113,9 +113,6 @@
 # https://issues.redhat.com/browse/RHEL-25574
 /hardening/image-builder/ccn_advanced
     rhel == 9 and status == 'error'
-# https://github.com/ComplianceAsCode/content/pull/11903
-/hardening/image-builder/stig/auditd_audispd_configure_sufficiently_large_partition
-    status == 'error'
 
 # DISA Alignment waivers
 #
