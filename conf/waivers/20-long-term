@@ -129,5 +129,8 @@
 # https://github.com/ComplianceAsCode/content/issues/11548 (DISA is stricter than us)
 /scanning/disa-alignment/.*/accounts_tmout
     True
+# the feature used in this stigid is not ported to 9.0
+/scanning/disa-alignment/.*/CCE-90785-7
+    rhel == 9.0
 
 # vim: syntax=python
