@@ -132,5 +132,8 @@
 # the feature used in this stigid is not ported to 9.0
 /scanning/disa-alignment/.*/CCE-90785-7
     rhel == 9.0
+# https://github.com/ComplianceAsCode/content/issues/11778 (issue on DISA side)
+/scanning/disa-alignment/.*/file_permission_user_init_files_root
+    Match(rhel == 9, sometimes=True)
 
 # vim: syntax=python
