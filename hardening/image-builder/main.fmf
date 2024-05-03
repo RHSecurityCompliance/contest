@@ -27,9 +27,9 @@ adjust:
   - when: arch != x86_64
     enabled: false
     because: we want to run virtualization on x86_64 only
-  - when: distro == rhel-7
+  - when: distro == rhel-7 or distro ~< rhel-8.10 or distro ~< rhel-9.4
     enabled: false
-    because: there is no OSBuild or Image Builder on RHEL-7
+    because: there is no OSBuild or Image Builder on RHEL-7 and old RHEL8/9 contain old OSBuild
 tag:
   - max1
   - daily
