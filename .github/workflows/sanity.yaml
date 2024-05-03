@@ -23,6 +23,19 @@ jobs:
               print(str(e))
               sys.exit(1)
             EOF
+      - name: Check Vim modeline empty line
+        run: |
+            function err { echo -e "error: $1" >&2; exit 1; }
+            for file in conf/waivers/*; do
+                [[ -f "$file" ]] || err "$file not found"
+                out=$(grep -B1 '^# vim' "$file") || err "vim modeline not found in $file"
+                out=$(head -n1 <<<"$out")
+                if [[ $out ]]; then
+                    msg="line above vim modeline in $file not empty: $out"
+                    msg+="\nPlease keep one empty line above the vim modeline."
+                    err "$msg"
+                fi
+            done
   flake8:
     runs-on: ubuntu-latest
     steps:
