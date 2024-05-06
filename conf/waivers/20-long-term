@@ -91,11 +91,6 @@
 
 # Image Builder
 #
-# ignore errors for now, until 'openscap generate fix' syntax stabilizes
-# and blocker bugs are resolved
-/hardening/image-builder/.+
-    Match(rhel == 8 and status == 'error', sometimes=True)
-
 # https://issues.redhat.com/browse/RHEL-24246
 # qcow2 images have broken network with Server-like package sets
 /hardening/image-builder/with-gui/.+
