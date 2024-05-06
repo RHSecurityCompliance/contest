@@ -135,5 +135,8 @@
 # https://github.com/ComplianceAsCode/content/issues/11778 (issue on DISA side)
 /scanning/disa-alignment/.*/file_permission_user_init_files_root
     Match(rhel == 9, sometimes=True)
+# https://github.com/ComplianceAsCode/content/issues/11937
+/scanning/disa-alignment/.*/accounts_umask_etc_bashrc
+    rhel == 9
 
 # vim: syntax=python
