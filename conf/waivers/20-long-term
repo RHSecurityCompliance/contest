@@ -133,5 +133,8 @@
 # https://github.com/ComplianceAsCode/content/issues/11937
 /scanning/disa-alignment/.*/accounts_umask_etc_bashrc
     rhel == 9
+# the feature used by this rule is not available in RHEL 9.0 or <= 8.6
+/scanning/disa-alignment/.*/logind_session_timeout
+    rhel == 9.0 or rhel <= 8.6
 
 # vim: syntax=python
