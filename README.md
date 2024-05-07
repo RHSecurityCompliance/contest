@@ -157,12 +157,29 @@ of the modules present in `lib`.
 
 (TODO: probably move to its own document?)
 
+### SSH into Anaconda
+
 Anaconda-based remediation can be debugged on a virtual machine by issuing
 `virsh domifaddr contest` (where `contest` is the default VM name) to acquire
 an IP address of the guest (which gets assigned just before Anaconda launches)
 and doing `ssh root@that-ip-addr` from the host running the test itself (and
 hosting the VM).  
 There is no password for the Anaconda environment, so this will just log you in.
+
+### SSH into installed VMs
+
+You can use a handy script in the home directory of the VM host's user.  
+Simply run:
+
+```
+./contest-sshvm [vm-name]
+```
+
+The script will find the first contest-installed VM if `vm-name` is not given,
+it will check whether the VM is running (as a result of you starting it earlier
+or `CONTEST_LEAVE_GUEST_RUNNING=1`) and if not, it will start it and wait for
+`sshd` to start responding. It will then `ssh` you into the VM, using
+pre-generated SSH keys (no passwords needed).
 
 ## License
 

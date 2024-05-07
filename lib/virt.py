@@ -185,6 +185,38 @@ class Host:
         else:
             define_our_network()
 
+    @staticmethod
+    def create_sshvm(dest):
+        dest = Path(dest)
+        if dest.exists():
+            return
+        script = util.dedent(r'''
+            #!/bin/bash
+            function list { virsh -q list "$@" | sed -rn 's/^ *[-0-9]+ +([^ ]+).*/\1/p'; }
+            function get_sshkey { f="%SSHKEY_DIR%/$1.sshkey"; [[ -f $f ]] && echo "$f"; }
+            if [[ $1 ]]; then
+                vm=$1 sshkey=$(get_sshkey "$vm")
+                [[ $(virsh -q domstate "$vm") != running ]] && virsh start "$vm"
+            else
+                # try running VMs first, fall back to shut off ones
+                for vm in $(list); do sshkey=$(get_sshkey "$vm") && break; done
+                [[ -z $sshkey ]] && for vm in $(list --inactive); do
+                    sshkey=$(get_sshkey "$vm") && virsh start "$vm" && break
+                done
+            fi
+            [[ -z $sshkey ]] && { echo "no valid VM found" >&2; exit 1; }
+            # get ip and ssh to it
+            ip=$(virsh -q domifaddr "$vm" | sed -rn 's/.+ +([^ ]+)\/[0-9]+$/\1/p')
+            [[ -z $ip ]] && { echo "could not get IP addr for $vm" >&2; exit 1; }
+            echo "waiting for ssh on $vm: root@$ip:22"
+            while ! ncat --send-only -w 1 "$ip" 22 </dev/null 2>&0; do sleep 0.1; done
+            ssh -q -i "$sshkey" -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null \
+                "root@$ip"
+        ''')
+        script = script.replace('%SSHKEY_DIR%', GUEST_IMG_DIR)  # f-strings cannot have \
+        dest.write_text(script)
+        dest.chmod(0o755)
+
     @classmethod
     def setup(self):
         if not self.check_virt_capability():
@@ -195,6 +227,7 @@ class Host:
             util.subprocess_run(['systemctl', 'start', 'libvirtd'], check=True)
 
         self.setup_network()
+        self.create_sshvm('/root/contest-sshvm')
 
 
 #
@@ -570,10 +603,10 @@ class Guest:
             os.remove(self.snapshot_path)
 
     def _log_leave_running_notice(self):
-        out = textwrap.dedent(f"""\n
+        out = textwrap.dedent("""\n
             Leaving guest running, the test might break!
             To ssh into it, log in (ssh) into the VM host first, then do:
-                ssh -i {self.ssh_keyfile_path} root@{self.ipaddr}
+                ./contest-sshvm
             """)
         util.log(textwrap.indent(out, '    '), skip_frames=1)
 
