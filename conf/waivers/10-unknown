@@ -47,9 +47,6 @@
 # Ansible TODO: completely unknown, investigate and sort
 #
 # all RHELs
-/hardening/ansible/.+/mount_option_boot_noexec
-/hardening/ansible/.+/mount_option_boot_nosuid
-/hardening/ansible/.+/mount_option_home_noexec
 /hardening(/host-os)?/ansible/.+/audit_rules_usergroup_modification
     True
 # RHEL-9 only
