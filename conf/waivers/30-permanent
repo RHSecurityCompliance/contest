@@ -9,8 +9,9 @@
 
 # the service_sssd_enabled will be failing even if the service is enabled
 # because it requires manual configuration which cannot be attained with our rules
+# note that there are cases when sssd can be started
 /hardening/.+/service_sssd_enabled
-    True
+    Match(True, sometimes=True)
 
 # Beaker-specific:
 # all Beaker repositories have gpgcheck=0 and they get copied to nested VMs too
