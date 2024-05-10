@@ -109,7 +109,7 @@ class Datastream:
                             rule_id = stack[-1].get('id')
                             # TODO: use str.removeprefix after RHEL-7
                             rule_id = re.sub('^xccdf_org.ssgproject.content_rule_', '', rule_id)
-                            self.rules[rule]  # let defaultdict fill in the values
+                            self.rules[rule_id]  # let defaultdict fill in the values
 
                         # fixes / remediations
                         elif frames[-2:] == ['Rule', 'fix']:
