@@ -130,8 +130,8 @@
 # https://github.com/ComplianceAsCode/content/issues/11778 (issue on DISA side)
 /scanning/disa-alignment/.*/file_permission_user_init_files_root
     Match(rhel == 9, sometimes=True)
-# the feature used by this rule is not available in RHEL 9.0 or <= 8.6
-/scanning/disa-alignment/.*/logind_session_timeout
+# the feature used by the rule logind_session_timeout is not available in RHEL 9.0 or <= 8.6
+/scanning/disa-alignment/.*/CCE-90784-0
     rhel == 9.0 or rhel <= 8.6
 
 # vim: syntax=python
