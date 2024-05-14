@@ -34,22 +34,32 @@ def get_datastream():
     return datastream
 
 
-def get_playbook(profile):
+def _find_playbooks():
     if user_content:
         build_content(user_content)
-        playbook = user_content / 'build' / 'ansible' / f'rhel{rhel.major}-playbook-{profile}.yml'
+        return user_content / 'build' / 'ansible'
     else:
-        base_dir = Path('/usr/share/scap-security-guide/ansible')
-        if rhel.is_true_rhel():
-            playbook = base_dir / f'rhel{rhel.major}-playbook-{profile}.yml'
-        elif rhel.is_centos():
-            if rhel <= 8:
-                playbook = base_dir / f'centos{rhel.major}-playbook-{profile}.yml'
-            else:
-                playbook = base_dir / f'cs{rhel.major}-playbook-{profile}.yml'
+        return Path('/usr/share/scap-security-guide/ansible')
+
+
+def get_playbook(profile):
+    if rhel.is_true_rhel():
+        name = f'rhel{rhel.major}-playbook-{profile}.yml'
+    elif rhel.is_centos():
+        if rhel <= 8:
+            name = f'centos{rhel.major}-playbook-{profile}.yml'
+        else:
+            name = f'cs{rhel.major}-playbook-{profile}.yml'
+    playbook = _find_playbooks() / name
     if not playbook.exists():
         raise RuntimeError(f"cound not find playbook as {playbook}")
     return playbook
+
+
+def iter_playbooks():
+    for name in _find_playbooks().iterdir():
+        if name.suffix == '.yml':
+            yield name
 
 
 def get_kickstart(profile):
