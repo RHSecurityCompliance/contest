@@ -1,0 +1,23 @@
+summary: Check Ansible playbooks syntax.
+description: |-
+    Verify that all generated playbooks and all playbooks provided
+    by the scap-security-guide package have correct Ansible syntax.
+test: python3 -m lib.runtest ./test.py
+result: custom
+environment+:
+    PYTHONPATH: ../../..
+duration: 15m
+require+:
+  - openscap-scanner
+recommend+:
+  - ansible-core
+  # needed for the ini_file ansible plugin, and more
+  - rhc-worker-playbook
+tag:
+  - CI-Tier-1
+  - daily
+adjust:
+  - when: arch != x86_64
+    enabled: false
+    because: Ansible playbooks are same on all architectures
+extra-summary: /CoreOS/scap-security-guide/static-checks/ansible/syntax-check
