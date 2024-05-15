@@ -140,13 +140,14 @@ returning `False` if the RPM is not installed.
 ### Expecting both `pass` and `fail`/`error`
 
 Sometimes, failures or errors are not reliable and happen only occassionally.
-This means a waive section might be throwing a lot of "unexpected pass" failures
-and be rendered useless.
+This is why waivers are "permissive" by default - they only waive
+`fail`/`error`, but allow `pass` to pass through, only noting `waived pass`
+in the result note.
 
-To fix this, pass `sometimes=True` to `Match()`, which tells the waiving code
-to do nothing if there's a match for a `pass` status.
+To override this, pass `strict=True` to `Match()`, which tells the waiving code
+to trigger a waive failure when the waiver matches `pass`.
 
 ```python
 /some/result/name
-    Match(rhel >= 8, sometimes=True)
+    Match(rhel >= 8, strict=True)
 ```

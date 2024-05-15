@@ -9,7 +9,7 @@
 #  - seems to not happen on latest 8.9 nightlies ??
 #  - on latest 7.9, but upstream 2023/05 content
 /hardening/oscap/[^/]+/package_rear_installed
-    Match(rhel <= 8, sometimes=True)
+    rhel <= 8
 
 # ssh either doesn't start up, or gets blocked, possibly related
 # to new firewalld rules being added?
@@ -31,7 +31,7 @@
 /hardening/oscap/with-gui/.+/aide_scan_notification
 /hardening/oscap/with-gui/.+/aide_verify_acls
 /hardening/oscap/with-gui/.+/aide_verify_ext_attributes
-    Match(True, sometimes=True)
+    True
 
 # seems RHEL-8 specific, unknown, TODO investigate
 # remediation script says:
@@ -42,7 +42,7 @@
 #   Unable to enable feature [22]: Invalid argument
 # maybe hardware-specific and our Beaker systems don't have the hardware?
 /hardening/host-os/oscap/.+/sssd_enable_smartcards
-    Match(rhel == 8, sometimes=True)
+    rhel == 8
 
 # Ansible TODO: completely unknown, investigate and sort
 #
@@ -68,24 +68,24 @@
     rhel == 7
 # unknown as well, but happens only rarely
 /hardening/ansible/.+/configure_bashrc_exec_tmux
-    Match(True, sometimes=True)
+    True
 # only pci-dss, passes everywhere else
 /hardening/ansible(/with-gui)?/pci-dss/audit_rules_login_events
     rhel == 8 or rhel == 9
 # https://github.com/ComplianceAsCode/content/issues/11752
 /hardening(/host-os)?/ansible/.+/audit_rules_privileged_commands
-    Match(rhel == 8 or rhel == 9, sometimes=True)
+    rhel == 8 or rhel == 9
 
 # home_nosuid failures are just really random across RHEL versions and nightlies
 /hardening/ansible/.+/mount_option_home_nosuid
-    Match(True, sometimes=True)
+    True
 
 # https://github.com/ComplianceAsCode/content/issues/10901
 # not sure what enables the service, but second remediation fixes the problem
 # TODO: we do run double remediation, but this still sometimes fails,
 #       investigate why
 /hardening/anaconda/with-gui/[^/]+/service_rpcbind_disabled
-    Match(rhel == 8, sometimes=True)
+    rhel == 8
 
 # /per-rule (Automatus rule mode) waivers
 #
@@ -134,7 +134,7 @@
 # TODO: unknown, probably worth investigating
 /hardening/host-os/oscap/.+/sysctl_net_ipv6_conf_(all|default)_accept_ra
 /hardening/host-os/oscap/.+/sysctl_net_ipv4_conf_default_log_martians
-    Match(True, sometimes=True)
+    True
 
 # DISA Alignment waivers
 #
