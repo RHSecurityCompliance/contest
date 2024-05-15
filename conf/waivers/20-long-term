@@ -108,6 +108,9 @@
 # https://issues.redhat.com/browse/RHEL-25574
 /hardening/image-builder/ccn_advanced
     rhel == 9 and status == 'error'
+# issue https://github.com/ComplianceAsCode/content/issues/11996I
+/hardening/image-builder/cui/mount_option_nodev_nonroot_local_partitions
+    rhel == 8
 
 # DISA Alignment waivers
 #
