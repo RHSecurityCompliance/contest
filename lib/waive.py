@@ -159,10 +159,12 @@ class Match:
     """
     A True/False result with additional metadata, returned from
     custom waiving format and its python code blocks.
+
+    Use 'strict=True' to fail when the waiver matches on 'pass'.
     """
-    def __init__(self, matches, *, sometimes=False):
+    def __init__(self, matches, *, strict=False):
         self.matches = matches
-        self.sometimes = sometimes
+        self.strict = strict
 
     def __bool__(self):
         return self.matches
@@ -230,10 +232,10 @@ def rewrite_result(status, name, note, new_status='warn'):
         return f'({text}) {note}' if note else text
 
     if status == 'pass':
-        if matched.sometimes:
-            return (status, name, add_note(f"waived {status}"))
+        if matched.strict:
+            return ('fail', name, add_note("waive: expected fail/error, got pass"))
         else:
-            return ('error', name, add_note("waive: expected fail/error, got pass"))
+            return (status, name, add_note("waived pass"))
 
     # fail or error
     return (new_status, name, add_note(f"waived {status}"))

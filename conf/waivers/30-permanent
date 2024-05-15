@@ -5,13 +5,13 @@
 # remediation for this is globally disabled in Contest,
 # see conf/remediation.py
 /hardening/.*/accounts_password_set_max_life_(existing|root)
-    Match(True, sometimes=True)
+    True
 
 # the service_sssd_enabled will be failing even if the service is enabled
 # because it requires manual configuration which cannot be attained with our rules
 # note that there are cases when sssd can be started
 /hardening/.+/service_sssd_enabled
-    Match(True, sometimes=True)
+    True
 
 # Beaker-specific:
 # all Beaker repositories have gpgcheck=0 and they get copied to nested VMs too
@@ -19,14 +19,14 @@
 # we don't control partitions on the host OS
 /hardening/host-os/.+/mount_option_(home|opt|srv|var|var_log|var_log_audit|tmp)_(noexec|nosuid|nodev|usrquota|grpquota)
 /hardening/host-os/.+/mount_option_boot_efi_nosuid
-    Match(True, sometimes=True)
+    True
 
 # Beaker-specific, possibly;
 # same for dnf-automatic and rsyslog (??), is this fully random?
 /hardening/host-os/oscap/[^/]+/package_dnf-automatic_installed
 /hardening/host-os/oscap/[^/]+/timer_dnf-automatic_enabled
 /hardening/host-os/oscap/[^/]+/package_rsyslog-gnutls_installed
-    Match(rhel >= 8, sometimes=True)
+    rhel >= 8
 
 # https://bugzilla.redhat.com/show_bug.cgi?id=1797653 WONTFIX
 /scanning/oscap-eval/ERROR
@@ -38,7 +38,7 @@
 # harmless (expiration is not MITM) while being the biggest contributor
 # to false positives, so just ignore them, avoiding frequent random fails
 /static-checks/html-links/.+
-    Match("failed: certificate has expired" in note, sometimes=True)
+    "failed: certificate has expired" in note
 # Inaccessible until form is filled:
 /static-checks/html-links/https://docs-prv.pcisecuritystandards.org/PCI%20DSS/Standard/PCI-DSS-v4_0.pdf
     True
@@ -48,7 +48,7 @@
 # DISA benchmark allows only released OS versions. Our content is fine with unreleased versions.
 # https://github.com/ComplianceAsCode/content/issues/11649
 /scanning/disa-alignment/.*/installed_OS_is_vendor_supported
-    Match(True, sometimes=True)
+    True
 
 # CentOS-specific waivers
 #
@@ -64,7 +64,7 @@
 /hardening/.+/ensure_gpgcheck_never_disabled
 /hardening/.+/ensure_gpgcheck_repo_metadata
 /hardening/.+/ensure_redhat_gpgkey_installed
-    Match(rhel.is_centos(), sometimes=True)
+    rhel.is_centos()
 # Presumably not valid for CentOS
 /hardening/.+/ospp/enable_fips_mode
 /hardening/.*/ospp/configure_crypto_policy
