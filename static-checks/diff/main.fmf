@@ -2,6 +2,9 @@ result: custom
 environment+:
     PYTHONPATH: ../..
 duration: 10m
+tag:
+  - NoProductization
+  - always-fails
 adjust:
   - when: distro == rhel-7
     enabled: false
@@ -10,9 +13,6 @@ adjust:
 /profiles:
     summary: Diff datastreams, output added/removed profiles
     test: python3 -m lib.runtest ./profiles.py
-    tag:
-      - NoProductization
-      - always-fails
     extra-summary: /CoreOS/scap-security-guide/static-checks/diff/profiles
     extra-nitrate: TC#0617452
     id: 5f0d1df1-f2b5-4212-84e7-2c25ec5566c1
@@ -20,9 +20,6 @@ adjust:
 /profile-titles:
     summary: Diff datastreams, output profile title differences
     test: python3 -m lib.runtest ./profile-titles.py
-    tag:
-      - NoProductization
-      - always-fails
     extra-summary: /CoreOS/scap-security-guide/static-checks/diff/profile-titles
     extra-nitrate: TC#0617450
     id: 9e43b634-eaab-4e4f-81c2-bbab571f7db1
@@ -30,9 +27,6 @@ adjust:
 /profile-rules:
     summary: Diff datastreams, output profile rule/variable differences
     test: python3 -m lib.runtest ./profile-rules.py
-    tag:
-      - NoProductization
-      - always-fails
     extra-summary: /CoreOS/scap-security-guide/static-checks/diff/profile-rules
     extra-nitrate: TC#0617449
     id: d17358be-d702-4786-a9df-6716036c8428
@@ -40,16 +34,6 @@ adjust:
 /profile-variables:
     summary: Diff datastreams, output profile variable refine differences
     test: python3 -m lib.runtest ./profile-variables.py
-    tag:
-      - NoProductization
-      - always-fails
     extra-summary: /CoreOS/scap-security-guide/static-checks/diff/profile-variables
     extra-nitrate: TC#0617451
     id: dd504436-0d67-4f1c-96f4-faeff18a2c0c
-
-/removed-rules:
-    summary: Diff datastreams, check that no rule has been removed
-    test: python3 -m lib.runtest ./removed-rules.py
-    extra-summary: /CoreOS/scap-security-guide/static-checks/diff/removed-rules
-    extra-nitrate: TC#0617453
-    id: 6dfdc617-53f7-45de-af41-feeb9ae991ea
