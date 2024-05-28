@@ -1,11 +1,10 @@
 #!/usr/bin/python3
 
-import shared
-from lib import results, oscap
+from lib import util, results, oscap
 
 new = oscap.global_ds()
 
-with shared.get_old_datastream() as old_xml:
+with util.get_old_datastream() as old_xml:
     old = oscap.Datastream(old_xml)
 
     common_profiles = set(new.profiles).intersection(old.profiles)

@@ -1,3 +1,8 @@
+"""
+These are support functions for testing "old content", the previous released
+content version, typically in comparison to "new content", the current release.
+"""
+
 import subprocess
 import functools
 import contextlib
@@ -52,14 +57,6 @@ def get_old_datastream():
     # "old" is the installed scap-security-guide RPM
     if util.user_content:
         yield root_datastream
-#        # if scap-security-guide RPM is installed and datastream exists
-#        if root_datastream.exists():
-#            util.log("using new from CONTEST_CONTENT, old from installed SSG RPM")
-#            yield root_datastream
-#        else:
-#            with _downloaded_extracted_ds() as ds:
-#                util.log("using new from CONTEST_CONTENT, old from downloaded+compiled SSG RPM")
-#                yield ds
 
     # "new" is the installed scap-security-guide RPM,
     # "old" is an older version available in YUM/DNF repositories
