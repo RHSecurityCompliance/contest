@@ -171,6 +171,21 @@ def rule_from_verbose(line):
         return None
 
 
+def rules_from_verbose(lines):
+    """
+    Yield (rulename, status) from oscap info verbose output lines.
+    """
+    for line in lines:
+        # oscap xccdf eval --progress rule name and status
+        match = rule_from_verbose(line)
+        if match:
+            yield match
+        else:
+            # print out unrelated lines
+            sys.stdout.write(f'{line}\n')
+            sys.stdout.flush()
+
+
 def report_from_verbose(lines):
     """
     Report results from oscap output.
@@ -182,16 +197,7 @@ def report_from_verbose(lines):
     """
     total = 0
 
-    for line in lines:
-        # oscap xccdf eval --progress rule name and status
-        match = rule_from_verbose(line)
-        if match:
-            rule, status = match
-        else:
-            sys.stdout.write(f'{line}\n')
-            sys.stdout.flush()
-            continue
-
+    for rule, status in rules_from_verbose(lines):
         total += 1
         note = None
 
