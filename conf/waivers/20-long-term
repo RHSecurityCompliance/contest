@@ -60,7 +60,7 @@
 # caused by us not caring whether the VM has it installed,
 # - remediation should fix it, but doesn't -- possibly caused by
 #   https://github.com/RHSecurityCompliance/contest/issues/15
-/hardening/oscap(/with-gui)?/[^/]+/package_scap-security-guide_installed
+/hardening/oscap/.+/package_scap-security-guide_installed
     True
 
 # RHEL-8: https://bugzilla.redhat.com/show_bug.cgi?id=1834716
