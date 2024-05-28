@@ -137,4 +137,8 @@
 /scanning/disa-alignment/.*/CCE-90784-0
     rhel == 9.0 or rhel <= 8.6
 
+# https://github.com/ComplianceAsCode/content/issues/12030
+/per-rule/.*/set_nftables_table/.*
+    rhel == 9
+
 # vim: syntax=python
