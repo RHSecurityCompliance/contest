@@ -8,7 +8,7 @@
 # TODO: something new? .. RHEL-8 on e8 and ism_o, RHEL-7 e8
 #  - seems to not happen on latest 8.9 nightlies ??
 #  - on latest 7.9, but upstream 2023/05 content
-/hardening/oscap/[^/]+/package_rear_installed
+/hardening/oscap/.+/package_rear_installed
     rhel <= 8
 
 # ssh either doesn't start up, or gets blocked, possibly related

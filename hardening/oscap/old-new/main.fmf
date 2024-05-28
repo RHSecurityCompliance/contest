@@ -1,0 +1,95 @@
+summary: Verifies that old remediation doesn't break new content
+description: |-
+    During an OS upgrade or a content upgrade, it is likely that an existing
+    OS installation has a previous version of the content applied.
+    This may create issues when remediating (re-applying) a new version
+    of the content, ie. an already-remediated if statement might look
+    only for the new form of a fix, miss the old form, and break things.
+    Therefore, verify that applying remediation from the new content still
+    successfully fixes the non-compliance, as verified by a scan.
+environment+:
+    PYTHONPATH: ../../..
+tag:
+  # because old productization uses max1 and cannot run these efficiently
+  - NoProductization
+adjust+:
+  - when: distro == rhel-7
+    enabled: false
+    because: the old-content code is not compatible with RHEL-7
+
+/anssi_bp28_high:
+    environment+:
+        PROFILE: anssi_bp28_high
+    extra-summary: /CoreOS/scap-security-guide/hardening/oscap/old-new/anssi_bp28_high
+
+/cis:
+    environment+:
+        PROFILE: cis
+    extra-summary: /CoreOS/scap-security-guide/hardening/oscap/old-new/cis
+
+/cis_server_l1:
+    environment+:
+        PROFILE: cis_server_l1
+    extra-summary: /CoreOS/scap-security-guide/hardening/oscap/old-new/cis_server_l1
+
+/cis_workstation_l1:
+    environment+:
+        PROFILE: cis_workstation_l1
+    extra-summary: /CoreOS/scap-security-guide/hardening/oscap/old-new/cis_workstation_l1
+
+/cis_workstation_l2:
+    environment+:
+        PROFILE: cis_workstation_l2
+    extra-summary: /CoreOS/scap-security-guide/hardening/oscap/old-new/cis_workstation_l2
+
+/cui:
+    environment+:
+        PROFILE: cui
+    extra-summary: /CoreOS/scap-security-guide/hardening/oscap/old-new/cui
+
+/e8:
+    environment+:
+        PROFILE: e8
+    extra-summary: /CoreOS/scap-security-guide/hardening/oscap/old-new/e8
+
+/hipaa:
+    environment+:
+        PROFILE: hipaa
+    extra-summary: /CoreOS/scap-security-guide/hardening/oscap/old-new/hipaa
+
+/ism_o:
+    environment+:
+        PROFILE: ism_o
+    extra-summary: /CoreOS/scap-security-guide/hardening/oscap/old-new/ism_o
+
+/ospp:
+    environment+:
+        PROFILE: ospp
+    extra-summary: /CoreOS/scap-security-guide/hardening/oscap/old-new/ospp
+
+/pci-dss:
+    environment+:
+        PROFILE: pci-dss
+    extra-summary: /CoreOS/scap-security-guide/hardening/oscap/old-new/pci-dss
+
+/stig:
+    environment+:
+        PROFILE: stig
+    extra-summary: /CoreOS/scap-security-guide/hardening/oscap/old-new/stig
+
+/stig_gui:
+    environment+:
+        PROFILE: stig_gui
+    adjust+:
+      - enabled: false
+        because: not worth re-installing the VM snapshot with GUI packages
+    extra-summary: /CoreOS/scap-security-guide/hardening/oscap/old-new/stig_gui
+
+/ccn_advanced:
+    environment+:
+        PROFILE: ccn_advanced
+    adjust+:
+      - when: distro <= rhel-8
+        enabled: false
+        because: CNN Advanced profile is specific to RHEL 9
+    extra-summary: /CoreOS/scap-security-guide/hardening/oscap/old-new/ccn_advanced
