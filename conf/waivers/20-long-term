@@ -5,6 +5,10 @@
 # ie. failures that we don't expect to fix until a big feature is implemented,
 # even if it might take a year or two for the feature to be done
 
+# https://github.com/ComplianceAsCode/content/issues/12035
+/hardening/host-os/oscap/stig/chronyd_or_ntpd_set_maxpoll
+    rhel == 7
+
 # RHEL-7 only, because RHEL-8+ check for rsync-daemon,
 # while TMT only needs the 'rsync' command executed via ssh,
 # so remove the remediation exception + waiver on RHEL-8+
