@@ -6,13 +6,15 @@ test: python3 -m lib.runtest ./test.py
 result: custom
 environment+:
     PYTHONPATH: ../../..
-duration: 15m
+duration: 2h
 require+:
   - openscap-scanner
 recommend+:
   - ansible-core
   # needed for the ini_file ansible plugin, and more
   - rhc-worker-playbook
+  # individual rule playbooks
+  - scap-security-guide-rule-playbooks
 tag:
   - CI-Tier-1
   - daily

@@ -57,7 +57,7 @@ def get_playbook(profile):
 
 
 def iter_playbooks():
-    for name in _find_playbooks().iterdir():
+    for name in _find_playbooks().rglob('*'):
         if name.suffix == '.yml':
             yield name
 
