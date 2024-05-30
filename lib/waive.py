@@ -232,7 +232,7 @@ def rewrite_result(status, name, note, new_status='warn'):
         return f'({text}) {note}' if note else text
 
     if status == 'pass':
-        if matched.strict:
+        if matched.strict or os.environ.get('CONTEST_STRICT_WAIVERS') == '1':
             return ('fail', name, add_note("waive: expected fail/error, got pass"))
         else:
             return (status, name, add_note("waived pass"))

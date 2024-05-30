@@ -65,6 +65,10 @@ on Red Hat Enterprise Linux.
   - Useful when you want the *actual* result of ie. `/per-rule/from-env`,
     rather than the waived one.
 
+- `CONTEST_STRICT_WAIVERS`
+  - Set to `1` to force all waivers to be `strict=True`.
+  - See [WAIVERS.md](docs/WAIVERS.md) for more.
+
 - `CONTEST_CONTENT`
   - Specify a path to a content source directory (as cloned from
     [CaC/content](https://github.com/ComplianceAsCode/content/)) to be used
