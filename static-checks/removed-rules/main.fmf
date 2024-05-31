@@ -5,7 +5,7 @@ environment+:
     PYTHONPATH: ../..
 duration: 10m
 adjust:
-  - when: distro == rhel-7 || distro == centos-7
+  - when: distro == rhel-7 or distro == centos-7
     enabled: false
     because: the code is not compatible with RHEL-7
 extra-summary: /CoreOS/scap-security-guide/static-checks/removed-rules
