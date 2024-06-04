@@ -112,6 +112,8 @@ INSTALL_FAILURES = [
     br"Non interactive installation failed",
     # RHEL-7 ignores inst.noninteractive
     br"Please respond ",
+    # Anaconda died due to oscap crashing (or other reasons)
+    br"Kernel panic - not syncing",
 ]
 
 PIPE = subprocess.PIPE
