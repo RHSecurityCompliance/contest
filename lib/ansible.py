@@ -14,7 +14,8 @@ def install_deps():
         return
 
     # RHEL has rhc-worker-playbook
-    if versions.rhel.is_true_rhel():
+    # TODO: Remove RHEL10 check when rhc-worker-playbook is available there
+    if versions.rhel.is_true_rhel() and versions.rhel != 10:
         # it should already be installed by test 'recommends' FMF metadata
         util.subprocess_run(
             ['rpm', '--quiet', '-q', 'rhc-worker-playbook'],
