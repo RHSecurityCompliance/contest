@@ -20,7 +20,7 @@
 # - see https://github.com/ComplianceAsCode/content/issues/9746
 /hardening/anaconda(/with-gui)?/[^/]+/firewalld_sshd_port_enabled
 # https://github.com/ComplianceAsCode/content/issues/11625
-/hardening/image-builder(/with-gui)?/[^/]+/firewalld_sshd_port_enabled
+/hardening/image-builder/[^/]+/firewalld_sshd_port_enabled
     rhel >= 8
 
 # rule ordering issue - accounts_password_pam_retry is checked first and passes,
@@ -95,11 +95,6 @@
 
 # Image Builder
 #
-# https://issues.redhat.com/browse/RHEL-24246
-# qcow2 images have broken network with Server-like package sets
-/hardening/image-builder/with-gui/.+
-    status == 'error'
-
 # https://github.com/ComplianceAsCode/content/issues/11565
 /hardening/image-builder/.*/audit_rules_privileged_commands
 # https://github.com/ComplianceAsCode/content/issues/11566
