@@ -11,11 +11,7 @@ g = osbuild.Guest()
 
 profile = os.environ['PROFILE']
 
-blueprint = osbuild.Blueprint(profile)
-if os.environ.get('USE_SERVER_WITH_GUI'):
-    blueprint.add_package_group('Server with GUI')
-
-g.create(blueprint=blueprint, profile=profile)
+g.create(profile=profile)
 
 profile = f'xccdf_org.ssgproject.content_profile_{profile}'
 
