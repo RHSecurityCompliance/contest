@@ -19,7 +19,7 @@ By convention, file names inside the waivers directory have specific meaning:
   - note that they may still disappear over time, ie. by dropping support
     for an old OS release, which had the limitation
 
-## Custom file format
+## Sections
 
 The files inside the waivers directory use a custom file format to specify
 when a failure is expected.  
@@ -50,21 +50,6 @@ Each section consists of two parts:
     rhel < 9 and oscap < '1.3.6'
 ```
 
-When a new failing result is to be reported, the sections are evaluated
-sequentially, in order, **from the top**.
-
-Within each section:  
-If at least one of the consecutive regular expressions matches the result name,
-the python expression is evaluated.  
-If that expression also returns `True`, the result is considered waived and
-the traversal stops for that one result (no further sections are tried).
-
-If either the regular expressions don't match, or the python expression returns
-False, the section is skipped and a next one is considered.
-
-If none of the sections match, no waiving happens and the result remains
-unchanged.
-
 ## Regular expressions
 
 The regexps use a pythonic syntax, and are matched using `re.fullmatch()`,
@@ -92,21 +77,7 @@ Or `re.search()` behavior using:
 .*/some/result/name.*
 ```
 
-## Not just a `fail`
-
-The waiving logic is actually evaluated for all of `pass`, `fail` and `error`.
-The `pass` is there to catch any waive matches that suddenly started `pass`-ing,
-and the `error` allows us to waive some infrastructure `error`s as well.
-
-The waiving file format above therefore serves as a generic "matching logic",
-and it's up to the library code to interpret what a match means.
-
-- no match = no change
-- match + pass = fail (unexpected pass)
-- match + fail = warn (waived fail)
-- match + error = warn (waived error)
-
-## Matching and globals
+## Python expressions
 
 The python code block must always be one expression, not a freeform python
 module code.
@@ -122,7 +93,8 @@ The expression has these globals available:
 - `oscap` - an object capable of `openscap-scanner` RPM version comparisons,
   see [versions.oscap](lib/versions.py)
 - `env` - environment variable retrieval function, same as `os.environ.get()`
-- `Match` - a class for complex waive results (see below)
+- `Match` - a class for complex waive results, able to contain both a boolean
+  expression as well as additional parameters
 
 The version comparison objects also support a boolean evaluation, with
 `bool(rhel)` returning `False` if not running on RHEL, and ie. `bool(oscap)`
@@ -137,17 +109,91 @@ returning `False` if the RPM is not installed.
     rhel == 8 and 'some thing' in note and env('INFRA') == 'jenkins'
 ```
 
-### Expecting both `pass` and `fail`/`error`
+## Collecting a list of sections
 
-Sometimes, failures or errors are not reliable and happen only occassionally.
-This is why waivers are "permissive" by default - they only waive
-`fail`/`error`, but allow `pass` to pass through, only noting `waived pass`
-in the result note.
+Sections (as defined above) are gathered from multiple waiver files
+in alphanumerical order, and - within each file - from the top.
 
-To override this, pass `strict=True` to `Match()`, which tells the waiving code
-to trigger a waive failure when the waiver matches `pass`.
+This creates a one big unified sequential ordered list of sections
+that is later used for waiving.
 
-```python
-/some/result/name
-    Match(rhel >= 8, strict=True)
+## How a result is waived
+
+Before a result (e.g. rule result or overall test result) is reported,
+the waiving logic looks at the status (`pass`, `fail`, etc.).
+
+If the status is `info` or `warn`, no further processing is done, and
+the result remains intact.  
+All other statuses continue below.
+
+The waiving logic then goes through the big list of sections (gathered
+above), **from beginning to end**, and tries to match the test name
+contained within the result, against all regexps in each section.
+
+For example, a test name of `/some/result/name`, when evaluated against
+
 ```
+/different/name.*
+    rhel >= 8
+
+/some/unrelated/string
+/some/.+/name
+/something/else
+    rhel >= 8
+```
+
+would match the second section, and its `/some/.+/name` regexp.
+
+**If no section matches on a regexp, no further processing is done,
+and the result remains intact.**
+
+When a section is matched on regexp, its python expression is evaluated.
+In our example, `/some/result/name` matched `/some/.+/name` regex. The
+python expression to be evaluated for this section is `rhel >= 8`.
+If that expression returns `False`, the section is skipped, and result
+remains intact for now. Waiving continues with further sections (in the
+big unified list of sections) to look for next matching regex.
+
+**If no section matches on both a regexp AND python expression returning
+True, no further processing is done, the result remains intact.**
+
+When the result matches on both regexp + python expression of one section,
+the result is subject to waiving, and **no further sections are evaluated
+for that result**.
+
+In such a case, the waiving logic decides on reported status:
+
+- `fail` is changed to `warn`, and "waived fail" is added to `note`
+- `error` is changed to `warn`, and "waived error" is added to `note`
+
+By default, `pass` remains unchanged, however if a waiver returns a `Match()`
+object with `strict=True` passed, such as in `Match(rhel >= 8, strict=True)`
+or if the `CONTEST_STRICT_WAIVERS` environment variable is set, this adds
+an additional rule:
+
+- `pass` is changed to `fail`, and "expected fail/error, got pass" is added
+  to `note`
+
+And that's it.
+
+---
+
+Notice that `strict=True` **does not** impact section processing, it only
+decides what to do with `pass` once a section (regexp + python) has matched.
+
+Notice also that unused sections don't cause any errors - a section that either
+
+- never matched on regexp + python expression, or
+- was never attempted to match because all results were always caught by
+  earlier sections
+
+will simply remain dormant and unused, without any error.  
+(This is due to the inherent difficulty of figuring out whether a section is
+*really* unused across many architectures, OS versions, etc.)
+
+Finally, notice that if a result doesn't match any section, it "falls through"
+the waiving logic:
+
+- `fail` remains a `fail`
+- `error` remains an `error`
+- `pass` remains a `pass`
