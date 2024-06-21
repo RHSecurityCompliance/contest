@@ -12,29 +12,37 @@ if user_content:
     user_content = Path(user_content)
 
 
-def find_datastream_in(root):
-    base_dir = root / Path('usr/share/xml/scap/ssg/content')
-    if rhel.is_true_rhel():
-        return base_dir / f'ssg-rhel{rhel.major}-ds.xml'
-    elif rhel.is_centos():
-        if rhel <= 8:
-            return base_dir / f'ssg-centos{rhel.major}-ds.xml'
-        else:
-            return base_dir / f'ssg-cs{rhel.major}-ds.xml'
-
-
-def get_datastream():
+def _find_datastreams(root):
     if user_content:
         build_content(user_content)
-        datastream = user_content / 'build' / f'ssg-rhel{rhel.major}-ds.xml'
+        datastreams_dir = user_content / 'build'
     else:
-        datastream = find_datastream_in('/')
+        datastreams_dir = root / Path('usr/share/xml/scap/ssg/content')
+    return datastreams_dir
+
+
+def get_datastream(root='/'):
+    if rhel.is_true_rhel():
+        name = f'ssg-rhel{rhel.major}-ds.xml'
+    elif rhel.is_centos():
+        if rhel <= 8:
+            name = f'ssg-centos{rhel.major}-ds.xml'
+        else:
+            name = f'ssg-cs{rhel.major}-ds.xml'
+    datastream = _find_datastreams(root) / name
     if not datastream.exists():
         raise RuntimeError(f"could not find datastream as {datastream}")
     return datastream
 
 
-def _find_playbooks():
+def iter_datastreams(root='/'):
+    for file in _find_datastreams(root).rglob('*'):
+        # Return only DS v1.3, do not return v1.2 (ends with '-ds-1.2.xml')
+        if file.name.endswith('-ds.xml'):
+            yield file
+
+
+def _find_playbooks(root):
     if user_content:
         build_content(user_content)
         return user_content / 'build' / 'ansible'
