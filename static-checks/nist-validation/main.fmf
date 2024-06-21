@@ -1,0 +1,15 @@
+summary: Check content with NIST SCAP Content Validation Tool.
+test: python3 -m lib.runtest ./test.py
+result: custom
+environment+:
+    PYTHONPATH: ../..
+duration: 15m
+require+:
+  - java-11-openjdk
+tag:
+  - daily
+adjust:
+  - enabled: false
+    when: arch != x86_64
+    continue: false
+extra-summary: /CoreOS/scap-security-guide/static-checks/nist-validation
