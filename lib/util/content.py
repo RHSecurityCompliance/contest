@@ -47,10 +47,10 @@ def _find_playbooks(root):
         build_content(user_content)
         return user_content / 'build' / 'ansible'
     else:
-        return Path('/usr/share/scap-security-guide/ansible')
+        return root / Path('/usr/share/scap-security-guide/ansible')
 
 
-def get_playbook(profile):
+def get_playbook(profile, root='/'):
     if rhel.is_true_rhel():
         name = f'rhel{rhel.major}-playbook-{profile}.yml'
     elif rhel.is_centos():
@@ -58,16 +58,16 @@ def get_playbook(profile):
             name = f'centos{rhel.major}-playbook-{profile}.yml'
         else:
             name = f'cs{rhel.major}-playbook-{profile}.yml'
-    playbook = _find_playbooks() / name
+    playbook = _find_playbooks(root) / name
     if not playbook.exists():
         raise RuntimeError(f"cound not find playbook as {playbook}")
     return playbook
 
 
-def iter_playbooks():
-    for name in _find_playbooks().rglob('*'):
-        if name.suffix == '.yml':
-            yield name
+def iter_playbooks(root='/'):
+    for file in _find_playbooks(root).rglob('*'):
+        if file.suffix == '.yml':
+            yield file
 
 
 def get_kickstart(profile):
