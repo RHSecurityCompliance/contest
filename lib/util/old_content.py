@@ -15,7 +15,7 @@ from lib import util, dnf
 def _downloaded_extracted_ds(version):
     with dnf.download_rpm(f'scap-security-guide-{version}') as rpm:
         with dnf.extract_rpm(rpm) as extracted:
-            datastream = util.find_datastream_in(extracted)
+            datastream = util.get_datastream(extracted)
             if not datastream.exists():
                 raise RuntimeError(f"could not find datastream as {datastream}")
             yield datastream
@@ -49,7 +49,7 @@ def _available_ssg_versions():
 def get_old_datastream():
     # installed SSG with datastream in /usr/share/xml
     installed = _installed_ssg_version()
-    root_datastream = util.find_datastream_in('/')
+    root_datastream = util.get_datastream('/')
     if not root_datastream.exists():
         raise RuntimeError("DS not found on {root_datastream}, no clue what to diff")
 
