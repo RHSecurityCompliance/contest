@@ -5,6 +5,7 @@ environment+:
     PYTHONPATH: ../../..
 duration: 1h
 require+:
+  - ansible-core
   - openscap-scanner
 recommend+:
   # needed for the ini_file ansible plugin, and more
@@ -12,44 +13,16 @@ recommend+:
 tag:
   - destructive
 adjust:
-  - when: distro == rhel-7 and arch == s390x or distro == rhel-7 and arch == ppc64
-    enabled: false
-    because: >
-        RHEL-7 has no EPEL for s390x/ppc64 and we need python3,
-        remove this once we drop support for RHEL-7, and fully remove
-        the machine-hardening tests from the General plan, as they are now
-        only running on RHEL-7 && s390x to cover this gap
-  - when: distro >= rhel-7 and arch == aarch64
+  - when: arch == aarch64
     enabled: false
     because: RHEL-8+ requires rhc-worker-playbook which is not available for aarch64
-  - when: distro == rhel-7 or distro == centos-7
-    require+:
-      - ansible
-  - when: distro >= rhel-8 or distro >= centos-8
-    require+:
-      - ansible-core
 
 /anssi_bp28_high:
     environment+:
         PROFILE: anssi_bp28_high
-    adjust+:
-      - when: distro == rhel-7
-        enabled: false
-        because: RHEL-7 has anssi_nt28_high instead
     extra-summary: /CoreOS/scap-security-guide/hardening/host-os/ansible/anssi_bp28_high
     extra-nitrate: TC#0615446
     id: 3bc79691-409a-47a2-ab09-552b66befd65
-
-/anssi_nt28_high:
-    environment+:
-        PROFILE: anssi_nt28_high
-    adjust+:
-      - when: distro >= rhel-8
-        enabled: false
-        because: RHEL-8 and newer have anssi_bp28_high instead
-    extra-summary: /CoreOS/scap-security-guide/hardening/host-os/ansible/anssi_nt28_high
-    extra-nitrate: TC#0615447
-    id: 4c559b2a-a979-4620-b01a-0bf08f4bda80
 
 /cis:
     environment+:
@@ -82,10 +55,6 @@ adjust:
 /cui:
     environment+:
         PROFILE: cui
-    adjust+:
-      - when: distro == rhel-7
-        enabled: false
-        because: CUI doesn't have a kickstart on RHEL-7
     extra-summary: /CoreOS/scap-security-guide/hardening/host-os/ansible/cui
     extra-nitrate: TC#0615452
     id: b5e079b6-91b0-4815-8f83-e0fc64e90f70
@@ -107,10 +76,6 @@ adjust:
 /ism_o:
     environment+:
         PROFILE: ism_o
-    adjust+:
-      - when: distro == rhel-7
-        enabled: false
-        because: doesn't exist on RHEL-7
     extra-summary: /CoreOS/scap-security-guide/hardening/host-os/ansible/ism_o
     extra-nitrate: TC#0615455
     id: 866ac5c0-8f56-464d-a995-36313c77347a
@@ -125,13 +90,6 @@ adjust:
 /pci-dss:
     environment+:
         PROFILE: pci-dss
-    adjust+:
-      - when: distro == rhel-7
-        enabled: false
-        because: >
-            RHEL-7 kickstart has a non-standard name and we decided that
-            it is too close to EOL to introduce a hacky logic specifically
-            for this case
     extra-summary: /CoreOS/scap-security-guide/hardening/host-os/ansible/pci-dss
     extra-nitrate: TC#0615457
     id: 5ffdce69-c34c-43ee-a6e5-ada888565f59
@@ -157,7 +115,7 @@ adjust:
     environment+:
         PROFILE: ccn_advanced
     adjust+:
-      - when: distro <= rhel-8
+      - when: distro == rhel-8
         enabled: false
         because: CNN Advanced profile is specific to RHEL 9
     extra-summary: /CoreOS/scap-security-guide/hardening/host-os/ansible/ccn_advanced

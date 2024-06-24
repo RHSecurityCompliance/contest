@@ -5,24 +5,9 @@ duration: 2h
 /anssi_bp28_high:
     environment+:
         PROFILE: anssi_bp28_high
-    adjust+:
-      - when: distro == rhel-7
-        enabled: false
-        because: RHEL-7 has anssi_nt28_high instead
     extra-summary: /CoreOS/scap-security-guide/hardening/ansible/with-gui/anssi_bp28_high
     extra-nitrate: TC#0615432
     id: 70600369-4127-4489-bc67-bad0c41847b9
-
-/anssi_nt28_high:
-    environment+:
-        PROFILE: anssi_nt28_high
-    adjust+:
-      - when: distro >= rhel-8
-        enabled: false
-        because: RHEL-8 and newer have anssi_bp28_high instead
-    extra-summary: /CoreOS/scap-security-guide/hardening/ansible/with-gui/anssi_nt28_high
-    extra-nitrate: TC#0615433
-    id: 5d691786-4ed4-439c-b26b-fc60a91c00da
 
 /cis:
     environment+:
@@ -66,10 +51,7 @@ duration: 2h
     environment+:
         PROFILE: cui
     adjust+:
-      - when: distro == rhel-7
-        enabled: false
-        because: CUI doesn't have a kickstart on RHEL-7
-      - when: distro <= rhel-8
+      - when: distro == rhel-8
         enabled: false
         because: >
             not supported on RHEL-8 according to RHEL documentation,
@@ -95,10 +77,6 @@ duration: 2h
 /ism_o:
     environment+:
         PROFILE: ism_o
-    adjust+:
-      - when: distro == rhel-7
-        enabled: false
-        because: doesn't exist on RHEL-7
     extra-summary: /CoreOS/scap-security-guide/hardening/ansible/with-gui/ism_o
     extra-nitrate: TC#0615441
     id: 3cc4f0ee-6dfd-485d-9dd2-f0d841e2eb87
@@ -107,7 +85,7 @@ duration: 2h
     environment+:
         PROFILE: ospp
     adjust+:
-      - when: distro <= rhel-8
+      - when: distro == rhel-8
         enabled: false
         because: >
             not supported on RHEL-8 according to RHEL documentation,
@@ -119,13 +97,6 @@ duration: 2h
 /pci-dss:
     environment+:
         PROFILE: pci-dss
-    adjust+:
-      - when: distro == rhel-7
-        enabled: false
-        because: >
-            RHEL-7 kickstart has a non-standard name and we decided that
-            it is too close to EOL to introduce a hacky logic specifically
-            for this case
     extra-summary: /CoreOS/scap-security-guide/hardening/ansible/with-gui/pci-dss
     extra-nitrate: TC#0615443
     id: c1ed3b2a-8ab8-4575-b3b0-19c3f7735ca5
@@ -154,7 +125,7 @@ duration: 2h
     environment+:
         PROFILE: ccn_advanced
     adjust+:
-      - when: distro <= rhel-8
+      - when: distro == rhel-8
         enabled: false
         because: CNN Advanced profile is specific to RHEL 9
     extra-summary: /CoreOS/scap-security-guide/hardening/ansible/with-gui/ccn_advanced

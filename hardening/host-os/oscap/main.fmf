@@ -9,36 +9,13 @@ require+:
 tag:
   - destructive
   - daily
-adjust:
-  - when: distro == rhel-7 and arch == s390x or distro == rhel-7 and arch == ppc64
-    enabled: false
-    because: >
-        RHEL-7 has no EPEL for s390x/ppc64 and we need python3,
-        remove this once we drop support for RHEL-7, and fully remove
-        the machine-hardening tests from the General plan, as they are now
-        only running on RHEL-7 && s390x to cover this gap
 
 /anssi_bp28_high:
     environment+:
         PROFILE: anssi_bp28_high
-    adjust+:
-      - when: distro == rhel-7
-        enabled: false
-        because: RHEL-7 has anssi_nt28_high instead
     extra-summary: /CoreOS/scap-security-guide/hardening/host-os/oscap/anssi_bp28_high
     extra-nitrate: TC#0615460
     id: 6de66fee-9a46-4652-a421-771e61d3576d
-
-/anssi_nt28_high:
-    environment+:
-        PROFILE: anssi_nt28_high
-    adjust+:
-      - when: distro >= rhel-8
-        enabled: false
-        because: RHEL-8 and newer have anssi_bp28_high instead
-    extra-summary: /CoreOS/scap-security-guide/hardening/host-os/oscap/anssi_nt28_high
-    extra-nitrate: TC#0615461
-    id: 4d397708-4c62-46c2-a8f0-09ddf398bfc5
 
 /cis:
     environment+:
@@ -92,10 +69,6 @@ adjust:
 /ism_o:
     environment+:
         PROFILE: ism_o
-    adjust+:
-      - when: distro == rhel-7
-        enabled: false
-        because: doesn't exist on RHEL-7
     extra-summary: /CoreOS/scap-security-guide/hardening/host-os/oscap/ism_o
     extra-nitrate: TC#0615469
     id: 128a3122-a0f8-45b8-8734-575ad25bf97a
@@ -135,7 +108,7 @@ adjust:
     environment+:
         PROFILE: ccn_advanced
     adjust+:
-      - when: distro <= rhel-8
+      - when: distro == rhel-8
         enabled: false
         because: CNN Advanced profile is specific to RHEL 9
     extra-summary: /CoreOS/scap-security-guide/hardening/host-os/oscap/ccn_advanced

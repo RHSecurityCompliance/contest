@@ -17,6 +17,3 @@ adjust:
   - when: arch != x86_64
     enabled: false
     because: run virtualization on x86_64 only
-  - when: distro == rhel-7
-    enabled: false
-    because: the code is not compatible with RHEL-7

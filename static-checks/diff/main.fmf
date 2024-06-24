@@ -5,10 +5,6 @@ duration: 10m
 tag:
   - NoProductization
   - always-fails
-adjust:
-  - when: distro == rhel-7
-    enabled: false
-    because: the code is not compatible with RHEL-7
 
 /profiles:
     summary: Diff datastreams, output added/removed profiles

@@ -4,10 +4,6 @@ result: custom
 environment+:
     PYTHONPATH: ../..
 duration: 10m
-adjust:
-  - when: distro == rhel-7 or distro == centos-7
-    enabled: false
-    because: the code is not compatible with RHEL-7
 extra-summary: /CoreOS/scap-security-guide/static-checks/removed-rules
 extra-nitrate: TC#0617453
 id: 6dfdc617-53f7-45de-af41-feeb9ae991ea

@@ -9,24 +9,9 @@ tag-:
 /anssi_bp28_high:
     environment+:
         PROFILE: anssi_bp28_high
-    adjust+:
-      - when: distro == rhel-7
-        enabled: false
-        because: RHEL-7 has anssi_nt28_high instead
     extra-summary: /CoreOS/scap-security-guide/hardening/anaconda/with-gui/anssi_bp28_high
     extra-nitrate: TC#0615404
     id: 2325cf2f-0fb8-4250-858a-03c62d495011
-
-/anssi_nt28_high:
-    environment+:
-        PROFILE: anssi_nt28_high
-    adjust+:
-      - when: distro >= rhel-8
-        enabled: false
-        because: RHEL-8 and newer have anssi_bp28_high instead
-    extra-summary: /CoreOS/scap-security-guide/hardening/anaconda/with-gui/anssi_nt28_high
-    extra-nitrate: TC#0615405
-    id: 51648412-3473-4ff7-8851-1986d5baf166
 
 /cis:
     environment+:
@@ -72,10 +57,7 @@ tag-:
     environment+:
         PROFILE: cui
     adjust+:
-      - when: distro == rhel-7
-        enabled: false
-        because: CUI doesn't have a kickstart on RHEL-7
-      - when: distro <= rhel-8
+      - when: distro == rhel-8
         enabled: false
         because: >
             not supported on RHEL-8 according to RHEL documentation,
@@ -101,10 +83,6 @@ tag-:
 /ism_o:
     environment+:
         PROFILE: ism_o
-    adjust+:
-      - when: distro == rhel-7
-        enabled: false
-        because: doesn't exist on RHEL-7
     extra-summary: /CoreOS/scap-security-guide/hardening/anaconda/with-gui/ism_o
     extra-nitrate: TC#0615413
     id: 4577aecc-3186-47d7-9425-b894939ae034
@@ -113,7 +91,7 @@ tag-:
     environment+:
         PROFILE: ospp
     adjust+:
-      - when: distro <= rhel-8
+      - when: distro == rhel-8
         enabled: false
         because: >
             not supported on RHEL-8 according to RHEL documentation,
@@ -125,13 +103,6 @@ tag-:
 /pci-dss:
     environment+:
         PROFILE: pci-dss
-    adjust+:
-      - when: distro == rhel-7
-        enabled: false
-        because: >
-            RHEL-7 kickstart has a non-standard name and we decided that
-            it is too close to EOL to introduce a hacky logic specifically
-            for this case
     extra-summary: /CoreOS/scap-security-guide/hardening/anaconda/with-gui/pci-dss
     extra-nitrate: TC#0615415
     id: ff3ae0c7-fb56-4272-b7c0-c24bb5b1eab2
@@ -162,7 +133,7 @@ tag-:
     environment+:
         PROFILE: ccn_advanced
     adjust+:
-      - when: distro <= rhel-8
+      - when: distro == rhel-8
         enabled: false
         because: CNN Advanced profile is specific to RHEL 9
     extra-summary: /CoreOS/scap-security-guide/hardening/anaconda/with-gui/ccn_advanced

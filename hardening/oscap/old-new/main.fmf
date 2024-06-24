@@ -12,10 +12,6 @@ environment+:
 tag:
   # because old productization uses max1 and cannot run these efficiently
   - NoProductization
-adjust+:
-  - when: distro == rhel-7
-    enabled: false
-    because: the old-content code is not compatible with RHEL-7
 
 /anssi_bp28_high:
     environment+:
@@ -112,7 +108,7 @@ adjust+:
     environment+:
         PROFILE: ccn_advanced
     adjust+:
-      - when: distro <= rhel-8
+      - when: distro == rhel-8
         enabled: false
         because: CNN Advanced profile is specific to RHEL 9
     extra-summary: /CoreOS/scap-security-guide/hardening/oscap/old-new/ccn_advanced
