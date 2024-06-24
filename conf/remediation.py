@@ -21,13 +21,6 @@ def excludes():
         'accounts_password_set_max_life_root',
     ]
 
-    # Host hardenings
-    if versions.rhel == 7 and re.fullmatch('/hardening/host-os/.*', test_name):
-        rules += [
-            # required by TMT, see waivers
-            'package_rsync_removed',
-        ]
-
     # CentOS specific
     if versions.rhel.is_centos():
         rules += [
@@ -44,11 +37,6 @@ def excludes():
             rules += [
                 'configure_crypto_policy',
                 'enable_fips_mode',
-            ]
-        if versions.rhel.major == 7:
-            rules += [
-                # On Testing Farm, login as 'root' doesn't work with fips enabled in grub2
-                'grub2_enable_fips_mode',
             ]
 
     return rules
