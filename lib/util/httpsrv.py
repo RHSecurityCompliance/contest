@@ -14,11 +14,20 @@ Any HTTP GET requests for '/visible.txt' will receive the contents of
 
 Any HTTP GET requests for '/somedir/aa/bb' will receive the contents of
 '/on/disk/dir/aa/bb' (or 404).
+
+Port can also be specified as 0 (just like for Python's socketserver)
+which will cause a random unused port to be allocated by the OS kernel.
+You can then retrieve it from server_address (just like socketserver):
+
+    srv = BackgroundHTTPServer('127.0.0.1', 0)
+    with srv:
+        host, port = srv.server.server_address
+        # 'port' here will be >0
 """
 
 import shutil
 import subprocess
-import multiprocessing
+import threading
 from pathlib import Path
 from http.server import HTTPServer, SimpleHTTPRequestHandler
 
@@ -60,17 +69,16 @@ class _BackgroundHTTPServerHandler(SimpleHTTPRequestHandler):
         self.end_headers()
 
     def log_message(self, form, *args):
-        addr, port = self.server.listen_addr_port
+        addr, port = self.server.server_address
         util.log(f'{addr}:{port}: ' + form % args)
 
 
-class BackgroundHTTPServer(HTTPServer):
+class BackgroundHTTPServer:
     def __init__(self, host, port):
         self.file_mapping = {}
         self.dir_mapping = {}
-        self.listen_addr_port = (host, port)
+        self.requested_address = (host, port)
         self.firewalld_zones = []
-        super().__init__(self.listen_addr_port, _BackgroundHTTPServerHandler)
 
     def add_file(self, fs_path, url_path=None):
         """
@@ -109,10 +117,16 @@ class BackgroundHTTPServer(HTTPServer):
         self.dir_mapping[url_path] = Path(fs_path)
 
     def __enter__(self):
-        addr, port = self.listen_addr_port
-        util.log(f"starting: {addr}:{port}")
+        server = HTTPServer(self.requested_address, _BackgroundHTTPServerHandler)
+
+        host, port = server.server_address
+        util.log(f"starting: {host}:{port}")
+
         util.log(f"using file mapping: {self.file_mapping}")
         util.log(f"using dir mapping: {self.dir_mapping}")
+        server.file_mapping = self.file_mapping
+        server.dir_mapping = self.dir_mapping
+
         # allow the target port on the firewall
         if shutil.which('firewall-cmd'):
             res = util.subprocess_run(
@@ -126,17 +140,19 @@ class BackgroundHTTPServer(HTTPServer):
                     util.subprocess_run(
                         ['firewall-cmd', f'--zone={zone}', f'--add-port={port}/tcp'],
                         stdout=subprocess.DEVNULL, check=True)
-        proc = multiprocessing.Process(target=self.serve_forever)
-        self.process = proc
-        proc.start()
+
+        self.server = server
+        self.thread = threading.Thread(target=server.serve_forever)
+        self.thread.start()
 
     def __exit__(self, exc_type, exc_value, traceback):
-        addr, port = self.listen_addr_port
-        util.log(f"ending: {addr}:{port}")
-        # TODO: this actually doesn't close the socket, fix this on python 3.7 with
-        #       ThreadingHTTPServer and just call .stop() on the serving thread
-        self.process.terminate()
-        self.process.join()
+        host, port = self.server.server_address
+        util.log(f"ending: {host}:{port}")
+
+        self.server.shutdown()
+        self.thread.join()
+        self.server.socket.close()
+
         # remove allow rules from the firewall
         for zone in self.firewalld_zones:
             util.subprocess_run(
