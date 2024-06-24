@@ -27,9 +27,9 @@ adjust:
   - when: arch != x86_64
     enabled: false
     because: we want to run virtualization on x86_64 only
-  - when: distro == rhel-7 or distro ~< rhel-8.10 or distro ~< rhel-9.4
+  - when: distro ~< rhel-8.10 or distro ~< rhel-9.4
     enabled: false
-    because: there is no OSBuild or Image Builder on RHEL-7 and old RHEL8/9 contain old OSBuild
+    because: there is no OSBuild or Image Builder on old RHEL8/9 contain old OSBuild
 tag:
   - max1
   - daily
@@ -37,24 +37,9 @@ tag:
 /anssi_bp28_high:
     environment+:
         PROFILE: anssi_bp28_high
-    adjust+:
-      - when: distro == rhel-7
-        enabled: false
-        because: RHEL-7 has anssi_nt28_high instead
     extra-summary: /CoreOS/scap-security-guide/hardening/image-builder/anssi_bp28_high
     extra-nitrate: TC#0617135
     id: 49378e15-8946-456f-a385-e1f46ce215ed
-
-/anssi_nt28_high:
-    environment+:
-        PROFILE: anssi_nt28_high
-    adjust+:
-      - when: distro >= rhel-8
-        enabled: false
-        because: RHEL-8 and newer have anssi_bp28_high instead
-    extra-summary: /CoreOS/scap-security-guide/hardening/image-builder/anssi_nt28_high
-    extra-nitrate: TC#0617136
-    id: 7cbce269-6d4f-493e-942e-9994e9c2cf8e
 
 /cis:
     environment+:
@@ -108,10 +93,6 @@ tag:
 /ism_o:
     environment+:
         PROFILE: ism_o
-    adjust+:
-      - when: distro == rhel-7
-        enabled: false
-        because: doesn't exist on RHEL-7
     extra-summary: /CoreOS/scap-security-guide/hardening/image-builder/ism_o
     extra-nitrate: TC#0617145
     id: 86e541fb-6ea0-4e9f-b945-08085700d16e
@@ -149,7 +130,7 @@ tag:
     environment+:
         PROFILE: ccn_advanced
     adjust+:
-      - when: distro <= rhel-8
+      - when: distro == rhel-8
         enabled: false
         because: CNN Advanced profile is specific to RHEL 9
     extra-summary: /CoreOS/scap-security-guide/hardening/image-builder/ccn_advanced

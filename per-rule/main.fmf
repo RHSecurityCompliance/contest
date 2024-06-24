@@ -37,9 +37,6 @@ adjust:
   - when: arch != x86_64
     enabled: false
     because: we want to run virtualization on x86_64 only
-  - when: distro == rhel-7
-    enabled: false
-    because: the code is not compatible with RHEL-7 yum/python
 tag:
   - max1
   - daily

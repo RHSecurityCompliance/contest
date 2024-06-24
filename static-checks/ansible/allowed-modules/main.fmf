@@ -11,24 +11,16 @@ duration: 15m
 require+:
   - openscap-scanner
 recommend+:
-  # python3-PyYAML is needed on RHEL-7
-  - python3-PyYAML
-  # ansible-core is not available on RHEL-7
-  # ansible is not on RHEL-8+
   - ansible-core
-  - ansible
   # needed for the ini_file ansible plugin, and more
   - rhc-worker-playbook
 tag:
   - CI-Tier-1
   - daily
 adjust:
-  - when: distro >= rhel-7 and arch == aarch64
+  - when: arch == aarch64
     enabled: false
     because: RHEL-8+ requires rhc-worker-playbook which is not available for aarch64
-  - when: distro == rhel-7 and arch == s390x or distro == rhel-7 and arch == ppc64
-    enabled: false
-    because: EPEL is not available for s390x/ppc64
 extra-summary: /CoreOS/scap-security-guide/static-checks/ansible/allowed-modules
 extra-nitrate: TC#0615492
 id: 2081f398-38e2-4404-94c4-b88f2e73ccb0

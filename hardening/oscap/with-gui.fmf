@@ -5,24 +5,9 @@ duration: 2h
 /anssi_bp28_high:
     environment+:
         PROFILE: anssi_bp28_high
-    adjust+:
-      - when: distro == rhel-7
-        enabled: false
-        because: RHEL-7 has anssi_nt28_high instead
     extra-summary: /CoreOS/scap-security-guide/hardening/oscap/with-gui/anssi_bp28_high
     extra-nitrate: TC#0615475
     id: 5c1f431d-990f-4379-963e-924ef8bcf9b2
-
-/anssi_nt28_high:
-    environment+:
-        PROFILE: anssi_nt28_high
-    adjust+:
-      - when: distro >= rhel-8
-        enabled: false
-        because: RHEL-8 and newer have anssi_bp28_high instead
-    extra-summary: /CoreOS/scap-security-guide/hardening/oscap/with-gui/anssi_nt28_high
-    extra-nitrate: TC#0615476
-    id: 2590b9d4-12fa-4723-97d7-50da3d9e16be
 
 /cis:
     environment+:
@@ -66,7 +51,7 @@ duration: 2h
     environment+:
         PROFILE: cui
     adjust+:
-      - when: distro <= rhel-8
+      - when: distro == rhel-8
         enabled: false
         because: >
             not supported on RHEL-8 according to RHEL documentation,
@@ -92,10 +77,6 @@ duration: 2h
 /ism_o:
     environment+:
         PROFILE: ism_o
-    adjust+:
-      - when: distro == rhel-7
-        enabled: false
-        because: doesn't exist on RHEL-7
     extra-summary: /CoreOS/scap-security-guide/hardening/oscap/with-gui/ism_o
     extra-nitrate: TC#0615484
     id: 86e0eb89-aca8-4f3c-9dcd-274827153d02
@@ -104,7 +85,7 @@ duration: 2h
     environment+:
         PROFILE: ospp
     adjust+:
-      - when: distro <= rhel-8
+      - when: distro == rhel-8
         enabled: false
         because: >
             not supported on RHEL-8 according to RHEL documentation,
@@ -144,7 +125,7 @@ duration: 2h
     environment+:
         PROFILE: ccn_advanced
     adjust+:
-      - when: distro <= rhel-8
+      - when: distro == rhel-8
         enabled: false
         because: CNN Advanced profile is specific to RHEL 9
     extra-summary: /CoreOS/scap-security-guide/hardening/oscap/with-gui/ccn_advanced
