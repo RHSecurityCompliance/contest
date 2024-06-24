@@ -9,11 +9,10 @@
 /hardening/.*/cis[^/]*/sshd_use_approved_ciphers
     rhel == 9
 
-# TODO: something new? .. RHEL-8 on e8 and ism_o, RHEL-7 e8
+# TODO: something new? .. RHEL-8 on e8 and ism_o
 #  - seems to not happen on latest 8.9 nightlies ??
-#  - on latest 7.9, but upstream 2023/05 content
 /hardening/oscap/.+/package_rear_installed
-    rhel <= 8
+    rhel == 8
 
 # ssh either doesn't start up, or gets blocked, possibly related
 # to new firewalld rules being added?
@@ -64,12 +63,6 @@
 # RHEL-8
 /hardening/ansible/with-gui/stig_gui/sysctl_net_ipv4_conf_all_forwarding
     rhel == 8
-# RHEL-7
-/hardening(/host-os)?/ansible/.+/sshd_use_strong_ciphers
-/hardening(/host-os)?/ansible/.+/audit_rules_for_ospp
-/hardening(/host-os)?/ansible/.+/aide_use_fips_hashes
-/hardening(/host-os)?/ansible/.+/smartcard_auth
-    rhel == 7
 # unknown as well, but happens only rarely
 /hardening/ansible/.+/configure_bashrc_exec_tmux
     True
