@@ -2,7 +2,7 @@
 
 import os
 
-from lib import util, results, oscap, versions, ansible
+from lib import util, results, oscap, ansible
 from conf import remediation
 
 
@@ -40,13 +40,10 @@ if util.get_reboot_count() == 0:
 else:
     util.log("second boot, scanning")
 
-    # RHEL-7 HTML report doesn't contain OVAL findings by default
-    oval_results = [] if versions.oscap >= 1.3 else ['--results', 'results.xml', '--oval-results']
-
     # scan the remediated system
     cmd = [
         'oscap', 'xccdf', 'eval', '--profile', profile_full, '--progress',
-        '--report', 'report.html', *oval_results, '--results-arf', 'results-arf.xml',
+        '--report', 'report.html', '--results-arf', 'results-arf.xml',
         util.get_datastream(),
     ]
     proc, lines = util.subprocess_stream(cmd)

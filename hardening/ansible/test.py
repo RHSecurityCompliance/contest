@@ -2,7 +2,7 @@
 
 import os
 
-from lib import util, results, virt, oscap, versions, ansible
+from lib import util, results, virt, oscap, ansible
 from conf import remediation, partitions
 
 
@@ -48,14 +48,11 @@ with g.snapshotted():
         raise RuntimeError(f"ansible-playbook failed with {proc.returncode}")
     g.soft_reboot()
 
-    # RHEL-7 HTML report doesn't contain OVAL findings by default
-    oval_results = '' if versions.oscap >= 1.3 else '--results results.xml --oval-results'
-
     # scan the remediated system
     g.copy_to(util.get_datastream(), 'scan-ds.xml')
     proc, lines = g.ssh_stream(
         f'oscap xccdf eval --profile {profile_full} --progress --report report.html'
-        f' {oval_results} --results-arf results-arf.xml scan-ds.xml'
+        f' --results-arf results-arf.xml scan-ds.xml'
     )
     oscap.report_from_verbose(lines)
     if proc.returncode not in [0,2]:

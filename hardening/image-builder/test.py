@@ -2,7 +2,7 @@
 
 import os
 
-from lib import results, versions, oscap, osbuild, util
+from lib import results, oscap, osbuild, util
 
 
 osbuild.Host.setup()
@@ -16,13 +16,10 @@ g.create(profile=profile)
 profile = f'xccdf_org.ssgproject.content_profile_{profile}'
 
 with g.booted():
-    # RHEL-7 HTML report doesn't contain OVAL findings by default
-    oval_results = '' if versions.oscap >= 1.3 else '--results results.xml --oval-results'
-
     # scan the remediated system
     proc, lines = g.ssh_stream(
         f'oscap xccdf eval --profile {profile} --progress --report report.html'
-        f' {oval_results} --results-arf results-arf.xml {g.DATASTREAM}'
+        f' --results-arf results-arf.xml {g.DATASTREAM}'
     )
     oscap.report_from_verbose(lines)
     if proc.returncode not in [0,2]:

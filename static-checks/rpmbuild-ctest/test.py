@@ -3,7 +3,7 @@
 import re
 from pathlib import Path
 
-from lib import util, results, versions, dnf
+from lib import util, results, dnf
 
 
 def build_source(src_rpm, path=None):
@@ -14,8 +14,7 @@ def build_source(src_rpm, path=None):
     Define 'path' to specify path where to build. Otherwise, build
     is done to rpmbuild directory in current working directory.
     """
-    builddep_cmd = ['yum-builddep'] if versions.rhel == 7 else ['dnf', 'builddep']
-    util.subprocess_run([*builddep_cmd, '-y', src_rpm], check=True)
+    util.subprocess_run(['dnf', 'builddep', '-y', src_rpm], check=True)
 
     path = Path(path) if path else Path.cwd() / 'rpmbuild'
 
