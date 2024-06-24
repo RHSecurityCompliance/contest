@@ -110,8 +110,6 @@ INSTALL_FAILURES = [
     br"Aborting the installation",
     br"Something went wrong during the final hardening",
     br"Non interactive installation failed",
-    # RHEL-7 ignores inst.noninteractive
-    br"Please respond ",
     # Anaconda died due to oscap crashing (or other reasons)
     br"Kernel panic - not syncing",
 ]
@@ -299,10 +297,7 @@ class Kickstart:
         self.packages += pkgs
 
     def add_package_group(self, group):
-        if versions.rhel < 8:
-            self.packages.append(f'@^{group}')
-        else:
-            self.packages.append(f'@{group}')
+        self.packages.append(f'@{group}')
 
     def add_install_only_repo(self, name, baseurl):
         self.appends.append(f'repo --name={name} --baseurl={baseurl}')
@@ -357,15 +352,15 @@ class Guest:
 
     # custom post-install setup to allow smooth login and qemu-qa command execution
     SETUP = util.dedent(r'''
-        # hack sshd cmdline to allow root login,
-        # also hack UseDNS on RHEL-7, otherwise login takes ~30sec
-        echo "OPTIONS=-oPermitRootLogin=yes -oUseDNS=no" >> /etc/sysconfig/sshd
+        # hack sshd cmdline to allow root login
+        echo "OPTIONS=-oPermitRootLogin=yes" >> /etc/sysconfig/sshd
     ''')
-    SETUP_REQUIRES = (
-        ['openssh-server', 'qemu-guest-agent']
+    SETUP_REQUIRES = [
+        'openssh-server',
+        'qemu-guest-agent',
         # because of semanage in SETUP
-        + (['policycoreutils-python'] if versions.rhel < 8 else ['policycoreutils-python-utils'])
-    )
+        'policycoreutils-python-utils',
+    ]
 
     def __init__(self, tag=None, *, name=GUEST_NAME):
         self.tag = tag
@@ -420,14 +415,7 @@ class Guest:
             'contest-rpmpack',
             f'http://{NETWORK_HOST}:{http_port}/repo',
         )
-        if versions.rhel == 7:
-            cmd = [
-                'yum', '-y', '--nogpgcheck', 'install',
-                f'http://{NETWORK_HOST}:{http_port}/repo/{util.RpmPack.FILE}'
-            ]
-            kickstart.add_post(' '.join(cmd))
-        else:
-            kickstart.add_packages([util.RpmPack.NAME])
+        kickstart.add_packages([util.RpmPack.NAME])
 
         disk_extension = 'qcow2' if disk_format == 'qcow2' else 'img'
         disk_path = f'{GUEST_IMG_DIR}/{self.name}.{disk_extension}'
@@ -458,9 +446,8 @@ class Guest:
                 '--disk', f'path={disk_path},size=20,format={disk_format},cache=unsafe',
                 '--network', 'network=default', '--location', location,
                 '--graphics', 'none', '--console', 'pty', '--rng', '/dev/urandom',
-                # this has nothing to do with rhel7, it just tells v-i to use virtio
-                # and rhel7 was the first RHEL to do so, so it's the most compatible
-                '--initrd-inject', ksfile, '--os-variant', 'rhel7-unknown',
+                # this has nothing to do with rhel8, it just tells v-i to use virtio
+                '--initrd-inject', ksfile, '--os-variant', 'rhel8-unknown',
                 '--extra-args', f'console=ttyS0 inst.ks=file:/{ksfile.name} '
                                 'systemd.journald.forward_to_console=1 '
                                 'inst.notmux inst.noninteractive inst.noverifyssl inst.sshd',
@@ -527,9 +514,10 @@ class Guest:
     def undefine(self, incl_storage=False):
         if guest_domstate(self.name):
             storage = ['--remove-all-storage'] if incl_storage else []
-            # TODO: add --checkpoints-metadata after we drop RHEL-7
-            virsh('undefine', self.name, '--nvram', '--snapshots-metadata',
-                  *storage, check=True)
+            virsh(
+                'undefine', self.name, '--nvram', '--snapshots-metadata',
+                '--checkpoints-metadata', *storage, check=True,
+            )
 
     def is_installed(self):
         if not os.path.exists(self.install_ready_path):
@@ -731,10 +719,6 @@ class Guest:
         for f in files:
             if os.path.exists(f):
                 os.remove(f)
-        # RHEL-7 specific, see domifaddr()
-        ipaddr = Path(GUEST_IMG_DIR) / f'{self.name}.ipaddr'
-        if ipaddr.exists():
-            ipaddr.unlink()
 
 
 #
@@ -765,26 +749,16 @@ def wait_for_domstate(name, state, timeout=300, sleep=0.5):
 # ssh related helpers, generally used from Guest()
 #
 
-# TODO: RHEL-7 libvirt has no <lease ..> tag, so it expires the address within
-#       1h, making restored snapshot fail to find the address via domifaddr -
-#       work around this by storing the IP address separately - this is not
-#       perfect (may conflict), but GEFN for 1-guest-at-a-time
 def domifaddr(name):
     """
     Return a guest's IP address, queried from libvirt.
     """
-    if versions.rhel < 8:
-        cache = Path(GUEST_IMG_DIR) / f'{name}.ipaddr'
-        if cache.exists():
-            return cache.read_text()
     ret = virsh('domifaddr', name, stdout=PIPE, universal_newlines=True, check=True)
     first = ret.stdout.strip().split('\n')[0]  # in case of multiple interfaces
     if not first:
         raise ConnectionError(f"guest {name} has no address assigned yet")
     addr_mask = first.split()[3]
     addr = addr_mask.split('/')[0]
-    if versions.rhel < 8:
-        cache.write_text(addr)
     return addr
 
 
@@ -913,12 +887,6 @@ def set_state_image_disk(image, source_file, image_format):
     backing_store = disk.find('backingStore')
     if backing_store is not None:
         disk.remove(backing_store)
-    # RHEL-7 doesn't leave enough space in the RAM image for the extra few
-    # bytes added by a slightly longer disk path - free up this space by
-    # deleting a useless <pm> section
-    pm = domain.find('pm')
-    if pm is not None:
-        domain.remove(pm)
     with tempfile.NamedTemporaryFile(mode='wb', suffix='.xml') as f:
         f.write(ET.tostring(domain))
         f.flush()

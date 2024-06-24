@@ -91,9 +91,8 @@ class _Rpm(_RpmVerCmp):
         mi = ts.dbMatch('name', name)
         try:
             p = next(mi)
-            # RHEL-7 rpm has these as bytes, for some reason
-            self.version = p['version'] if isinstance(p['version'], str) else p['version'].decode()
-            self.release = p['release'] if isinstance(p['release'], str) else p['release'].decode()
+            self.version = p['version']
+            self.release = p['release']
             self._installed = True
         except StopIteration:
             self._installed = False

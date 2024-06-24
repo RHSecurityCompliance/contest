@@ -1,47 +1,15 @@
 import contextlib
 import collections
-import configparser
 import tempfile
 import subprocess
 import requests
+import dnf
 from pathlib import Path
 
-from lib import util, versions
+from lib import util
 
-try:
-    import dnf
-except ModuleNotFoundError as e:
-    if versions.rhel != 7:
-        raise e from None
 
 _Repo = collections.namedtuple('Repo', ['name', 'baseurl', 'data', 'file'])
-
-
-# legacy manual parsing due to RHEL-7 having yum
-def _get_repos_yum():
-    for repofile in Path('/etc/yum.repos.d').iterdir():
-        c = configparser.ConfigParser()
-        c.read(repofile)
-        for section in c.sections():
-            # we need at least these to be defined
-            if not all(x in c[section] for x in ['name', 'baseurl', 'enabled']):
-                continue
-            # no disabled repos
-            if c[section]['enabled'] != '1':
-                continue
-            baseurl = c[section]['baseurl']
-            # no local-only repos that aren't portable to VM guests
-            if baseurl.startswith('file://'):
-                continue
-            # sanity check for (in)valid URLs as Anaconda fails on broken ones
-            elif baseurl.startswith(('http://', 'https://')):
-                try:
-                    reply = requests.head(baseurl, verify=False, allow_redirects=True)
-                    reply.raise_for_status()
-                except requests.exceptions.RequestException as e:
-                    util.log(f"skipping: {e}")
-                    continue
-            yield _Repo(name=section, baseurl=baseurl, data=c[section], file=repofile)
 
 
 # dnf up to dnf4
@@ -90,10 +58,7 @@ def _get_repos():
     if _repos_cache is not None:
         return _repos_cache
 
-    if versions.rhel == 7:
-        cache = _get_repos_yum()
-    else:
-        cache = _get_repos_dnf()
+    cache = _get_repos_dnf()
 
     _repos_cache = list(cache)
     return _repos_cache
@@ -135,10 +100,6 @@ def installable_url():
         reply = requests.head(url + '/images/install.img', verify=False)
         if reply.status_code == 200:
             return url
-        if versions.rhel == 7:
-            reply = requests.head(url + '/LiveOS/squashfs.img', verify=False)
-            if reply.status_code == 200:
-                return url
     raise RuntimeError("did not find any install-capable repo amongst host repos")
 
 
@@ -152,10 +113,7 @@ def download_rpm(nvr, source=False):
     'source' specifies whether to download a binary or a source RPM.
     """
     with tempfile.TemporaryDirectory() as tmpdir:
-        if versions.rhel == 7:
-            cmd = ['yumdownloader', '--destdir', tmpdir]
-        else:
-            cmd = ['dnf', 'download', '--downloaddir', tmpdir]
+        cmd = ['dnf', 'download', '--downloaddir', tmpdir]
         if source:
             cmd.append('--source')
         cmd.append(nvr)

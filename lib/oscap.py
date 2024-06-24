@@ -76,14 +76,14 @@ class Datastream:
                         # profiles
                         if frames[-1] == 'Profile':
                             profile = stack[-1].get('id')
-                            # TODO: use str.removeprefix after RHEL-7
+                            # TODO: use str.removeprefix on python 3.9+
                             profile = re.sub('^xccdf_org.ssgproject.content_profile_', '', profile)
                             self.profiles[profile]  # let defaultdict fill in the values
 
                         # profile contents
                         elif frames[-2] == 'Profile':
                             profile = stack[-2].get('id')
-                            # TODO: use str.removeprefix after RHEL-7
+                            # TODO: use str.removeprefix on python 3.9+
                             profile = re.sub('^xccdf_org.ssgproject.content_profile_', '', profile)
                             # title
                             if frames[-1] == 'title':
@@ -93,13 +93,13 @@ class Datastream:
                             elif frames[-1] == 'select':
                                 if elem.get('selected') == 'true':
                                     rule = stack[-1].get('idref')
-                                    # TODO: use str.removeprefix after RHEL-7
+                                    # TODO: use str.removeprefix on python 3.9+
                                     rule = re.sub('^xccdf_org.ssgproject.content_rule_', '', rule)
                                     self.profiles[profile].rules.add(rule)
                             # variable refinement
                             elif frames[-1] == 'refine-value':
                                 name = stack[-1].get('idref')
-                                # TODO: use str.removeprefix after RHEL-7
+                                # TODO: use str.removeprefix on python 3.9+
                                 name = re.sub('^xccdf_org.ssgproject.content_value_', '', name)
                                 contents = stack[-1].get('selector')
                                 self.profiles[profile].values.add((name, contents))
@@ -107,7 +107,7 @@ class Datastream:
                         # rules
                         elif frames[-1] == 'Rule':
                             rule_id = stack[-1].get('id')
-                            # TODO: use str.removeprefix after RHEL-7
+                            # TODO: use str.removeprefix on python 3.9+
                             rule_id = re.sub('^xccdf_org.ssgproject.content_rule_', '', rule_id)
                             self.rules[rule_id]  # let defaultdict fill in the values
 
