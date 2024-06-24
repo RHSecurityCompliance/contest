@@ -7,20 +7,6 @@ execute:
 
 adjust:
   - prepare+:
-      - how: shell
-        name: install-epel-on-rhel7
-        because: python3 is not on RHEL 7 by default
-        script: |
-            set -xe
-            if ! rpm -q epel-release; then
-                curl --retry 10 -sSfkL -o epel-release.rpm https://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm
-                rpm -ivh epel-release.rpm
-                rm -f epel-release.rpm
-            fi
-    when: distro < rhel-8
-
-  - prepare+:
-      # TODO: probably turn this into 'rpm -q git || dnf -y install git-core' below, after RHEL-7
       - how: install
         package:
           - git-core
@@ -86,7 +72,6 @@ adjust:
             dnf -q -y upgrade openscap-scanner
             # invalidate VM snapshots
             rm -f /var/lib/libvirt/images/*.ready
-    when: distro > rhel-7
   - finish+:
       - how: shell
         name: Restore original OpenSCAP (if upgraded from Packit)
@@ -97,6 +82,5 @@ adjust:
                 dnf -q -y downgrade openscap-scanner
                 rm -f "$repofile"
             fi
-    when: distro > rhel-7
 
 # vim: syntax=yaml
