@@ -25,7 +25,7 @@ def get_datastream(root='/'):
     if rhel.is_true_rhel():
         name = f'ssg-rhel{rhel.major}-ds.xml'
     elif rhel.is_centos():
-        if rhel <= 8:
+        if rhel == 8:
             name = f'ssg-centos{rhel.major}-ds.xml'
         else:
             name = f'ssg-cs{rhel.major}-ds.xml'
@@ -54,7 +54,7 @@ def get_playbook(profile, root='/'):
     if rhel.is_true_rhel():
         name = f'rhel{rhel.major}-playbook-{profile}.yml'
     elif rhel.is_centos():
-        if rhel <= 8:
+        if rhel == 8:
             name = f'centos{rhel.major}-playbook-{profile}.yml'
         else:
             name = f'cs{rhel.major}-playbook-{profile}.yml'

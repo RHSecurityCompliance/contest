@@ -377,9 +377,8 @@ class Guest(virt.Guest):
             '--disk', f'path={disk_path},format=qcow2,cache=unsafe',
             '--network', 'network=default',
             '--graphics', 'none', '--console', 'pty', '--rng', '/dev/urandom',
-            # this has nothing to do with rhel7, it just tells v-i to use virtio
-            # and rhel7 was the first RHEL to do so, so it's the most compatible
-            '--os-variant', 'rhel7-unknown',
+            # this has nothing to do with rhel8, it just tells v-i to use virtio
+            '--os-variant', 'rhel8-unknown',
             '--noreboot', '--import',
         ]
 

@@ -9,10 +9,6 @@ def install_deps():
     """
     Download and install any external dependencies required for Ansible to run.
     """
-    # RHEL-7 and CentOS 7 have these bundled with the base 'ansible' RPM
-    if versions.rhel == 7:
-        return
-
     # RHEL has rhc-worker-playbook
     # TODO: Remove RHEL10 check when rhc-worker-playbook is available there
     if versions.rhel.is_true_rhel() and versions.rhel != 10:
