@@ -2,7 +2,7 @@
 
 import os
 
-from lib import util, results, virt, oscap, versions
+from lib import util, results, virt, oscap
 from conf import remediation
 
 
@@ -36,15 +36,12 @@ with srv:
     g.install(kickstart=ks)
 
 with g.booted():
-    # RHEL-7 HTML report doesn't contain OVAL findings by default
-    oval_results = '' if versions.oscap >= 1.3 else '--results results.xml --oval-results'
-
     # copy the original DS to the guest
     g.copy_to(util.get_datastream(), 'scan-ds.xml')
     # scan the remediated system
     proc, lines = g.ssh_stream(
         f'oscap xccdf eval --profile {profile} --progress --report report.html'
-        f' {oval_results} --results-arf results-arf.xml scan-ds.xml'
+        f' --results-arf results-arf.xml scan-ds.xml'
     )
     oscap.report_from_verbose(lines)
     if proc.returncode not in [0,2]:

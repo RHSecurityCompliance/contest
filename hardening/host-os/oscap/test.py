@@ -5,7 +5,7 @@ import shutil
 
 from pathlib import Path
 
-from lib import util, results, oscap, versions
+from lib import util, results, oscap
 from conf import remediation
 
 
@@ -59,14 +59,11 @@ elif util.get_reboot_count() == 1:
 else:
     util.log("third boot, scanning")
 
-    # RHEL-7 HTML report doesn't contain OVAL findings by default
-    oval_results = [] if versions.oscap >= 1.3 else ['--results', 'results.xml', '--oval-results']
-
     # scan the remediated system
     # - use the original unmodified datastream
     cmd = [
         'oscap', 'xccdf', 'eval', '--profile', profile, '--progress',
-        '--report', 'report.html', *oval_results, '--results-arf', 'results-arf.xml',
+        '--report', 'report.html', '--results-arf', 'results-arf.xml',
         util.get_datastream(),
     ]
     proc, lines = util.subprocess_stream(cmd)

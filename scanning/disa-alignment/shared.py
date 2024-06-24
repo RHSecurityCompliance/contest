@@ -1,15 +1,12 @@
 import re
 
-from lib import results, versions
+from lib import results
 
 
 profile = 'stig'
 profile_full = f'xccdf_org.ssgproject.content_profile_{profile}'
 
-# RHEL-7 HTML report doesn't contain OVAL findings by default
-oval_results = '' if versions.oscap >= 1.3 else '--results results.xml --oval-results'
-
-shared_cmd = ['oscap', 'xccdf', 'eval', '--progress', oval_results]
+shared_cmd = ['oscap', 'xccdf', 'eval', '--progress']
 
 
 def content_scan(host, ds, html, arf):
