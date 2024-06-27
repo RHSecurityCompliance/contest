@@ -5,6 +5,10 @@
 # their root cause, filing isseus/bugs or fixing tests as appropriate,
 # eventually either removing the waivers or moving them to other files
 
+# https://github.com/ComplianceAsCode/content/issues/12096
+/hardening/.*/cis[^/]*/sshd_use_approved_ciphers
+    rhel == 9
+
 # TODO: something new? .. RHEL-8 on e8 and ism_o, RHEL-7 e8
 #  - seems to not happen on latest 8.9 nightlies ??
 #  - on latest 7.9, but upstream 2023/05 content
@@ -86,6 +90,10 @@
 #       investigate why
 /hardening/anaconda/with-gui/[^/]+/service_rpcbind_disabled
     rhel == 8
+
+# https://github.com/ComplianceAsCode/content/issues/12097
+/hardening/anaconda(/with-gui)?/cis[^/]*/socket_systemd-journal-remote_disabled
+    rhel == 9
 
 # /per-rule (Automatus rule mode) waivers
 #
