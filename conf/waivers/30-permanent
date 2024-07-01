@@ -26,7 +26,7 @@
 /hardening/host-os/oscap/[^/]+/package_dnf-automatic_installed
 /hardening/host-os/oscap/[^/]+/timer_dnf-automatic_enabled
 /hardening/host-os/oscap/[^/]+/package_rsyslog-gnutls_installed
-    rhel >= 8
+    True
 
 # https://bugzilla.redhat.com/show_bug.cgi?id=1797653 WONTFIX
 /scanning/oscap-eval/ERROR
