@@ -11,13 +11,13 @@
 /hardening/anaconda(/with-gui)?/[^/]+/firewalld_sshd_port_enabled
 # https://github.com/ComplianceAsCode/content/issues/11625
 /hardening/image-builder/[^/]+/firewalld_sshd_port_enabled
-    rhel >= 8
+    True
 
 # rule ordering issue - accounts_password_pam_retry is checked first and passes,
 # and a later enable_authselect remediation breaks it
 # - see https://github.com/OpenSCAP/openscap/issues/1880
 /hardening/anaconda/.+/accounts_password_pam_retry
-    rhel >= 8
+    True
 
 # caused by one of:
 # - bz1778661 (abrt)
@@ -55,10 +55,8 @@
     True
 
 # https://github.com/ComplianceAsCode/content/issues/11498
-# On RHEL 7, this rule accidentally passes due to a bug in OpenSCAP
-# https://issues.redhat.com/browse/RHEL-24335
 /hardening/anaconda/with-gui/[^/]+/service_bluetooth_disabled
-    rhel >= 8
+    True
 
 # RHEL-9 is not FIPS certified yet
 /hardening/.+/aide_use_fips_hashes
