@@ -176,9 +176,6 @@
 # Image Builder
 #
 # TODO: file issues ?
-/hardening/image-builder/stig/mount_option_nodev_nonroot_local_partitions
-/hardening/image-builder/anssi_bp28_high/mount_option_nodev_nonroot_local_partitions
-/hardening/image-builder/ospp/mount_option_nodev_nonroot_local_partitions
 /hardening/image-builder/anssi_bp28_high/mount_option_tmp_noexec
 /hardening/image-builder/anssi_bp28_high/sebool_polyinstantiation_enabled
     True
