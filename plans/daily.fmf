@@ -27,5 +27,8 @@ discover:
       # the rest is cheap to run
       - /scanning
       - /static-checks
+    exclude:
+      # frequently fails on transient issues, run it only in stabilization
+      - /static-checks/html-links
 
 # vim: syntax=yaml
