@@ -51,7 +51,9 @@
 
 # RHEL-8: https://bugzilla.redhat.com/show_bug.cgi?id=1834716
 # RHEL-9: https://bugzilla.redhat.com/show_bug.cgi?id=1999587
+# https://issues.redhat.com/browse/RHEL-45706
 /hardening/anaconda/with-gui/[^/]+/service_avahi-daemon_disabled
+/hardening/anaconda(/with-gui)?/cis[^/]*/socket_systemd-journal-remote_disabled
     True
 
 # https://github.com/ComplianceAsCode/content/issues/11498
