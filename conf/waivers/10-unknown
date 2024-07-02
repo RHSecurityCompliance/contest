@@ -118,6 +118,12 @@
 /per-rule/.+/package_ypserv_removed/package-installed.fail
 /per-rule/.+/service_telnet_disabled/service_disabled.pass
     rhel == 9
+# https://github.com/ComplianceAsCode/content/issues/12096
+/per-rule/.+/oscap/sshd_use_approved_ciphers/correct_reduced_list.pass
+/per-rule/.+/oscap/sshd_use_approved_ciphers/correct_scrambled.pass
+/per-rule/.+/oscap/sshd_use_approved_ciphers/correct_value.pass
+/per-rule/.+/oscap/sshd_use_approved_ciphers/correct_value_full.pass
+/per-rule/.+/oscap/sshd_use_approved_ciphers/correct_variable.pass
 
 # likely something caused by restraint / Beaker test env
 # TODO: investigate
