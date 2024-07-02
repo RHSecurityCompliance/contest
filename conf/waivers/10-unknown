@@ -128,7 +128,7 @@
 /per-rule/.+/oscap/sshd_use_approved_ciphers/correct_value.pass
 /per-rule/.+/oscap/sshd_use_approved_ciphers/correct_value_full.pass
 /per-rule/.+/oscap/sshd_use_approved_ciphers/correct_variable.pass
-
+    rhel == 9
 # likely something caused by restraint / Beaker test env
 # TODO: investigate
 /hardening/host-os/.+/file_permissions_unauthorized_world_writable
