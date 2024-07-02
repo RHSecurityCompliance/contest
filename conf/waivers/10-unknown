@@ -5,6 +5,10 @@
 # their root cause, filing isseus/bugs or fixing tests as appropriate,
 # eventually either removing the waivers or moving them to other files
 
+# https://github.com/ComplianceAsCode/content/issues/12119
+/hardening/host-os/ansible/cui/timer_dnf-automatic_enabled
+/hardening/host-os/ansible/ospp/timer_dnf-automatic_enabled
+
 # https://github.com/ComplianceAsCode/content/issues/12096
 /hardening/.*/cis[^/]*/sshd_use_approved_ciphers
     rhel == 9
