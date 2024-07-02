@@ -5,7 +5,7 @@ environment+:
     PYTHONPATH: ../..
 duration: 15m
 require+:
-  - java-11-openjdk
+  - java-17-openjdk
 tag:
   - daily
 adjust:
