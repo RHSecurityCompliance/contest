@@ -77,14 +77,13 @@
 # https://github.com/ComplianceAsCode/content/issues/11567
 /hardening/image-builder/.*/enable_dracut_fips_module
 /hardening/image-builder/.*/enable_fips_mode
+# https://issues.redhat.com/browse/RHEL-45018
+/hardening/image-builder/.*/mount_option_nodev_nonroot_local_partitions
     True
 # OpenSCAP unsupported profile: xccdf_org.ssgproject.content_profile_ccn_advanced
 # https://issues.redhat.com/browse/RHEL-25574
 /hardening/image-builder/ccn_advanced
     rhel == 9 and status == 'error'
-# https://issues.redhat.com/browse/RHEL-45018
-/hardening/image-builder/.*/mount_option_nodev_nonroot_local_partitions
-    rhel == 8
 
 # DISA Alignment waivers
 #
