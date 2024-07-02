@@ -84,10 +84,6 @@
 /hardening/anaconda/with-gui/[^/]+/service_rpcbind_disabled
     rhel == 8
 
-# https://github.com/ComplianceAsCode/content/issues/12097
-/hardening/anaconda(/with-gui)?/cis[^/]*/socket_systemd-journal-remote_disabled
-    rhel == 9
-
 # /per-rule (Automatus rule mode) waivers
 #
 # TODO: all of these are unknown and need investigation
