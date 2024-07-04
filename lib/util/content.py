@@ -47,7 +47,17 @@ def _find_playbooks(root):
         build_content(user_content)
         return user_content / 'build' / 'ansible'
     else:
-        return root / Path('/usr/share/scap-security-guide/ansible')
+        return root / Path('usr/share/scap-security-guide/ansible')
+
+
+def _find_per_rule_playbooks(root):
+    if user_content:
+        build_content(user_content)
+        return user_content / 'build' / f'rhel{rhel.major}' / 'playbooks' / 'all'
+    else:
+        return root / Path(
+            f'usr/share/scap-security-guide/ansible/rule_playbooks/rhel{rhel.major}/all'
+        )
 
 
 def get_playbook(profile, root='/'):
@@ -65,9 +75,12 @@ def get_playbook(profile, root='/'):
 
 
 def iter_playbooks(root='/'):
-    for file in _find_playbooks(root).rglob('*'):
+    for file in _find_playbooks(root).iterdir():
         if file.suffix == '.yml':
             yield file
+    per_rule_dir = _find_per_rule_playbooks(root)
+    if per_rule_dir.exists():
+        yield from per_rule_dir.iterdir()
 
 
 def get_kickstart(profile):
