@@ -111,7 +111,7 @@ def build_content(path):
     cmd = ['dnf', '-y', 'builddep', '--spec', 'scap-security-guide.spec']
     util.subprocess_run(cmd, check=True, cwd=path)
     # build content
-    cmd = ['./build_product', f'rhel{rhel.major}']
+    cmd = ['./build_product', '--playbook-per-rule', f'rhel{rhel.major}']
     util.subprocess_run(cmd, check=True, cwd=path)
 
 
@@ -152,6 +152,6 @@ def get_content(build=True):
                     raise FileNotFoundError(f"{extracted} not in extracted/patched SRPM")
                 # build content
                 if build:
-                    cmd = ['./build_product', f'rhel{rhel.major}']
+                    cmd = ['./build_product', '--playbook-per-rule', f'rhel{rhel.major}']
                     util.subprocess_run(cmd, check=True, cwd=extracted)
                 yield extracted
