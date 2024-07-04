@@ -9,6 +9,7 @@ discover:
       # just some basic smoke testing that should never fail
       - /scanning/oscap-eval
       - /static-checks
+      - /static-checks/ansible/syntax-check
     exclude:
       # often fails on temporary retrieval issues
       - /static-checks/html-links
