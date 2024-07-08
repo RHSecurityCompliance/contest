@@ -25,6 +25,7 @@ Snapshotting is currently not supported/tested with this approach.
 """
 
 import os
+import sys
 import re
 import subprocess
 import textwrap
@@ -350,7 +351,22 @@ class Guest(virt.Guest):
 
             bp_name = stack.enter_context(blueprint.to_composer())
 
-            composer_cli('blueprints', 'depsolve', bp_name)
+            # re-try multiple times to try to avoid a bug:
+            # ERROR: Depsolve Error: Get "http://localhost/.../depsolve/contest_blueprint": EOF
+            for _ in range(5):
+                ret = composer_cli(
+                    'blueprints', 'depsolve', bp_name, check=False, universal_newlines=True,
+                    stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
+                )
+                sys.stdout.write(ret.stdout)
+                if ret.returncode == 0:
+                    break
+                elif re.match('ERROR: Depsolve Error: Get "[^"]+": EOF\n', ret.stdout):
+                    continue
+                else:
+                    raise RuntimeError("depsolve returned unknown error")
+            else:
+                raise RuntimeError("depsolve failed, retries depleted")
 
             ident = stack.enter_context(Compose.build(bp_name))
 
