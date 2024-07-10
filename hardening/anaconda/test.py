@@ -20,19 +20,19 @@ profile = f'xccdf_org.ssgproject.content_profile_{profile}'
 if os.environ.get('USE_SERVER_WITH_GUI'):
     ks.add_package_group('Server with GUI')
 
-oscap_conf = {
-    'content-type': 'datastream',
-    'content-url': f'http://{virt.NETWORK_HOST}:8088/remediation-ds.xml',
-    'profile': profile,
-}
-ks.add_oscap(oscap_conf)
-
-oscap.unselect_rules(util.get_datastream(), 'remediation-ds.xml', remediation.excludes())
-
 # host a HTTP server with a datastream and let the guest download it
-srv = util.BackgroundHTTPServer(virt.NETWORK_HOST, 8088)
+srv = util.BackgroundHTTPServer(virt.NETWORK_HOST, 0)
+oscap.unselect_rules(util.get_datastream(), 'remediation-ds.xml', remediation.excludes())
 srv.add_file('remediation-ds.xml')
 with srv:
+    host, port = srv.server.server_address
+    oscap_conf = {
+        'content-type': 'datastream',
+        'content-url': f'http://{host}:{port}/remediation-ds.xml',
+        'profile': profile,
+    }
+    ks.add_oscap(oscap_conf)
+
     g.install(kickstart=ks)
 
 with g.booted():

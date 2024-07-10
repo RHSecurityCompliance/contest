@@ -404,18 +404,11 @@ class Guest:
         if not kickstart:
             kickstart = Kickstart()
 
-        http_port = 8090
-
         kickstart.add_host_repos()
         util.ssh_keygen(self.ssh_keyfile_path)
         with open(f'{self.ssh_keyfile_path}.pub') as f:
             pubkey = f.read().rstrip()
         kickstart.add_authorized_key(pubkey)
-        kickstart.add_install_only_repo(
-            'contest-rpmpack',
-            f'http://{NETWORK_HOST}:{http_port}/repo',
-        )
-        kickstart.add_packages([util.RpmPack.NAME])
 
         disk_extension = 'qcow2' if disk_format == 'qcow2' else 'img'
         disk_path = f'{GUEST_IMG_DIR}/{self.name}.{disk_extension}'
@@ -431,9 +424,18 @@ class Guest:
 
             # host the custom RPM on a HTTP server, as Anaconda needs a YUM repo
             # to pull packages from
-            srv = util.BackgroundHTTPServer(NETWORK_HOST, http_port)
+            srv = util.BackgroundHTTPServer(NETWORK_HOST, 0)
             srv.add_dir(repo, 'repo')
             stack.enter_context(srv)
+
+            # now that we know the address/port of the HTTP server, add it to
+            # the kickstart as well
+            http_host, http_port = srv.server.server_address
+            kickstart.add_install_only_repo(
+                'contest-rpmpack',
+                f'http://{http_host}:{http_port}/repo',
+            )
+            kickstart.add_packages([util.RpmPack.NAME])
 
             ksfile = stack.enter_context(kickstart.to_tmpfile())
 

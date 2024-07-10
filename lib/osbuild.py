@@ -317,7 +317,6 @@ class Guest(virt.Guest):
                 blueprint.set_openscap_datastream(self.DATASTREAM)
                 blueprint.add_openscap_tailoring(unselected=remediation.excludes())
 
-        http_port = 8091
         disk_path = Path(f'{virt.GUEST_IMG_DIR}/{self.name}.img')
 
         with contextlib.ExitStack() as stack:
@@ -336,16 +335,17 @@ class Guest(virt.Guest):
 
             # osbuild-composer doesn't support file:// repos, so host
             # the custom RPM on a HTTP server
-            srv = util.BackgroundHTTPServer('127.0.0.1', http_port)
+            srv = util.BackgroundHTTPServer('127.0.0.1', 0)
             srv.add_dir(repo, 'repo')
             stack.enter_context(srv)
 
-            # overwrite default Red Hat CDN host repos, add HTTP server above
+            # overwrite default Red Hat CDN host repos via a custom HTTP server
             repos = ComposerRepos()
             repos.add_host_repos()
+            http_host, http_port = srv.server.server_address
             repos.repos.append({
                 'name': 'contest-rpmpack',
-                'baseurl': f'http://127.0.0.1:{http_port}/repo',
+                'baseurl': f'http://{http_host}:{http_port}/repo',
             })
             stack.enter_context(repos.to_composer())
 
