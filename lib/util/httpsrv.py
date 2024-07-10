@@ -11,9 +11,13 @@ Ie.
 
 Any HTTP GET requests for '/visible.txt' will receive the contents of
 '/on/disk/file.txt' (or 404).
-
 Any HTTP GET requests for '/somedir/aa/bb' will receive the contents of
 '/on/disk/dir/aa/bb' (or 404).
+
+You can call 'srv.add_*' functions inside the context manager, however
+be aware that this creates a potential race condition with the request-
+handling code, so make sure nothing queries the server while new entries
+are being added.
 
 Port can also be specified as 0 (just like for Python's socketserver)
 which will cause a random unused port to be allocated by the OS kernel.

@@ -281,7 +281,3 @@ Misc:
   - pseudotty and other executables
   - ...
   - adjust `libdir` in `util` appropriately ?
-
-ThreadingHTTPServer in Python 3.7+ to replace the multiprocessing logic, and
-automatically pre-bind to port 0 (automatic), so we don't have to have reserved
-port ranges in README and tests/libs can just read the allocated port number.

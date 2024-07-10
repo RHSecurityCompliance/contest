@@ -13,19 +13,19 @@ g = virt.Guest()
 
 ks = virt.translate_ssg_kickstart(shared.profile)
 
-oscap_conf = {
-    'content-type': 'datastream',
-    'content-url': f'http://{virt.NETWORK_HOST}:8088/remediation-ds.xml',
-    'profile': shared.profile_full,
-}
-ks.add_oscap(oscap_conf)
-
-oscap.unselect_rules(util.get_datastream(), 'remediation-ds.xml', remediation.excludes())
-
 # host a HTTP server with a datastream and let the guest download it
-srv = util.BackgroundHTTPServer(virt.NETWORK_HOST, 8088)
+srv = util.BackgroundHTTPServer(virt.NETWORK_HOST, 0)
+oscap.unselect_rules(util.get_datastream(), 'remediation-ds.xml', remediation.excludes())
 srv.add_file('remediation-ds.xml')
 with srv:
+    host, port = srv.server.server_address
+    oscap_conf = {
+        'content-type': 'datastream',
+        'content-url': f'http://{host}:{port}/remediation-ds.xml',
+        'profile': shared.profile_full,
+    }
+    ks.add_oscap(oscap_conf)
+
     g.install(kickstart=ks)
 
 with g.booted(), util.get_content(build=False) as content_dir:
