@@ -1,52 +1,55 @@
 #!/usr/bin/python3
 
 import re
-from pathlib import Path
 
-from lib import util, results, dnf
-
-
-def build_source(src_rpm, path=None):
-    """
-    Build package from src rpm.
-
-    'src_rpm' is path to src rpm file.
-    Define 'path' to specify path where to build. Otherwise, build
-    is done to rpmbuild directory in current working directory.
-    """
-    util.subprocess_run(['dnf', 'builddep', '-y', src_rpm], check=True)
-
-    path = Path(path) if path else Path.cwd() / 'rpmbuild'
-
-    util.subprocess_run(['rpm', '-ivh', '--define', f'_topdir {path}', src_rpm], check=True)
-
-    spec_path = next((path / 'SPECS').glob('*.spec'))
-    util.subprocess_run(['rpmbuild', '-bc', '--define', f'_topdir {path}', spec_path], check=True)
-
-    return path
+from lib import util, results, versions
 
 
-# Get src rpm and build from it
-with dnf.download_rpm('scap-security-guide', source=True) as src_rpm:
-    rpm_build = build_source(src_rpm)
-ssg_build = next((rpm_build / 'BUILD').glob('*/build'))
+# options are taken from scap-security-guide spec file
+if versions.rhel.is_true_rhel():
+    cmake_options = [
+        f'-DSSG_PRODUCT_RHEL{versions.rhel.major}:BOOLEAN=TRUE',
+        '-DSSG_PRODUCT_DEFAULT:BOOLEAN=FALSE',
+        '-DSSG_SCIENTIFIC_LINUX_DERIVATIVES_ENABLED:BOOL=OFF',
+        '-DSSG_CENTOS_DERIVATIVES_ENABLED:BOOL=OFF',
+        '-DSSG_ANSIBLE_PLAYBOOKS_PER_RULE_ENABLED:BOOL=ON',
+    ]
+elif versions.rhel.is_centos():
+    cmake_options = [
+        f'-DSSG_PRODUCT_RHEL{versions.rhel.major}:BOOLEAN=TRUE',
+        '-DSSG_PRODUCT_DEFAULT:BOOLEAN=FALSE',
+        '-DSSG_SCIENTIFIC_LINUX_DERIVATIVES_ENABLED:BOOL=OFF',
+        '-DSSG_CENTOS_DERIVATIVES_ENABLED:BOOL=ON',
+        '-DSSG_ANSIBLE_PLAYBOOKS_PER_RULE_ENABLED:BOOL=ON',
+    ]
+else:
+    cmake_options = [
+        '-DSSG_SEPARATE_SCAP_FILES_ENABLED=OFF',
+        '-DSSG_BASH_SCRIPTS_ENABLED=OFF',
+        '-DSSG_BUILD_SCAP_12_DS=OFF',
+    ]
 
-# ctest
-cmd = ['cmake', '--build', ssg_build,
-       '--target', 'test', '--', 'ARGS=--output-on-failure --output-log ctest_results']
-util.subprocess_run(cmd)
+with util.get_content(build=False) as content_dir:
+    build_dir = content_dir / 'build'
 
-with open(ssg_build / 'ctest_results') as f:
-    # Result format: X/Y Test  #X: test_name .................  test_result   Z sec
-    result_regex = re.compile(r'\d+\s+Test\s+#\d+:\s+([^\s]+)\s+\.+\s+(\w+)\s+')
-    for line in f:
-        result_match = result_regex.search(line)
-        if result_match:
-            test_name = result_match.group(1)
-            if result_match.group(2) == 'Passed':
-                result = 'pass'
-            else:
-                result = 'fail'
-            results.report(result, test_name)
+    util.subprocess_run(['cmake', '../', *cmake_options], cwd=build_dir, check=True)
+    util.subprocess_run(['make', '-j4'], cwd=build_dir, check=True)
 
-results.report_and_exit(logs=[ssg_build / 'Testing' / 'Temporary' / 'LastTest.log'])
+    # ctest
+    cmd = [
+        'cmake', '--build', build_dir, '--target', 'test',
+        '--', 'ARGS=--output-on-failure --output-log ctest_results',
+    ]
+    util.subprocess_run(cmd, cwd=build_dir)
+
+    with open(build_dir / 'ctest_results') as f:
+        # Result format: X/Y Test  #X: test_name .................  test_result   Z sec
+        result_regex = re.compile(r'\d+\s+Test\s+#\d+:\s+([^\s]+)\s+\.+\s+(\w+)\s+')
+        for line in f:
+            result_match = result_regex.search(line)
+            if result_match:
+                test_name, test_result = result_match.groups()
+                result = 'pass' if test_result == 'Passed' else 'fail'
+                results.report(result, test_name)
+
+    results.report_and_exit(logs=[build_dir / 'Testing' / 'Temporary' / 'LastTest.log'])
