@@ -6,6 +6,8 @@ environment+:
 duration: 1h
 require+:
   - rpm-build
+  - cmake
+  - python3-jinja2
 recommend+:
   - dnf-utils
   - yum-utils
