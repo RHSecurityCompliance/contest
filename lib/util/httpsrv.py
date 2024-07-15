@@ -3,10 +3,10 @@ Simple HTTP server implementation that allows adding arbitrary paths,
 backed by (different) filesystem paths.
 
 Ie.
-    srv = BackgroundHTTPServer('127.0.0.1', 8080)
-    srv.add_file('/on/disk/file.txt', '/visible.txt')
-    srv.add_file('/on/disk/dir', '/somedir')
-    with srv:
+    with BackgroundHTTPServer('127.0.0.1', 8080) as srv:
+        srv.add_file('/on/disk/file.txt', '/visible.txt')
+        srv.add_file('/on/disk/dir', '/somedir')
+        srv.start()
         ...
 
 Any HTTP GET requests for '/visible.txt' will receive the contents of
@@ -14,19 +14,28 @@ Any HTTP GET requests for '/visible.txt' will receive the contents of
 Any HTTP GET requests for '/somedir/aa/bb' will receive the contents of
 '/on/disk/dir/aa/bb' (or 404).
 
-You can call 'srv.add_*' functions inside the context manager, however
+You can call 'srv.add_*' functions even after calling .start(), however
 be aware that this creates a potential race condition with the request-
 handling code, so make sure nothing queries the server while new entries
 are being added.
 
 Port can also be specified as 0 (just like for Python's socketserver)
 which will cause a random unused port to be allocated by the OS kernel.
-You can then retrieve it from server_address (just like socketserver):
+You can then retrieve it from the return tuple of .start():
+
+    with BackgroundHTTPServer('127.0.0.1', 0) as srv:
+        host, port = srv.start()
+        # 'host' will be '127.0.0.1' with port being >0
+
+You can also use the server without a context manager, assuming you take
+care of stopping it (manually, via try/finally, etc.):
 
     srv = BackgroundHTTPServer('127.0.0.1', 0)
-    with srv:
-        host, port = srv.server.server_address
-        # 'port' here will be >0
+    try:
+        host, port = srv.start()
+        ...
+    finally:
+        srv.stop()
 """
 
 import shutil
@@ -79,6 +88,7 @@ class _BackgroundHTTPServerHandler(SimpleHTTPRequestHandler):
 
 class BackgroundHTTPServer:
     def __init__(self, host, port):
+        self.server = None
         self.file_mapping = {}
         self.dir_mapping = {}
         self.requested_address = (host, port)
@@ -120,7 +130,15 @@ class BackgroundHTTPServer:
         url_path = Path(fs_path) if url_path is None else Path(url_path.lstrip('/'))
         self.dir_mapping[url_path] = Path(fs_path)
 
-    def __enter__(self):
+    def start(self):
+        """
+        Start the HTTP server - open a listening socket, start serving requests.
+
+        The server can be shut down either by exiting a context manager (if it
+        was created by the context manager), or by calling .stop() manually.
+
+        Returns a (host, port) tuple the server is listening on.
+        """
         server = HTTPServer(self.requested_address, _BackgroundHTTPServerHandler)
 
         host, port = server.server_address
@@ -145,11 +163,20 @@ class BackgroundHTTPServer:
                         ['firewall-cmd', f'--zone={zone}', f'--add-port={port}/tcp'],
                         stdout=subprocess.DEVNULL, check=True)
 
-        self.server = server
         self.thread = threading.Thread(target=server.serve_forever)
         self.thread.start()
 
-    def __exit__(self, exc_type, exc_value, traceback):
+        self.server = server
+        return server.server_address
+
+    def stop(self):
+        """
+        Stop the HTTP server, close the listening socket.
+        """
+        # if it was never started
+        if self.server is None:
+            return
+
         host, port = self.server.server_address
         util.log(f"ending: {host}:{port}")
 
@@ -162,3 +189,9 @@ class BackgroundHTTPServer:
             util.subprocess_run(
                 ['firewall-cmd', f'--zone={zone}', f'--remove-port={port}/tcp'],
                 stdout=subprocess.DEVNULL, check=True)
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, exc_type, exc_value, traceback):
+        self.stop()
