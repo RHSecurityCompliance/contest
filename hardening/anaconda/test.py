@@ -21,11 +21,12 @@ if os.environ.get('USE_SERVER_WITH_GUI'):
     ks.add_package_group('Server with GUI')
 
 # host a HTTP server with a datastream and let the guest download it
-srv = util.BackgroundHTTPServer(virt.NETWORK_HOST, 0)
-oscap.unselect_rules(util.get_datastream(), 'remediation-ds.xml', remediation.excludes())
-srv.add_file('remediation-ds.xml')
-with srv:
-    host, port = srv.server.server_address
+with util.BackgroundHTTPServer(virt.NETWORK_HOST, 0) as srv:
+    oscap.unselect_rules(util.get_datastream(), 'remediation-ds.xml', remediation.excludes())
+    srv.add_file('remediation-ds.xml')
+
+    host, port = srv.start()
+
     oscap_conf = {
         'content-type': 'datastream',
         'content-url': f'http://{host}:{port}/remediation-ds.xml',

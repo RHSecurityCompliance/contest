@@ -335,14 +335,13 @@ class Guest(virt.Guest):
 
             # osbuild-composer doesn't support file:// repos, so host
             # the custom RPM on a HTTP server
-            srv = util.BackgroundHTTPServer('127.0.0.1', 0)
+            srv = stack.enter_context(util.BackgroundHTTPServer('127.0.0.1', 0))
             srv.add_dir(repo, 'repo')
-            stack.enter_context(srv)
+            http_host, http_port = srv.start()
 
             # overwrite default Red Hat CDN host repos via a custom HTTP server
             repos = ComposerRepos()
             repos.add_host_repos()
-            http_host, http_port = srv.server.server_address
             repos.repos.append({
                 'name': 'contest-rpmpack',
                 'baseurl': f'http://{http_host}:{http_port}/repo',

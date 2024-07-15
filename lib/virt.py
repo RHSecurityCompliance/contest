@@ -424,13 +424,12 @@ class Guest:
 
             # host the custom RPM on a HTTP server, as Anaconda needs a YUM repo
             # to pull packages from
-            srv = util.BackgroundHTTPServer(NETWORK_HOST, 0)
+            srv = stack.enter_context(util.BackgroundHTTPServer(NETWORK_HOST, 0))
             srv.add_dir(repo, 'repo')
-            stack.enter_context(srv)
+            http_host, http_port = srv.start()
 
             # now that we know the address/port of the HTTP server, add it to
             # the kickstart as well
-            http_host, http_port = srv.server.server_address
             kickstart.add_install_only_repo(
                 'contest-rpmpack',
                 f'http://{http_host}:{http_port}/repo',
