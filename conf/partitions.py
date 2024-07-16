@@ -11,7 +11,7 @@ partitions = [
     ('/boot', 700),
     ('/', 1000),
     ('/home', 100),
-    ('/var', 6000),
+    ('/var', 5000),
     ('/var/log', 1000),
     ('/var/log/audit', 1000),
     ('/var/tmp', 1000),

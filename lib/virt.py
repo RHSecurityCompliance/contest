@@ -247,6 +247,7 @@ class Kickstart:
         reboot
         zerombr
         clearpart --all --initlabel
+        reqpart
     ''')
 
     PACKAGES = [
