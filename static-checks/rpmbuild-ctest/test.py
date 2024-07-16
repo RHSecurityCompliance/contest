@@ -48,12 +48,12 @@ with util.get_content(build=False) as content_dir:
 
     with open(build_dir / 'ctest_results') as f:
         # Result format: X/Y Test  #X: test_name .................  test_result   Z sec
-        result_regex = re.compile(r'\d+\s+Test\s+#\d+:\s+([^\s]+)\s+\.+\s+(\w+)\s+')
+        result_regex = re.compile(r'\d+\s+Test\s+#\d+:\s+([^\s]+)\s+\.+')
         for line in f:
             result_match = result_regex.search(line)
             if result_match:
-                test_name, test_result = result_match.groups()
-                result = 'pass' if test_result == 'Passed' else 'fail'
+                test_name = result_match.group(1)
+                result = 'pass' if 'Passed' in line else 'fail'
                 results.report(result, test_name)
 
     results.report_and_exit(logs=[build_dir / 'Testing' / 'Temporary' / 'LastTest.log'])
