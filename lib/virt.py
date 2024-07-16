@@ -449,9 +449,10 @@ class Guest:
                 '--graphics', 'none', '--console', 'pty', '--rng', '/dev/urandom',
                 # this has nothing to do with rhel8, it just tells v-i to use virtio
                 '--initrd-inject', ksfile, '--os-variant', 'rhel8-unknown',
-                '--extra-args', f'console=ttyS0 inst.ks=file:/{ksfile.name} '
-                                'systemd.journald.forward_to_console=1 '
-                                'inst.notmux inst.noninteractive inst.noverifyssl inst.sshd',
+                '--extra-args', (
+                    f'console=ttyS0 inst.ks=file:/{ksfile.name} '
+                    'inst.notmux inst.noninteractive inst.noverifyssl inst.sshd'
+                ),
                 '--noreboot',
             ]
 
