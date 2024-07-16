@@ -211,7 +211,7 @@ class Host:
             echo "waiting for ssh on $vm: root@$ip:22"
             while ! ncat --send-only -w 1 "$ip" 22 </dev/null 2>&0; do sleep 0.1; done
             ssh -q -i "$sshkey" -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null \
-                "root@$ip"
+                -o ServerAliveInterval=1 "root@$ip"
         ''')
         script = script.replace('%SSHKEY_DIR%', GUEST_IMG_DIR)  # f-strings cannot have \
         dest.write_text(script)
