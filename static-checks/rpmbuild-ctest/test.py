@@ -29,6 +29,10 @@ else:
         '-DSSG_BUILD_SCAP_12_DS=OFF',
     ]
 
+# Extra modules to enable more unit tests
+python_modules = ['lxml', 'pytest', 'trestle', 'openpyxl', 'pandas', 'cmakelint']
+util.subprocess_run(['python3', '-m', 'pip', 'install', *python_modules])
+
 with util.get_content(build=False) as content_dir:
     build_dir = content_dir / 'build'
 
