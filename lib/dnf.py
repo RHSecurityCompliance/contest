@@ -113,7 +113,7 @@ def download_rpm(nvr, source=False):
     'source' specifies whether to download a binary or a source RPM.
     """
     with tempfile.TemporaryDirectory() as tmpdir:
-        cmd = ['dnf', 'download', '--downloaddir', tmpdir]
+        cmd = ['dnf', 'download', '--destdir', tmpdir]
         if source:
             cmd.append('--source')
         cmd.append(nvr)
