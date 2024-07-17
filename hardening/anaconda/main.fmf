@@ -23,6 +23,9 @@ adjust:
   - when: arch != x86_64
     enabled: false
     because: we want to run virtualization on x86_64 only
+  - when: distro >= rhel-10
+    enabled: false
+    because: content doesn't have pre-made kickstarts for RHEL-10+
 tag:
   - max1
   - daily
