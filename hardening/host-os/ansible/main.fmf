@@ -55,6 +55,10 @@ adjust:
 /cui:
     environment+:
         PROFILE: cui
+    adjust+:
+      - when: distro >= rhel-10
+        enabled: false
+        because: there is no CUI profile on RHEL-10+
     extra-summary: /CoreOS/scap-security-guide/hardening/host-os/ansible/cui
     extra-nitrate: TC#0615452
     id: b5e079b6-91b0-4815-8f83-e0fc64e90f70
