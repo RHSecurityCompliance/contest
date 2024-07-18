@@ -68,6 +68,10 @@ tag:
 /cui:
     environment+:
         PROFILE: cui
+    adjust+:
+      - when: distro >= rhel-10
+        enabled: false
+        because: there is no CUI profile on RHEL-10+
     extra-summary: /CoreOS/scap-security-guide/hardening/anaconda/cui
     extra-nitrate: TC#0615169
     id: dcc000cc-f65a-47fd-bce2-d3ed4a1d5f4f

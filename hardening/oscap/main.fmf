@@ -65,6 +65,10 @@ tag:
 /cui:
     environment+:
         PROFILE: cui
+    adjust+:
+      - when: distro >= rhel-10
+        enabled: false
+        because: there is no CUI profile on RHEL-10+
     extra-summary: /CoreOS/scap-security-guide/hardening/oscap/cui
     extra-nitrate: TC#0615196
     id: 0acaf295-d069-47fa-844b-c1e2ac652032

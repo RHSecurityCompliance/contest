@@ -62,6 +62,9 @@ tag-:
         because: >
             not supported on RHEL-8 according to RHEL documentation,
             the "Profiles not compatible with Server with GUI" table
+      - when: distro >= rhel-10
+        enabled: false
+        because: there is no CUI profile on RHEL-10+
     extra-summary: /CoreOS/scap-security-guide/hardening/anaconda/with-gui/cui
     extra-nitrate: TC#0615410
     id: 571513d7-7160-4b73-8eec-9f087a1ddddf
