@@ -36,6 +36,7 @@ util.subprocess_run(['python3', '-m', 'pip', 'install', *python_modules])
 
 with util.get_content(build=False) as content_dir:
     build_dir = content_dir / 'build'
+    build_dir.mkdir(exist_ok=True)
 
     util.subprocess_run(['cmake', '../', *cmake_options], cwd=build_dir, check=True)
     util.subprocess_run(['make', '-j4'], cwd=build_dir, check=True)
