@@ -2,7 +2,7 @@
 
 import re
 
-from lib import util, results, versions
+from lib import util, results, versions, ansible
 
 
 # options are taken from scap-security-guide spec file
@@ -29,6 +29,7 @@ else:
         '-DSSG_BUILD_SCAP_12_DS=OFF',
     ]
 
+ansible.install_deps()
 # Extra modules to enable more unit tests
 python_modules = ['lxml', 'pytest', 'trestle', 'openpyxl', 'pandas', 'cmakelint']
 util.subprocess_run(['python3', '-m', 'pip', 'install', *python_modules])

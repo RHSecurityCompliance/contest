@@ -14,6 +14,8 @@ recommend+:
   - dnf-utils
   - yum-utils
   - yum-builddep
+  - ansible-core
+  - rhc-worker-playbook
   - bats
 tag:
   - CI-Tier-1
