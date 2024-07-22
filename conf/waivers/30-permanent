@@ -28,6 +28,10 @@
 /hardening/host-os/oscap/[^/]+/package_rsyslog-gnutls_installed
     True
 
+# https://github.com/ComplianceAsCode/content/issues/12119
+/hardening/host-os/.*/(ospp|cui)/timer_dnf-automatic_enabled
+    rhel == 8
+
 # https://bugzilla.redhat.com/show_bug.cgi?id=1797653 WONTFIX
 /scanning/oscap-eval/ERROR
     rhel == 8 and note == 'E: oscap: Failed to convert OVAL state to SEXP, id: oval:ssg-state_file_groupowner_var_log_syslog_gid_4_0:ste:1.'
