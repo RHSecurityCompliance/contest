@@ -1,7 +1,5 @@
 #!/usr/bin/python3
 
-import os
-
 from lib import results, oscap, osbuild, util
 
 
@@ -9,7 +7,7 @@ osbuild.Host.setup()
 
 g = osbuild.Guest()
 
-profile = os.environ['PROFILE']
+profile = util.get_test_name().rpartition('/')[2]
 
 g.create(profile=profile)
 

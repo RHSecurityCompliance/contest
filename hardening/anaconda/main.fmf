@@ -28,67 +28,39 @@ adjust:
     because: content doesn't have pre-made kickstarts for RHEL-10+
 
 /anssi_bp28_high:
-    environment+:
-        PROFILE: anssi_bp28_high
 
 /cis:
-    environment+:
-        PROFILE: cis
 
 /cis_server_l1:
-    environment+:
-        PROFILE: cis_server_l1
 
 /cis_workstation_l1:
-    environment+:
-        PROFILE: cis_workstation_l1
 
 /cis_workstation_l2:
-    environment+:
-        PROFILE: cis_workstation_l2
 
 /cui:
-    environment+:
-        PROFILE: cui
     adjust+:
       - when: distro >= rhel-10
         enabled: false
         because: there is no CUI profile on RHEL-10+
 
 /e8:
-    environment+:
-        PROFILE: e8
 
 /hipaa:
-    environment+:
-        PROFILE: hipaa
 
 /ism_o:
-    environment+:
-        PROFILE: ism_o
 
 /ospp:
-    environment+:
-        PROFILE: ospp
 
 /pci-dss:
-    environment+:
-        PROFILE: pci-dss
 
 /stig:
-    environment+:
-        PROFILE: stig
 
 /stig_gui:
-    environment+:
-        PROFILE: stig_gui
     adjust+:
       - enabled: false
         because: not supported without GUI, use stig instead
 
 /ccn_advanced:
-    environment+:
-        PROFILE: ccn_advanced
     adjust+:
       - when: distro == rhel-8
         enabled: false

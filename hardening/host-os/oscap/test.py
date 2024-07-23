@@ -1,6 +1,5 @@
 #!/usr/bin/python3
 
-import os
 import shutil
 
 from pathlib import Path
@@ -9,7 +8,7 @@ from lib import util, results, oscap
 from conf import remediation
 
 
-profile = os.environ['PROFILE']
+profile = util.get_test_name().rpartition('/')[2]
 profile = f'xccdf_org.ssgproject.content_profile_{profile}'
 
 unique_name = util.get_test_name().lstrip('/').replace('/', '-')

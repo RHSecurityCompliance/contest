@@ -6,7 +6,7 @@ from lib import util, results, oscap, ansible
 from conf import remediation
 
 
-profile = os.environ['PROFILE']
+profile = util.get_test_name().rpartition('/')[2]
 profile_full = f'xccdf_org.ssgproject.content_profile_{profile}'
 
 # the VM guest ssh code doesn't use $HOME/.known_hosts, so Ansible blocks
