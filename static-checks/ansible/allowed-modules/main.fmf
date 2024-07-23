@@ -14,9 +14,6 @@ recommend+:
   - ansible-core
   # needed for the ini_file ansible plugin, and more
   - rhc-worker-playbook
-tag:
-  - CI-Tier-1
-  - daily
 adjust:
   - when: arch == aarch64
     enabled: false

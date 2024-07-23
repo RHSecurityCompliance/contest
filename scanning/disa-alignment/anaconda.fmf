@@ -4,9 +4,6 @@ result: custom
 environment+:
     PYTHONPATH: ../..
 duration: 1h
-tag:
-  - max1
-  - daily
 adjust:
   - when: distro >= rhel-10
     enabled: false

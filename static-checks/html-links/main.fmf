@@ -6,8 +6,6 @@ environment+:
 duration: 5m
 recommend+:
   - python3-requests
-tag:
-  - daily
 adjust:
   - enabled: false
     when: arch != x86_64

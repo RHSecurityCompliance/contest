@@ -30,9 +30,6 @@ adjust:
   - when: distro ~< rhel-8.10 or distro ~< rhel-9.4
     enabled: false
     because: there is no OSBuild or Image Builder on old RHEL8/9 contain old OSBuild
-tag:
-  - max1
-  - daily
 
 /anssi_bp28_high:
     environment+:

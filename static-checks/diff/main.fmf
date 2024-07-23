@@ -3,7 +3,6 @@ environment+:
     PYTHONPATH: ../..
 duration: 10m
 tag:
-  - NoProductization
   - always-fails
 
 /profiles:

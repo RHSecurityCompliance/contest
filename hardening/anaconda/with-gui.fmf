@@ -2,10 +2,6 @@ environment+:
     USE_SERVER_WITH_GUI: 1
 duration: 2h
 
-# do not run GUI tests in CI unless explicitly mentioned below
-tag-:
-  - Kickstarts
-
 /anssi_bp28_high:
     environment+:
         PROFILE: anssi_bp28_high
@@ -35,8 +31,6 @@ tag-:
 /cis_workstation_l2:
     environment+:
         PROFILE: cis_workstation_l2
-    tag+:
-      - Kickstarts
 
 /cui:
     environment+:
@@ -90,8 +84,6 @@ tag-:
 /stig_gui:
     environment+:
         PROFILE: stig_gui
-    tag+:
-      - Kickstarts
 
 /ccn_advanced:
     environment+:

@@ -9,6 +9,3 @@ require+:
   # needed for the ini_file ansible plugin, and more
   - rhc-worker-playbook
 duration: 1h
-tag:
-  - max1
-  - daily

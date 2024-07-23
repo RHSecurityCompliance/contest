@@ -6,8 +6,6 @@ environment+:
 duration: 15m
 require+:
   - java-17-openjdk
-tag:
-  - daily
 adjust:
   - enabled: false
     when: arch != x86_64
