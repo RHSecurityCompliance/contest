@@ -8,7 +8,7 @@ from conf import remediation, partitions
 
 virt.Host.setup()
 
-profile = os.environ['PROFILE']
+profile = util.get_test_name().rpartition('/')[2]
 profile = f'xccdf_org.ssgproject.content_profile_{profile}'
 
 use_gui = os.environ.get('USE_SERVER_WITH_GUI')

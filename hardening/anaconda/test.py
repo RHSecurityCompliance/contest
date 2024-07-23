@@ -10,7 +10,7 @@ virt.Host.setup()
 
 g = virt.Guest()
 
-profile = os.environ['PROFILE']
+profile = util.get_test_name().rpartition('/')[2]
 
 # use kickstart from content, not ours
 ks = virt.translate_ssg_kickstart(profile)

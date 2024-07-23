@@ -3,12 +3,8 @@ environment+:
 duration: 2h
 
 /anssi_bp28_high:
-    environment+:
-        PROFILE: anssi_bp28_high
 
 /cis:
-    environment+:
-        PROFILE: cis
     adjust+:
       - enabled: false
         because: >
@@ -16,8 +12,6 @@ duration: 2h
             the "Profiles not compatible with Server with GUI" table
 
 /cis_server_l1:
-    environment+:
-        PROFILE: cis_server_l1
     adjust+:
       - enabled: false
         because: >
@@ -25,16 +19,10 @@ duration: 2h
             the "Profiles not compatible with Server with GUI" table
 
 /cis_workstation_l1:
-    environment+:
-        PROFILE: cis_workstation_l1
 
 /cis_workstation_l2:
-    environment+:
-        PROFILE: cis_workstation_l2
 
 /cui:
-    environment+:
-        PROFILE: cui
     adjust+:
       - when: distro == rhel-8
         enabled: false
@@ -46,20 +34,12 @@ duration: 2h
         because: there is no CUI profile on RHEL-10+
 
 /e8:
-    environment+:
-        PROFILE: e8
 
 /hipaa:
-    environment+:
-        PROFILE: hipaa
 
 /ism_o:
-    environment+:
-        PROFILE: ism_o
 
 /ospp:
-    environment+:
-        PROFILE: ospp
     adjust+:
       - when: distro == rhel-8
         enabled: false
@@ -68,12 +48,8 @@ duration: 2h
             the "Profiles not compatible with Server with GUI" table
 
 /pci-dss:
-    environment+:
-        PROFILE: pci-dss
 
 /stig:
-    environment+:
-        PROFILE: stig
     adjust+:
       - enabled: false
         because: >
@@ -82,12 +58,8 @@ duration: 2h
             the "Profiles not compatible with Server with GUI" table
 
 /stig_gui:
-    environment+:
-        PROFILE: stig_gui
 
 /ccn_advanced:
-    environment+:
-        PROFILE: ccn_advanced
     adjust+:
       - when: distro == rhel-8
         enabled: false
