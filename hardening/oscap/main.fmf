@@ -23,9 +23,6 @@ adjust:
   - when: arch != x86_64
     enabled: false
     because: we want to run virtualization on x86_64 only
-tag:
-  - max1
-  - daily
 
 /anssi_bp28_high:
     environment+:

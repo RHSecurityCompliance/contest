@@ -15,9 +15,6 @@ recommend+:
   - rhc-worker-playbook
   # individual rule playbooks
   - scap-security-guide-rule-playbooks
-tag:
-  - CI-Tier-1
-  - daily
 adjust:
   - when: arch != x86_64
     enabled: false

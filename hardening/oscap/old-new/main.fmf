@@ -9,9 +9,6 @@ description: |-
     successfully fixes the non-compliance, as verified by a scan.
 environment+:
     PYTHONPATH: ../../..
-tag:
-  # because old productization uses max1 and cannot run these efficiently
-  - NoProductization
 
 /anssi_bp28_high:
     environment+:

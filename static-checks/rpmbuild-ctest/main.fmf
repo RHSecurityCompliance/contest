@@ -19,7 +19,3 @@ recommend+:
   - ansible-core
   - rhc-worker-playbook
   - bats
-tag:
-  - CI-Tier-1
-  - Errata
-  - daily

@@ -8,7 +8,6 @@ require+:
   - openscap-scanner
 tag:
   - destructive
-  - daily
 
 /anssi_bp28_high:
     environment+:

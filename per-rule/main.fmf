@@ -37,15 +37,10 @@ adjust:
   - when: arch != x86_64
     enabled: false
     because: we want to run virtualization on x86_64 only
-tag:
-  - max1
-  - daily
 
 # for use with the RULE environment variable
 /from-env:
     tag:
-      - NoProductization
-      - NoStabilization
       - needs-param
     /oscap:
     /ansible:
