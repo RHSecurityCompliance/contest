@@ -12,6 +12,3 @@ adjust:
   - enabled: false
     when: arch != x86_64
     continue: false
-extra-summary: /CoreOS/scap-security-guide/static-checks/nist-validation
-extra-nitrate: TC#0617590
-id: 1b8e363a-5cc2-42df-8931-30a6b26a57ee

@@ -7,6 +7,3 @@ duration: 1h
 tag:
   - max1
   - daily
-extra-summary: /CoreOS/scap-security-guide/scanning/disa-alignment/oscap
-extra-nitrate: TC#0617229
-id: bb380a85-1a28-428a-af6e-623e7c921064

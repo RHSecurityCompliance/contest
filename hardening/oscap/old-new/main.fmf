@@ -16,37 +16,22 @@ tag:
 /anssi_bp28_high:
     environment+:
         PROFILE: anssi_bp28_high
-    extra-summary: /CoreOS/scap-security-guide/hardening/oscap/old-new/anssi_bp28_high
-    extra-nitrate: TC#0617510
-    id: 3973f4f3-792d-49bb-bd7b-21468dc136c1
 
 /cis:
     environment+:
         PROFILE: cis
-    extra-summary: /CoreOS/scap-security-guide/hardening/oscap/old-new/cis
-    extra-nitrate: TC#0617512
-    id: 9b70c421-f252-4b22-9d1e-f0e8248ed276
 
 /cis_server_l1:
     environment+:
         PROFILE: cis_server_l1
-    extra-summary: /CoreOS/scap-security-guide/hardening/oscap/old-new/cis_server_l1
-    extra-nitrate: TC#0617513
-    id: b07098d2-8191-41d1-b1f0-d19e52e9999f
 
 /cis_workstation_l1:
     environment+:
         PROFILE: cis_workstation_l1
-    extra-summary: /CoreOS/scap-security-guide/hardening/oscap/old-new/cis_workstation_l1
-    extra-nitrate: TC#0617514
-    id: 1910db2c-c679-4378-9b4f-df18c9b71018
 
 /cis_workstation_l2:
     environment+:
         PROFILE: cis_workstation_l2
-    extra-summary: /CoreOS/scap-security-guide/hardening/oscap/old-new/cis_workstation_l2
-    extra-nitrate: TC#0617515
-    id: 6bb4fa20-8e0d-46b7-9d2b-90275bb70786
 
 /cui:
     environment+:
@@ -55,51 +40,30 @@ tag:
       - when: distro >= rhel-10
         enabled: false
         because: there is no CUI profile on RHEL-10+
-    extra-summary: /CoreOS/scap-security-guide/hardening/oscap/old-new/cui
-    extra-nitrate: TC#0617516
-    id: 62972d55-4aca-484e-817b-ea5b751270d3
 
 /e8:
     environment+:
         PROFILE: e8
-    extra-summary: /CoreOS/scap-security-guide/hardening/oscap/old-new/e8
-    extra-nitrate: TC#0617517
-    id: b5dfc321-50a7-4f3b-be20-45a4e701e003
 
 /hipaa:
     environment+:
         PROFILE: hipaa
-    extra-summary: /CoreOS/scap-security-guide/hardening/oscap/old-new/hipaa
-    extra-nitrate: TC#0617518
-    id: cf85ecb1-2c70-475c-9eeb-43f938e714f8
 
 /ism_o:
     environment+:
         PROFILE: ism_o
-    extra-summary: /CoreOS/scap-security-guide/hardening/oscap/old-new/ism_o
-    extra-nitrate: TC#0617519
-    id: 6372d9f5-b47b-4e13-88cb-4c9bb4664ac8
 
 /ospp:
     environment+:
         PROFILE: ospp
-    extra-summary: /CoreOS/scap-security-guide/hardening/oscap/old-new/ospp
-    extra-nitrate: TC#0617520
-    id: 30620306-a6e3-4a48-a703-19aea1559299
 
 /pci-dss:
     environment+:
         PROFILE: pci-dss
-    extra-summary: /CoreOS/scap-security-guide/hardening/oscap/old-new/pci-dss
-    extra-nitrate: TC#0617522
-    id: 9f5978e4-996c-4f2b-a14b-e6d8ea3b9d8c
 
 /stig:
     environment+:
         PROFILE: stig
-    extra-summary: /CoreOS/scap-security-guide/hardening/oscap/old-new/stig
-    extra-nitrate: TC#0617523
-    id: d72ace16-e474-45dc-9c57-f8054144b840
 
 /stig_gui:
     environment+:
@@ -115,6 +79,3 @@ tag:
       - when: distro == rhel-8
         enabled: false
         because: CNN Advanced profile is specific to RHEL 9
-    extra-summary: /CoreOS/scap-security-guide/hardening/oscap/old-new/ccn_advanced
-    extra-nitrate: TC#0617511
-    id: a437d0e7-6784-4554-aaad-a295d05c87d3

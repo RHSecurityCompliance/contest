@@ -9,9 +9,6 @@ tag-:
 /anssi_bp28_high:
     environment+:
         PROFILE: anssi_bp28_high
-    extra-summary: /CoreOS/scap-security-guide/hardening/anaconda/with-gui/anssi_bp28_high
-    extra-nitrate: TC#0615404
-    id: 2325cf2f-0fb8-4250-858a-03c62d495011
 
 /cis:
     environment+:
@@ -21,9 +18,6 @@ tag-:
         because: >
             not supported on RHEL-8 or RHEL-9 according to RHEL documentation,
             the "Profiles not compatible with Server with GUI" table
-    extra-summary: /CoreOS/scap-security-guide/hardening/anaconda/with-gui/cis
-    extra-nitrate: TC#0615406
-    id: e5ecac50-c56a-420d-b815-e8a18a5d6414
 
 /cis_server_l1:
     environment+:
@@ -33,25 +27,16 @@ tag-:
         because: >
             not supported on RHEL-8 or RHEL-9 according to RHEL documentation,
             the "Profiles not compatible with Server with GUI" table
-    extra-summary: /CoreOS/scap-security-guide/hardening/anaconda/with-gui/cis_server_l1
-    extra-nitrate: TC#0615407
-    id: 58631255-d82f-4475-856c-9cba991ee86e
 
 /cis_workstation_l1:
     environment+:
         PROFILE: cis_workstation_l1
-    extra-summary: /CoreOS/scap-security-guide/hardening/anaconda/with-gui/cis_workstation_l1
-    extra-nitrate: TC#0615408
-    id: 15a29c70-4d83-49ae-8e1c-06201cb6498a
 
 /cis_workstation_l2:
     environment+:
         PROFILE: cis_workstation_l2
     tag+:
       - Kickstarts
-    extra-summary: /CoreOS/scap-security-guide/hardening/anaconda/with-gui/cis_workstation_l2
-    extra-nitrate: TC#0615409
-    id: 93c3eba2-b612-4c9f-a755-b440d66b1c90
 
 /cui:
     environment+:
@@ -65,30 +50,18 @@ tag-:
       - when: distro >= rhel-10
         enabled: false
         because: there is no CUI profile on RHEL-10+
-    extra-summary: /CoreOS/scap-security-guide/hardening/anaconda/with-gui/cui
-    extra-nitrate: TC#0615410
-    id: 571513d7-7160-4b73-8eec-9f087a1ddddf
 
 /e8:
     environment+:
         PROFILE: e8
-    extra-summary: /CoreOS/scap-security-guide/hardening/anaconda/with-gui/e8
-    extra-nitrate: TC#0615411
-    id: 96f2e4ce-92a2-4c41-8bc7-61b06be35d23
 
 /hipaa:
     environment+:
         PROFILE: hipaa
-    extra-summary: /CoreOS/scap-security-guide/hardening/anaconda/with-gui/hipaa
-    extra-nitrate: TC#0615412
-    id: 3cd0f065-b874-4342-b0d7-7d1af70189da
 
 /ism_o:
     environment+:
         PROFILE: ism_o
-    extra-summary: /CoreOS/scap-security-guide/hardening/anaconda/with-gui/ism_o
-    extra-nitrate: TC#0615413
-    id: 4577aecc-3186-47d7-9425-b894939ae034
 
 /ospp:
     environment+:
@@ -99,16 +72,10 @@ tag-:
         because: >
             not supported on RHEL-8 according to RHEL documentation,
             the "Profiles not compatible with Server with GUI" table
-    extra-summary: /CoreOS/scap-security-guide/hardening/anaconda/with-gui/ospp
-    extra-nitrate: TC#0615414
-    id: 916f98e8-4c0d-45e7-85da-f5f6e5150c2c
 
 /pci-dss:
     environment+:
         PROFILE: pci-dss
-    extra-summary: /CoreOS/scap-security-guide/hardening/anaconda/with-gui/pci-dss
-    extra-nitrate: TC#0615415
-    id: ff3ae0c7-fb56-4272-b7c0-c24bb5b1eab2
 
 /stig:
     environment+:
@@ -119,18 +86,12 @@ tag-:
             not supported with GUI, use stig_gui instead;
             not supported on RHEL-8 or RHEL-9 according to RHEL documentation,
             the "Profiles not compatible with Server with GUI" table
-    extra-summary: /CoreOS/scap-security-guide/hardening/anaconda/with-gui/stig
-    extra-nitrate: TC#0615416
-    id: 87e79307-059d-4c20-a66e-b6ca83d4a1f1
 
 /stig_gui:
     environment+:
         PROFILE: stig_gui
     tag+:
       - Kickstarts
-    extra-summary: /CoreOS/scap-security-guide/hardening/anaconda/with-gui/stig_gui
-    extra-nitrate: TC#0615417
-    id: 3289b917-ca54-469c-8bce-f1db3c705239
 
 /ccn_advanced:
     environment+:
@@ -139,6 +100,3 @@ tag-:
       - when: distro == rhel-8
         enabled: false
         because: CNN Advanced profile is specific to RHEL 9
-    extra-summary: /CoreOS/scap-security-guide/hardening/anaconda/with-gui/ccn_advanced
-    extra-nitrate: TC#0615551
-    id: 15392a8c-5e38-4d48-8622-bca57c0056af

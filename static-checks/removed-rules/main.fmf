@@ -4,6 +4,3 @@ result: custom
 environment+:
     PYTHONPATH: ../..
 duration: 10m
-extra-summary: /CoreOS/scap-security-guide/static-checks/removed-rules
-extra-nitrate: TC#0617453
-id: 6dfdc617-53f7-45de-af41-feeb9ae991ea

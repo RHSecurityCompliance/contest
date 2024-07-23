@@ -20,37 +20,22 @@ adjust:
 /anssi_bp28_high:
     environment+:
         PROFILE: anssi_bp28_high
-    extra-summary: /CoreOS/scap-security-guide/hardening/host-os/ansible/anssi_bp28_high
-    extra-nitrate: TC#0615446
-    id: 3bc79691-409a-47a2-ab09-552b66befd65
 
 /cis:
     environment+:
         PROFILE: cis
-    extra-summary: /CoreOS/scap-security-guide/hardening/host-os/ansible/cis
-    extra-nitrate: TC#0615448
-    id: 91051ca5-3f8a-41a3-a6cf-7b03b561f3d3
 
 /cis_server_l1:
     environment+:
         PROFILE: cis_server_l1
-    extra-summary: /CoreOS/scap-security-guide/hardening/host-os/ansible/cis_server_l1
-    extra-nitrate: TC#0615449
-    id: d3e24927-f05d-41b7-a75d-cff02d060163
 
 /cis_workstation_l1:
     environment+:
         PROFILE: cis_workstation_l1
-    extra-summary: /CoreOS/scap-security-guide/hardening/host-os/ansible/cis_workstation_l1
-    extra-nitrate: TC#0615450
-    id: b5dc6c8b-2d66-45c7-acfd-b13eb74b21f6
 
 /cis_workstation_l2:
     environment+:
         PROFILE: cis_workstation_l2
-    extra-summary: /CoreOS/scap-security-guide/hardening/host-os/ansible/cis_workstation_l2
-    extra-nitrate: TC#0615451
-    id: da6f9fad-ecf6-4c9a-af42-d5d8e21f080b
 
 /cui:
     environment+:
@@ -59,51 +44,30 @@ adjust:
       - when: distro >= rhel-10
         enabled: false
         because: there is no CUI profile on RHEL-10+
-    extra-summary: /CoreOS/scap-security-guide/hardening/host-os/ansible/cui
-    extra-nitrate: TC#0615452
-    id: b5e079b6-91b0-4815-8f83-e0fc64e90f70
 
 /e8:
     environment+:
         PROFILE: e8
-    extra-summary: /CoreOS/scap-security-guide/hardening/host-os/ansible/e8
-    extra-nitrate: TC#0615453
-    id: 30fbaaba-6989-4b15-b60c-d6523599049b
 
 /hipaa:
     environment+:
         PROFILE: hipaa
-    extra-summary: /CoreOS/scap-security-guide/hardening/host-os/ansible/hipaa
-    extra-nitrate: TC#0615454
-    id: bafd98c6-473b-4279-873e-c11165c1cf4b
 
 /ism_o:
     environment+:
         PROFILE: ism_o
-    extra-summary: /CoreOS/scap-security-guide/hardening/host-os/ansible/ism_o
-    extra-nitrate: TC#0615455
-    id: 866ac5c0-8f56-464d-a995-36313c77347a
 
 /ospp:
     environment+:
         PROFILE: ospp
-    extra-summary: /CoreOS/scap-security-guide/hardening/host-os/ansible/ospp
-    extra-nitrate: TC#0615456
-    id: f735909d-920c-4e80-84c0-11e723e5f5ea
 
 /pci-dss:
     environment+:
         PROFILE: pci-dss
-    extra-summary: /CoreOS/scap-security-guide/hardening/host-os/ansible/pci-dss
-    extra-nitrate: TC#0615457
-    id: 5ffdce69-c34c-43ee-a6e5-ada888565f59
 
 /stig:
     environment+:
         PROFILE: stig
-    extra-summary: /CoreOS/scap-security-guide/hardening/host-os/ansible/stig
-    extra-nitrate: TC#0615458
-    id: 72fd6d33-edf3-4b77-8bba-6f6a2882ea8d
 
 /stig_gui:
     environment+:
@@ -111,9 +75,6 @@ adjust:
     adjust+:
       - enabled: false
         because: not supported without GUI, use stig instead
-    extra-summary: /CoreOS/scap-security-guide/hardening/host-os/ansible/stig_gui
-    extra-nitrate: TC#0615459
-    id: cfb0fe65-acf3-4239-8ff6-a4f74aefb591
 
 /ccn_advanced:
     environment+:
@@ -122,6 +83,3 @@ adjust:
       - when: distro == rhel-8
         enabled: false
         because: CNN Advanced profile is specific to RHEL 9
-    extra-summary: /CoreOS/scap-security-guide/hardening/host-os/ansible/ccn_advanced
-    extra-nitrate: TC#0615554
-    id: 1b9e4188-f07f-4a57-a3df-471d1d05ca91

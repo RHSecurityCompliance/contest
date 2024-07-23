@@ -37,37 +37,22 @@ tag:
 /anssi_bp28_high:
     environment+:
         PROFILE: anssi_bp28_high
-    extra-summary: /CoreOS/scap-security-guide/hardening/image-builder/anssi_bp28_high
-    extra-nitrate: TC#0617135
-    id: 49378e15-8946-456f-a385-e1f46ce215ed
 
 /cis:
     environment+:
         PROFILE: cis
-    extra-summary: /CoreOS/scap-security-guide/hardening/image-builder/cis
-    extra-nitrate: TC#0617138
-    id: 9271436d-0174-4ce1-8095-336fbc88ecd8
 
 /cis_server_l1:
     environment+:
         PROFILE: cis_server_l1
-    extra-summary: /CoreOS/scap-security-guide/hardening/image-builder/cis_server_l1
-    extra-nitrate: TC#0617139
-    id: 14b1138a-1518-42ef-a7f5-ddc166569c84
 
 /cis_workstation_l1:
     environment+:
         PROFILE: cis_workstation_l1
-    extra-summary: /CoreOS/scap-security-guide/hardening/image-builder/cis_workstation_l1
-    extra-nitrate: TC#0617140
-    id: acbe7c1c-f4c2-4fa4-82ee-82d6466d53e9
 
 /cis_workstation_l2:
     environment+:
         PROFILE: cis_workstation_l2
-    extra-summary: /CoreOS/scap-security-guide/hardening/image-builder/cis_workstation_l2
-    extra-nitrate: TC#0617141
-    id: fa04eabf-bb44-4e83-b0da-0d01a855593f
 
 /cui:
     environment+:
@@ -76,51 +61,30 @@ tag:
       - when: distro >= rhel-10
         enabled: false
         because: there is no CUI profile on RHEL-10+
-    extra-summary: /CoreOS/scap-security-guide/hardening/image-builder/cui
-    extra-nitrate: TC#0617142
-    id: b51902b5-372b-4bac-abde-7b4ed55883a9
 
 /e8:
     environment+:
         PROFILE: e8
-    extra-summary: /CoreOS/scap-security-guide/hardening/image-builder/e8
-    extra-nitrate: TC#0617143
-    id: b1ed4be5-8d13-49c3-81da-c5237e99a3cf
 
 /hipaa:
     environment+:
         PROFILE: hipaa
-    extra-summary: /CoreOS/scap-security-guide/hardening/image-builder/hipaa
-    extra-nitrate: TC#0617144
-    id: ade802a8-0f34-44bb-b6d2-d79c42100763
 
 /ism_o:
     environment+:
         PROFILE: ism_o
-    extra-summary: /CoreOS/scap-security-guide/hardening/image-builder/ism_o
-    extra-nitrate: TC#0617145
-    id: 86e541fb-6ea0-4e9f-b945-08085700d16e
 
 /ospp:
     environment+:
         PROFILE: ospp
-    extra-summary: /CoreOS/scap-security-guide/hardening/image-builder/ospp
-    extra-nitrate: TC#0617146
-    id: ceca6b61-a274-4bf6-99ec-e0c1ccdb954c
 
 /pci-dss:
     environment+:
         PROFILE: pci-dss
-    extra-summary: /CoreOS/scap-security-guide/hardening/image-builder/pci-dss
-    extra-nitrate: TC#0617147
-    id: 4e045305-52af-4157-a692-553025d2e3ce
 
 /stig:
     environment+:
         PROFILE: stig
-    extra-summary: /CoreOS/scap-security-guide/hardening/image-builder/stig
-    extra-nitrate: TC#0617148
-    id: 509cf2e8-60b1-4133-8770-f9cd1a2b4385
 
 /stig_gui:
     environment+:
@@ -128,7 +92,6 @@ tag:
     adjust+:
       - enabled: false
         because: not supported without GUI, use stig instead
-    extra-summary: /CoreOS/scap-security-guide/hardening/image-builder/stig_gui
 
 /ccn_advanced:
     environment+:
@@ -137,6 +100,3 @@ tag:
       - when: distro == rhel-8
         enabled: false
         because: CNN Advanced profile is specific to RHEL 9
-    extra-summary: /CoreOS/scap-security-guide/hardening/image-builder/ccn_advanced
-    extra-nitrate: TC#0617137
-    id: 4852122f-0667-4f88-a6e5-d8146e36d244
