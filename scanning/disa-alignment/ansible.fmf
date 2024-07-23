@@ -12,6 +12,3 @@ duration: 1h
 tag:
   - max1
   - daily
-extra-summary: /CoreOS/scap-security-guide/scanning/disa-alignment/ansible
-extra-nitrate: TC#0617228
-id: 2fc98724-cb1c-46c3-9714-3e9168a4f3c5

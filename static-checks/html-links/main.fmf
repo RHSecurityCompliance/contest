@@ -12,6 +12,3 @@ adjust:
   - enabled: false
     when: arch != x86_64
     continue: false
-extra-summary: /CoreOS/scap-security-guide/static-checks/html-links
-extra-nitrate: TC#0617233
-id: 8943f18e-666d-48c1-b172-fd71f999f7c9

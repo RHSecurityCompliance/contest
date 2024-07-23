@@ -22,4 +22,3 @@ adjust:
   - when: arch != x86_64
     enabled: false
     because: Ansible playbooks are same on all architectures
-extra-summary: /CoreOS/scap-security-guide/static-checks/ansible/syntax-check
