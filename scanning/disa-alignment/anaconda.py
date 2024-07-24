@@ -25,7 +25,7 @@ with util.BackgroundHTTPServer(virt.NETWORK_HOST, 0) as srv:
         'content-url': f'http://{host}:{port}/remediation-ds.xml',
         'profile': shared.profile,
     }
-    ks.add_oscap(oscap_conf)
+    ks.add_oscap_addon(oscap_conf)
 
     g.install(kickstart=ks)
 

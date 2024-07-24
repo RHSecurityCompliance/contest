@@ -308,7 +308,7 @@ class Kickstart:
                 '\nEOF')
         self.add_post('\n'.join(installed_repos))
 
-    def add_oscap(self, keyvals):
+    def add_oscap_addon(self, keyvals):
         """Append an OSCAP addon section, with key=value pairs from 'keyvals'."""
         lines = '\n'.join(f'  {k} = {v}' for k, v in keyvals.items())
         section = 'org_fedora_oscap' if versions.rhel < 9 else 'com_redhat_oscap'
