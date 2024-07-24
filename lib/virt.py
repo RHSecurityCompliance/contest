@@ -804,15 +804,12 @@ def virsh(*virsh_args, **run_args):
     return subprocess.run(cmd, **run_args)
 
 
-def translate_ssg_kickstart(profile):
+def translate_ssg_kickstart(ks_file):
     """
     Parse (and tweak) a kickstart shipped with the upstream content
     into class Kickstart instance.
     """
     ks_text = ''
-    ks_file = util.get_kickstart(profile)
-    util.log(f"using orig file: {ks_file}")
-
     with open(ks_file) as f:
         for line in f:
             line = line.rstrip('\n')

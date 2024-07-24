@@ -13,7 +13,8 @@ g = virt.Guest()
 profile = util.get_test_name().rpartition('/')[2]
 
 # use kickstart from content, not ours
-ks = virt.translate_ssg_kickstart(profile)
+ks_file = util.get_kickstart(profile)
+ks = virt.translate_ssg_kickstart(ks_file)
 
 if os.environ.get('USE_SERVER_WITH_GUI'):
     ks.packages.append('@Server with GUI')
