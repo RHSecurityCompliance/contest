@@ -21,6 +21,9 @@ recommend:
 component:
   - scap-security-guide
 
-# don't test for SELinux AVCs in Beaker
 environment:
+    # don't test for SELinux AVCs in Beaker
     AVC_ERROR: +no_avc_check
+    # use on-disk /var/tmp for all temporary directories, saving RAM by avoiding
+    # the tmpfs on /tmp and giving tests more space to operate
+    TMPDIR: /var/tmp
