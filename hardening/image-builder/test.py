@@ -11,8 +11,6 @@ profile = util.get_test_name().rpartition('/')[2]
 
 g.create(profile=profile)
 
-profile = f'xccdf_org.ssgproject.content_profile_{profile}'
-
 with g.booted():
     # scan the remediated system
     proc, lines = g.ssh_stream(

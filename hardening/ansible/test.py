@@ -10,7 +10,6 @@ ansible.install_deps()
 virt.Host.setup()
 
 profile = util.get_test_name().rpartition('/')[2]
-profile_full = f'xccdf_org.ssgproject.content_profile_{profile}'
 
 use_gui = os.environ.get('USE_SERVER_WITH_GUI')
 
@@ -51,7 +50,7 @@ with g.snapshotted():
     # scan the remediated system
     g.copy_to(util.get_datastream(), 'scan-ds.xml')
     proc, lines = g.ssh_stream(
-        f'oscap xccdf eval --profile {profile_full} --progress --report report.html'
+        f'oscap xccdf eval --profile {profile} --progress --report report.html'
         f' --results-arf results-arf.xml scan-ds.xml'
     )
     oscap.report_from_verbose(lines)

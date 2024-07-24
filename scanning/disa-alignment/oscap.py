@@ -21,7 +21,7 @@ with g.snapshotted():
     g.copy_to('remediation-ds.xml')
     for _ in range(2):
         cmd = [
-            'oscap', 'xccdf', 'eval', '--profile', shared.profile_full,
+            'oscap', 'xccdf', 'eval', '--profile', shared.profile,
             '--progress', '--remediate', 'remediation-ds.xml',
         ]
         proc = g.ssh(' '. join(cmd))
