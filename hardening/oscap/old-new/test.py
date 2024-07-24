@@ -7,7 +7,6 @@ from conf import remediation, partitions
 virt.Host.setup()
 
 profile = util.get_test_name().rpartition('/')[2]
-profile = f'xccdf_org.ssgproject.content_profile_{profile}'
 
 g = virt.Guest('minimal_with_oscap')
 

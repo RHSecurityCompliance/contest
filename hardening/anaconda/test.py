@@ -15,8 +15,6 @@ profile = util.get_test_name().rpartition('/')[2]
 # use kickstart from content, not ours
 ks = virt.translate_ssg_kickstart(profile)
 
-profile = f'xccdf_org.ssgproject.content_profile_{profile}'
-
 if os.environ.get('USE_SERVER_WITH_GUI'):
     ks.add_package_group('Server with GUI')
 

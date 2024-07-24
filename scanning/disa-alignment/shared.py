@@ -4,7 +4,6 @@ from lib import results
 
 
 profile = 'stig'
-profile_full = f'xccdf_org.ssgproject.content_profile_{profile}'
 
 shared_cmd = ['oscap', 'xccdf', 'eval', '--progress']
 
@@ -16,7 +15,7 @@ def content_scan(host, ds, html, arf):
     """
     cmd = [
         *shared_cmd,
-        '--profile', profile_full,
+        '--profile', profile,
         '--report', html,
         '--stig-viewer', arf,
         ds,

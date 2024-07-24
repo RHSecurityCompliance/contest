@@ -23,7 +23,7 @@ with util.BackgroundHTTPServer(virt.NETWORK_HOST, 0) as srv:
     oscap_conf = {
         'content-type': 'datastream',
         'content-url': f'http://{host}:{port}/remediation-ds.xml',
-        'profile': shared.profile_full,
+        'profile': shared.profile,
     }
     ks.add_oscap(oscap_conf)
 

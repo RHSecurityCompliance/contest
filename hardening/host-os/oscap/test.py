@@ -9,7 +9,6 @@ from conf import remediation
 
 
 profile = util.get_test_name().rpartition('/')[2]
-profile = f'xccdf_org.ssgproject.content_profile_{profile}'
 
 unique_name = util.get_test_name().lstrip('/').replace('/', '-')
 

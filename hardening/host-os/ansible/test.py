@@ -7,7 +7,6 @@ from conf import remediation
 
 
 profile = util.get_test_name().rpartition('/')[2]
-profile_full = f'xccdf_org.ssgproject.content_profile_{profile}'
 
 # the VM guest ssh code doesn't use $HOME/.known_hosts, so Ansible blocks
 # on trying to accept its ssh key - tell it to ignore this
@@ -42,7 +41,7 @@ else:
 
     # scan the remediated system
     cmd = [
-        'oscap', 'xccdf', 'eval', '--profile', profile_full, '--progress',
+        'oscap', 'xccdf', 'eval', '--profile', profile, '--progress',
         '--report', 'report.html', '--results-arf', 'results-arf.xml',
         util.get_datastream(),
     ]
