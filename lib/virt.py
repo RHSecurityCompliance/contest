@@ -236,12 +236,7 @@ class Host:
 
 class Kickstart:
     TEMPLATE = util.dedent(fr'''
-        lang en_US.UTF-8
-        keyboard --vckeymap us
-        network --onboot yes --bootproto dhcp
         rootpw {GUEST_LOGIN_PASS}
-        firstboot --disable
-        selinux --enforcing
         timezone --utc Europe/Prague
         bootloader --append="console=ttyS0,115200 mitigations=off"
         reboot
