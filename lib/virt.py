@@ -844,6 +844,50 @@ def translate_ssg_kickstart(profile):
     return Kickstart(template=ks_text)
 
 
+def translate_oscap_kickstart(lines, datastream):
+    """
+    Parse (and tweak) a kickstart generated via 'oscap xccdf generate fix'.
+    """
+    bootloader_seen = False
+    bootloader_append = 'console=ttyS0,115200 mitigations=off'
+
+    ks_text = ''
+    for line in lines:
+        # use our own password
+        if re.match('^rootpw ', line):
+            line = f'rootpw {GUEST_LOGIN_PASS}'
+
+        # append some optimizations to the existing bootloader line,
+        # see Kickstart.TEMPLATE
+        elif re.match('^bootloader', line):
+            bootloader_seen = True
+            if '--append' in line:
+                line = re.sub(r'--append="([^"]+)"', fr'--append="\1 {bootloader_append}"', line)
+            else:
+                line = f'{line} --append="{bootloader_append}"'
+
+        # STIG uses 10 GB audit because of DISA requiring large partitions,
+        # checked by 'auditd_audispd_configure_sufficiently_large_partition'
+        # (see https://github.com/ComplianceAsCode/content/pull/7141)
+        # - reducing this to 512 makes the rest of the partitions align
+        #   perfectly at 20448 MB, same as other kickstarts
+        elif re.match('^logvol /var/log/audit .*--size=10240', line):
+            line = re.sub('--size=[^ ]+', '--size=512', line)
+
+        # replace datastream path for the 'oscap' in %post
+        elif re.match('^oscap xccdf eval --remediate', line):
+            line = re.sub(r'/usr/share/xml/scap[^ ]+\.xml', datastream, line)
+
+        ks_text += f'{line}\n'
+
+    if not bootloader_seen:
+        ks_text += f'bootloader --append="{bootloader_append}"\n'
+
+    # leave original %packages - Anaconda can handle multiple %packages sections
+    # just fine (when we later add ours during installation)
+    return Kickstart(template=ks_text)
+
+
 #
 # libvirt domain (guest) XML operations
 #
