@@ -31,7 +31,7 @@ else:
 
 ansible.install_deps()
 # Extra modules to enable more unit tests
-python_modules = ['lxml', 'pytest', 'trestle', 'openpyxl', 'pandas', 'cmakelint']
+python_modules = ['lxml', 'pytest', 'trestle', 'openpyxl', 'cmakelint']
 util.subprocess_run(['python3', '-m', 'pip', 'install', *python_modules])
 
 with util.get_content(build=False) as content_dir:
