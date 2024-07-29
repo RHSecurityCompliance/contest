@@ -164,8 +164,8 @@
 # Image Builder
 #
 # TODO: file issues ?
-/hardening/image-builder/anssi_bp28_high/mount_option_tmp_noexec
-/hardening/image-builder/anssi_bp28_high/sebool_polyinstantiation_enabled
+/hardening/image-builder/anssi_[^/]+/mount_option_tmp_noexec
+/hardening/image-builder/anssi_[^/]+/sebool_polyinstantiation_enabled
     True
 /hardening/image-builder/hipaa/sebool_selinuxuser_execmod
     rhel == 9
