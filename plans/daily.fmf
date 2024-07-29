@@ -5,6 +5,7 @@ discover:
       - tag:-needs-param
       - tag:-always-fails
       - tag:-broken
+      - tag:-subset-profile
     test:
       # every remediation method, but only the basic reference environment,
       # without GUI/UEFI/etc. variants
