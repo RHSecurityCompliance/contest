@@ -170,4 +170,8 @@
 /hardening/image-builder/hipaa/sebool_selinuxuser_execmod
     rhel == 9
 
+# https://github.com/ComplianceAsCode/content/issues/12233
+/hardening/host-os/oscap/ism_o/firewalld_sshd_port_enabled
+    rhel == 9.0
+
 # vim: syntax=python
