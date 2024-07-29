@@ -4,6 +4,18 @@ duration: 2h
 
 /anssi_bp28_high:
 
+/anssi_bp28_enhanced:
+    tag+:
+      - subset-profile
+
+/anssi_bp28_intermediary:
+    tag+:
+      - subset-profile
+
+/anssi_bp28_minimal:
+    tag+:
+      - subset-profile
+
 /cis:
     adjust+:
       - enabled: false
@@ -12,15 +24,19 @@ duration: 2h
             the "Profiles not compatible with Server with GUI" table
 
 /cis_server_l1:
+    tag+:
+      - subset-profile
     adjust+:
       - enabled: false
         because: >
             not supported on RHEL-8 or RHEL-9 according to RHEL documentation,
             the "Profiles not compatible with Server with GUI" table
 
-/cis_workstation_l1:
-
 /cis_workstation_l2:
+
+/cis_workstation_l1:
+    tag+:
+      - subset-profile
 
 /cui:
     adjust+:
@@ -63,4 +79,20 @@ duration: 2h
     adjust+:
       - when: distro == rhel-8
         enabled: false
-        because: CNN Advanced profile is specific to RHEL 9
+        because: CCN profiles are not present on RHEL-8
+
+/ccn_intermediate:
+    tag+:
+      - subset-profile
+    adjust+:
+      - when: distro == rhel-8
+        enabled: false
+        because: CCN profiles are not present on RHEL-8
+
+/ccn_basic:
+    tag+:
+      - subset-profile
+    adjust+:
+      - when: distro == rhel-8
+        enabled: false
+        because: CCN profiles are not present on RHEL-8

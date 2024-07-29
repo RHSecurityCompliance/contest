@@ -112,3 +112,16 @@ unusable for further testing, typically by hardening it.
 
 A test that just installs extra RPMs from the package manager, or enables
 extra services, is not considered destructive.
+
+## `subset-profile`
+
+Some compliance standards specify multiple "levels" of system hardening,
+with the more permissive levels typically being a subset of the more
+restrictive ones, ie. Minimal, Intermediary and Enhanced.
+
+This tag signifies that a test covers one of the levels (profiles), which
+are themselves a subset of another level (profile).
+
+There are other minor factors (content profile variables) that break this
+relationship, however, if you want a smaller test set at the cost of ignoring
+these factors, exclude tests with this tag.

@@ -12,13 +12,29 @@ environment+:
 
 /anssi_bp28_high:
 
+/anssi_bp28_enhanced:
+    tag+:
+      - subset-profile
+
+/anssi_bp28_intermediary:
+    tag+:
+      - subset-profile
+
+/anssi_bp28_minimal:
+    tag+:
+      - subset-profile
+
 /cis:
 
 /cis_server_l1:
-
-/cis_workstation_l1:
+    tag+:
+      - subset-profile
 
 /cis_workstation_l2:
+
+/cis_workstation_l1:
+    tag+:
+      - subset-profile
 
 /cui:
     adjust+:
@@ -47,4 +63,20 @@ environment+:
     adjust+:
       - when: distro == rhel-8
         enabled: false
-        because: CNN Advanced profile is specific to RHEL 9
+        because: CCN profiles are not present on RHEL-8
+
+/ccn_intermediate:
+    tag+:
+      - subset-profile
+    adjust+:
+      - when: distro == rhel-8
+        enabled: false
+        because: CCN profiles are not present on RHEL-8
+
+/ccn_basic:
+    tag+:
+      - subset-profile
+    adjust+:
+      - when: distro == rhel-8
+        enabled: false
+        because: CCN profiles are not present on RHEL-8
