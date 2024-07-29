@@ -29,8 +29,9 @@
     True
 
 # https://github.com/ComplianceAsCode/content/issues/12119
+# https://github.com/ComplianceAsCode/content/issues/12234
 /hardening/host-os/.*/(ospp|cui)/timer_dnf-automatic_enabled
-    rhel == 8
+    rhel == 8 or rhel == 9
 
 # https://bugzilla.redhat.com/show_bug.cgi?id=1797653 WONTFIX
 /scanning/oscap-eval/ERROR
