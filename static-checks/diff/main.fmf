@@ -4,6 +4,10 @@ environment+:
 duration: 10m
 tag:
   - always-fails
+adjust:
+  - when: arch != x86_64
+    enabled: false
+    because: datastream is same on all architectures
 
 /profiles:
     summary: Diff datastreams, output added/removed profiles
