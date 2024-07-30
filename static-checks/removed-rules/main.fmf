@@ -4,3 +4,7 @@ result: custom
 environment+:
     PYTHONPATH: ../..
 duration: 10m
+adjust:
+  - when: arch != x86_64
+    enabled: false
+    because: datastream is same on all architectures
