@@ -13,7 +13,7 @@ from lib import util, results
 class Datastream:
     FixType = enum.Flag('FixType', ['bash', 'ansible'])
 
-    def __init__(self, xml_file=None):
+    def __init__(self, xml_file):
         # extracted datastream metadata
         #   self.profiles = {
         #     'ospp': namespace(
@@ -30,16 +30,17 @@ class Datastream:
         #       .fixes = FixType.bash,
         #     ),
         #   }
+        #   self.path = Path(file_the_datastream_was_parsed_from)
         def make_profile():
             return types.SimpleNamespace(title=None, rules=set(), values=set())
         self.profiles = collections.defaultdict(make_profile)
         def make_rule():
             return types.SimpleNamespace(fixes=self.FixType(0))
         self.rules = collections.defaultdict(make_rule)
-        if xml_file:
-            self.parse_xml(xml_file)
+        self._parse_xml(xml_file)
+        self.path = Path(xml_file)
 
-    def parse_xml(self, xml_file):
+    def _parse_xml(self, xml_file):
         # parse input XML datastream in 10KB binary chunks (arbitrary
         # reasonable value), pass them to the ElementTree parser, which
         # returns element start/end events

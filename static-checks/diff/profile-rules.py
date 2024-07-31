@@ -5,6 +5,7 @@ from lib import util, results, oscap
 new = oscap.global_ds()
 
 with util.get_old_datastream() as old_xml:
+    util.log(f"comparing OLD: {old_xml} to NEW: {new.path}")
     old = oscap.Datastream(old_xml)
 
     common_profiles = set(new.profiles).intersection(old.profiles)
