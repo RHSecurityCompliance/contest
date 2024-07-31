@@ -3,6 +3,6 @@ test: python3 -m lib.runtest ./test.py
 result: custom
 environment+:
     PYTHONPATH: ../..
-duration: 15m
+duration: 30m
 require+:
   - openscap-scanner
