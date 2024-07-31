@@ -12,16 +12,20 @@ if user_content:
     user_content = Path(user_content)
 
 
-def _find_datastreams(root):
+def _find_datastreams(force_ssg):
+    ssg_path = Path('/usr/share/xml/scap/ssg/content')
+    # if specifically requested by the user
+    if force_ssg:
+        return ssg_path
+    # if CONTEST_CONTENT was specified
     if user_content:
         build_content(user_content)
-        datastreams_dir = user_content / 'build'
-    else:
-        datastreams_dir = root / Path('usr/share/xml/scap/ssg/content')
-    return datastreams_dir
+        return user_content / 'build'
+    # default to the OS-wide scap-security-guide content
+    return ssg_path
 
 
-def get_datastream(root='/'):
+def get_datastream(force_ssg=False):
     if rhel.is_true_rhel():
         name = f'ssg-rhel{rhel.major}-ds.xml'
     elif rhel.is_centos():
@@ -29,38 +33,46 @@ def get_datastream(root='/'):
             name = f'ssg-centos{rhel.major}-ds.xml'
         else:
             name = f'ssg-cs{rhel.major}-ds.xml'
-    datastream = _find_datastreams(root) / name
+    datastream = _find_datastreams(force_ssg) / name
     if not datastream.exists():
         raise RuntimeError(f"could not find datastream as {datastream}")
     return datastream
 
 
-def iter_datastreams(root='/'):
-    for file in _find_datastreams(root).rglob('*'):
+def iter_datastreams(force_ssg=False):
+    for file in _find_datastreams(force_ssg).rglob('*'):
         # Return only DS v1.3, do not return v1.2 (ends with '-ds-1.2.xml')
         if file.name.endswith('-ds.xml'):
             yield file
 
 
-def _find_playbooks(root):
+def _find_playbooks(force_ssg):
+    ssg_path = Path('/usr/share/scap-security-guide/ansible')
+    # if specifically requested by the user
+    if force_ssg:
+        return ssg_path
+    # if CONTEST_CONTENT was specified
     if user_content:
         build_content(user_content)
         return user_content / 'build' / 'ansible'
-    else:
-        return root / Path('usr/share/scap-security-guide/ansible')
+    # default to the OS-wide scap-security-guide content
+    return ssg_path
 
 
-def _find_per_rule_playbooks(root):
+def _find_per_rule_playbooks(force_ssg):
+    ssg_path = Path(f'/usr/share/scap-security-guide/ansible/rule_playbooks/rhel{rhel.major}/all')
+    # if specifically requested by the user
+    if force_ssg:
+        return ssg_path
+    # if CONTEST_CONTENT was specified
     if user_content:
         build_content(user_content)
         return user_content / 'build' / f'rhel{rhel.major}' / 'playbooks' / 'all'
-    else:
-        return root / Path(
-            f'usr/share/scap-security-guide/ansible/rule_playbooks/rhel{rhel.major}/all'
-        )
+    # default to the OS-wide scap-security-guide content
+    return ssg_path
 
 
-def get_playbook(profile, root='/'):
+def get_playbook(profile, force_ssg=False):
     if rhel.is_true_rhel():
         name = f'rhel{rhel.major}-playbook-{profile}.yml'
     elif rhel.is_centos():
@@ -68,17 +80,17 @@ def get_playbook(profile, root='/'):
             name = f'centos{rhel.major}-playbook-{profile}.yml'
         else:
             name = f'cs{rhel.major}-playbook-{profile}.yml'
-    playbook = _find_playbooks(root) / name
+    playbook = _find_playbooks(force_ssg) / name
     if not playbook.exists():
         raise RuntimeError(f"cound not find playbook as {playbook}")
     return playbook
 
 
-def iter_playbooks(root='/'):
-    for file in _find_playbooks(root).iterdir():
+def iter_playbooks(force_ssg=False):
+    for file in _find_playbooks(force_ssg).iterdir():
         if file.suffix == '.yml':
             yield file
-    per_rule_dir = _find_per_rule_playbooks(root)
+    per_rule_dir = _find_per_rule_playbooks(force_ssg)
     if per_rule_dir.exists():
         yield from per_rule_dir.iterdir()
 

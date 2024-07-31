@@ -49,14 +49,14 @@ def _available_ssg_versions():
 def get_old_datastream():
     # installed SSG with datastream in /usr/share/xml
     installed = _installed_ssg_version()
-    root_datastream = util.get_datastream('/')
-    if not root_datastream.exists():
-        raise RuntimeError("DS not found on {root_datastream}, no clue what to diff")
+    ssg_datastream = util.get_datastream(force_ssg=True)
+    if not ssg_datastream.exists():
+        raise RuntimeError("DS not found on {ssg_datastream}, no clue what to diff")
 
     # "new" content is CONTEST_CONTENT,
     # "old" is the installed scap-security-guide RPM
     if util.user_content:
-        yield root_datastream
+        yield ssg_datastream
 
     # "new" is the installed scap-security-guide RPM,
     # "old" is an older version available in YUM/DNF repositories
