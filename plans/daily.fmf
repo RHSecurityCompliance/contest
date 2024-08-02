@@ -11,12 +11,14 @@ discover:
       # without GUI/UEFI/etc. variants
       - /hardening/oscap/[^/]+$
       - /hardening/anaconda/[^/]+$
+      - /hardening/kickstart/[^/]+$
       - /hardening/ansible/[^/]+$
       - /hardening/image-builder/[^/]+$
       # add stig_gui as an exception here, since it needs to be tested somehow
       # but the only way to do it is via GUI
       - /hardening/oscap/with-gui/stig_gui
       - /hardening/anaconda/with-gui/stig_gui
+      - /hardening/kickstart/with-gui/stig_gui
       - /hardening/ansible/with-gui/stig_gui
       - /hardening/image-builder/with-gui/stig_gui
       # run host-os as well - not because it would be very useful compared to
