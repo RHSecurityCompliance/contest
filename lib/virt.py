@@ -294,12 +294,6 @@ class Kickstart:
                'set -xe; exec >/dev/tty 2>&1\n' + content + '\n%end')
         self.append(new)
 
-    def add_packages(self, pkgs):
-        self.packages += pkgs
-
-    def add_package_group(self, group):
-        self.packages.append(f'@{group}')
-
     def add_install_only_repo(self, name, baseurl):
         self.appends.append(f'repo --name={name} --baseurl={baseurl}')
 
@@ -435,7 +429,7 @@ class Guest:
                 'contest-rpmpack',
                 f'http://{http_host}:{http_port}/repo',
             )
-            kickstart.add_packages([util.RpmPack.NAME])
+            kickstart.packages.append(util.RpmPack.NAME)
 
             ksfile = stack.enter_context(kickstart.to_tmpfile())
 
