@@ -20,7 +20,7 @@ else:
 if not g.can_be_snapshotted():
     ks = virt.Kickstart(partitions=partitions.partitions)
     if use_gui:
-        ks.add_package_group('Server with GUI')
+        ks.packages.append('@Server with GUI')
     g.install(kickstart=ks)
     g.prepare_for_snapshot()
 

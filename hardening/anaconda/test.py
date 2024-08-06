@@ -16,7 +16,7 @@ profile = util.get_test_name().rpartition('/')[2]
 ks = virt.translate_ssg_kickstart(profile)
 
 if os.environ.get('USE_SERVER_WITH_GUI'):
-    ks.add_package_group('Server with GUI')
+    ks.packages.append('@Server with GUI')
 
 # host a HTTP server with a datastream and let the guest download it
 with util.BackgroundHTTPServer(virt.NETWORK_HOST, 0) as srv:
