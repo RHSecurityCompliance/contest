@@ -77,6 +77,7 @@ if not g.is_installed():
     # install a qcow2-backed VM, so automatus.py can snapshot it
     # - use hardening-style partitions, automatus tests need them
     ks = virt.Kickstart(partitions=partitions.partitions)
+    ks.packages.append('tar')
     g.install(kickstart=ks, disk_format='qcow2')
 
 with util.get_content() as content_dir, g.booted():
