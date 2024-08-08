@@ -5,15 +5,6 @@
 # their root cause, filing isseus/bugs or fixing tests as appropriate,
 # eventually either removing the waivers or moving them to other files
 
-# https://github.com/ComplianceAsCode/content/issues/12096
-/hardening/.*/cis[^/]*/sshd_use_approved_ciphers
-    rhel == 9
-
-# TODO: something new? .. RHEL-8 on e8 and ism_o
-#  - seems to not happen on latest 8.9 nightlies ??
-/hardening/oscap/.+/package_rear_installed
-    rhel == 8
-
 # ssh either doesn't start up, or gets blocked, possibly related
 # to new firewalld rules being added?
 # https://github.com/ComplianceAsCode/content/pull/10573
@@ -26,27 +17,6 @@
 /hardening/oscap/with-gui/cis_workstation_l[12]
     status == 'error'
 
-# happened in Beaker, but uses VMs, so it shouldn't be Beaker-specific
-# TODO: investigate, seems to be RHEL-9.3+ but unsure
-/hardening/oscap/with-gui/.+/package_aide_installed
-/hardening/oscap/with-gui/.+/aide_build_database
-/hardening/oscap/with-gui/.+/aide_periodic_cron_checking
-/hardening/oscap/with-gui/.+/aide_scan_notification
-/hardening/oscap/with-gui/.+/aide_verify_acls
-/hardening/oscap/with-gui/.+/aide_verify_ext_attributes
-    True
-
-# seems RHEL-8 specific, unknown, TODO investigate
-# remediation script says:
-#   Current configuration is valid.
-#   Current configuration is valid.
-#   [error] Unknown profile feature [with-smartcard]
-#   [error] Unable to activate profile [custom/hardening] [22]: Invalid argument
-#   Unable to enable feature [22]: Invalid argument
-# maybe hardware-specific and our Beaker systems don't have the hardware?
-/hardening/host-os/oscap/.+/sssd_enable_smartcards
-    rhel == 8
-
 # Ansible TODO: completely unknown, investigate and sort
 #
 # all RHELs
@@ -56,26 +26,14 @@
 /hardening/ansible/with-gui/.+/network_nmcli_permissions
     rhel == 9
 # RHEL-8 or 9
-/hardening(/host-os)?/ansible/.+/no_tmux_in_shells
-/hardening(/host-os)?/ansible/.+/configure_usbguard_auditbackend
 /hardening(/host-os)?/ansible/.+/audit_rules_unsuccessful_file_modification
     rhel == 8 or rhel == 9
 # RHEL-8
 /hardening/ansible/with-gui/stig_gui/sysctl_net_ipv4_conf_all_forwarding
     rhel == 8
-# unknown as well, but happens only rarely
-/hardening/ansible/.+/configure_bashrc_exec_tmux
-    True
-# only pci-dss, passes everywhere else
-/hardening/ansible(/with-gui)?/pci-dss/audit_rules_login_events
-    rhel == 8 or rhel == 9
 # https://github.com/ComplianceAsCode/content/issues/11752
 /hardening(/host-os)?/ansible/.+/audit_rules_privileged_commands
     rhel == 8 or rhel == 9
-
-# home_nosuid failures are just really random across RHEL versions and nightlies
-/hardening/ansible/.+/mount_option_home_nosuid
-    True
 
 # https://github.com/ComplianceAsCode/content/issues/10901
 # not sure what enables the service, but second remediation fixes the problem
@@ -118,18 +76,12 @@
 /per-rule/.+/package_ypserv_removed/package-installed.fail
 /per-rule/.+/service_telnet_disabled/service_disabled.pass
     rhel == 9
-# likely something caused by restraint / Beaker test env
-# TODO: investigate
-/hardening/host-os/.+/file_permissions_unauthorized_world_writable
 # Beaker and host-os seem to randomly fail any services enabled
 # or packages installed - TODO investigate remediation script outputs
 # to figure out why
 /hardening/host-os/oscap/[^/]+/service_.+_enabled
 /hardening/host-os/oscap/[^/]+/timer_.+_enabled
 /hardening/host-os/oscap/[^/]+/package_.+_installed
-# TODO: unknown, probably worth investigating
-/hardening/host-os/oscap/.+/sysctl_net_ipv6_conf_(all|default)_accept_ra
-/hardening/host-os/oscap/.+/sysctl_net_ipv4_conf_default_log_martians
     True
 
 # DISA Alignment waivers
@@ -146,19 +98,11 @@
 /scanning/disa-alignment/.*/CCE-88173-0
 # https://github.com/ComplianceAsCode/content/issues/11703
 /scanning/disa-alignment/.*/file_permissions_library_dirs
-# https://github.com/ComplianceAsCode/content/issues/11803
-/scanning/disa-alignment/.*/CCE-90811-1
 # https://github.com/ComplianceAsCode/content/issues/11693
 /scanning/disa-alignment/(oscap|ansible)/accounts_password_pam_retry
     rhel == 9
 # https://github.com/ComplianceAsCode/content/issues/11802
 /scanning/disa-alignment/[^/]+/auditd_audispd_configure_sufficiently_large_partition
-    True
-
-# HTML links
-#
-# https://github.com/ComplianceAsCode/content/issues/11801
-/static-checks/html-links/http://chrony.tuxfamily.org/
     True
 
 # Image Builder
@@ -169,9 +113,5 @@
     True
 /hardening/image-builder/hipaa/sebool_selinuxuser_execmod
     rhel == 9
-
-# https://github.com/ComplianceAsCode/content/issues/12233
-/hardening/host-os/oscap/ism_o/firewalld_sshd_port_enabled
-    rhel == 9.0
 
 # vim: syntax=python
