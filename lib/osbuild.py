@@ -9,13 +9,12 @@ VMs via Guest.install(), they are created from images via Guest.create().
 
     osbuild.Host.setup()
     g = osbuild.Guest()
-    profile = 'stig'
 
     # optional
-    blueprint = osbuild.Blueprint(profile)
+    blueprint = osbuild.Blueprint()
     blueprint.add_something( ... )
 
-    g.create(profile=profile, blueprint=blueprint)
+    g.create(blueprint=blueprint)
 
     with g.booted():
         g.ssh( ... )
@@ -165,33 +164,14 @@ class Compose:
 # so let's just append strings instead
 class Blueprint:
     NAME = 'contest_blueprint'
-    HEADER = util.dedent(fr'''
+    TEMPLATE = util.dedent(fr'''
         name = "{NAME}"
         description = "Testing blueprint created by the Contest test suite"
         version = "1.0.0"
     ''')
 
-    def __init__(self, profile=None):
-        if profile:
-            self.assembled = (
-                self.from_oscap(profile)
-                + '\n# ---------- oscap blueprint ends here ----------\n'
-            )
-            util.log(f"generated blueprint from oscap:\n{textwrap.indent(self.assembled, '    ')}")
-        else:
-            self.assembled = f'{self.HEADER}\n\n'
-
-    def from_oscap(self, profile):
-        cmd = [
-            'oscap', 'xccdf', 'generate', '--profile', profile,
-            'fix', '--fix-type', 'blueprint',
-            util.get_datastream(),
-        ]
-        ret = util.subprocess_run(cmd, check=True, universal_newlines=True, stdout=subprocess.PIPE)
-        # replace blueprint name, it's an unique identifier for composer-cli,
-        # however replace only the first occurence of 'name', as later sections
-        # like [[packages]] would also match ^name=...
-        return re.sub('^name = .*', f'name = "{self.NAME}"', ret.stdout, count=1, flags=re.M)
+    def __init__(self, template=TEMPLATE):
+        self.assembled = f'{template}\n\n'
 
     def add_user(self, name, *, password=None, groups=None, ssh_pubkey=None):
         self.assembled += '[[customizations.user]]\n'
@@ -266,8 +246,6 @@ class Blueprint:
 
 
 class Guest(virt.Guest):
-    DATASTREAM = '/root/contest-ds.xml'
-
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.osbuild_log = f'{virt.GUEST_IMG_DIR}/{self.name}-osbuild.txt'
@@ -281,7 +259,7 @@ class Guest(virt.Guest):
     def install(*args, **kwargs):
         raise NotImplementedError("install() is not supported, use create()")
 
-    def create(self, *, blueprint=None, bp_verbatim=None, profile=None):
+    def create(self, *, blueprint=None, bp_verbatim=None, rpmpack=None):
         """
         Create a guest disk image via osbuild, and import it as a new guest
         domain into libvirt.
@@ -292,8 +270,8 @@ class Guest(virt.Guest):
         'bp_verbatim' further prevents these customizations, using the
         blueprint as-provided by test code.
 
-        If 'profile' is specified, the created image will be hardened using
-        openscap via the specified profile.
+        If custom 'rpmpack' is specified (RpmPack instance), it is used instead
+        of a self-made instance.
         """
         util.log(f"creating guest {self.name}")
 
@@ -301,7 +279,7 @@ class Guest(virt.Guest):
         self.wipe()
 
         if not blueprint:
-            blueprint = Blueprint(profile)
+            blueprint = Blueprint()
 
         if not bp_verbatim:
             # copy our default package list from virt.Kickstart
@@ -312,10 +290,6 @@ class Guest(virt.Guest):
             with open(f'{self.ssh_keyfile_path}.pub') as f:
                 pubkey = f.read().rstrip()
             blueprint.add_user('root', password=virt.GUEST_LOGIN_PASS, ssh_pubkey=pubkey)
-            # add openscap hardening, honor global excludes
-            if profile:
-                blueprint.set_openscap_datastream(self.DATASTREAM)
-                blueprint.add_openscap_tailoring(unselected=remediation.excludes())
 
         disk_path = Path(f'{virt.GUEST_IMG_DIR}/{self.name}.img')
 
@@ -323,12 +297,11 @@ class Guest(virt.Guest):
             # osbuild doesn't support running Anaconda %post-style custom
             # scripts, the only way to run additional shell code is via
             # RPM scriptlets, so add custom guest setup via RpmPack
-            pack = util.RpmPack()
+            pack = rpmpack or util.RpmPack()
             pack.add_host_repos()
             # inherited from virt.Guest
             pack.post.append(self.SETUP)
             pack.requires += self.SETUP_REQUIRES
-            pack.add_file(util.get_datastream(), self.DATASTREAM)
             repo = stack.enter_context(pack.build_as_repo())
             # ensure the custom RPM is added during image building
             blueprint.add_package(util.RpmPack.NAME)
@@ -412,3 +385,27 @@ def composer_cli(*args, log=True, check=True, **kwargs):
 def composer_cli_out(*args, **kwargs):
     out = composer_cli(*args, stdout=subprocess.PIPE, universal_newlines=True, **kwargs)
     return out.stdout.rstrip('\n')
+
+
+def translate_oscap_blueprint(lines, profile, datastream):
+    """
+    Parse (and tweak) a blueprint generated via 'oscap xccdf generate fix'.
+    """
+    bp_text = '\n'.join(lines)
+
+    # replace blueprint name, it's an unique identifier for composer-cli,
+    # however replace only the first occurence of 'name', as later sections
+    # like [[packages]] would also match ^name=...
+    bp_text = re.sub(
+        '^name = .*',
+        f'name = "{Blueprint.NAME}"',
+        bp_text, count=1, flags=re.M,
+    )
+
+    blueprint = Blueprint(template=bp_text)
+
+    # add openscap hardening, honor global excludes
+    blueprint.set_openscap_datastream(datastream)
+    blueprint.add_openscap_tailoring(unselected=remediation.excludes())
+
+    return blueprint

@@ -9,6 +9,8 @@
 # which are not available in their final form in the Anaconda environment
 # - see https://github.com/ComplianceAsCode/content/issues/9746
 /hardening/anaconda(/with-gui)?/[^/]+/firewalld_sshd_port_enabled
+# - possibly unrelated https://github.com/ComplianceAsCode/content/issues/12276
+/hardening/kickstart(/with-gui)?/[^/]+/firewalld_sshd_port_enabled
 # https://github.com/ComplianceAsCode/content/issues/11625
 /hardening/image-builder/[^/]+/firewalld_sshd_port_enabled
     True
@@ -17,6 +19,9 @@
 # and a later enable_authselect remediation breaks it
 # - see https://github.com/OpenSCAP/openscap/issues/1880
 /hardening/anaconda/.+/accounts_password_pam_retry
+# - happens for kickstarts too, even when those should not fail on ordering,
+#   https://github.com/ComplianceAsCode/content/issues/12277
+/hardening/kickstart/.+/accounts_password_pam_retry
     True
 
 # caused by one of:
@@ -39,7 +44,6 @@
 # https://github.com/ComplianceAsCode/content/issues/10424
 # happens on host-os hardening too, probably because Beaker doesn't have
 # firewall enabled or even installed
-/hardening/anaconda(/with-gui)?/[^/]+/service_nftables_disabled
 /hardening/host-os/oscap/[^/]+/service_nftables_disabled
     True
 
@@ -54,10 +58,19 @@
 # https://issues.redhat.com/browse/RHEL-45706
 /hardening/anaconda/with-gui/[^/]+/service_avahi-daemon_disabled
 /hardening/anaconda(/with-gui)?/cis[^/]*/socket_systemd-journal-remote_disabled
-    True
-
 # https://github.com/ComplianceAsCode/content/issues/11498
 /hardening/anaconda/with-gui/[^/]+/service_bluetooth_disabled
+# related to, but probably not caused by:
+# https://github.com/ComplianceAsCode/content/issues/10424
+/hardening/anaconda(/with-gui)?/[^/]+/service_nftables_disabled
+    True
+
+# https://github.com/ComplianceAsCode/content/issues/12282
+/hardening/kickstart/.+/service_avahi-daemon_disabled
+/hardening/kickstart/.+/socket_systemd-journal-remote_disabled
+/hardening/kickstart/.+/service_bluetooth_disabled
+/hardening/kickstart/.+/service_nftables_disabled
+/hardening/kickstart/.+/systemd_tmp_mount_enabled
     True
 
 # RHEL-9 is not FIPS certified yet

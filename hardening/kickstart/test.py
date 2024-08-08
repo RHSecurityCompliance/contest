@@ -12,28 +12,25 @@ g = virt.Guest()
 
 profile = util.get_test_name().rpartition('/')[2]
 
-# use kickstart from content, not ours
-ks_file = util.get_kickstart(profile)
-ks = virt.translate_ssg_kickstart(ks_file)
+oscap.unselect_rules(util.get_datastream(), 'remediation-ds.xml', remediation.excludes())
+
+# provide our modified DS via RpmPack to the VM as /root/remediation-ds.xml,
+# tell the 'oscap xccdf eval --remediate' in %post to use it
+rpmpack = util.RpmPack()
+rpmpack.add_file('remediation-ds.xml', '/root/remediation-ds.xml')
+
+cmd = [
+    'oscap', 'xccdf', 'generate', '--profile', profile,
+    'fix', '--fix-type', 'kickstart',
+    'remediation-ds.xml',
+]
+_, lines = util.subprocess_stream(cmd, check=True)
+ks = virt.translate_oscap_kickstart(lines, '/root/remediation-ds.xml')
 
 if os.environ.get('USE_SERVER_WITH_GUI'):
     ks.packages.append('@Server with GUI')
 
-# host a HTTP server with a datastream and let the guest download it
-with util.BackgroundHTTPServer(virt.NETWORK_HOST, 0) as srv:
-    oscap.unselect_rules(util.get_datastream(), 'remediation-ds.xml', remediation.excludes())
-    srv.add_file('remediation-ds.xml')
-
-    host, port = srv.start()
-
-    oscap_conf = {
-        'content-type': 'datastream',
-        'content-url': f'http://{host}:{port}/remediation-ds.xml',
-        'profile': profile,
-    }
-    ks.add_oscap_addon(oscap_conf)
-
-    g.install(kickstart=ks)
+g.install(kickstart=ks, rpmpack=rpmpack)
 
 with g.booted():
     # copy the original DS to the guest
