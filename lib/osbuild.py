@@ -38,7 +38,6 @@ import collections
 from pathlib import Path
 
 from lib import util, dnf, virt
-from conf import remediation
 
 
 class Host:
@@ -214,17 +213,6 @@ class Blueprint:
             post,
         ])
 
-    def add_openscap_tailoring(self, *, selected=None, unselected=None):
-        if '[customizations.openscap.tailoring]' in self.assembled:
-            raise SyntaxError("openscap.taioring section already exists")
-        if not selected and not unselected:
-            return
-        self.assembled += '[customizations.openscap.tailoring]\n'
-        for name, vals in [('selected', selected), ('unselected', unselected)]:
-            if vals:
-                strings = ','.join(f'"{x}"' for x in vals)
-                self.assembled += f'{name} = [ {strings} ]\n'
-
     @contextlib.contextmanager
     def to_tmpfile(self):
         bp = self.assembled
@@ -387,7 +375,7 @@ def composer_cli_out(*args, **kwargs):
     return out.stdout.rstrip('\n')
 
 
-def translate_oscap_blueprint(lines, profile, datastream):
+def translate_oscap_blueprint(lines, datastream):
     """
     Parse (and tweak) a blueprint generated via 'oscap xccdf generate fix'.
     """
@@ -406,6 +394,5 @@ def translate_oscap_blueprint(lines, profile, datastream):
 
     # add openscap hardening, honor global excludes
     blueprint.set_openscap_datastream(datastream)
-    blueprint.add_openscap_tailoring(unselected=remediation.excludes())
 
     return blueprint
