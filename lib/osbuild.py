@@ -324,7 +324,7 @@ class Guest(virt.Guest):
                 elif re.match('ERROR: Depsolve Error: Get "[^"]+": EOF\n', ret.stdout):
                     continue
                 else:
-                    raise RuntimeError("depsolve returned unknown error")
+                    raise RuntimeError(f"depsolve:\n{ret.stdout}")
             else:
                 raise RuntimeError("depsolve failed, retries depleted")
 
