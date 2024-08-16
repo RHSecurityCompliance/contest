@@ -4,8 +4,8 @@ result: custom
 environment+:
     PYTHONPATH: ../..
 require+:
-  # ansible-core replaced ansible on RHEL-8+
   - ansible-core
+recommend+:
   # needed for the ini_file ansible plugin, and more
   - rhc-worker-playbook
 duration: 1h

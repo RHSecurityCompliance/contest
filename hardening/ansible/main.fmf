@@ -16,8 +16,8 @@ require+:
   - virt-install
   - rpm-build
   - createrepo
-recommend+:
   - ansible-core
+recommend+:
   # needed for the ini_file ansible plugin, and more
   - rhc-worker-playbook
 extra-hardware: |
