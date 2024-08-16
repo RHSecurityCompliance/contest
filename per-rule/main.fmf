@@ -29,6 +29,8 @@ require+:
   - openscap-utils
   # for ansible variant
   - ansible-core
+recommend+:
+  # needed for the ini_file ansible plugin, and more
   - rhc-worker-playbook
 extra-hardware: |
     keyvalue = HVM=1
