@@ -24,7 +24,7 @@ for profile in all_profiles:
     # Generate playbook from results ARF
     cmd = [
         'oscap', 'xccdf', 'generate', 'fix', '--profile', profile,
-        '--template', 'urn:xccdf:fix:script:ansible', '--output', 'playbook.yml', 'arf.xml',
+        '--fix-type', 'ansible', '--output', 'playbook.yml', 'arf.xml',
     ]
     ret = util.subprocess_run(cmd, check=True)
 
