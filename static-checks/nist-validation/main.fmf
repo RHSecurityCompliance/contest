@@ -5,7 +5,7 @@ environment+:
     PYTHONPATH: ../..
 duration: 15m
 require+:
-  - java-openjdk
+  - java-17-openjdk
 adjust:
   - enabled: false
     when: arch != x86_64
