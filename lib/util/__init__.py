@@ -7,6 +7,7 @@ from pathlib import Path
 libdir = Path(inspect.getfile(inspect.currentframe())).parent.parent
 
 from .content      import *  # noqa
+from .backup       import *  # noqa
 from .dedent       import *  # noqa
 from .environment  import *  # noqa
 from .httpsrv      import *  # noqa
