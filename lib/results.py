@@ -15,6 +15,7 @@ import os
 import sys
 import shutil
 import requests
+import yaml
 from pathlib import Path
 
 from lib import util, waive
@@ -25,27 +26,6 @@ failed_count = 0
 errored_count = 0
 
 RESULTS_FILE = 'results.yaml'
-
-
-def _compose_results_yaml(keyvals):
-    """
-    Trivial hack to output simple YAML without a PyYAML depedency.
-    """
-    def printval(x):
-        if type(x) is list:
-            # python str(list) format is compatible with YAML
-            return str(x)
-        else:
-            # account for name/note having complex content
-            x = x.replace('"', '\\"')
-            return f'"{x}"'
-    it = iter(keyvals.items())
-    # prefix first item with '-'
-    key, value = next(it)
-    out = f'- "{key}": {printval(value)}\n'
-    for key, value in it:
-        out += f'  "{key}": {printval(value)}\n'
-    return out
 
 
 def have_tmt_api():
@@ -125,10 +105,8 @@ def report_tmt(status, name=None, note=None, logs=None, *, add_output=True):
     if log_entries:
         new_result['log'] = log_entries
 
-    yaml_addition = _compose_results_yaml(new_result)
-
     with open(test_data / RESULTS_FILE, 'a') as f:
-        f.write(yaml_addition)
+        yaml.dump([new_result], f)
 
 
 def report_beaker(status, name=None, note=None, logs=None):

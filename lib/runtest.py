@@ -6,6 +6,7 @@ import signal
 import traceback
 import tempfile
 import urllib3
+import yaml
 from pathlib import Path
 
 from lib import util, results
@@ -24,10 +25,15 @@ from lib import util, results
 # actually cares about the exit code of the test script
 def _setup_timeout_handling():
     metadata_yaml = os.environ['TMT_TEST_METADATA']  # exception if undefined
-    test_metadata = Path(metadata_yaml).read_text()
-    duration_match = re.search('\nduration: ?([0-9]+)([a-z]+)\n', test_metadata)
-    if duration_match:
-        length, unit = duration_match.groups()
+    with open(metadata_yaml) as f:
+        test_metadata = yaml.safe_load(f)
+
+    if 'duration' in test_metadata:
+        duration_str = test_metadata['duration']
+        match = re.fullmatch(r'([0-9]+)([a-z]+)', duration_str)
+        if not match:
+            results.report_and_exit('error', note=f"duration '{duration_str}' has invalid format")
+        length, unit = match.groups()
         if unit == 'm':
             duration = int(length)*60
         elif unit == 'h':

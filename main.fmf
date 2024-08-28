@@ -11,6 +11,8 @@ recommend:
   - python36
   - python3-requests
   - python36-requests
+  - python3-pyyaml
+  - python36-pyyaml
   - python3-rpm
   - python36-rpm
   # these are needed for CONTEST_CONTENT or get_content():
