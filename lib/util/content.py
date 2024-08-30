@@ -19,7 +19,6 @@ def _find_datastreams(force_ssg):
         return ssg_path
     # if CONTEST_CONTENT was specified
     if user_content:
-        build_content(user_content)
         return user_content / 'build'
     # default to the OS-wide scap-security-guide content
     return ssg_path
@@ -53,7 +52,6 @@ def _find_playbooks(force_ssg):
         return ssg_path
     # if CONTEST_CONTENT was specified
     if user_content:
-        build_content(user_content)
         return user_content / 'build' / 'ansible'
     # default to the OS-wide scap-security-guide content
     return ssg_path
@@ -66,7 +64,6 @@ def _find_per_rule_playbooks(force_ssg):
         return ssg_path
     # if CONTEST_CONTENT was specified
     if user_content:
-        build_content(user_content)
         return user_content / 'build' / f'rhel{rhel.major}' / 'playbooks' / 'all'
     # default to the OS-wide scap-security-guide content
     return ssg_path
@@ -97,7 +94,6 @@ def iter_playbooks(force_ssg=False):
 
 def get_kickstart(profile):
     if user_content:
-        build_content(user_content)
         kickstart = (
             user_content / 'products' / f'rhel{rhel.major}' / 'kickstart'
             / f'ssg-rhel{rhel.major}-{profile}-ks.cfg'
@@ -115,18 +111,6 @@ def content_is_built(path):
     return (Path(path) / 'build' / f'ssg-rhel{rhel.major}-ds.xml').exists()
 
 
-def build_content(path):
-    if content_is_built(path):
-        return
-    util.log(f"building content from source in {path}")
-    # install dependencies
-    cmd = ['dnf', '-y', 'builddep', '--spec', 'scap-security-guide.spec']
-    util.subprocess_run(cmd, check=True, cwd=path)
-    # build content
-    cmd = ['./build_product', '--playbook-per-rule', f'rhel{rhel.major}']
-    util.subprocess_run(cmd, check=True, cwd=path)
-
-
 @contextlib.contextmanager
 def get_content(build=True):
     """
@@ -137,8 +121,7 @@ def get_content(build=True):
     plain files or executing utils and need just the content source.
     """
     if user_content:
-        if build:
-            build_content(user_content)
+        # content already built by a TMT plan prepare step
         yield user_content
     else:
         # fall back to SRPM
