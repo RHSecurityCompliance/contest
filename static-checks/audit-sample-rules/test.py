@@ -1,7 +1,6 @@
 #!/usr/bin/python3
 
 import re
-import platform
 import tempfile
 import difflib
 import yaml
@@ -52,26 +51,23 @@ def get_ds_remediations():
     return remediations
 
 
-def delete_foreign_arches(remediations):
-    arch = platform.machine()
-    for rule in list(remediations):
-        # already removed
-        if rule not in remediations:
-            continue
-        # find all "variants" (per-arch specific) rules for the given rule
-        variants = {var for var in remediations if var != rule and var.startswith(rule)}
-        if variants:
-            # if there is a variant specific for the current arch, delete all
-            # other variants including the arch-less rule,
-            if f'{rule}_{arch}' in variants:
-                variants.remove(f'{rule}_{arch}')
-                for var in variants:
-                    del remediations[var]
-                del remediations[rule]
-            # else keep just the arch-less rule, delete all architecture variants
-            else:
-                for var in variants:
-                    del remediations[var]
+def delete_notapplicable(remediations):
+    # get --rule rule_name --rule another_rule ... pairs of CLi options
+    rule_prefix = 'xccdf_org.ssgproject.content_rule_'
+    rule_pairs = (pair for rule in remediations for pair in ('--rule', f'{rule_prefix}{rule}'))
+    # run oscap to figure out which rules are relevant for the current OS,
+    # ignoring any scan pass/fail results
+    proc, lines = util.subprocess_stream([
+        'oscap', 'xccdf', 'eval', '--profile', '(all)', '--progress', *rule_pairs,
+        util.get_datastream(),
+    ])
+    # delete notapplicable rules
+    for rule_name, status in oscap.rules_from_verbose(lines):
+        if status == 'notapplicable' and rule_name in remediations:
+            del remediations[rule_name]
+    # ensure we had valid results above
+    if proc.returncode not in [0,2]:
+        raise RuntimeError(f"scanning with oscap failed with {proc.returncode}")
 
 
 def report_diff(*args, ds_contents, sample_contents, filename, **kwargs):
@@ -97,7 +93,7 @@ audit_sample_dir = Path('/usr/share/audit/sample-rules')
 audit_sample_files = {f.name for f in audit_sample_dir.iterdir()}
 
 remediations = get_ds_remediations()
-delete_foreign_arches(remediations)
+delete_notapplicable(remediations)
 
 # report findings rule-by-rule, put file basename in the note
 for rule_name, values in remediations.items():
