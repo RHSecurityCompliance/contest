@@ -8,8 +8,14 @@ execute:
 adjust:
   - prepare+:
       - how: install
+        name: Install dependencies for further prepare steps
         package:
+          # for git-fetch downloading of CONTEST_CONTENT_*
           - git-core
+          # for building CONTEST_CONTENT
+          - python-srpm-macros
+
+  - prepare+:
       - how: shell
         name: Download and build latest or pull request content
         script: |
@@ -33,6 +39,18 @@ adjust:
                 git checkout FETCH_HEAD
             fi
             echo "CONTEST_CONTENT=$content_dir" >> "$TMT_PLAN_ENVIRONMENT_FILE"
+      - how: shell
+        name: Build CONTEST_CONTENT (if specified)
+        script: |
+            set -xe
+            . "$TMT_PLAN_ENVIRONMENT_FILE"  # not done automatically
+            [ -z "$CONTEST_CONTENT" ] && exit 0
+            cd "$CONTEST_CONTENT"
+            major=$(. /etc/os-release && echo "${VERSION_ID%%.*}")
+            # already built
+            [ -e "build/ssg-rhel${major}-ds.xml" ] && exit 0
+            dnf -y builddep --spec scap-security-guide.spec
+            ./build_product --playbook-per-rule "rhel${major}"
 
   - prepare+:
       - how: shell
