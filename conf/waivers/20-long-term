@@ -121,4 +121,10 @@
 /per-rule/.*/set_nftables_table/.*
     rhel == 9
 
+# /static-checks
+#
+# https://github.com/ComplianceAsCode/content/issues/12321
+/static-checks/audit-sample-rules/audit_ospp_general.*
+    rhel == 9
+
 # vim: syntax=python
