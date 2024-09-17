@@ -31,9 +31,6 @@
 # RHEL-8
 /hardening/ansible/with-gui/stig_gui/sysctl_net_ipv4_conf_all_forwarding
     rhel == 8
-# https://github.com/ComplianceAsCode/content/issues/11752
-/hardening(/host-os)?/ansible/.+/audit_rules_privileged_commands
-    rhel == 8 or rhel == 9
 
 # https://github.com/ComplianceAsCode/content/issues/10901
 # not sure what enables the service, but second remediation fixes the problem
