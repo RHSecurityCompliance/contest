@@ -1,0 +1,29 @@
+summary: Runs oscap many times to hopefully reproduce a freeze
+test: python3 -m lib.runtest ./test.py
+result: custom
+environment+:
+    PYTHONPATH: ../..
+duration: 4h
+require+:
+  # virt library dependencies
+  - libvirt-daemon
+  - libvirt-daemon-driver-qemu
+  - libvirt-daemon-driver-storage-core
+  - libvirt-daemon-driver-network
+  - firewalld
+  - qemu-kvm
+  - libvirt-client
+  - virt-install
+  - rpm-build
+  - createrepo
+extra-hardware: |
+    keyvalue = HVM=1
+    hostrequire = memory>=3720
+adjust:
+  - when: arch != x86_64
+    enabled: false
+    because: we want to run virtualization on x86_64 only
+
+/scan:
+
+/remediate:
