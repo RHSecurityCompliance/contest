@@ -10,7 +10,9 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
       - name: Install Contest deps
-        run: sudo apt-get install -y python3-rpm python3-dnf
+        run: |
+            sudo apt-get update
+            sudo apt-get install -y python3-rpm python3-dnf
       - name: Collect waivers
         run: |
             python3 <<'EOF'
