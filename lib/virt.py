@@ -612,9 +612,13 @@ class Guest:
                 self._destroy_snapshotted()
 
     @contextlib.contextmanager
-    def booted(self):
+    def booted(self, *, safe_shutdown=False):
         """
         Just boot the guest, ready it for communication.
+
+        With 'safe_shutdown', guarantee that the guest shuts down cleanly.
+        This is useful for setup-style use cases where the test wants to modify
+        the guest before taking a snapshot.
         """
         self.start()
         self.ipaddr = wait_for_ifaddr(self.name)
@@ -623,15 +627,19 @@ class Guest:
         try:
             yield self
         finally:
-            if os.environ.get('CONTEST_LEAVE_GUEST_RUNNING') == '1':
-                self._log_leave_running_notice()
+            if safe_shutdown:
+                util.log(f"shutting down {self.name} (safely)")
+                self.shutdown()
             else:
-                try:
-                    util.log(f"shutting down {self.name}")
-                    self.shutdown()
-                except TimeoutError:
-                    util.log(f"shutdown timed out, destroying {self.name}")
-                    self.destroy()
+                if os.environ.get('CONTEST_LEAVE_GUEST_RUNNING') == '1':
+                    self._log_leave_running_notice()
+                else:
+                    try:
+                        util.log(f"shutting down {self.name}")
+                        self.shutdown()
+                    except TimeoutError:
+                        util.log(f"shutdown timed out, destroying {self.name}")
+                        self.destroy()
 
     def _do_ssh(self, *cmd, func=util.subprocess_run, capture=False, **run_args):
         if capture:
