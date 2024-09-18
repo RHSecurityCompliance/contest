@@ -255,12 +255,15 @@ class Kickstart:
         self.ks = template
         self.appends = []
         self.packages = packages
-        self.partitions = partitions if partitions else []
+        self.partitions = partitions
 
     def assemble(self):
-        partitions_block = '\n'.join(
-            (f'part {mountpoint} --size={size}' for mountpoint, size in self.partitions),
-        )
+        if self.partitions:
+            partitions_block = '\n'.join(
+                (f'part {mountpoint} --size={size}' for mountpoint, size in self.partitions),
+            )
+        else:
+            partitions_block = 'part / --size=1 --grow'
         appends_block = '\n'.join(self.appends)
         packages_block = '\n'.join(self.packages)
         packages_block = f'%packages\n{packages_block}\n%end'
