@@ -83,6 +83,7 @@ import textwrap
 import contextlib
 import tempfile
 import json
+import uuid
 import xml.etree.ElementTree as ET
 from datetime import datetime, timedelta
 from pathlib import Path
@@ -338,7 +339,8 @@ class Guest:
     Set a 'tag' (string) to a unique name you would like to share across tests
     that use snapshots - the .can_be_snapshotted() function will return True
     when it finds an already installed guest using the same tag.
-    Tag-less guests cannot be shared across tests.
+    Tag-less guests can be used only for snapshotting within the same test
+    and should not be shared across tests.
     """
 
     # custom post-install setup to allow smooth login and qemu-qa command execution
@@ -354,7 +356,7 @@ class Guest:
     ]
 
     def __init__(self, tag=None, *, name=GUEST_NAME):
-        self.tag = tag
+        self.tag = tag or str(uuid.uuid4())
         self.name = name
         self.ipaddr = None
         self.ssh_keyfile_path = f'{GUEST_IMG_DIR}/{name}.sshkey'
@@ -470,8 +472,7 @@ class Guest:
         # installed system doesn't need as much RAM, alleviate swap pressure
         set_domain_memory(self.name, 2000)
 
-        if self.tag is not None:
-            self.install_ready_path.write_text(self.tag)
+        self.install_ready_path.write_text(self.tag)
 
         self.orig_disk_path = disk_path
         self.orig_disk_format = disk_format
@@ -554,8 +555,7 @@ class Guest:
         # modify its built-in XML to point to a snapshot-style disk path
         set_state_image_disk(self.state_file_path, self.snapshot_path, 'qcow2')
 
-        if self.tag is not None:
-            self.snapshot_ready_path.write_text(self.tag)
+        self.snapshot_ready_path.write_text(self.tag)
 
     def _restore_snapshotted(self):
         # reused guest from another test, install() or prepare_for_snapshot()
