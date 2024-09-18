@@ -37,6 +37,7 @@ instance to g.install().
 
 Example using snapshots:
 
+    import subprocess
     import virt
 
     virt.Host.setup()
@@ -48,7 +49,7 @@ Example using snapshots:
         g.prepare_for_snapshot()
 
     with g.snapshotted():
-        state = g.ssh('ls', '/root', capture=True)
+        state = g.ssh('ls', '/root', stdout=subprocess.PIPE)
         print(state.stdout)
         if state.returncode != 0:
             report_failure()
@@ -641,10 +642,7 @@ class Guest:
                         util.log(f"shutdown timed out, destroying {self.name}")
                         self.destroy()
 
-    def _do_ssh(self, *cmd, func=util.subprocess_run, capture=False, **run_args):
-        if capture:
-            run_args['stdout'] = PIPE
-            run_args['stderr'] = PIPE
+    def _do_ssh(self, *cmd, func=util.subprocess_run, **run_args):
         ssh_cmdline = [
             'ssh', '-q', '-i', self.ssh_keyfile_path, '-o', 'BatchMode=yes',
             '-o', 'StrictHostKeyChecking=no', '-o', 'UserKnownHostsFile=/dev/null',
