@@ -13,6 +13,7 @@ profile = os.environ.get('PROFILE')
 if not profile:
     raise RuntimeError("specify PROFILE via env variable, consider also TIMEOUT")
 
+# should be set to approximate the profile scan time
 oscap_timeout = int(os.environ.get('TIMEOUT', 600))
 
 extra_packages = [
@@ -31,22 +32,19 @@ start_time = time.monotonic()
 
 virt.Host.setup()
 g = virt.Guest()
-ks = virt.Kickstart(partitions=partitions.partitions)
+ks = virt.Kickstart()
 ks.packages += extra_packages
 g.install(kickstart=ks)
 
-with g.booted(safe_shutdown=True):
-    # copy our datastreams to the guest
-    ds = util.get_datastream()
-    g.copy_to(ds, 'scan-ds.xml')
-    oscap.unselect_rules(ds, 'remediation-ds.xml', remediation.excludes())
-    g.copy_to('remediation-ds.xml')
+with g.booted():
+    # copy our datastream to the guest
+    g.copy_to(util.get_datastream(), 'scan-ds.xml')
     # install debugsource / debuginfo
     g.ssh(' '.join(['dnf', '-y', 'debuginfo-install', *extra_debuginfos]), check=True)
     # prepare gdb script
     with tempfile.NamedTemporaryFile(mode='w+t') as f:
         f.write(util.dedent('''
-            generate-core-file /usr/oscap.core
+            generate-core-file oscap.core
             set logging file oscap-bt.txt
             set logging overwrite on
             set logging redirect on
@@ -55,74 +53,60 @@ with g.booted(safe_shutdown=True):
             set logging enabled off
         '''))
         f.flush()
-        g.copy_to(f.name, '/root/gdb.script')
+        g.copy_to(f.name, 'gdb.script')
 
-g.prepare_for_snapshot()
+    # run for all of the configured test duration, minus 600 seconds for safety
+    # (running gdb, compressing corefile which takes forever, etc.)
+    attempt = 1
+    metadata = util.TestMetadata()
+    duration = metadata.duration_seconds() - oscap_timeout - 600
+    util.log(f"trying to freeze oscap for {duration} total seconds")
 
+    oscap_cmd = f'oscap xccdf eval --profile {profile} --progress scan-ds.xml'
 
-def run_oscap(attempt, cmd):
-    oscap = g.ssh(' '.join(cmd), func=util.subprocess_Popen)
+    while time.monotonic() - start_time < duration:
+        oscap = g.ssh(oscap_cmd, func=util.subprocess_Popen)
 
-    try:
-        returncode = oscap.wait(oscap_timeout)
-        if returncode not in [0,2]:
-            raise RuntimeError(f"oscap failed with {returncode}")
+        try:
+            returncode = oscap.wait(oscap_timeout)
+            if returncode not in [0,2]:
+                results.report(
+                    'fail', f'attempt:{attempt}', f"oscap failed with {returncode}",
+                )
+                continue
 
-    except subprocess.TimeoutExpired:
-        # figure out oscap PID on the remote system
-        pgrep = g.ssh('pgrep -n oscap', stdout=subprocess.PIPE, universal_newlines=True)
-        if pgrep.returncode != 0:
+        except subprocess.TimeoutExpired:
+            # figure out oscap PID on the remote system
+            pgrep = g.ssh('pgrep -n oscap', stdout=subprocess.PIPE, universal_newlines=True)
+            if pgrep.returncode != 0:
+                results.report(
+                    'warn',
+                    f'attempt:{attempt}',
+                    f"pgrep returned {pgrep.returncode}, oscap probably just finished "
+                    "and we hit a rare race, moving on",
+                )
+                continue
+
+            oscap_pid = pgrep.stdout.strip()
+
+            # attach gdb to that PID
+            g.ssh(f'gdb -n -batch -x gdb.script -p {oscap_pid}', check=True)
+
+            # and download its results
+            g.copy_from('oscap.core')
+            g.copy_from('oscap-bt.txt')
+            util.subprocess_run(['xz', '-e', '-9', 'oscap.core'], check=True)
             results.report(
-                'warn',
-                f'attempt:{attempt}',
-                f"pgrep returned {pgrep.returncode}, oscap probably just finished "
-                "and we hit a rare race, moving on",
+                'fail', f'attempt:{attempt}', "oscap froze, gdb output available",
+                logs=['oscap.core.xz', 'oscap-bt.txt'],
             )
-            return True
-
-        oscap_pid = pgrep.stdout.strip()
-
-        # attach gdb to that PID
-        g.ssh(f'gdb -n -batch -x /root/gdb.script -p {oscap_pid}', check=True)
-
-        # and download its results
-        g.copy_from('/usr/oscap.core')
-        g.copy_from('/root/oscap-bt.txt')
-        util.subprocess_run(['xz', '-e', '-9', 'oscap.core'], check=True)
-        results.report(
-            'fail',
-            f'attempt:{attempt}',
-            "oscap froze, gdb output available",
-            logs=['oscap.core.xz', 'oscap-bt.txt'],
-        )
-
-        return False
-
-    finally:
-        oscap.terminate()
-        oscap.wait()
-
-    results.report('pass', f'attempt:{attempt}')
-    return True
-
-
-testname = util.get_test_name().rpartition('/')[2]
-cmd = ['oscap', 'xccdf', 'eval', '--profile', profile, '--progress']
-if testname == 'remediate':
-    cmd += ['--remediate', 'remediation-ds.xml']
-else:
-    cmd += ['scan-ds.xml']
-
-# run for all of the configured test duration, minus 600 seconds for safety
-# (running gdb, compressing corefile which takes forever, etc.)
-attempt = 1
-metadata = util.TestMetadata()
-duration = metadata.duration_seconds() - oscap_timeout - 600
-util.log(f"trying to freeze oscap for {duration} total seconds")
-while time.monotonic() - start_time < duration:
-    with g.snapshotted():
-        if not run_oscap(attempt, cmd):
             break
-    attempt += 1
+
+        finally:
+            oscap.terminate()
+            oscap.wait()
+
+        results.report('pass', f'attempt:{attempt}')
+        attempt += 1
 
 results.report_and_exit()
