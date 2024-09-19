@@ -1,20 +1,16 @@
 #!/usr/bin/python3
 
-import os
 import time
 import subprocess
 import tempfile
 
-from lib import util, results, virt, oscap
-from conf import remediation, partitions
+from lib import util, results, virt
 
 
-profile = os.environ.get('PROFILE')
-if not profile:
-    raise RuntimeError("specify PROFILE via env variable, consider also TIMEOUT")
+profile = 'cis_workstation_l1'
 
-# should be set to approximate the profile scan time
-oscap_timeout = int(os.environ.get('TIMEOUT', 600))
+# cis_workstation_l1 takes about 4-5 seconds to scan
+oscap_timeout = 30
 
 extra_packages = [
     'gdb',
@@ -26,6 +22,7 @@ extra_debuginfos = [
     'xmlsec1',
     'xmlsec1-openssl',
     'libtool-ltdl',
+    'openssl-libs',
 ]
 
 start_time = time.monotonic()
@@ -65,10 +62,10 @@ with g.booted():
     oscap_cmd = f'oscap xccdf eval --profile {profile} --progress scan-ds.xml'
 
     while time.monotonic() - start_time < duration:
-        oscap = g.ssh(oscap_cmd, func=util.subprocess_Popen)
+        oscap_proc = g.ssh(oscap_cmd, func=util.subprocess_Popen)
 
         try:
-            returncode = oscap.wait(oscap_timeout)
+            returncode = oscap_proc.wait(oscap_timeout)
             if returncode not in [0,2]:
                 results.report(
                     'fail', f'attempt:{attempt}', f"oscap failed with {returncode}",
@@ -103,8 +100,8 @@ with g.booted():
             break
 
         finally:
-            oscap.terminate()
-            oscap.wait()
+            oscap_proc.terminate()
+            oscap_proc.wait()
 
         results.report('pass', f'attempt:{attempt}')
         attempt += 1
