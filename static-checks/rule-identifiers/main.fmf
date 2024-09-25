@@ -1,0 +1,10 @@
+summary: Search for policy references in rules
+test: python3 -m lib.runtest ./test.py
+result: custom
+environment+:
+    PYTHONPATH: ../..
+duration: 10m
+adjust:
+  - when: distro == rhel-10
+    enabled: false
+    because: rhel10 profiles are in draft state with missing references
