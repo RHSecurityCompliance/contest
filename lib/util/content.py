@@ -141,10 +141,14 @@ def get_content(build=True):
                     check=True, stdout=subprocess.PIPE, universal_newlines=True, cwd=tmpdir,
                 )
                 name_version = ret.stdout.strip()
-                extracted = Path(tmpdir) / 'BUILD' / name_version
+                # extracted sources directory varies across distro versions, thus
+                # try to search for the directory rather than using hardcoded path
+                try:
+                    builddir = Path(tmpdir) / 'BUILD'
+                    extracted = next(builddir.glob(f'**/{name_version}'))
+                except StopIteration:
+                    raise FileNotFoundError("extracted SRPM content sources not found")
                 util.log(f"using {extracted} as content source")
-                if not extracted.exists():
-                    raise FileNotFoundError(f"{extracted} not in extracted/patched SRPM")
                 # build content
                 if build:
                     cmd = ['./build_product', '--playbook-per-rule', f'rhel{rhel.major}']
