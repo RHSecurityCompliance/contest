@@ -135,20 +135,20 @@
 
 # RHEL8 https://github.com/ComplianceAsCode/content/issues/12421
 # RHEL9 https://github.com/ComplianceAsCode/content/issues/12424
+# RHEL10 - No official RHEL10 STIG benchmark yet
 /static-checks/rule-identifiers/stig/.*
-    rhel == 8 or rhel == 9
+    rhel == 8 or rhel == 9 or rhel == 10
 # RHEL8 https://github.com/ComplianceAsCode/content/issues/12422
 # RHEL9 https://github.com/ComplianceAsCode/content/issues/12425
 /static-checks/rule-identifiers/ospp/.*
     rhel == 8 or rhel == 9
 # RHEL8 https://github.com/ComplianceAsCode/content/issues/12423
 # RHEL9 https://github.com/ComplianceAsCode/content/issues/12427
+# https://github.com/ComplianceAsCode/content/issues/12430
 /static-checks/rule-identifiers/ism_o/.*
-    rhel == 8 or rhel == 9
+    rhel == 8 or rhel == 9 or rhel == 10
 # https://github.com/ComplianceAsCode/content/issues/12426
 /static-checks/rule-identifiers/hipaa/sshd_use_directory_configuration
     rhel == 9
-
-
 
 # vim: syntax=python
