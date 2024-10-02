@@ -1,8 +1,5 @@
 summary: Runs oscap many times to hopefully reproduce a freeze
 test: python3 -m lib.runtest ./vm-scan.py
-result: custom
-environment+:
-    PYTHONPATH: ../..
 duration: 4h
 require+:
   # virt library dependencies

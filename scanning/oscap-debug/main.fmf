@@ -1,0 +1,7 @@
+result: custom
+environment+:
+    PYTHONPATH: ../..
+# these are tools to be manually modified and executed,
+# not to be run in any kind of automation
+tag+:
+- needs-param

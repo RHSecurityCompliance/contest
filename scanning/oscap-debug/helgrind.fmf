@@ -1,8 +1,5 @@
 summary: Runs oscap via valgrind - helgrind
 test: python3 -m lib.runtest ./helgrind.py
-result: custom
-environment+:
-    PYTHONPATH: ../..
 duration: 4h
 require+:
   - valgrind
