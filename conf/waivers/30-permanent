@@ -48,6 +48,12 @@
 /static-checks/html-links/https://docs-prv.pcisecuritystandards.org/PCI%20DSS/Standard/PCI-DSS-v4_0.pdf
     True
 
+# Rule identifiers waivers
+#
+# no STIG ID, but the rule is needed for other authselect rules
+/static-checks/rule-identifiers/stig/enable_authselect
+    rhel == 8
+
 # DISA Alignment waivers
 #
 # DISA benchmark allows only released OS versions. Our content is fine with unreleased versions.
