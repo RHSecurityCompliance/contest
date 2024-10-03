@@ -6,7 +6,7 @@ import difflib
 import yaml
 from pathlib import Path
 
-from lib import util, results, oscap
+from lib import util, results, versions, oscap
 
 
 # extract audit rules filepaths + contents from the datastream XML
@@ -89,7 +89,13 @@ def report_diff(*args, ds_contents, sample_contents, filename, **kwargs):
         results.report(*args, **kwargs, logs=[diff_file])
 
 
-audit_sample_dir = Path('/usr/share/audit/sample-rules')
+if versions.rhel >= 10:
+    # https://github.com/linux-audit/audit-userspace/commit/eb2b95f23
+    # provided by a new audit-rules package
+    audit_sample_dir = Path('/usr/share/audit-rules')
+else:
+    audit_sample_dir = Path('/usr/share/audit/sample-rules')
+
 audit_sample_files = {f.name for f in audit_sample_dir.iterdir()}
 
 remediations = get_ds_remediations()
