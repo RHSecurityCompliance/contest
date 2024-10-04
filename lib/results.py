@@ -14,6 +14,7 @@ Beaker uses the HTTP API, connecting to a local labcontroller.
 import os
 import sys
 import shutil
+import collections
 import requests
 import yaml
 from pathlib import Path
@@ -22,10 +23,17 @@ from lib import util, waive
 
 _valid_statuses = ['pass', 'fail', 'warn', 'error', 'info', 'skip']
 
-failed_count = 0
-errored_count = 0
 
-RESULTS_FILE = 'results.yaml'
+# TODO: replace by collections.Counter on python 3.10+
+class Counter(collections.defaultdict):
+    def __init__(self):
+        return super().__init__(lambda: 0)
+
+    def total(self):
+        return sum(self.values())
+
+
+global_counts = Counter()
 
 
 def have_tmt_api():
@@ -58,7 +66,27 @@ def _allowed_by_verbosity(status):
     return True
 
 
+# read test pass/fail/error/etc. counts from an existing results file
+def _count_yaml_results(path):
+    counter = Counter()
+    with open(path) as f:
+        previous = yaml.safe_load(f)
+    for item in previous:
+        if 'result' in item:
+            counter[item['result']] += 1
+    return counter
+
+
 def report_tmt(status, name=None, note=None, logs=None, *, add_output=True):
+    test_data = Path(os.environ['TMT_TEST_DATA'])
+    results_path = Path(test_data / 'results.yaml')
+
+    # try to find and re-read previous results.yaml, in case this test
+    # has been rerun in-place by TMT, like ie. after a reboot
+    if global_counts.total() == 0 and results_path.exists():
+        previous = _count_yaml_results(results_path)
+        global_counts.update(previous)
+
     report_plain(status, name, note, logs)
 
     if not _allowed_by_verbosity(status) and name:
@@ -75,8 +103,6 @@ def report_tmt(status, name=None, note=None, logs=None, *, add_output=True):
     }
     if note:
         new_result['note'] = note
-
-    test_data = Path(os.environ['TMT_TEST_DATA'])
 
     log_entries = []
 
@@ -105,7 +131,7 @@ def report_tmt(status, name=None, note=None, logs=None, *, add_output=True):
     if log_entries:
         new_result['log'] = log_entries
 
-    with open(test_data / RESULTS_FILE, 'a') as f:
+    with open(results_path, 'a') as f:
         yaml.dump([new_result], f)
 
 
@@ -188,20 +214,14 @@ def report(status, name=None, note=None, logs=None, *, add_output=True):
 
     status, name, note = waive.rewrite_result(status, name, note)
 
-    # failure even after waiving
-    if status == 'fail':
-        global failed_count
-        failed_count += 1
-    elif status == 'error':
-        global errored_count
-        errored_count += 1
-
     if have_beaker_api():
         report_beaker(status, name, note, logs)
     elif have_tmt_api():
         report_tmt(status, name, note, logs, add_output=add_output)
     else:
         report_plain(status, name, note, logs)
+
+    global_counts[status] += 1
 
     return status
 
@@ -215,10 +235,10 @@ def report_and_exit(status=None, note=None, logs=None):
     # figure out overall test status based on previously reported results
     if not status:
         # only failures, no errors --> fail
-        if failed_count > 0 and errored_count == 0:
+        if global_counts['fail'] > 0 and global_counts['error'] == 0:
             status = 'fail'
         # any errors anywhere --> error
-        elif errored_count > 0:
+        elif global_counts['error'] > 0:
             status = 'error'
         # no errors, no fails --> pass
         else:
