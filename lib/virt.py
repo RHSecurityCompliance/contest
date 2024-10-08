@@ -440,7 +440,7 @@ class Guest:
                 # to RAM, leading to notably higher memory requirements during
                 # installation - we reduce it down to 2000M after install
                 '--name', self.name, '--vcpus', str(cpus), '--memory', '3072',
-                '--disk', f'path={disk_path},size=20,format={disk_format},cache=unsafe',
+                '--disk', f'path={disk_path},size=30,format={disk_format},cache=unsafe',
                 '--network', 'network=default', '--location', location,
                 '--graphics', 'none', '--console', 'pty', '--rng', '/dev/urandom',
                 # this has nothing to do with rhel8, it just tells v-i to use virtio
