@@ -252,13 +252,21 @@ class Kickstart:
     ]
 
     def __init__(self, template=TEMPLATE, packages=PACKAGES, partitions=None):
+        """
+        You can override 'template' / 'packages' with your own copy of
+        self.TEMPLATE and self.PACKAGES.
+
+        Partitions should be specified as a list of (mntpoint,size) tuples,
+        where None (default) uses one partition for the entire OS and an empty
+        list doesn't add any partitions.
+        """
         self.ks = template
         self.appends = []
         self.packages = packages
         self.partitions = partitions
 
     def assemble(self):
-        if self.partitions:
+        if self.partitions is not None:
             partitions_block = '\n'.join(
                 (f'part {mountpoint} --size={size}' for mountpoint, size in self.partitions),
             )
@@ -847,7 +855,7 @@ def translate_ssg_kickstart(ks_file):
 
     # leave original %packages - Anaconda can handle multiple %packages sections
     # just fine (when we later add ours during installation)
-    return Kickstart(template=ks_text)
+    return Kickstart(template=ks_text, partitions=[])
 
 
 def translate_oscap_kickstart(lines, datastream):
@@ -891,7 +899,7 @@ def translate_oscap_kickstart(lines, datastream):
 
     # leave original %packages - Anaconda can handle multiple %packages sections
     # just fine (when we later add ours during installation)
-    return Kickstart(template=ks_text)
+    return Kickstart(template=ks_text, partitions=[])
 
 
 #
