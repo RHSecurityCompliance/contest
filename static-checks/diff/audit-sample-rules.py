@@ -115,7 +115,5 @@ for rule_name, values in remediations.items():
             'fail', rule_name, f'{filepath.name} changed',
             ds_contents=ds_contents, sample_contents=sample_contents, filename=filepath.name,
         )
-    else:
-        results.report('pass', rule_name, filepath.name)
 
 results.report_and_exit()
