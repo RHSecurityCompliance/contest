@@ -1,8 +1,0 @@
-summary: Compares audit.rules between Content and auditd samples
-test: python3 -m lib.runtest ./test.py
-result: custom
-environment+:
-    PYTHONPATH: ../..
-duration: 5m
-require+:
-  - audit

@@ -121,18 +121,6 @@
 /per-rule/.*/set_nftables_table/.*
     rhel == 9
 
-# /static-checks
-#
-# new arch= on RHEL-9.5
-# https://github.com/ComplianceAsCode/content/issues/12321
-/static-checks/audit-sample-rules/audit_ospp_general.*
-    rhel == 9.5
-# older issues with pkexec and grub2-set-bootflag, they seem to appear
-# only with older audit-3.0.x
-# https://github.com/ComplianceAsCode/content/issues/12321
-/static-checks/audit-sample-rules/audit_ospp_general.*
-    (rhel == 9 and rhel <= 9.3) or rhel == 8.8
-
 # RHEL10 - No official RHEL10 STIG/CIS benchmark yet
 /static-checks/rule-identifiers/(stig|cis.*)/.*
     rhel == 10
