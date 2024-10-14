@@ -1,0 +1,77 @@
+tag+:
+  - broken
+
+/anssi_bp28_high:
+
+/anssi_bp28_enhanced:
+    tag+:
+      - subset-profile
+
+/anssi_bp28_intermediary:
+    tag+:
+      - subset-profile
+
+/anssi_bp28_minimal:
+    tag+:
+      - subset-profile
+
+/cis:
+
+/cis_server_l1:
+    tag+:
+      - subset-profile
+
+/cis_workstation_l2:
+
+/cis_workstation_l1:
+    tag+:
+      - subset-profile
+
+/cui:
+    adjust+:
+      - when: distro >= rhel-10
+        enabled: false
+        because: there is no CUI profile on RHEL-10+
+
+/e8:
+
+/hipaa:
+
+/ism_o:
+
+/ospp:
+    adjust+:
+      - when: distro >= rhel-10
+        enabled: false
+        because: there is no OSPP profile on RHEL-10+
+
+/pci-dss:
+
+/stig:
+
+/stig_gui:
+    adjust+:
+      - enabled: false
+        because: not supported without GUI, use stig instead
+
+/ccn_advanced:
+    adjust+:
+      - when: distro == rhel-8 or distro == rhel-10
+        enabled: false
+        because: CCN profiles are not present on RHEL-8 and on RHEL-10
+
+/ccn_intermediate:
+    tag+:
+      - subset-profile
+    adjust+:
+      - when: distro == rhel-8 or distro == rhel-10
+        enabled: false
+        because: CCN profiles are not present on RHEL-8 and on RHEL-10
+
+/ccn_basic:
+    tag+:
+      - subset-profile
+    adjust+:
+      - when: distro == rhel-8 or distro == rhel-10
+        enabled: false
+        because: CCN profiles are not present on RHEL-8 and on RHEL-10

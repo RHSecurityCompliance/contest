@@ -13,6 +13,8 @@ _, variant, profile = util.get_test_name().rsplit('/', 2)
 
 if variant == 'with-gui':
     g = virt.Guest('gui_with_oscap')
+elif variant == 'uefi':
+    g = virt.Guest('uefi_with_oscap')
 else:
     g = virt.Guest('minimal_with_oscap')
 
@@ -20,7 +22,7 @@ if not g.can_be_snapshotted():
     ks = virt.Kickstart(partitions=partitions.partitions)
     if variant == 'with-gui':
         ks.packages.append('@Server with GUI')
-    g.install(kickstart=ks)
+    g.install(kickstart=ks, secure_boot=(variant == 'uefi'))
     g.prepare_for_snapshot()
 
 # the VM guest ssh code doesn't use $HOME/.known_hosts, so Ansible blocks

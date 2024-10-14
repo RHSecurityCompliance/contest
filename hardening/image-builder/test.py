@@ -25,7 +25,7 @@ cmd = [
 _, lines = util.subprocess_stream(cmd, check=True)
 blueprint = osbuild.translate_oscap_blueprint(lines, '/root/remediation-ds.xml')
 
-g.create(blueprint=blueprint, rpmpack=rpmpack)
+g.create(blueprint=blueprint, rpmpack=rpmpack, secure_boot=(variant == 'uefi'))
 
 with g.booted():
     # copy the original DS to the guest
