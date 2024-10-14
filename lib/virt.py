@@ -380,7 +380,10 @@ class Guest:
         # if exists, all snapshot preparation processes were successful
         self.snapshot_ready_path = Path(f'{GUEST_IMG_DIR}/{name}.snapshot_ready')
 
-    def install(self, location=None, kickstart=None, rpmpack=None, disk_format='raw'):
+    def install(
+        self, location=None, kickstart=None, rpmpack=None, secure_boot=False,
+        disk_format='raw',
+    ):
         """
         Install a new guest, to a shut down state.
 
@@ -459,6 +462,8 @@ class Guest:
                 ),
                 '--noreboot',
             ]
+            if secure_boot:
+                virt_install += ['--boot', 'firmware=efi,loader_secure=yes']
 
             util.log(f"calling {virt_install}")
             executable = util.libdir / 'pseudotty'

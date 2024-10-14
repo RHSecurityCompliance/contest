@@ -23,7 +23,8 @@
 /hardening(/host-os)?/ansible/.+/audit_rules_usergroup_modification
     True
 # RHEL-9 only
-/hardening/ansible/with-gui/.+/network_nmcli_permissions
+# (possibly because of missing Ansible remediation?)
+/hardening/ansible/.+/network_nmcli_permissions
     rhel == 9
 # RHEL-8 or 9
 /hardening(/host-os)?/ansible/.+/audit_rules_unsuccessful_file_modification
@@ -105,10 +106,10 @@
 # Image Builder
 #
 # TODO: file issues ?
-/hardening/image-builder/anssi_[^/]+/mount_option_tmp_noexec
-/hardening/image-builder/anssi_[^/]+/sebool_polyinstantiation_enabled
+/hardening/image-builder(/.+)?/anssi_[^/]+/mount_option_tmp_noexec
+/hardening/image-builder(/.+)?/anssi_[^/]+/sebool_polyinstantiation_enabled
     True
-/hardening/image-builder/hipaa/sebool_selinuxuser_execmod
+/hardening/image-builder(/.+)?/hipaa/sebool_selinuxuser_execmod
     rhel == 9
 
 # vim: syntax=python

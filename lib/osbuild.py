@@ -247,7 +247,7 @@ class Guest(virt.Guest):
     def install(*args, **kwargs):
         raise NotImplementedError("install() is not supported, use create()")
 
-    def create(self, *, blueprint=None, bp_verbatim=None, rpmpack=None):
+    def create(self, *, blueprint=None, bp_verbatim=None, rpmpack=None, secure_boot=False):
         """
         Create a guest disk image via osbuild, and import it as a new guest
         domain into libvirt.
@@ -357,6 +357,8 @@ class Guest(virt.Guest):
             '--os-variant', 'rhel8-unknown',
             '--noreboot', '--import',
         ]
+        if secure_boot:
+            virt_install += ['--boot', 'firmware=efi,loader_secure=yes']
 
         executable = util.libdir / 'pseudotty'
         util.subprocess_run(virt_install, executable=executable)
