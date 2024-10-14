@@ -1,7 +1,5 @@
 #!/usr/bin/python3
 
-import os
-
 from lib import util, results, virt, oscap
 from conf import remediation
 
@@ -10,7 +8,7 @@ virt.Host.setup()
 
 g = virt.Guest()
 
-profile = util.get_test_name().rpartition('/')[2]
+_, variant, profile = util.get_test_name().rsplit('/', 2)
 
 oscap.unselect_rules(util.get_datastream(), 'remediation-ds.xml', remediation.excludes())
 
@@ -27,7 +25,7 @@ cmd = [
 _, lines = util.subprocess_stream(cmd, check=True)
 ks = virt.translate_oscap_kickstart(lines, '/root/remediation-ds.xml')
 
-if os.environ.get('USE_SERVER_WITH_GUI'):
+if variant == 'with-gui':
     ks.packages.append('@Server with GUI')
 
 g.install(kickstart=ks, rpmpack=rpmpack)

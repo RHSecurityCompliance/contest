@@ -8,7 +8,7 @@ osbuild.Host.setup()
 
 g = osbuild.Guest()
 
-profile = util.get_test_name().rpartition('/')[2]
+_, variant, profile = util.get_test_name().rsplit('/', 2)
 
 oscap.unselect_rules(util.get_datastream(), 'remediation-ds.xml', remediation.excludes())
 
