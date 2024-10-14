@@ -9,18 +9,16 @@ from conf import remediation, partitions
 ansible.install_deps()
 virt.Host.setup()
 
-profile = util.get_test_name().rpartition('/')[2]
+_, variant, profile = util.get_test_name().rsplit('/', 2)
 
-use_gui = os.environ.get('USE_SERVER_WITH_GUI')
-
-if use_gui:
+if variant == 'with-gui':
     g = virt.Guest('gui_with_oscap')
 else:
     g = virt.Guest('minimal_with_oscap')
 
 if not g.can_be_snapshotted():
     ks = virt.Kickstart(partitions=partitions.partitions)
-    if use_gui:
+    if variant == 'with-gui':
         ks.packages.append('@Server with GUI')
     g.install(kickstart=ks)
     g.prepare_for_snapshot()
