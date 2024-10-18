@@ -4,14 +4,10 @@ result: custom
 environment+:
     PYTHONPATH: ../..
 duration: 15m
-require+:
-  # we use java-17 specifically here because the NIST tool needs it and does not
-  # work with any newer version
+recommend+:
   - java-17-openjdk
+  - java-21-openjdk
 adjust:
   - when: arch != x86_64
     enabled: false
     because: the test is not architecture-specific, one is enough
-  - when: distro == rhel-10
-    enabled: false
-    because: TODO - RHEL-10 doesn't have Java 17, see requires above
