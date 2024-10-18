@@ -5,6 +5,7 @@ import io
 import zipfile
 import requests
 import subprocess
+import xml.etree.ElementTree as ET
 
 from lib import util, results
 
@@ -15,6 +16,8 @@ r.raise_for_status()
 zip = zipfile.ZipFile(io.BytesIO(r.content))
 zip.extractall()
 os.chmod('scapval.sh', 0o755)
+
+ns = {'nist': 'http://csrc.nist.gov/ns/decima/results/1.0'}
 
 for datastream in util.iter_datastreams():
     ds_name = datastream.stem
@@ -27,12 +30,19 @@ for datastream in util.iter_datastreams():
         '-valresultfile', result_file,
         '-file', datastream,
     ]
-    proc = util.subprocess_run(cmd, stdout=subprocess.PIPE, check=True, universal_newlines=True)
-    if 'The target is valid' in proc.stdout:
-        results.report('pass', ds_name)
-    elif 'The target is invalid' in proc.stdout:
-        results.report('fail', ds_name, logs=[report_file, result_file])
-    else:
-        raise RuntimeError("SCAPval out has not been correctly parsed")
+    util.subprocess_run(cmd, stdout=subprocess.DEVNULL, check=True)
+    tree = ET.parse(result_file)
+    root = tree.getroot()
+    for elem in root.findall('./nist:results/nist:base-requirement', ns):
+        name = f'{ds_name}/{elem.attrib["id"]}'
+        status = elem.find('./nist:status', ns).text
+        if status in ['NOT_TESTED', 'NOT_APPLICABLE']:
+            continue
+        elif status in ['PASS', 'WARNING', 'INFORMATIONAL']:
+            results.report('pass', name)
+        elif status == 'FAIL':
+            results.report('fail', name, logs=[report_file, result_file])
+        else:
+            results.report('error', name, logs=[report_file, result_file])
 
 results.report_and_exit()
