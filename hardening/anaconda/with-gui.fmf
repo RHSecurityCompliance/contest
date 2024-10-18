@@ -1,5 +1,3 @@
-environment+:
-    USE_SERVER_WITH_GUI: 1
 duration: 2h
 
 /anssi_bp28_high:

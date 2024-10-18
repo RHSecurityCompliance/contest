@@ -1,7 +1,5 @@
 #!/usr/bin/python3
 
-import os
-
 from lib import util, results, virt, oscap
 from conf import remediation
 
@@ -10,13 +8,13 @@ virt.Host.setup()
 
 g = virt.Guest()
 
-profile = util.get_test_name().rpartition('/')[2]
+_, variant, profile = util.get_test_name().rsplit('/', 2)
 
 # use kickstart from content, not ours
 ks_file = util.get_kickstart(profile)
 ks = virt.translate_ssg_kickstart(ks_file)
 
-if os.environ.get('USE_SERVER_WITH_GUI'):
+if variant == 'with-gui':
     ks.packages.append('@Server with GUI')
 
 # host a HTTP server with a datastream and let the guest download it
