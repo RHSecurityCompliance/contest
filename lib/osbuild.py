@@ -247,7 +247,7 @@ class Guest(virt.Guest):
     def install(*args, **kwargs):
         raise NotImplementedError("install() is not supported, use create()")
 
-    def create(self, *, blueprint=None, bp_verbatim=None, rpmpack=None, secure_boot=False):
+    def create(self, *, blueprint=None, bp_verbatim=None, rpmpack=None, **kwargs):
         """
         Create a guest disk image via osbuild, and import it as a new guest
         domain into libvirt.
@@ -279,7 +279,7 @@ class Guest(virt.Guest):
                 pubkey = f.read().rstrip()
             blueprint.add_user('root', password=virt.GUEST_LOGIN_PASS, ssh_pubkey=pubkey)
 
-        disk_path = Path(f'{virt.GUEST_IMG_DIR}/{self.name}.img')
+        image_path = Path(f'{virt.GUEST_IMG_DIR}/{self.name}.img')
 
         with contextlib.ExitStack() as stack:
             # osbuild doesn't support running Anaconda %post-style custom
@@ -330,9 +330,9 @@ class Guest(virt.Guest):
 
             ident = stack.enter_context(Compose.build(bp_name))
 
-            if disk_path.exists():
-                os.remove(disk_path)
-            composer_cli('compose', 'image', ident, '--filename', disk_path)
+            if image_path.exists():
+                os.remove(image_path)
+            composer_cli('compose', 'image', ident, '--filename', image_path)
 
             # get image building log, try to limit its size by cutting off
             # everything before openscap
@@ -342,29 +342,10 @@ class Guest(virt.Guest):
                 log = log[idx:]
             Path(self.osbuild_log).write_text(log)
 
-        cpus = os.cpu_count() or 1
-
-        virt_install = [
-            'pseudotty', 'virt-install',
-            # installing from HTTP URL leads to Anaconda downloading stage2
-            # to RAM, leading to notably higher memory requirements during
-            # installation - we reduce it down to 2000M after install
-            '--name', self.name, '--vcpus', str(cpus), '--memory', '2000',
-            '--disk', f'path={disk_path},format=qcow2,cache=unsafe',
-            '--network', 'network=default',
-            '--graphics', 'none', '--console', 'pty', '--rng', '/dev/urandom',
-            # this has nothing to do with rhel8, it just tells v-i to use virtio
-            '--os-variant', 'rhel8-unknown',
-            '--noreboot', '--import',
-        ]
-        if secure_boot:
-            virt_install += ['--boot', 'firmware=efi,loader_secure=yes']
-
-        executable = util.libdir / 'pseudotty'
-        util.subprocess_run(virt_install, executable=executable)
-
-        self.orig_disk_path = disk_path
+        # import the created qcow2 image as a VM
+        self.orig_disk_path = image_path
         self.orig_disk_format = 'qcow2'
+        self.import_image(**kwargs)
 
 
 def composer_cli(*args, log=True, check=True, **kwargs):

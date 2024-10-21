@@ -493,6 +493,42 @@ class Guest:
         self.orig_disk_path = disk_path
         self.orig_disk_format = disk_format
 
+    def import_image(self, *, secure_boot=False):
+        """
+        Import an existing disk image, creating a new guest domain from it.
+        """
+        disk_path = self.orig_disk_path
+        disk_format = self.orig_disk_format
+        if not disk_path or not disk_format:
+            raise RuntimeError("'orig_disk_path' and 'orig_disk_format' need to be set'")
+
+        disk_path = Path(disk_path)
+        if not disk_path.exists():
+            raise RuntimeError(f"{disk_path} doesn't exist")
+
+        util.log(f"importing {disk_path} as {disk_format}")
+
+        cpus = os.cpu_count() or 1
+
+        virt_install = [
+            'pseudotty', 'virt-install',
+            '--name', self.name, '--vcpus', str(cpus), '--memory', '2000',
+            '--disk', f'path={disk_path},format={disk_format},cache=unsafe',
+            '--network', 'network=default',
+            '--graphics', 'none', '--console', 'pty', '--rng', '/dev/urandom',
+            '--noreboot', '--import',
+            # this has nothing to do with rhel8, it just tells v-i to use virtio
+            '--os-variant', 'rhel8-unknown',
+            # don't try to start the imported VM; there are some race conditions
+            # inside virt-install when attaching a console of an imported guest
+            '--autoconsole', 'none',
+        ]
+        if secure_boot:
+            virt_install += ['--boot', 'firmware=efi,loader_secure=yes']
+
+        executable = util.libdir / 'pseudotty'
+        util.subprocess_run(virt_install, executable=executable, check=True)
+
     def start(self):
         if guest_domstate(self.name) == 'shut off':
             virsh('start', self.name, check=True)
