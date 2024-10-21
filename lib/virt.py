@@ -371,8 +371,8 @@ class Guest:
         self.name = name
         self.ipaddr = None
         self.ssh_keyfile_path = f'{GUEST_IMG_DIR}/{name}.sshkey'
-        self.orig_disk_path = None
-        self.orig_disk_format = None
+        self.disk_path = None
+        self.disk_format = None
         self.state_file_path = f'{GUEST_IMG_DIR}/{name}.state'
         self.snapshot_path = f'{GUEST_IMG_DIR}/{name}-snap.qcow2'
         # if it exists, guest was successfully installed
@@ -490,30 +490,27 @@ class Guest:
 
         self.install_ready_path.write_text(self.tag)
 
-        self.orig_disk_path = disk_path
-        self.orig_disk_format = disk_format
+        self.disk_path = disk_path
+        self.disk_format = disk_format
 
     def import_image(self, *, secure_boot=False):
         """
         Import an existing disk image, creating a new guest domain from it.
         """
-        disk_path = self.orig_disk_path
-        disk_format = self.orig_disk_format
-        if not disk_path or not disk_format:
-            raise RuntimeError("'orig_disk_path' and 'orig_disk_format' need to be set'")
+        if not self.disk_path or not self.disk_format:
+            raise RuntimeError("'disk_path' and 'disk_format' need to be set'")
 
-        disk_path = Path(disk_path)
-        if not disk_path.exists():
-            raise RuntimeError(f"{disk_path} doesn't exist")
+        if not Path(self.disk_path).exists():
+            raise RuntimeError(f"{self.disk_path} doesn't exist")
 
-        util.log(f"importing {disk_path} as {disk_format}")
+        util.log(f"importing {self.disk_path} as {self.disk_format}")
 
         cpus = os.cpu_count() or 1
 
         virt_install = [
             'pseudotty', 'virt-install',
             '--name', self.name, '--vcpus', str(cpus), '--memory', '2000',
-            '--disk', f'path={disk_path},format={disk_format},cache=unsafe',
+            '--disk', f'path={self.disk_path},format={self.disk_format},cache=unsafe',
             '--network', 'network=default',
             '--graphics', 'none', '--console', 'pty', '--rng', '/dev/urandom',
             '--noreboot', '--import',
@@ -601,8 +598,8 @@ class Guest:
 
         # if an external domain is used (not one we installed), read its
         # original disk metadata now
-        if not self.orig_disk_path:
-            self.orig_disk_path, self.orig_disk_format = get_state_image_disk(self.state_file_path)
+        if not self.disk_path:
+            self.disk_path, self.disk_format = get_state_image_disk(self.state_file_path)
 
         # modify its built-in XML to point to a snapshot-style disk path
         set_state_image_disk(self.state_file_path, self.snapshot_path, 'qcow2')
@@ -612,12 +609,12 @@ class Guest:
     def _restore_snapshotted(self):
         # reused guest from another test, install() or prepare_for_snapshot()
         # were not run for this class instance
-        if not self.orig_disk_path:
+        if not self.disk_path:
             ret = virsh('dumpxml', self.name, '--inactive',
                         stdout=PIPE, check=True, universal_newlines=True)
             _, _, _, driver, source = domain_xml_diskinfo(ret.stdout)
-            self.orig_disk_format = driver.get('type')
-            self.orig_disk_path = source.get('file')
+            self.disk_format = driver.get('type')
+            self.disk_path = source.get('file')
 
         # running domain left over from a crashed test,
         # or by CONTEST_LEAVE_GUEST_RUNNING
@@ -625,7 +622,7 @@ class Guest:
 
         cmd = [
             'qemu-img', 'create', '-f', 'qcow2',
-            '-b', self.orig_disk_path, '-F', self.orig_disk_format,
+            '-b', self.disk_path, '-F', self.disk_format,
             self.snapshot_path
         ]
         util.subprocess_run(cmd, check=True)

@@ -343,8 +343,8 @@ class Guest(virt.Guest):
             Path(self.osbuild_log).write_text(log)
 
         # import the created qcow2 image as a VM
-        self.orig_disk_path = image_path
-        self.orig_disk_format = 'qcow2'
+        self.disk_path = image_path
+        self.disk_format = 'qcow2'
         self.import_image(**kwargs)
 
 
