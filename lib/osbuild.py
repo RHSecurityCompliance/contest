@@ -170,7 +170,7 @@ class Blueprint:
     ''')
 
     def __init__(self, template=TEMPLATE):
-        self.assembled = f'{template}\n\n'
+        self.assembled = f'{template}\n\n' if template else ''
 
     def add_user(self, name, *, password=None, groups=None, ssh_pubkey=None):
         self.assembled += '[[customizations.user]]\n'
