@@ -46,11 +46,13 @@ adjust:
             . "$TMT_PLAN_ENVIRONMENT_FILE"  # not done automatically
             [ -z "$CONTEST_CONTENT" ] && exit 0
             cd "$CONTEST_CONTENT"
+            distro=$(. /etc/os-release && echo "$ID")
+            [ "$distro" = "centos" ] && derivatives=--derivatives || derivatives=
             major=$(. /etc/os-release && echo "${VERSION_ID%%.*}")
             # already built
             [ -e "build/ssg-rhel${major}-ds.xml" ] && exit 0
             dnf -y builddep --spec scap-security-guide.spec
-            ./build_product --playbook-per-rule "rhel${major}"
+            ./build_product --playbook-per-rule $derivatives "rhel${major}"
 
   - prepare+:
       - how: shell
