@@ -492,24 +492,25 @@ class Guest:
         self.disk_path = disk_path
         self.disk_format = disk_format
 
-    def import_image(self, *, secure_boot=False):
+    def import_image(self, disk_path, disk_format='raw', *, secure_boot=False):
         """
         Import an existing disk image, creating a new guest domain from it.
+
+        The image is used as-is, in place. No copy or move is performed.
+        Ideally, the image should be located in GUEST_IMG_DIR and named
+        after the '.name' attribute of the guest instance.
         """
-        if not self.disk_path or not self.disk_format:
-            raise RuntimeError("'disk_path' and 'disk_format' need to be set'")
+        if not Path(disk_path).exists():
+            raise RuntimeError(f"{disk_path} doesn't exist")
 
-        if not Path(self.disk_path).exists():
-            raise RuntimeError(f"{self.disk_path} doesn't exist")
-
-        util.log(f"importing {self.disk_path} as {self.disk_format}")
+        util.log(f"importing {disk_path} as {disk_format}")
 
         cpus = os.cpu_count() or 1
 
         virt_install = [
             'pseudotty', 'virt-install',
             '--name', self.name, '--vcpus', str(cpus), '--memory', '2000',
-            '--disk', f'path={self.disk_path},format={self.disk_format},cache=unsafe',
+            '--disk', f'path={disk_path},format={disk_format},cache=unsafe',
             '--network', 'network=default',
             '--graphics', 'none', '--console', 'pty', '--rng', '/dev/urandom',
             '--noreboot', '--import',
@@ -524,6 +525,9 @@ class Guest:
 
         executable = util.libdir / 'pseudotty'
         util.subprocess_run(virt_install, executable=executable, check=True)
+
+        self.disk_path = disk_path
+        self.disk_format = disk_format
 
     def start(self):
         if guest_domstate(self.name) == 'shut off':
