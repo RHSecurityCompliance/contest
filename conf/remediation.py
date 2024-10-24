@@ -39,4 +39,18 @@ def excludes():
                 'enable_fips_mode',
             ]
 
+    # RHEL Image Mode
+    # TODO: revisit these, see which ones we really need for use with Contest
+    if test_name.startswith('/hardening/container'):
+        rules += [
+            'no_direct_root_logins',
+            'firewalld_sshd_disabled',
+            'service_sshd_disabled',
+            'sshd_disable_root_login',
+            'mount_option_nodev_nonroot_local_partitions',
+            'enable_fips_mode',
+            'configure_crypto_policy',
+            'accounts_tmout',
+        ]
+
     return rules

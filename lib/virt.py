@@ -371,8 +371,9 @@ class Guest:
         self.name = name
         self.ipaddr = None
         self.ssh_keyfile_path = f'{GUEST_IMG_DIR}/{name}.sshkey'
-        self.orig_disk_path = None
-        self.orig_disk_format = None
+        self.ssh_pubkey = None
+        self.disk_path = None
+        self.disk_format = None
         self.state_file_path = f'{GUEST_IMG_DIR}/{name}.state'
         self.snapshot_path = f'{GUEST_IMG_DIR}/{name}-snap.qcow2'
         # if it exists, guest was successfully installed
@@ -412,10 +413,8 @@ class Guest:
             kickstart = Kickstart()
 
         kickstart.add_host_repos()
-        util.ssh_keygen(self.ssh_keyfile_path)
-        with open(f'{self.ssh_keyfile_path}.pub') as f:
-            pubkey = f.read().rstrip()
-        kickstart.add_authorized_key(pubkey)
+        self.generate_ssh_keypair()
+        kickstart.add_authorized_key(self.ssh_pubkey)
 
         disk_extension = 'qcow2' if disk_format == 'qcow2' else 'img'
         disk_path = f'{GUEST_IMG_DIR}/{self.name}.{disk_extension}'
@@ -490,8 +489,45 @@ class Guest:
 
         self.install_ready_path.write_text(self.tag)
 
-        self.orig_disk_path = disk_path
-        self.orig_disk_format = disk_format
+        self.disk_path = disk_path
+        self.disk_format = disk_format
+
+    def import_image(self, disk_path, disk_format='raw', *, secure_boot=False):
+        """
+        Import an existing disk image, creating a new guest domain from it.
+
+        The image is used as-is, in place. No copy or move is performed.
+        Ideally, the image should be located in GUEST_IMG_DIR and named
+        after the '.name' attribute of the guest instance.
+        """
+        if not Path(disk_path).exists():
+            raise RuntimeError(f"{disk_path} doesn't exist")
+
+        util.log(f"importing {disk_path} as {disk_format}")
+
+        cpus = os.cpu_count() or 1
+
+        virt_install = [
+            'pseudotty', 'virt-install',
+            '--name', self.name, '--vcpus', str(cpus), '--memory', '2000',
+            '--disk', f'path={disk_path},format={disk_format},cache=unsafe',
+            '--network', 'network=default',
+            '--graphics', 'none', '--console', 'pty', '--rng', '/dev/urandom',
+            '--noreboot', '--import',
+            # this has nothing to do with rhel8, it just tells v-i to use virtio
+            '--os-variant', 'rhel8-unknown',
+            # don't try to start the imported VM; there are some race conditions
+            # inside virt-install when attaching a console of an imported guest
+            '--autoconsole', 'none',
+        ]
+        if secure_boot:
+            virt_install += ['--boot', 'firmware=efi,loader_secure=yes']
+
+        executable = util.libdir / 'pseudotty'
+        util.subprocess_run(virt_install, executable=executable, check=True)
+
+        self.disk_path = disk_path
+        self.disk_format = disk_format
 
     def start(self):
         if guest_domstate(self.name) == 'shut off':
@@ -565,8 +601,8 @@ class Guest:
 
         # if an external domain is used (not one we installed), read its
         # original disk metadata now
-        if not self.orig_disk_path:
-            self.orig_disk_path, self.orig_disk_format = get_state_image_disk(self.state_file_path)
+        if not self.disk_path:
+            self.disk_path, self.disk_format = get_state_image_disk(self.state_file_path)
 
         # modify its built-in XML to point to a snapshot-style disk path
         set_state_image_disk(self.state_file_path, self.snapshot_path, 'qcow2')
@@ -576,12 +612,12 @@ class Guest:
     def _restore_snapshotted(self):
         # reused guest from another test, install() or prepare_for_snapshot()
         # were not run for this class instance
-        if not self.orig_disk_path:
+        if not self.disk_path:
             ret = virsh('dumpxml', self.name, '--inactive',
                         stdout=PIPE, check=True, universal_newlines=True)
             _, _, _, driver, source = domain_xml_diskinfo(ret.stdout)
-            self.orig_disk_format = driver.get('type')
-            self.orig_disk_path = source.get('file')
+            self.disk_format = driver.get('type')
+            self.disk_path = source.get('file')
 
         # running domain left over from a crashed test,
         # or by CONTEST_LEAVE_GUEST_RUNNING
@@ -589,7 +625,7 @@ class Guest:
 
         cmd = [
             'qemu-img', 'create', '-f', 'qcow2',
-            '-b', self.orig_disk_path, '-F', self.orig_disk_format,
+            '-b', self.disk_path, '-F', self.disk_format,
             self.snapshot_path
         ]
         util.subprocess_run(cmd, check=True)
@@ -699,6 +735,15 @@ class Guest:
 
     def rsync_to(self, local_path, remote_path='.'):
         self._do_rsync(local_path, f'{GUEST_SSH_USER}@{self.ipaddr}:{remote_path}')
+
+    def generate_ssh_keypair(self):
+        private = Path(self.ssh_keyfile_path)
+        # don't use .with_suffix() as it would destroy anything after first '.'
+        public = Path(f'{private}.pub')
+        for filepath in [private, public]:
+            filepath.unlink(missing_ok=True)
+        util.ssh_keygen(private)
+        self.ssh_pubkey = public.read_text().rstrip('\n')
 
     def guest_agent_cmd(self, cmd, args=None, blind=False):
         """
