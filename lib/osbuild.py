@@ -341,9 +341,7 @@ class Guest(virt.Guest):
             Path(self.osbuild_log).write_text(log)
 
         # import the created qcow2 image as a VM
-        self.disk_path = image_path
-        self.disk_format = 'qcow2'
-        self.import_image(**kwargs)
+        self.import_image(image_path, 'qcow2', **kwargs)
 
 
 def composer_cli(*args, log=True, check=True, **kwargs):
