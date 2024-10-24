@@ -371,6 +371,7 @@ class Guest:
         self.name = name
         self.ipaddr = None
         self.ssh_keyfile_path = f'{GUEST_IMG_DIR}/{name}.sshkey'
+        self.ssh_pubkey = None
         self.disk_path = None
         self.disk_format = None
         self.state_file_path = f'{GUEST_IMG_DIR}/{name}.state'
@@ -412,10 +413,8 @@ class Guest:
             kickstart = Kickstart()
 
         kickstart.add_host_repos()
-        util.ssh_keygen(self.ssh_keyfile_path)
-        with open(f'{self.ssh_keyfile_path}.pub') as f:
-            pubkey = f.read().rstrip()
-        kickstart.add_authorized_key(pubkey)
+        self.generate_ssh_keypair()
+        kickstart.add_authorized_key(self.ssh_pubkey)
 
         disk_extension = 'qcow2' if disk_format == 'qcow2' else 'img'
         disk_path = f'{GUEST_IMG_DIR}/{self.name}.{disk_extension}'
@@ -732,6 +731,16 @@ class Guest:
 
     def rsync_to(self, local_path, remote_path='.'):
         self._do_rsync(local_path, f'{GUEST_SSH_USER}@{self.ipaddr}:{remote_path}')
+
+    def generate_ssh_keypair(self):
+        private = Path(self.ssh_keyfile_path)
+        # don't use .with_suffix() as it would destroy anything after first '.'
+        public = Path(f'{private}.pub')
+        for filepath in [private, public]:
+            if filepath.exists():
+                filepath.unlink()
+        util.ssh_keygen(private)
+        self.ssh_pubkey = public.read_text().rstrip('\n')
 
     def guest_agent_cmd(self, cmd, args=None, blind=False):
         """
