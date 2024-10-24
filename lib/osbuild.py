@@ -273,11 +273,9 @@ class Guest(virt.Guest):
             # copy our default package list from virt.Kickstart
             for pkg in virt.Kickstart.PACKAGES:
                 blueprint.add_package(pkg)
-            # generate the ssh key on the same place as virt.Guest
-            util.ssh_keygen(self.ssh_keyfile_path)
-            with open(f'{self.ssh_keyfile_path}.pub') as f:
-                pubkey = f.read().rstrip()
-            blueprint.add_user('root', password=virt.GUEST_LOGIN_PASS, ssh_pubkey=pubkey)
+            # generate an ssh key the same way as virt.Guest
+            self.generate_ssh_keypair()
+            blueprint.add_user('root', password=virt.GUEST_LOGIN_PASS, ssh_pubkey=self.ssh_pubkey)
 
         image_path = Path(f'{virt.GUEST_IMG_DIR}/{self.name}.img')
 
