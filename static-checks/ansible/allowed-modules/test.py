@@ -55,6 +55,8 @@ def process_task(task, all_allowed_modules):
             found_allowed_modules.update(process_task(block_task, all_allowed_modules))
     else:
         keywords = set(kw.replace('ansible.builtin.', '') for kw in original_keywords)
+        keywords = set(kw.replace('community.general.', '') for kw in keywords)
+        keywords = set(kw.replace('ansible.posix.', '') for kw in keywords)
         allowed_module = keywords.intersection(all_allowed_modules)
         if allowed_module:
             found_allowed_modules.update(allowed_module)
