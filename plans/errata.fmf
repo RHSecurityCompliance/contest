@@ -13,5 +13,9 @@ discover:
     exclude:
       # often fails on temporary retrieval issues
       - /static-checks/html-links
+adjust:
+  - when: newa_batch is defined
+    report:
+      how: reportportal
 
 # vim: syntax=yaml
