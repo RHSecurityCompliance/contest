@@ -84,6 +84,8 @@
 
 # DISA Alignment waivers
 #
+# https://github.com/ComplianceAsCode/content/issues/12561
+/scanning/disa-alignment/.*/logind_session_timeout
 # https://github.com/ComplianceAsCode/content/issues/11804
 /scanning/disa-alignment/.*/harden_sshd_ciphers_openssh_conf_crypto_policy
 # https://github.com/ComplianceAsCode/content/issues/11692
