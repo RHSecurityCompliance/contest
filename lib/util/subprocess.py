@@ -10,25 +10,25 @@ def _format_subprocess_cmd(cmd):
         return cmd
 
 
-def subprocess_run(cmd, **kwargs):
+def subprocess_run(cmd, *, skip_frames=0, **kwargs):
     """
     A simple wrapper for the real subprocess.run() that logs the command used.
     """
     # when logging, skip current stack frame - report the place we were called
     # from, not util.subprocess_run itself
-    util.log(f'running: {_format_subprocess_cmd(cmd)}', skip_frames=1)
+    util.log(f'running: {_format_subprocess_cmd(cmd)}', skip_frames=skip_frames+1)
     return subprocess.run(cmd, **kwargs)
 
 
-def subprocess_Popen(cmd, **kwargs):
+def subprocess_Popen(cmd, *, skip_frames=0, **kwargs):
     """
     A simple wrapper for the real subprocess.Popen() that logs the command used.
     """
-    util.log(f'running: {_format_subprocess_cmd(cmd)}', skip_frames=1)
+    util.log(f'running: {_format_subprocess_cmd(cmd)}', skip_frames=skip_frames+1)
     return subprocess.Popen(cmd, **kwargs)
 
 
-def subprocess_stream(cmd, check=False, **kwargs):
+def subprocess_stream(cmd, *, check=False, skip_frames=0, **kwargs):
     """
     Run 'cmd' via subprocess.Popen() and return an iterator over any lines
     the command outputs on stdout, in text mode.
@@ -37,7 +37,7 @@ def subprocess_stream(cmd, check=False, **kwargs):
 
     To capture both stdout and stderr as yielded lines, use subprocess.STDOUT.
     """
-    util.log(f'running: {_format_subprocess_cmd(cmd)}', skip_frames=1)
+    util.log(f'running: {_format_subprocess_cmd(cmd)}', skip_frames=skip_frames+1)
     proc = subprocess.Popen(cmd, stdout=subprocess.PIPE, universal_newlines=True, **kwargs)
 
     def generate_lines():
