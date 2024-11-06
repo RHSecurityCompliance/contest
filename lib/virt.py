@@ -76,7 +76,6 @@ Example using plain one-time-use guest:
 import os
 import sys
 import re
-import socket
 import time
 import subprocess
 import textwrap
@@ -839,33 +838,11 @@ def wait_for_ifaddr(name, timeout=600, sleep=0.5):
     raise TimeoutError(f"wait for {name} IP addr timed out (not requested DHCP?)")
 
 
-def wait_for_ssh(ip, port=22, timeout=600, sleep=0.5, to_shutdown=False):
-    """
-    Attempt to repeatedly connect to a given ip address and port (both strings)
-    and return when a connection has been established with a genuine sshd
-    service (not just any TCP server).
-
-    If the attempts continue to fail for 'timeout' seconds, raise TimeoutError.
-
-    If 'to_shutdown' is true, wait for ssh to shut down, instead of to start.
-    Useful for waiting until a guest reboots without changing domain state.
-    """
-    state = 'shut down' if to_shutdown else 'start'
-    util.log(f"waiting for ssh on {ip}:{port} to {state} for up to {timeout}sec")
-    end_time = datetime.now() + timedelta(seconds=timeout)
-    while datetime.now() < end_time:
-        try:
-            with socket.create_connection((ip, port), timeout=sleep) as s:
-                data = s.recv(10)
-                if data.startswith(b'SSH-') and not to_shutdown:
-                    return
-                # something else on the port? .. just wait + close
-                time.sleep(sleep)
-        except OSError:
-            if to_shutdown:
-                return
-            time.sleep(sleep)
-    raise TimeoutError(f"ssh wait for {ip}:{port} timed out")
+def wait_for_ssh(host, port=22, *, to_shutdown=False):
+    if to_shutdown:
+        util.wait_for_tcp(host, port, to_shutdown=True)
+    else:
+        util.wait_for_tcp(host, port, compare=b'SSH-')
 
 
 #
