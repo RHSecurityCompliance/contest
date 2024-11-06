@@ -270,9 +270,8 @@ class Guest(virt.Guest):
             blueprint = Blueprint()
 
         if not bp_verbatim:
-            # copy our default package list from virt.Kickstart
-            for pkg in virt.Kickstart.PACKAGES:
-                blueprint.add_package(pkg)
+            # implicitly install openscap-scanner, like virt.Guest.install()
+            blueprint.add_package('openscap-scanner')
             # generate an ssh key the same way as virt.Guest
             self.generate_ssh_keypair()
             blueprint.add_user('root', password=virt.GUEST_LOGIN_PASS, ssh_pubkey=self.ssh_pubkey)

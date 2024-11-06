@@ -247,14 +247,9 @@ class Kickstart:
         reqpart
     ''')
 
-    PACKAGES = [
-        'openscap-scanner',
-    ]
-
-    def __init__(self, template=TEMPLATE, packages=PACKAGES, partitions=None):
+    def __init__(self, template=TEMPLATE, packages=None, partitions=None):
         """
-        You can override 'template' / 'packages' with your own copy of
-        self.TEMPLATE and self.PACKAGES.
+        You can override 'template' with your own copy of self.TEMPLATE.
 
         Partitions should be specified as a list of (mntpoint,size) tuples,
         where None (default) uses one partition for the entire OS and an empty
@@ -262,21 +257,25 @@ class Kickstart:
         """
         self.ks = template
         self.appends = []
-        self.packages = packages
+        self.packages = packages or []
         self.partitions = partitions
 
     def assemble(self):
+        output = self.ks
+        # partitions
         if self.partitions is not None:
-            partitions_block = '\n'.join(
-                (f'part {mountpoint} --size={size}' for mountpoint, size in self.partitions),
-            )
+            entries = [f'part {mntpoint} --size={size}' for mntpoint, size in self.partitions]
+            if entries:
+                output += '\n\n' + '\n'.join(entries)
         else:
-            partitions_block = 'part / --size=1 --grow'
-        appends_block = '\n'.join(self.appends)
-        packages_block = '\n'.join(self.packages)
-        packages_block = f'%packages\n{packages_block}\n%end'
-        return '\n\n'.join([self.ks, partitions_block, appends_block, packages_block])
-        # self.ks + self.packages + self.scripts
+            output += '\n\npart / --size=1 --grow'
+        # packages
+        if self.packages:
+            output += '\n\n%packages\n' + '\n'.join(self.packages) + '\n%end'
+        # appends
+        if self.appends:
+            output += '\n\n' + '\n'.join(self.appends)
+        return output
 
     @contextlib.contextmanager
     def to_tmpfile(self):
@@ -381,10 +380,7 @@ class Guest:
         # if exists, all snapshot preparation processes were successful
         self.snapshot_ready_path = Path(f'{GUEST_IMG_DIR}/{name}.snapshot_ready')
 
-    def install(
-        self, location=None, kickstart=None, rpmpack=None, secure_boot=False,
-        disk_format='raw',
-    ):
+    def install_basic(self, location=None, kickstart=None, secure_boot=False, disk_format='raw'):
         """
         Install a new guest, to a shut down state.
 
@@ -395,14 +391,8 @@ class Guest:
         a Kickstart class instance.
         To customize the instance (ie. add code before/after code added by
         member functions), subclass Kickstart and set __init__() or assemble().
-
-        If custom 'rpmpack' is specified (RpmPack instance), it is used instead
-        of a self-made instance.
         """
         util.log(f"installing guest {self.name}")
-
-        # remove any previously installed guest
-        self.wipe()
 
         # location (install URL) not given, try using first one found amongst host
         # repository URLs that has Anaconda stage2 image
@@ -412,38 +402,11 @@ class Guest:
         if not kickstart:
             kickstart = Kickstart()
 
-        kickstart.add_host_repos()
-        self.generate_ssh_keypair()
-        kickstart.add_authorized_key(self.ssh_pubkey)
-
         disk_extension = 'qcow2' if disk_format == 'qcow2' else 'img'
         disk_path = f'{GUEST_IMG_DIR}/{self.name}.{disk_extension}'
         cpus = os.cpu_count() or 1
 
-        with contextlib.ExitStack() as stack:
-            # create a custom RPM to run guest setup scripts via RPM scriptlets
-            # and install it during Anaconda installation
-            pack = rpmpack or util.RpmPack()
-            pack.post.append(self.SETUP)
-            pack.requires += self.SETUP_REQUIRES
-            repo = stack.enter_context(pack.build_as_repo())
-
-            # host the custom RPM on a HTTP server, as Anaconda needs a YUM repo
-            # to pull packages from
-            srv = stack.enter_context(util.BackgroundHTTPServer(NETWORK_HOST, 0))
-            srv.add_dir(repo, 'repo')
-            http_host, http_port = srv.start()
-
-            # now that we know the address/port of the HTTP server, add it to
-            # the kickstart as well
-            kickstart.add_install_only_repo(
-                'contest-rpmpack',
-                f'http://{http_host}:{http_port}/repo',
-            )
-            kickstart.packages.append(util.RpmPack.NAME)
-
-            ksfile = stack.enter_context(kickstart.to_tmpfile())
-
+        with kickstart.to_tmpfile() as ksfile:
             virt_install = [
                 'pseudotty', 'virt-install',
                 # installing from HTTP URL leads to Anaconda downloading stage2
@@ -491,6 +454,49 @@ class Guest:
 
         self.disk_path = disk_path
         self.disk_format = disk_format
+
+    def install(self, *, kickstart=None, rpmpack=None, **kwargs):
+        """
+        Install a new guest, to a shut down state.
+
+        This is a more user-friendly wrapper for install_basic(),
+        providing extra herbs and spices useful for a default typical
+        Anaconda based installation.
+
+        If custom 'rpmpack' is specified (RpmPack instance), it is used instead
+        of a self-made instance.
+        """
+        # remove any previously installed guest
+        self.wipe()
+
+        if not kickstart:
+            kickstart = Kickstart()
+
+        kickstart.packages.append('openscap-scanner')
+        kickstart.add_host_repos()
+        self.generate_ssh_keypair()
+        kickstart.add_authorized_key(self.ssh_pubkey)
+
+        # create a custom RPM to run guest setup scripts via RPM scriptlets
+        # and install it during Anaconda installation
+        pack = rpmpack or util.RpmPack()
+        pack.post.append(self.SETUP)
+        pack.requires += self.SETUP_REQUIRES
+        with pack.build_as_repo() as repo:
+            # host the custom RPM on a HTTP server, as Anaconda needs a YUM repo
+            # to pull packages from
+            with util.BackgroundHTTPServer(NETWORK_HOST, 0) as srv:
+                srv.add_dir(repo, 'repo')
+                http_host, http_port = srv.start()
+                # now that we know the address/port of the HTTP server, add it to
+                # the kickstart as well
+                kickstart.add_install_only_repo(
+                    'contest-rpmpack',
+                    f'http://{http_host}:{http_port}/repo',
+                )
+                kickstart.packages.append(util.RpmPack.NAME)
+                # install the OS using our kickstart
+                self.install_basic(kickstart=kickstart, **kwargs)
 
     def import_image(self, disk_path, disk_format='raw', *, secure_boot=False):
         """
