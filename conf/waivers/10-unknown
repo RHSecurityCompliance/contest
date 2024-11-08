@@ -99,6 +99,8 @@
 /scanning/disa-alignment/.*/CCE-88173-0
 # https://github.com/ComplianceAsCode/content/issues/11703
 /scanning/disa-alignment/.*/file_permissions_library_dirs
+# https://github.com/ComplianceAsCode/content/issues/12573
+/scanning/disa-alignment/.*/sshd_set_keepalive
 # https://github.com/ComplianceAsCode/content/issues/11693
 /scanning/disa-alignment/(oscap|ansible)/accounts_password_pam_retry
     rhel == 9
