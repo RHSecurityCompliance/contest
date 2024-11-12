@@ -221,6 +221,10 @@ def match_result(status, name, note):
 
 
 def rewrite_result(status, name, note, new_status='warn'):
+    # In TF, show waived as 'pass' because 'warn' results are shown as failures
+    if os.environ.get('TESTING_FARM_REQUEST_ID'):
+        new_status='pass'
+
     if os.environ.get('CONTEST_VERBATIM_RESULTS') == '1' or status in ['info', 'warn']:
         return (status, name, note)
 
