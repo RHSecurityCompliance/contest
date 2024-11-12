@@ -1,0 +1,113 @@
+summary: Creates an OS using Anaconda's ostreecontainer and scans it
+test: python3 -m lib.runtest ./test.py
+result: custom
+environment+:
+    PYTHONPATH: ../../..
+duration: 1h
+require+:
+  # virt library dependencies
+  - libvirt-daemon
+  - libvirt-daemon-driver-qemu
+  - libvirt-daemon-driver-storage-core
+  - libvirt-daemon-driver-network
+  - firewalld
+  - qemu-kvm
+  - libvirt-client
+  - virt-install
+  - rpm-build
+  - createrepo
+  # podman library dependencies
+  - podman
+extra-hardware: |
+    keyvalue = HVM=1
+    hostrequire = memory>=3720
+adjust:
+  - when: arch != x86_64
+    enabled: false
+    because: we want to run virtualization on x86_64 only
+  - when: distro < rhel-9.6
+    enabled: false
+    because: Image Mode not supported for older RHELs
+  - when: distro == rhel
+    enabled: false
+    because: TODO - no freely accessible RHEL bootc image, CentOS Stream only
+tag+:
+  # TODO: this test is currently broken by / blocked on Anaconda
+  # having broken ostreecontainer kickstart functionality,
+  # https://issues.redhat.com/browse/RHEL-66155
+  - broken
+
+/anssi_bp28_high:
+
+/anssi_bp28_enhanced:
+    tag+:
+      - subset-profile
+
+/anssi_bp28_intermediary:
+    tag+:
+      - subset-profile
+
+/anssi_bp28_minimal:
+    tag+:
+      - subset-profile
+
+/cis:
+
+/cis_server_l1:
+    tag+:
+      - subset-profile
+
+/cis_workstation_l2:
+
+/cis_workstation_l1:
+    tag+:
+      - subset-profile
+
+/cui:
+    adjust+:
+      - when: distro >= rhel-10
+        enabled: false
+        because: there is no CUI profile on RHEL-10+
+
+/e8:
+
+/hipaa:
+
+/ism_o:
+
+/ospp:
+    adjust+:
+      - when: distro >= rhel-10
+        enabled: false
+        because: there is no OSPP profile on RHEL-10+
+
+/pci-dss:
+
+/stig:
+
+/stig_gui:
+    adjust+:
+      - enabled: false
+        because: not supported without GUI, use stig instead
+
+/ccn_advanced:
+    adjust+:
+      - when: distro == rhel-8 or distro == rhel-10
+        enabled: false
+        because: CCN profiles are not present on RHEL-8 and on RHEL-10
+
+/ccn_intermediate:
+    tag+:
+      - subset-profile
+    adjust+:
+      - when: distro == rhel-8 or distro == rhel-10
+        enabled: false
+        because: CCN profiles are not present on RHEL-8 and on RHEL-10
+
+/ccn_basic:
+    tag+:
+      - subset-profile
+    adjust+:
+      - when: distro == rhel-8 or distro == rhel-10
+        enabled: false
+        because: CCN profiles are not present on RHEL-8 and on RHEL-10
