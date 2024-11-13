@@ -19,5 +19,7 @@ adjust:
   - when: newa_batch is defined
     report:
       how: reportportal
+  - environment:
+      CONTEST_VERBOSE: 0
 
 # vim: syntax=yaml
