@@ -18,8 +18,8 @@ discover:
 adjust:
   - when: newa_batch is defined
     report:
-      how: reportportal
+        how: reportportal
   - environment:
-      CONTEST_VERBOSE: 0
+        CONTEST_VERBOSE: 0
 
 # vim: syntax=yaml
