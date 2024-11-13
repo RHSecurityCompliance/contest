@@ -17,9 +17,6 @@ discover:
       - /static-checks/removed-rules
 adjust:
   - when: newa_batch is defined
-    prepare:
-      how: shell
-      script: dnf config-manager --set-enabled *-source
     report:
       how: reportportal
 
