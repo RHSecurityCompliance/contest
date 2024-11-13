@@ -13,6 +13,8 @@ discover:
     exclude:
       # often fails on temporary retrieval issues
       - /static-checks/html-links
+      # nothing to compare with because only latest SSG is available there
+      - /static-checks/removed-rules
 adjust:
   - when: newa_batch is defined
     prepare:
