@@ -247,67 +247,22 @@ class Guest(virt.Guest):
     def install(*args, **kwargs):
         raise NotImplementedError("install() is not supported, use create()")
 
-    def create(self, *, blueprint=None, bp_verbatim=None, rpmpack=None, **kwargs):
+    def create_basic(self, *, blueprint=None, **kwargs):
         """
         Create a guest disk image via osbuild, and import it as a new guest
         domain into libvirt.
 
         If 'blueprint' is given as a 'class Blueprint' instance, it is used
         for further customizations instead of a fresh Blueprint instance.
-
-        'bp_verbatim' further prevents these customizations, using the
-        blueprint as-provided by test code.
-
-        If custom 'rpmpack' is specified (RpmPack instance), it is used instead
-        of a self-made instance.
         """
         util.log(f"creating guest {self.name}")
-
-        # remove any previously installed guest
-        self.wipe()
 
         if not blueprint:
             blueprint = Blueprint()
 
-        if not bp_verbatim:
-            # implicitly install openscap-scanner, like virt.Guest.install()
-            blueprint.add_package('openscap-scanner')
-            # generate an ssh key the same way as virt.Guest
-            self.generate_ssh_keypair()
-            blueprint.add_user('root', password=virt.GUEST_LOGIN_PASS, ssh_pubkey=self.ssh_pubkey)
-
         image_path = Path(f'{virt.GUEST_IMG_DIR}/{self.name}.img')
 
-        with contextlib.ExitStack() as stack:
-            # osbuild doesn't support running Anaconda %post-style custom
-            # scripts, the only way to run additional shell code is via
-            # RPM scriptlets, so add custom guest setup via RpmPack
-            pack = rpmpack or util.RpmPack()
-            pack.add_host_repos()
-            # inherited from virt.Guest
-            pack.post.append(self.SETUP)
-            pack.requires += self.SETUP_REQUIRES
-            repo = stack.enter_context(pack.build_as_repo())
-            # ensure the custom RPM is added during image building
-            blueprint.add_package(util.RpmPack.NAME)
-
-            # osbuild-composer doesn't support file:// repos, so host
-            # the custom RPM on a HTTP server
-            srv = stack.enter_context(util.BackgroundHTTPServer('127.0.0.1', 0))
-            srv.add_dir(repo, 'repo')
-            http_host, http_port = srv.start()
-
-            # overwrite default Red Hat CDN host repos via a custom HTTP server
-            repos = ComposerRepos()
-            repos.add_host_repos()
-            repos.repos.append({
-                'name': 'contest-rpmpack',
-                'baseurl': f'http://{http_host}:{http_port}/repo',
-            })
-            stack.enter_context(repos.to_composer())
-
-            bp_name = stack.enter_context(blueprint.to_composer())
-
+        with blueprint.to_composer() as bp_name:
             # re-try multiple times to try to avoid a bug:
             # ERROR: Depsolve Error: Get "http://localhost/.../depsolve/contest_blueprint": EOF
             for _ in range(5):
@@ -325,22 +280,71 @@ class Guest(virt.Guest):
             else:
                 raise RuntimeError("depsolve failed, retries depleted")
 
-            ident = stack.enter_context(Compose.build(bp_name))
+            with Compose.build(bp_name) as ident:
+                if image_path.exists():
+                    os.remove(image_path)
+                composer_cli('compose', 'image', ident, '--filename', image_path)
 
-            if image_path.exists():
-                os.remove(image_path)
-            composer_cli('compose', 'image', ident, '--filename', image_path)
-
-            # get image building log, try to limit its size by cutting off
-            # everything before openscap
-            log = composer_cli_out('compose', 'log', ident)
-            idx = log.find('Stage: org.osbuild.oscap')
-            if idx != -1:
-                log = log[idx:]
-            Path(self.osbuild_log).write_text(log)
+                # get image building log, try to limit its size by cutting off
+                # everything before openscap
+                log = composer_cli_out('compose', 'log', ident)
+                idx = log.find('Stage: org.osbuild.oscap')
+                if idx != -1:
+                    log = log[idx:]
+                Path(self.osbuild_log).write_text(log)
 
         # import the created qcow2 image as a VM
         self.import_image(image_path, 'qcow2', **kwargs)
+
+    def create(self, *, blueprint=None, rpmpack=None, **kwargs):
+        """
+        Create a guest disk image via osbuild, suitable for scanning
+        via openscap.
+
+        If custom 'rpmpack' is specified (RpmPack instance), it is used instead
+        of a self-made instance.
+        """
+        # remove any previously installed guest
+        self.wipe()
+
+        if not blueprint:
+            blueprint = Blueprint()
+
+        # implicitly install openscap-scanner, like virt.Guest.install()
+        blueprint.add_package('openscap-scanner')
+
+        # generate an ssh key the same way as virt.Guest
+        self.generate_ssh_keypair()
+        blueprint.add_user('root', password=virt.GUEST_LOGIN_PASS, ssh_pubkey=self.ssh_pubkey)
+
+        # osbuild doesn't support running Anaconda %post-style custom
+        # scripts, the only way to run additional shell code is via
+        # RPM scriptlets, so add custom guest setup via RpmPack
+        pack = rpmpack or util.RpmPack()
+        pack.add_host_repos()
+        # inherited from virt.Guest
+        pack.post.append(self.SETUP)
+        pack.requires += self.SETUP_REQUIRES
+        with pack.build_as_repo() as repo:
+            # ensure the custom RPM is added during image building
+            blueprint.add_package(util.RpmPack.NAME)
+
+            # osbuild-composer doesn't support file:// repos, so host
+            # the custom RPM on a HTTP server
+            with util.BackgroundHTTPServer('127.0.0.1', 0) as srv:
+                srv.add_dir(repo, 'repo')
+                http_host, http_port = srv.start()
+
+                # overwrite default Red Hat CDN host repos via a custom HTTP server
+                repos = ComposerRepos()
+                repos.add_host_repos()
+                repos.repos.append({
+                    'name': 'contest-rpmpack',
+                    'baseurl': f'http://{http_host}:{http_port}/repo',
+                })
+                with repos.to_composer():
+                    # build qcow2 and import it
+                    self.create_basic(blueprint=blueprint, **kwargs)
 
 
 def composer_cli(*args, log=True, check=True, **kwargs):
