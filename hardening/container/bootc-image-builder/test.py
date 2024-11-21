@@ -36,7 +36,8 @@ cfile += util.dedent(fr'''
     RUN dnf -y copr enable {copr} centos-stream-{versions.rhel.major}-x86_64
     RUN dnf -y install openscap-utils
     COPY remediation-ds.xml /root/.
-    RUN oscap-bootc --profile '{profile}' /root/remediation-ds.xml
+    RUN oscap-bootc --profile '{profile}' \
+        --results-arf /root/remediation-arf.xml /root/remediation-ds.xml
     # hack sshd cmdline to allow root login
     RUN echo "OPTIONS=-oPermitRootLogin=yes" >> /etc/sysconfig/sshd
 ''')
@@ -80,15 +81,19 @@ with guest.booted():
     # scan the remediated system
     proc, lines = guest.ssh_stream(
         f'oscap xccdf eval --profile {profile} --progress --report report.html'
-        f' --results-arf results-arf.xml scan-ds.xml'
+        f' --results-arf scan-arf.xml scan-ds.xml'
     )
     oscap.report_from_verbose(lines)
     if proc.returncode not in [0,2]:
         raise RuntimeError("post-reboot oscap failed unexpectedly")
 
     guest.copy_from('report.html')
-    guest.copy_from('results-arf.xml')
+    guest.copy_from('remediation-arf.xml')
+    guest.copy_from('scan-arf.xml')
 
-util.subprocess_run(['gzip', '-9', 'results-arf.xml'], check=True)
+tar = [
+    'tar', '-cvJf', 'results-arf.tar.xz', 'remediation-arf.xml', 'scan-arf.xml',
+]
+util.subprocess_run(tar, check=True)
 
-results.report_and_exit(logs=['report.html', 'results-arf.xml.gz'])
+results.report_and_exit(logs=['report.html', 'results-arf.tar.xz'])

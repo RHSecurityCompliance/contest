@@ -22,13 +22,13 @@ with g.snapshotted(), util.get_old_datastream() as old_xml:
     oscap.unselect_rules(util.get_datastream(), 'remediation-new.xml', remediation.excludes())
     g.copy_to('remediation-new.xml')
 
-    def remediate(datastream, html_report, html_report2):
+    def remediate(datastream, arf_results, arf_results2):
         # remediate twice due to some rules being 'notapplicable'
         # on the first pass
-        for html_report in [html_report, html_report2]:
+        for arf_output in [arf_results, arf_results2]:
             cmd = [
                 'oscap', 'xccdf', 'eval', '--profile', profile,
-                '--progress', '--report', html_report,
+                '--progress', '--results-arf', arf_output,
                 '--remediate', datastream,
             ]
             proc = g.ssh(' '.join(cmd))
@@ -38,34 +38,38 @@ with g.snapshotted(), util.get_old_datastream() as old_xml:
 
     # remediate using old content,
     # then remediate using new content
-    remediate('remediation-old.xml', 'remediation-old.html', 'remediation-old2.html')
-    remediate('remediation-new.xml', 'remediation-new.html', 'remediation-new2.html')
+    remediate('remediation-old.xml', 'remediation-arf-old.xml', 'remediation-arf-old2.xml')
+    remediate('remediation-new.xml', 'remediation-arf-new.xml', 'remediation-arf-new2.xml')
 
     # scan using new content
     g.copy_to(util.get_datastream(), 'scan-new.xml')
     proc, lines = g.ssh_stream(
         f'oscap xccdf eval --profile {profile} --progress --report report.html'
-        f' --results-arf results-arf.xml scan-new.xml'
+        f' --results-arf scan-arf.xml scan-new.xml'
     )
     oscap.report_from_verbose(lines)
     if proc.returncode not in [0,2]:
         raise RuntimeError("post-reboot oscap failed unexpectedly")
 
     g.copy_from('report.html')
-    g.copy_from('results-arf.xml')
-    g.copy_from('remediation-old.html')
-    g.copy_from('remediation-old2.html')
-    g.copy_from('remediation-new.html')
-    g.copy_from('remediation-new2.html')
+    g.copy_from('scan-arf.xml')
+    g.copy_from('remediation-arf-old.xml')
+    g.copy_from('remediation-arf-old2.xml')
+    g.copy_from('remediation-arf-new.xml')
+    g.copy_from('remediation-arf-new2.xml')
 
-util.subprocess_run(['gzip', '-9', 'results-arf.xml'], check=True)
+tar = [
+    'tar', '-cvJf', 'results-arf.tar.xz',
+    'scan-arf.xml',
+    'remediation-arf-old.xml',
+    'remediation-arf-old2.xml',
+    'remediation-arf-new.xml',
+    'remediation-arf-new2.xml',
+]
+util.subprocess_run(tar, check=True)
 
 logs = [
     'report.html',
-    'results-arf.xml.gz',
-    'remediation-old.html',
-    'remediation-old2.html',
-    'remediation-new.html',
-    'remediation-new2.html',
+    'results-arf.tar.xz',
 ]
 results.report_and_exit(logs=logs)
