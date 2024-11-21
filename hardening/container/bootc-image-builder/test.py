@@ -19,8 +19,13 @@ guest = virt.Guest()
 guest.wipe()
 guest.generate_ssh_keypair()
 
-# CentOS Stream image only, for now
-src_image = f'quay.io/centos-bootc/centos-bootc:stream{versions.rhel.major}'
+# select appropriate container image based on host OS
+major = versions.rhel.major
+minor = versions.rhel.minor
+if versions.rhel.is_true_rhel():
+    src_image = f'images.paas.redhat.com/testingfarm/rhel-bootc:{major}.{minor}'
+else:
+    src_image = f'quay.io/centos-bootc/centos-bootc:stream{major}'
 
 # RHEL-9 and older use 'maint-1.3' openscap git repo branch, newer use 'main'
 if versions.rhel <= 9:
