@@ -17,10 +17,10 @@ tmpdir = Path(f'/var/tmp/contest-{unique_name}')
 remediation_ds = tmpdir / 'remediation-ds.xml'
 
 
-def do_one_remediation(ds, profile, html_report):
+def do_one_remediation(ds, profile, arf_results):
     cmd = [
         'oscap', 'xccdf', 'eval', '--profile', profile, '--progress',
-        '--report', html_report, '--remediate', ds,
+        '--results-arf', arf_results, '--remediate', ds,
     ]
     proc = util.subprocess_run(cmd)
     if proc.returncode not in [0,2]:
@@ -41,7 +41,7 @@ if util.get_reboot_count() == 0:
 
     oscap.unselect_rules(util.get_datastream(), remediation_ds, remediation.excludes())
 
-    do_one_remediation(remediation_ds, profile, tmpdir / 'remediation.html')
+    do_one_remediation(remediation_ds, profile, tmpdir / 'remediation-arf.xml')
 
     util.reboot()
 
@@ -50,7 +50,7 @@ if util.get_reboot_count() == 0:
 elif util.get_reboot_count() == 1:
     util.log("second boot, doing second remediation")
 
-    do_one_remediation(remediation_ds, profile, tmpdir / 'remediation2.html')
+    do_one_remediation(remediation_ds, profile, tmpdir / 'remediation2-arf.xml')
 
     util.reboot()
 
@@ -61,7 +61,7 @@ else:
     # - use the original unmodified datastream
     cmd = [
         'oscap', 'xccdf', 'eval', '--profile', profile, '--progress',
-        '--report', 'report.html', '--results-arf', 'results-arf.xml',
+        '--report', 'report.html', '--results-arf', 'scan-arf.xml',
         util.get_datastream(),
     ]
     proc, lines = util.subprocess_stream(cmd)
@@ -69,12 +69,18 @@ else:
     if proc.returncode not in [0,2]:
         raise RuntimeError("post-reboot oscap failed unexpectedly")
 
-    util.subprocess_run(['gzip', '-9', 'results-arf.xml'], check=True)
+    # TODO: str() because of python 3.6 shutil.move() not supporting Path
+    shutil.move(str(tmpdir / 'remediation-arf.xml'), '.')
+    shutil.move(str(tmpdir / 'remediation2-arf.xml'), '.')
+
+    tar = [
+        'tar', '-cvJf', 'results-arf.tar.xz',
+        'remediation-arf.xml', 'remediation2-arf.xml', 'scan-arf.xml',
+    ]
+    util.subprocess_run(tar, check=True)
 
     logs = [
         'report.html',
-        'results-arf.xml.gz',
-        tmpdir / 'remediation.html',
-        tmpdir / 'remediation2.html',
+        'results-arf.tar.xz',
     ]
     results.report_and_exit(logs=logs)
