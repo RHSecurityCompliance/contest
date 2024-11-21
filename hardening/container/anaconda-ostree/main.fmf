@@ -28,9 +28,6 @@ adjust:
   - when: distro < rhel-9.6
     enabled: false
     because: Image Mode not supported for older RHELs
-  - when: distro == rhel
-    enabled: false
-    because: TODO - no freely accessible RHEL bootc image, CentOS Stream only
 tag+:
   # TODO: this test is currently broken by / blocked on Anaconda
   # having broken ostreecontainer kickstart functionality,
