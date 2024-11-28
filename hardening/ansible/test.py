@@ -41,10 +41,8 @@ with g.snapshotted():
         *skip_tags_arg,
         playbook,
     ]
-    proc, lines = util.subprocess_stream(ansible_cmd)
-    failed = ansible.report_from_output(lines)
-    if proc.returncode not in [0,2] or proc.returncode == 2 and not failed:
-        raise RuntimeError(f"ansible-playbook failed with {proc.returncode}")
+    _, lines = util.subprocess_stream(ansible_cmd, check=True)
+    ansible.report_from_output(lines)
     g.soft_reboot()
 
     # scan the remediated system

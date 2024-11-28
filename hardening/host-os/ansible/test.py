@@ -25,10 +25,8 @@ if util.get_reboot_count() == 0:
         *skip_tags_arg,
         playbook,
     ]
-    proc, lines = util.subprocess_stream(cmd)
-    failed = ansible.report_from_output(lines)
-    if proc.returncode not in [0,2] or proc.returncode == 2 and not failed:
-        raise RuntimeError(f"ansible-playbook failed with {proc.returncode}")
+    _, lines = util.subprocess_stream(cmd, check=True)
+    ansible.report_from_output(lines)
 
     # restore basic login functionality
     with open('/etc/sysconfig/sshd', 'a') as f:
