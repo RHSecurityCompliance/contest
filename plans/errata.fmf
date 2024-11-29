@@ -19,6 +19,9 @@ adjust:
   - when: newa_batch is defined
     report:
         how: reportportal
+    prepare+:
+        how: shell
+        script: curl -ks https://gitlab.cee.redhat.com/rhel-tests/distribution/-/raw/main/setup/configure-repo-with-rpms-from-brew/run.sh | bash
   - environment:
         CONTEST_VERBOSE: 0
 
