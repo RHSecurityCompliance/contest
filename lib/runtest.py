@@ -25,8 +25,10 @@ def _setup_timeout_handling():
     metadata = util.TestMetadata()
     duration = metadata.duration_seconds()
 
-    # leave 10 seconds for our alarm timeout code
-    duration -= 10
+    # leave 50 seconds for our alarm timeout code
+    # (the large-ish value is to allow for time drift between our timekeeping
+    #  and tmt's timeout logic, for long-running tests)
+    duration -= 50
 
     def _alarm_timed_out(signum, frame):
         # sys.exit does run all cleanups (context manager, atexit, etc.),
