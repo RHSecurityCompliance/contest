@@ -21,7 +21,11 @@ adjust:
         how: reportportal
     prepare+:
         how: shell
-        script: curl -ks https://gitlab.cee.redhat.com/rhel-tests/distribution/-/raw/main/setup/configure-repo-with-rpms-from-brew/run.sh | bash
+        script:
+          - . /etc/os-release; yum -y install https://dl.fedoraproject.org/pub/epel/epel-release-latest-${VERSION_ID%.*}.noarch.rpm || true
+          - dnf config-manager --set-enabled epel || true
+          - dnf -y install beakerlib
+          - curl -ks https://gitlab.cee.redhat.com/rhel-tests/distribution/-/raw/main/setup/configure-repo-with-rpms-from-brew/run.sh | bash
   - environment:
         CONTEST_VERBOSE: 0
 
