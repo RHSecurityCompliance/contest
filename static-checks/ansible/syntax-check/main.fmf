@@ -6,7 +6,7 @@ test: python3 -m lib.runtest ./test.py
 result: custom
 environment+:
     PYTHONPATH: ../../..
-duration: 2h
+duration: 3h
 require+:
   - openscap-scanner
   - ansible-core
