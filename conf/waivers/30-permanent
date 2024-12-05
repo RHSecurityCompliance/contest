@@ -7,6 +7,15 @@
 /hardening/.*/accounts_password_set_max_life_(existing|root)
     True
 
+# missing Ansible remediation
+# - we need to track these as manual waivers, because the current lib/oscap.py
+#   logic checks only Bash remediation and there is no clear approach to
+#   extending it with Ansible that wouldn't break existing logic (ie. for rules
+#   that have only Bash remediation)
+/hardening(/.+)?/ansible(/.+)?/audit_rules_unsuccessful_file_modification
+/hardening(/.+)?/ansible(/.+)?/audit_rules_login_events
+    True
+
 # the service_sssd_enabled will be failing even if the service is enabled
 # because it requires manual configuration which cannot be attained with our rules
 # note that there are cases when sssd can be started
