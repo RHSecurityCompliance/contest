@@ -31,6 +31,12 @@
 /hardening/oscap/with-gui/cis_workstation_l[12]
     status == 'error'
 
+# https://github.com/ComplianceAsCode/content/issues/12768
+/hardening/ansible/stig/accounts_password_pam_retry
+/hardening/ansible/with-gui/stig_gui/accounts_password_pam_retry
+/hardening/host-os/ansible/stig/accounts_password_pam_retry
+    rhel == 10
+
 # Ansible TODO: completely unknown, investigate and sort
 #
 # all RHELs
