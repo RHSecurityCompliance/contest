@@ -73,9 +73,9 @@
 /hardening/kickstart/.+/systemd_tmp_mount_enabled
     True
 
-# RHEL-9 is not FIPS certified yet
+# RHEL 9 and 10 are not FIPS certified yet
 /hardening/.+/aide_use_fips_hashes
-    rhel == 9
+    rhel >= 9
 
 # OAA just failed without an error, as usual
 # https://issues.redhat.com/browse/OPENSCAP-3321
