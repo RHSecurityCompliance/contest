@@ -2,26 +2,20 @@
 # from failing during regular runs
 #
 # it is expected that somebody will go over these soon(ish), investigating
-# their root cause, filing isseus/bugs or fixing tests as appropriate,
+# their root cause, filing issues/bugs or fixing tests as appropriate,
 # eventually either removing the waivers or moving them to other files
 
 # https://github.com/ComplianceAsCode/content/issues/12766
 
 /hardening/anaconda/stig/file_permissions_etc_audit_rulesd
-    rhel == 8 or rhel == 9
-
 /hardening/anaconda/with-gui/stig_gui/file_permissions_etc_audit_rulesd
-    rhel == 8 or rhel == 9
+/scanning/disa-alignment/anaconda/file_permissions_etc_audit_rulesd
+    rhel <= 9
 
 /hardening/image-builder/stig/file_permissions_etc_audit_rulesd
-    rhel == 8 or rhel == 9 or rhel == 10
-
-/scanning/disa-alignment/anaconda/file_permissions_etc_audit_rulesd
-    rhel == 8 or rhel == 9
+    True
 
 /hardening/kickstart/stig/file_permissions_etc_audit_rulesd
-    rhel == 10
-
 /hardening/kickstart/with-gui/stig_gui/file_permissions_etc_audit_rulesd
     rhel == 10
 
