@@ -5,6 +5,14 @@
 # their root cause, filing isseus/bugs or fixing tests as appropriate,
 # eventually either removing the waivers or moving them to other files
 
+# https://github.com/ComplianceAsCode/content/issues/12766
+/hardening/anaconda/stig/file_permissions_etc_audit_rulesd
+/hardening/anaconda/with-gui/stig_gui/file_permissions_etc_audit_rulesd
+/hardening/image-builder/stig/file_permissions_etc_audit_rulesd
+/scanning/disa-alignment/anaconda/file_permissions_etc_audit_rulesd
+/hardening/kickstart/stig/file_permissions_etc_audit_rulesd
+/hardening/kickstart/with-gui/stig_gui/file_permissions_etc_audit_rulesd
+
 # ssh either doesn't start up, or gets blocked, possibly related
 # to new firewalld rules being added?
 # https://github.com/ComplianceAsCode/content/pull/10573
