@@ -37,6 +37,17 @@
 /hardening/host-os/ansible/stig/accounts_password_pam_retry
     rhel == 10
 
+# https://github.com/ComplianceAsCode/content/issues/12769
+/hardening/host-os/oscap/anssi_bp28_high/set_password_hashing_algorithm_systemauth
+/hardening/host-os/oscap/ism_o/set_password_hashing_algorithm_systemauth
+/hardening/image-builder/anssi_bp28_high/set_password_hashing_algorithm_systemauth
+/hardening/image-builder/ism_o/set_password_hashing_algorithm_systemauth
+/hardening/kickstart/anssi_bp28_high/set_password_hashing_algorithm_systemauth
+/hardening/kickstart/ism_o/set_password_hashing_algorithm_systemauth
+/hardening/oscap/anssi_bp28_high/set_password_hashing_algorithm_systemauth
+/hardening/oscap/ism_o/set_password_hashing_algorithm_systemauth
+    rhel == 10
+
 # Ansible TODO: completely unknown, investigate and sort
 #
 # all RHELs
