@@ -97,7 +97,7 @@
 #
 # Caused by SCE content being built by default, enabled
 # in https://github.com/ComplianceAsCode/content/pull/12488
-/static-checks/nist-validation/ssg-(rhel9|cs9)-ds/SRC-118
+/static-checks/nist-validation/ssg-(rhel\d+|cs\d+)-ds/SRC-118
     rhel >= 9
 
 # vim: syntax=python
