@@ -38,7 +38,7 @@ cfile += util.dedent(fr'''
     RUN dnf -y copr enable {copr} centos-stream-{versions.rhel.major}-x86_64
     RUN dnf -y install openscap-utils
     COPY remediation-ds.xml /root/.
-    RUN oscap-bootc --profile '{profile}' \
+    RUN oscap-im --profile '{profile}' \
         --results-arf /root/remediation-arf.xml /root/remediation-ds.xml
     # hack sshd cmdline to allow root login
     RUN echo "OPTIONS=-oPermitRootLogin=yes" >> /etc/sysconfig/sshd
