@@ -110,11 +110,7 @@
 # generated post-deployment. The warning has been introduced by
 # https://github.com/ComplianceAsCode/content/pull/12755.
 /hardening/container/bootc-image-builder/.+/file_groupownership_sshd_private_key
-/hardening/container/bootc-image-builder/.+/file_groupownership_sshd_pub_key
-/hardening/container/bootc-image-builder/.+/file_ownership_sshd_private_key
-/hardening/container/bootc-image-builder/.+/file_ownership_sshd_pub_key
 /hardening/container/bootc-image-builder/.+/file_permissions_sshd_private_key
-/hardening/container/bootc-image-builder/.+/file_permissions_sshd_pub_key
     True
 
 # vim: syntax=python
