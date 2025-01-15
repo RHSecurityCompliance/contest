@@ -64,6 +64,11 @@
 /hardening/ansible/with-gui/stig_gui/sysctl_net_ipv4_conf_all_forwarding
     rhel == 8
 
+# Ansible, on 9.0 / 9.2
+# https://github.com/ComplianceAsCode/content/issues/12831
+/hardening/host-os/ansible/anssi_bp28_minimal/timer_dnf-automatic_enabled
+    rhel == 9.0 or rhel == 9.2
+
 # https://github.com/ComplianceAsCode/content/issues/10901
 # not sure what enables the service, but second remediation fixes the problem
 # TODO: we do run double remediation, but this still sometimes fails,
