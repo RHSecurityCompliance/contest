@@ -15,6 +15,11 @@
 /hardening/image-builder/.+/firewalld_sshd_port_enabled
     True
 
+# kdump being forcibly enabled somewhere
+# https://github.com/ComplianceAsCode/content/issues/12832
+/hardening/kickstart(/with-gui)?/(hipaa|stig|stig_gui)/service_kdump_disabled
+    rhel == 10
+
 # rule ordering issue - accounts_password_pam_retry is checked first and passes,
 # and a later enable_authselect remediation breaks it
 # - see https://github.com/OpenSCAP/openscap/issues/1880
