@@ -28,6 +28,30 @@ def between_strings(full_text, before, after):
 
 
 def report_test_with_log(status, note, log_dir, rule_name, test_name):
+    # collect additional automatus.py-generated files and reports
+    extras_all = []
+    extras_logs = []
+    extras_prefix = f'{rule_name}-{test_name}.sh-'
+
+    for path in log_dir.glob(f'{extras_prefix}*'):
+        # rename automatus.py generated files to simple names,
+        # rule_name-test_name.sh-initial.html -> initial.html
+        # TODO: python 3.9+
+        #basename = path.name.removeprefix(extras_prefix)
+        basename = re.sub(f'^{extras_prefix}', '', path.name, count=1)
+        path.rename(path.parent / basename)
+        path = path.parent / basename
+
+        if basename == 'initial.html':
+            extras_logs.append(path)
+        elif basename == 'initial-arf.xml':
+            util.subprocess_run(['gzip', '-9', path], check=True)
+            path = path.with_suffix('.xml.gz')
+            extras_logs.append(path)
+
+        extras_all.append(path)
+
+    # handle test script outputs:
     # Automatus groups test outputs by rule (one file per rule),
     # and it uses ##### denoted sections for individual tests outputs
     # within each file
@@ -38,10 +62,21 @@ def report_test_with_log(status, note, log_dir, rule_name, test_name):
         f'##### {rule_name} / {test_name}',
         f'##### {rule_name} / '
     )
+
+    # report the result
     with tempfile.TemporaryDirectory() as tmpdir:
         log_part_file = Path(tmpdir) / 'out.txt'
         log_part_file.write_text(log_part)
-        results.report(status, f'{rule_name}/{test_name}', note, logs=[log_part_file])
+        results.report(
+            status,
+            f'{rule_name}/{test_name}',
+            note,
+            logs=[log_part_file] + extras_logs,
+        )
+
+    # clean up logs for this test
+    for path in extras_all:
+        path.unlink()
 
 
 virt.Host.setup()
@@ -87,7 +122,7 @@ with util.get_content() as content_dir, g.booted():
         './automatus.py', 'rule',
         '--libvirt', 'qemu:///system', virt.GUEST_NAME,
         '--product', f'rhel{versions.rhel.major}',
-        '--remediate-using', fix_type,
+        '--dontclean', '--remediate-using', fix_type,
         *our_rules,
     ]
     _, lines = util.subprocess_stream(
