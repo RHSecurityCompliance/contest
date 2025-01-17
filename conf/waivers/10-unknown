@@ -153,4 +153,8 @@
 /hardening/image-builder(/.+)?/hipaa/sebool_selinuxuser_execmod
     rhel == 9
 
+# https://issues.redhat.com/browse/RHEL-74244
+/hardening/container/bootc-image-builder/stig
+    rhel == 10
+
 # vim: syntax=python
