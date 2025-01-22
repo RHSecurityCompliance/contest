@@ -124,6 +124,30 @@
 /per-rule/.+/ansible/accounts_root_gid_zero/other_user_uid_0.fail
     rhel == 9
 
+# RHEL-10 specific /per-rule issues
+#
+# audit rules, https://github.com/ComplianceAsCode/content/pull/12867
+/per-rule/.+/audit_rules_unsuccessful_file_modification_open_rule_order/ordered_arch.pass
+/per-rule/.+/audit_rules_unsuccessful_file_modification_open_rule_order/ordered_filter.pass
+/per-rule/.+/audit_rules_unsuccessful_file_modification_openat_rule_order/ordered_arch.pass
+/per-rule/.+/audit_rules_unsuccessful_file_modification_openat_rule_order/ordered_filter.pass
+/per-rule/.+/audit_rules_unsuccessful_file_modification_openat_o_creat/o_creat_last.pass
+/per-rule/.+/audit_rules_unsuccessful_file_modification_openat_o_creat/o_creat_rules.pass
+/per-rule/.+/audit_rules_unsuccessful_file_modification_openat_o_trunc_write/o_trunc.pass
+# https://github.com/ComplianceAsCode/content/issues/12880
+/per-rule/.+/audit_rules_privileged_commands_unix2_chkpwd/only_chkpwd_rule.fail
+# https://github.com/ComplianceAsCode/content/issues/12875
+/per-rule/.+/package_xinetd_removed/package-installed.fail
+# https://github.com/ComplianceAsCode/content/issues/12878
+/per-rule/.+/coredump_disable_storage/coredumps_storage_none.pass
+# https://github.com/ComplianceAsCode/content/issues/12876
+/per-rule/.+/logind_session_timeout/not_configured.fail
+# https://github.com/ComplianceAsCode/content/issues/12879
+/per-rule/.+/grub2_enable_fips_mode/grub_cmdline_linux_correct_value.pass
+# https://github.com/ComplianceAsCode/content/issues/12877
+/per-rule/.+/kernel_module_sctp_disabled/missing_blacklist.fail
+    rhel == 10
+
 # DISA Alignment waivers
 #
 # https://github.com/ComplianceAsCode/content/issues/12561
