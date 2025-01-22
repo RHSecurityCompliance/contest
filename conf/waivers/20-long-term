@@ -145,4 +145,11 @@
 /hardening/image-builder/uefi/.+/mount_option_boot_efi_nosuid
     True
 
+# Container / Image Mode remediations
+#
+# enable_authselect failing on image-mode
+# https://issues.redhat.com/browse/OPENSCAP-5272
+/hardening/container/bootc-image-builder/[^/]+/enable_authselect
+    rhel == 9
+
 # vim: syntax=python
