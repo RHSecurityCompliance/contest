@@ -118,6 +118,10 @@
 /hardening/host-os/oscap/[^/]+/package_.+_installed
     True
 
+# https://github.com/ComplianceAsCode/content/issues/12874
+/per-rule/.+/ansible/accounts_root_gid_zero/other_user_uid_0.fail
+    rhel == 9
+
 # DISA Alignment waivers
 #
 # https://github.com/ComplianceAsCode/content/issues/12561
