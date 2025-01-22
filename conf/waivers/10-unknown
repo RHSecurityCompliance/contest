@@ -66,7 +66,9 @@
 
 # Ansible, on 9.0 / 9.2
 # https://github.com/ComplianceAsCode/content/issues/12831
+# https://github.com/ComplianceAsCode/content/issues/12870
 /hardening/host-os/ansible/anssi_bp28_minimal/timer_dnf-automatic_enabled
+/hardening/host-os/ansible/anssi_bp28_high/timer_logrotate_enabled
     rhel == 9
 
 # https://github.com/ComplianceAsCode/content/issues/10901
