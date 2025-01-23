@@ -121,8 +121,8 @@
     True
 
 # https://github.com/ComplianceAsCode/content/issues/12874
-/per-rule/.+/ansible/accounts_root_gid_zero/other_user_uid_0.fail
-    rhel == 9
+/per-rule/.+/accounts_root_gid_zero/other_user_uid_0.fail
+    True
 
 # RHEL-10 specific /per-rule issues
 #
