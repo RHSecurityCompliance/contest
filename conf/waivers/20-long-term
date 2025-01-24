@@ -125,6 +125,9 @@
 # https://github.com/ComplianceAsCode/content/issues/12030
 /per-rule/.*/set_nftables_table/.*
     rhel == 9
+# https://github.com/ComplianceAsCode/content/issues/12893
+/per-rule/.+/file_groupownership_sshd_private_key/correct_groupowner.pass
+    rhel == 10
 
 # RHEL10 - No official RHEL10 STIG/CIS benchmark yet
 /static-checks/rule-identifiers/(stig|cis.*)/.*
