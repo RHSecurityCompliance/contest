@@ -25,6 +25,8 @@ discover:
       # the above, but because we use it for CaC/content TestingFarm and want to
       # detect impact of waivers on RHEL early after an upstream-related change
       - /hardening/host-os
+      # Image Mode testing
+      - /hardening/container
       # run /per-rule as oscap only - this almost halves the runtime (for now)
       - /per-rule/[^/]+/oscap$
       # the rest is cheap to run
