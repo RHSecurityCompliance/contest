@@ -48,7 +48,17 @@ cfile.write_to('Containerfile')
 
 podman.podman('image', 'build', '--tag', 'contest-hardened', '.')
 
-ks = virt.Kickstart()
+# we can't use standard CaC/content style partitioning scheme because the
+# space distribution is different and the installer runs out of space,
+# so define this explicitly here for now
+# - note that Anaconda requires a separate /boot for 'ostreecontainer',
+#   otherwise it crashes on RHEL-66155
+partitions = [
+    ('/boot', 1000),
+    ('/', 18000),
+]
+
+ks = virt.Kickstart(partitions=partitions)
 
 # install the VM, using a locally-hosted podman registry serving
 # the hardened image for Anaconda's ostreecontainer
