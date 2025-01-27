@@ -25,14 +25,9 @@ adjust:
   - when: arch != x86_64
     enabled: false
     because: we want to run virtualization on x86_64 only
-  - when: distro < rhel-9.6
+  - when: distro < rhel-9 or distro ~< rhel-9.6
     enabled: false
     because: Image Mode not supported for older RHELs
-tag+:
-  # TODO: this test is currently broken by / blocked on Anaconda
-  # having broken ostreecontainer kickstart functionality,
-  # https://issues.redhat.com/browse/RHEL-66155
-  - broken
 
 /anssi_bp28_high:
 
