@@ -185,12 +185,12 @@
 
 # Following failures are caused by Testing Farm RHEL-9.6 bootc image
 # having newer packages installed compared to its repositories.
-/hardening/container/bootc-image-builder/(cis|cis_workstation_l2)/audit_rules_.*
-/hardening/container/bootc-image-builder/(cis|cis_workstation_l2)/auditd_data_.*
-/hardening/container/bootc-image-builder/(cis|cis_workstation_l2)/audit_sudo_log_events
-/hardening/container/bootc-image-builder/(cis|cis_workstation_l2)/service_nftables_disabled
-/hardening/container/bootc-image-builder/(cis|cis_workstation_l2)/file_permissions_cron.*
-/hardening/container/bootc-image-builder/(cis|cis_workstation_l2)/file_cron_deny_not_exist
+/hardening/container/[^/]+/(cis|cis_workstation_l2)/audit_rules_.*
+/hardening/container/[^/]+/(cis|cis_workstation_l2)/auditd_data_.*
+/hardening/container/[^/]+/(cis|cis_workstation_l2)/audit_sudo_log_events
+/hardening/container/[^/]+/(cis|cis_workstation_l2)/service_nftables_disabled
+/hardening/container/[^/]+/(cis|cis_workstation_l2)/file_permissions_cron.*
+/hardening/container/[^/]+/(cis|cis_workstation_l2)/file_cron_deny_not_exist
     rhel == 9
 
 # https://github.com/ComplianceAsCode/content/issues/12907

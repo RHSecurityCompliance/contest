@@ -154,7 +154,7 @@
 #
 # enable_authselect failing on image-mode
 # https://issues.redhat.com/browse/OPENSCAP-5272
-/hardening/container/bootc-image-builder/[^/]+/enable_authselect
+/hardening/container/[^/]+/[^/]+/enable_authselect
     rhel == 9
 
 # vim: syntax=python
