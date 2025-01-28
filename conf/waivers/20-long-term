@@ -156,5 +156,9 @@
 # https://issues.redhat.com/browse/OPENSCAP-5272
 /hardening/container/[^/]+/[^/]+/enable_authselect
     rhel == 9
+# https://issues.redhat.com/browse/RHEL-66155 and
+# https://issues.redhat.com/browse/RHEL-73029
+/hardening/container/anaconda-ostree/[^/]+/enable_fips_mode
+    True
 
 # vim: syntax=python
