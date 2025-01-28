@@ -2,6 +2,12 @@
 # to fix them, or because we intentionally expect the failure and a pass should
 # trigger alarms and be invetigated
 
+# FIPS mode on RHEL-10 must be enabled during the system installation with fips=1
+# kernel argument so the rule enable_fips_mode will only pass in kickstart tests.
+/hardening/.+/playbook: Enable FIPS Mode.*
+/hardening(?!/kickstart).+/enable_fips_mode
+    rhel == 10
+
 # remediation for this is globally disabled in Contest,
 # see conf/remediation.py
 /hardening/.*/accounts_password_set_max_life_(existing|root)
