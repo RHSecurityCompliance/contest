@@ -3,9 +3,13 @@
 # trigger alarms and be invetigated
 
 # FIPS mode on RHEL-10 must be enabled during the system installation with fips=1
-# kernel argument so the rule enable_fips_mode will only pass in kickstart tests.
+# kernel argument so the rule enable_fips_mode will only pass in tests:
+# /hardening/kickstart
+# /hardening/image-builder
+# /hardening/container
+# /hardening/anaconda
 /hardening/.+/playbook: Enable FIPS Mode.*
-/hardening(?!/kickstart).+/enable_fips_mode
+/hardening(?!/kickstart|/image-builder|/container|/anaconda).+/enable_fips_mode
     rhel == 10
 
 # remediation for this is globally disabled in Contest,
