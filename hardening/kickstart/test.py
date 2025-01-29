@@ -1,5 +1,6 @@
 #!/usr/bin/python3
 
+import os
 from lib import util, results, virt, oscap
 from conf import remediation
 
@@ -28,7 +29,11 @@ ks = virt.translate_oscap_kickstart(lines, '/root/remediation-ds.xml')
 if variant == 'with-gui':
     ks.packages.append('@Server with GUI')
 
-g.install(kickstart=ks, rpmpack=rpmpack, secure_boot=(variant == 'uefi'))
+g.install(
+    kickstart=ks, rpmpack=rpmpack,
+    secure_boot=(variant == 'uefi'),
+    kernel_args=['fips=1'] if os.environ.get('WITH_FIPS') == '1' else None,
+)
 
 with g.booted():
     # copy the original DS to the guest

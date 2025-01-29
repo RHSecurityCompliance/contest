@@ -221,6 +221,18 @@ ret = func_call({
 However do not use this syntax if you would pass extra arguments to `func_call`
 after the dict.
 
+Function definition should also follow the same logic of closing `):` on the
+same level as the `def` keyword, if function arguments need to be broken down
+into multiple lines.
+```
+def func_name(
+    arg1, arg2, arg3,
+    arg4, arg5, arg6,
+):
+    function code here
+    more code
+```
+
 ## Use comma on the last line
 
 In list/dict/etc. and even function definitions and calls spread across multiple

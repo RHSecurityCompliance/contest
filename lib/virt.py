@@ -379,7 +379,10 @@ class Guest:
         # if exists, all snapshot preparation processes were successful
         self.snapshot_ready_path = Path(f'{GUEST_IMG_DIR}/{name}.snapshot_ready')
 
-    def install_basic(self, location=None, kickstart=None, secure_boot=False, disk_format='raw'):
+    def install_basic(
+        self, location=None, kickstart=None, secure_boot=False, virt_install_args=None,
+        kernel_args=None, disk_format='raw',
+    ):
         """
         Install a new guest, to a shut down state.
 
@@ -390,6 +393,9 @@ class Guest:
         a Kickstart class instance.
         To customize the instance (ie. add code before/after code added by
         member functions), subclass Kickstart and set __init__() or assemble().
+
+        'virt_install_args' are an optional list of extra 'virt-install' arguments
+        and 'kernel_args' an optional list to be passed to kernel during installation.
         """
         util.log(f"installing guest {self.name}")
 
@@ -420,8 +426,10 @@ class Guest:
                 '--extra-args', (
                     f'console=ttyS0 inst.ks=file:/{ksfile.name} '
                     'inst.notmux inst.noninteractive inst.noverifyssl inst.sshd'
+                    + (' '+' '.join(kernel_args) if kernel_args else '')
                 ),
                 '--noreboot',
+                *(virt_install_args if virt_install_args else []),
             ]
             if secure_boot:
                 virt_install += ['--boot', 'firmware=efi,loader_secure=yes']
@@ -497,7 +505,9 @@ class Guest:
                 # install the OS using our kickstart
                 self.install_basic(kickstart=kickstart, **kwargs)
 
-    def import_image(self, disk_path, disk_format='raw', *, secure_boot=False):
+    def import_image(
+        self, disk_path, disk_format='raw', *, secure_boot=False, virt_install_args=None,
+    ):
         """
         Import an existing disk image, creating a new guest domain from it.
 
@@ -524,6 +534,7 @@ class Guest:
             # don't try to start the imported VM; there are some race conditions
             # inside virt-install when attaching a console of an imported guest
             '--autoconsole', 'none',
+            *(virt_install_args if virt_install_args else []),
         ]
         if secure_boot:
             virt_install += ['--boot', 'firmware=efi,loader_secure=yes']

@@ -64,8 +64,12 @@ adjust:
 /hipaa:
 
 /ism_o:
+    environment+:
+        WITH_FIPS: 1
 
 /ospp:
+    environment+:
+        WITH_FIPS: 1
     adjust+:
       - when: distro >= rhel-10
         enabled: false
@@ -74,6 +78,8 @@ adjust:
 /pci-dss:
 
 /stig:
+    environment+:
+        WITH_FIPS: 1
 
 /stig_gui:
     adjust+:
