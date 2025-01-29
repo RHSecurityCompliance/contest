@@ -72,6 +72,8 @@ duration: 2h
             the "Profiles not compatible with Server with GUI" table
 
 /stig_gui:
+    environment+:
+        WITH_FIPS: 1
 
 /ccn_advanced:
     adjust+:

@@ -1,5 +1,6 @@
 #!/usr/bin/python3
 
+import os
 from lib import util, results, virt, oscap
 from conf import remediation
 
@@ -31,7 +32,10 @@ with util.BackgroundHTTPServer(virt.NETWORK_HOST, 0) as srv:
     }
     ks.add_oscap_addon(oscap_conf)
 
-    g.install(kickstart=ks)
+    g.install(
+        kickstart=ks,
+        kernel_args=['fips=1'] if os.environ.get('WITH_FIPS') == '1' else None,
+    )
 
 with g.booted():
     # copy the original DS to the guest
