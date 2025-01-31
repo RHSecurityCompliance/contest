@@ -169,5 +169,10 @@
 # https://issues.redhat.com/browse/RHEL-73029
 /hardening/container/anaconda-ostree/[^/]+/enable_fips_mode
     True
+# https://issues.redhat.com/browse/RHEL-77158
+# (we unselect max_age in conf/remediations.py)
+/hardening/container/anaconda-ostree/.+/accounts_password_set_min_life_existing
+/hardening/container/anaconda-ostree/.+/accounts_password_set_warn_age_existing
+    True
 
 # vim: syntax=python
