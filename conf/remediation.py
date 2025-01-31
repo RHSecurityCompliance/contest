@@ -21,6 +21,12 @@ def excludes():
         'accounts_password_set_max_life_root',
     ]
 
+    # TODO: remove after https://github.com/ComplianceAsCode/content/pull/12946
+    #       is merged (impacting ansible playbooks too)
+    rules += [
+        'enable_fips_mode',
+    ]
+
     # CentOS specific
     if versions.rhel.is_centos():
         rules += [
