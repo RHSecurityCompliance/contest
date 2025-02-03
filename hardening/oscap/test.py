@@ -19,7 +19,11 @@ if not g.can_be_snapshotted():
     ks = virt.Kickstart(partitions=partitions.partitions)
     if variant == 'with-gui':
         ks.packages.append('@Server with GUI')
-    g.install(kickstart=ks, secure_boot=(variant == 'uefi'))
+    g.install(
+        kickstart=ks,
+        secure_boot=(variant == 'uefi'),
+        kernel_args=['fips=1'] if os.environ.get('WITH_FIPS') == '1' else None,
+    )
     g.prepare_for_snapshot()
 
 with g.snapshotted():
