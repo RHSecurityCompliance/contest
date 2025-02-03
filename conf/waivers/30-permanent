@@ -2,15 +2,10 @@
 # to fix them, or because we intentionally expect the failure and a pass should
 # trigger alarms and be invetigated
 
-# FIPS mode on RHEL-10 must be enabled during the system installation with fips=1
-# kernel argument so the rule enable_fips_mode will only pass in tests:
-# /hardening/kickstart
-# /hardening/image-builder
-# /hardening/container
-# /hardening/anaconda
-/hardening/.+/playbook: Enable FIPS Mode.*
-/hardening(?!/kickstart|/image-builder|/container|/anaconda).+/enable_fips_mode
-    rhel == 10
+# we cannot influence how host-os was installed (ie. Beaker), and since FIPS
+# works only when the OS was installed with fips=1, this will likely fail
+/hardening/host-os/.+/enable_fips_mode
+    True
 
 # remediation for this is globally disabled in Contest,
 # see conf/remediation.py
