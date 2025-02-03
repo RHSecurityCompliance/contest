@@ -25,11 +25,6 @@ def do_one_remediation(ds, profile, arf_results):
     proc = util.subprocess_run(cmd)
     if proc.returncode not in [0,2]:
         raise RuntimeError(f"remediation oscap failed with {proc.returncode}")
-    # restore basic login functionality
-    cfg_path = Path('/etc/sysconfig/sshd')
-    if 'OPTIONS=-oPermitRootLogin=yes' not in cfg_path.read_text():
-        with cfg_path.open('a') as f:
-            f.write('\nOPTIONS=-oPermitRootLogin=yes\n')
 
 
 if util.get_reboot_count() == 0:

@@ -40,8 +40,6 @@ cfile += util.dedent(fr'''
     COPY remediation-ds.xml /root/.
     RUN oscap-im --profile '{profile}' \
         --results-arf /root/remediation-arf.xml /root/remediation-ds.xml
-    # hack sshd cmdline to allow root login
-    RUN echo "OPTIONS=-oPermitRootLogin=yes" >> /etc/sysconfig/sshd
 ''')
 cfile.add_ssh_pubkey(guest.ssh_pubkey)
 cfile.write_to('Containerfile')

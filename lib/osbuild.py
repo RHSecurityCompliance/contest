@@ -323,8 +323,7 @@ class Guest(virt.Guest):
         pack = rpmpack or util.RpmPack()
         pack.add_host_repos()
         # inherited from virt.Guest
-        pack.post.append(self.SETUP)
-        pack.requires += self.SETUP_REQUIRES
+        pack.requires += self.GUEST_REQUIRES
         with pack.build_as_repo() as repo:
             # ensure the custom RPM is added during image building
             blueprint.add_package(util.RpmPack.NAME)
