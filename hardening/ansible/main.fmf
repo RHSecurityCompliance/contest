@@ -55,6 +55,8 @@ adjust:
       - subset-profile
 
 /cui:
+    environment+:
+        WITH_FIPS: 1
     adjust+:
       - when: distro >= rhel-10
         enabled: false
