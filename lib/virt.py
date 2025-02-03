@@ -352,16 +352,9 @@ class Guest:
     and should not be shared across tests.
     """
 
-    # custom post-install setup to allow smooth login and qemu-qa command execution
-    SETUP = util.dedent(r'''
-        # hack sshd cmdline to allow root login
-        echo "OPTIONS=-oPermitRootLogin=yes" >> /etc/sysconfig/sshd
-    ''')
-    SETUP_REQUIRES = [
+    GUEST_REQUIRES = [
         'openssh-server',
         'qemu-guest-agent',
-        # because of semanage in SETUP
-        'policycoreutils-python-utils',
     ]
 
     def __init__(self, tag=None, *, name=GUEST_NAME):
@@ -487,8 +480,7 @@ class Guest:
         # create a custom RPM to run guest setup scripts via RPM scriptlets
         # and install it during Anaconda installation
         pack = rpmpack or util.RpmPack()
-        pack.post.append(self.SETUP)
-        pack.requires += self.SETUP_REQUIRES
+        pack.requires += self.GUEST_REQUIRES
         with pack.build_as_repo() as repo:
             # host the custom RPM on a HTTP server, as Anaconda needs a YUM repo
             # to pull packages from

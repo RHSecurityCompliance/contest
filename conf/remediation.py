@@ -19,6 +19,8 @@ def excludes():
         # or call 'chage' in every type of remediation
         'accounts_password_set_max_life_existing',
         'accounts_password_set_max_life_root',
+        # also just allow root without -oPermitRootLogin=yes hacks
+        'sshd_disable_root_login',
     ]
 
     # CentOS specific

@@ -9,7 +9,8 @@
 
 # remediation for this is globally disabled in Contest,
 # see conf/remediation.py
-/hardening/.*/accounts_password_set_max_life_(existing|root)
+/hardening/.+/accounts_password_set_max_life_(existing|root)
+/hardening/.+/sshd_disable_root_login
     True
 
 # missing Ansible remediation

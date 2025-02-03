@@ -28,10 +28,6 @@ if util.get_reboot_count() == 0:
     _, lines = util.subprocess_stream(cmd, check=True)
     ansible.report_from_output(lines)
 
-    # restore basic login functionality
-    with open('/etc/sysconfig/sshd', 'a') as f:
-        f.write('\nOPTIONS=-oPermitRootLogin=yes\n')
-
     util.reboot()
 
 else:

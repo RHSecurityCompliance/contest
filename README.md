@@ -127,17 +127,6 @@ automatically waive failures.
 
 (TODO: Find a better place for this?)
 
-### Virtual machines and logging in
-
-The tests perform some hacks to allow login after hardening:
-
-- `-oPermitRootLogin=yes` in `OPTIONS` of `/etc/sysconfig/sshd`
-  - This is to bypass ssh-denied root login. Doing this seems easier than trying
-    to bypass several sudo-related rule remediations that disable `NOPASSWD`
-    in `/etc/sudoers` and impose other limitations.
-  - Fortunately, current content doesn't check `/etc/sysconfig/sshd`, so no
-    rules are failing as a result of this. :)
-
 ### Using upstream/shipped content kickstarts
 
 These have some unfortunate metadata, such as
