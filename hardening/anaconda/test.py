@@ -10,6 +10,7 @@ virt.Host.setup()
 g = virt.Guest()
 
 _, variant, profile = util.get_test_name().rsplit('/', 2)
+with_fips = os.environ.get('WITH_FIPS') == '1'
 
 # use kickstart from content, not ours
 ks_file = util.get_kickstart(profile)
@@ -34,7 +35,7 @@ with util.BackgroundHTTPServer(virt.NETWORK_HOST, 0) as srv:
 
     g.install(
         kickstart=ks,
-        kernel_args=['fips=1'] if os.environ.get('WITH_FIPS') == '1' else None,
+        kernel_args=['fips=1'] if with_fips else None,
     )
 
 with g.booted():

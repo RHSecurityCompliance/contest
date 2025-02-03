@@ -10,19 +10,29 @@ ansible.install_deps()
 virt.Host.setup()
 
 _, variant, profile = util.get_test_name().rsplit('/', 2)
+with_fips = os.environ.get('WITH_FIPS') == '1'
 
 if variant == 'with-gui':
-    g = virt.Guest('gui_with_oscap')
+    guest_tag = 'gui_with_oscap'
 elif variant == 'uefi':
-    g = virt.Guest('uefi_with_oscap')
+    guest_tag = 'uefi_with_oscap'
 else:
-    g = virt.Guest('minimal_with_oscap')
+    guest_tag = 'minimal_with_oscap'
+
+if with_fips:
+    guest_tag += '_fips'
+
+g = virt.Guest(guest_tag)
 
 if not g.can_be_snapshotted():
     ks = virt.Kickstart(partitions=partitions.partitions)
     if variant == 'with-gui':
         ks.packages.append('@Server with GUI')
-    g.install(kickstart=ks, secure_boot=(variant == 'uefi'))
+    g.install(
+        kickstart=ks,
+        secure_boot=(variant == 'uefi'),
+        kernel_args=['fips=1'] if with_fips else None,
+    )
     g.prepare_for_snapshot()
 
 # the VM guest ssh code doesn't use $HOME/.known_hosts, so Ansible blocks

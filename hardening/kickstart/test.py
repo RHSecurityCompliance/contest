@@ -10,6 +10,7 @@ virt.Host.setup()
 g = virt.Guest()
 
 _, variant, profile = util.get_test_name().rsplit('/', 2)
+with_fips = os.environ.get('WITH_FIPS') == '1'
 
 oscap.unselect_rules(util.get_datastream(), 'remediation-ds.xml', remediation.excludes())
 
@@ -32,7 +33,7 @@ if variant == 'with-gui':
 g.install(
     kickstart=ks, rpmpack=rpmpack,
     secure_boot=(variant == 'uefi'),
-    kernel_args=['fips=1'] if os.environ.get('WITH_FIPS') == '1' else None,
+    kernel_args=['fips=1'] if with_fips else None,
 )
 
 with g.booted():
