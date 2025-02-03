@@ -183,17 +183,6 @@
 /hardening/image-builder(/.+)?/hipaa/sebool_selinuxuser_execmod
     rhel == 9
 
-# Following failures are caused by Testing Farm bootc images
-# having newer packages installed compared to its repositories:
-# https://issues.redhat.com/browse/BIFROST-617
-/hardening/container/[^/]+/(cis|cis_workstation_l2)/audit_rules_.*
-/hardening/container/[^/]+/(cis|cis_workstation_l2)/auditd_data_.*
-/hardening/container/[^/]+/(cis|cis_workstation_l2)/audit_sudo_log_events
-/hardening/container/[^/]+/(cis|cis_workstation_l2)/service_nftables_disabled
-/hardening/container/[^/]+/(cis|cis_workstation_l2)/file_permissions_cron.*
-/hardening/container/[^/]+/(cis|cis_workstation_l2)/file_cron_deny_not_exist
-    True
-
 # https://github.com/ComplianceAsCode/content/issues/12907
 /hardening/.+/sssd_enable_smartcards
 /hardening/.+/playbook: Enable Smartcards in SSSD.*
