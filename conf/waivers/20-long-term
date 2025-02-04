@@ -83,7 +83,9 @@
     rhel >= 9
 
 # https://github.com/ComplianceAsCode/content/issues/12942
+# https://issues.redhat.com/browse/RHEL-4722
 /hardening/anaconda/ospp/configure_crypto_policy
+/hardening/anaconda/ospp/enable_fips_mode
 /hardening/anaconda/.+/configure_gnutls_tls_crypto_policy
 /hardening/anaconda/.+/harden_sshd_ciphers_openssh_conf_crypto_policy
 /hardening/anaconda/.+/harden_sshd_ciphers_opensshserver_conf_crypto_policy
