@@ -353,7 +353,6 @@ class Guest:
     """
 
     GUEST_REQUIRES = [
-        'openssh-server',
         'qemu-guest-agent',
     ]
 
