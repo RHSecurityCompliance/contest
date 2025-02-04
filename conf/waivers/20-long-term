@@ -111,6 +111,9 @@
 # https://issues.redhat.com/browse/RHEL-25574
 /hardening/image-builder/ccn_[^/]+
     rhel == 9 and status == 'error'
+# https://github.com/ComplianceAsCode/content/issues/12968
+/hardening/image-builder/stig
+    rhel == 9 and status == 'error'
 
 # DISA Alignment waivers
 #
