@@ -1,0 +1,39 @@
+line-length = 99
+indent-width = 4
+target-version = "py37"  # doesn't support older
+
+[lint]
+select = [
+    "F",    # Pyflakes
+    "E",    # pycodestyle
+    "W",    # pycodestyle
+    "N",    # pep8-naming
+    "UP",   # pyupgrade
+    "COM",  # flake8-commas
+    "C4",   # flake8-comprehensions
+    "SIM",  # flake8-simplify
+    "ARG",  # flake8-unused-arguments
+    "PTH",  # flake8-use-pathlib
+    "PL",   # Pylint
+    "RUF",  # Ruff-specific rules
+]
+ignore = [
+    "Q001",     # bad-quotes-multiline-string
+    "PTH123",   # builtin-open
+    "SIM108",   # if-else-block-instead-of-if-exp
+    "SIM102",   # collapsible-if
+    "SIM117",   # multiple-with-statements
+    "SIM401",   # if-else-block-instead-of-dict-get
+    "PLR0912",  # too-many-branches
+    "PLR0913",  # too-many-arguments
+    "PLR2004",  # magic-value-comparison
+    "PLR5501",  # collapsible-else-if
+    "PLW0603",  # global-statement
+    "PLW1510",  # subprocess-run-without-check
+    "PLW2901",  # redefined-loop-name
+    "RUF010",   # explicit-f-string-type-conversion
+    "RUF012",   # mutable-class-default
+]
+
+[format]
+indent-style = "space"

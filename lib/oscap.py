@@ -155,7 +155,7 @@ class Datastream:
         """
         Return a deduplicated unified set of all rules from all profiles.
         """
-        return set(rule for profile in self.profiles.values() for rule in profile.rules)
+        return {rule for profile in self.profiles.values() for rule in profile.rules}
 
 
 # "global" datastream singleton, based on a xml file location decided by

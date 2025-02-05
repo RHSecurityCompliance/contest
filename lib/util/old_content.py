@@ -66,12 +66,12 @@ def get_old_datastream():
             raise RuntimeError("found no available SSG RPM versions in YUM/DNF repositories")
         if installed != available[0]:
             raise RuntimeError(
-                f"installed SSG {installed} is not the latest available ({available[0]})"
+                f"installed SSG {installed} is not the latest available ({available[0]})",
             )
         if len(available) < 2:
             raise RuntimeError(
                 f"repoquery returned only 1 (currently installed) SSG version ({available[0]}), "
-                "no clue what to use as 'old'"
+                "no clue what to use as 'old'",
             )
         old = available[1]
         with _downloaded_extracted_ds(old) as ds:

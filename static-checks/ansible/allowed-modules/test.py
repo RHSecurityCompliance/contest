@@ -19,7 +19,7 @@ ansible_reserved_keywords = {
     'debugger', 'delay', 'delegate_facts', 'delegate_to', 'diff', 'environment', 'failed_when',
     'ignore_errors', 'ignore_unreachable', 'local_action', 'loop', 'loop_control',
     'module_defaults', 'name', 'no_log', 'notify', 'poll', 'port', 'register', 'remote_user',
-    'retries', 'run_once', 'tags', 'throttle', 'timeout', 'until', 'vars', 'when', 'with_items'
+    'retries', 'run_once', 'tags', 'throttle', 'timeout', 'until', 'vars', 'when', 'with_items',
 }
 
 
@@ -54,9 +54,9 @@ def process_task(task, all_allowed_modules):
         for block_task in task['block']:
             found_allowed_modules.update(process_task(block_task, all_allowed_modules))
     else:
-        keywords = set(kw.replace('ansible.builtin.', '') for kw in original_keywords)
-        keywords = set(kw.replace('community.general.', '') for kw in keywords)
-        keywords = set(kw.replace('ansible.posix.', '') for kw in keywords)
+        keywords = {kw.replace('ansible.builtin.', '') for kw in original_keywords}
+        keywords = {kw.replace('community.general.', '') for kw in keywords}
+        keywords = {kw.replace('ansible.posix.', '') for kw in keywords}
         allowed_module = keywords.intersection(all_allowed_modules)
         if allowed_module:
             found_allowed_modules.update(allowed_module)
@@ -94,9 +94,9 @@ def check_allowed_modules(playbook, all_allowed_modules):
 
 def get_all_allowed_modules():
     proc = util.subprocess_run(
-        ['ansible-doc', '--json', '--list'], stdout=subprocess.PIPE, check=True
+        ['ansible-doc', '--json', '--list'], stdout=subprocess.PIPE, check=True,
     )
-    return set(re.sub(r'^.*\.', '', mod) for mod in json.loads(proc.stdout).keys())
+    return {re.sub(r'^.*\.', '', mod) for mod in json.loads(proc.stdout)}
 
 
 ansible.install_deps()
@@ -108,7 +108,7 @@ with select_all_rules(util.get_datastream()) as ds_file:
             oscap_cmd = [
                 'oscap', 'xccdf', 'generate', 'fix', '--fix-type', 'ansible',
                 '--output', playbook.name,
-                ds.name
+                ds.name,
             ]
             util.subprocess_run(oscap_cmd, check=True)
 

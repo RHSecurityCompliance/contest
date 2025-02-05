@@ -20,7 +20,7 @@ def subprocess_run(cmd, *, skip_frames=0, **kwargs):
     return subprocess.run(cmd, **kwargs)
 
 
-def subprocess_Popen(cmd, *, skip_frames=0, **kwargs):
+def subprocess_Popen(cmd, *, skip_frames=0, **kwargs):  # noqa: N802
     """
     A simple wrapper for the real subprocess.Popen() that logs the command used.
     """

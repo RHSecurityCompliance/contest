@@ -23,7 +23,6 @@ VMs via Guest.install(), they are created from images via Guest.create().
 Snapshotting is currently not supported/tested with this approach.
 """
 
-import os
 import sys
 import re
 import subprocess
@@ -109,25 +108,25 @@ class Compose:
     FINISHED_STATUSES = ['FINISHED', 'FAILED']
 
     @classmethod
-    def _get_status(self, filter):
+    def _get_status(cls, filter):
         out = composer_cli_out('compose', 'list', log=False)
         lines = iter(out.strip('\n').split('\n'))
         next(lines)  # skip header (first line)
         for line in lines:
-            entry = self._Entry(*re.split(r'[ \t]+', line))
+            entry = cls._Entry(*re.split(r'[ \t]+', line))
             if filter(entry):
                 return entry
         return None
 
     @classmethod
-    def _wait_for_finished(self, blueprint_name, sleep=1):
-        entry = self._get_status(lambda x: x.blueprint == blueprint_name)
+    def _wait_for_finished(cls, blueprint_name, sleep=1):
+        entry = cls._get_status(lambda x: x.blueprint == blueprint_name)
         if not entry:
             raise FileNotFoundError(f"compose for {blueprint_name} not found in list")
         util.log(f"waiting for compose {entry.id} to be built")
         new = entry
-        while new.status not in self.FINISHED_STATUSES:
-            new = self._get_status(lambda x: x.id == entry.id)
+        while new.status not in cls.FINISHED_STATUSES:
+            new = cls._get_status(lambda x: x.id == entry.id)
             if not new:
                 raise FileNotFoundError(f"compose {entry.id} disappeared")
             time.sleep(sleep)
@@ -135,16 +134,16 @@ class Compose:
 
     @classmethod
     @contextlib.contextmanager
-    def build(self, blueprint_name):
-        entry = self._get_status(lambda x: x.blueprint == blueprint_name)
+    def build(cls, blueprint_name):
+        entry = cls._get_status(lambda x: x.blueprint == blueprint_name)
         # delete any existing compose
         if entry:
-            if entry.status in self.RUNNING_STATUSES:
+            if entry.status in cls.RUNNING_STATUSES:
                 composer_cli('compose', 'cancel', entry.id)
             composer_cli('compose', 'delete', entry.id)
         # start and wait
         composer_cli('compose', 'start', blueprint_name, 'qcow2')
-        entry = self._wait_for_finished(blueprint_name)
+        entry = cls._wait_for_finished(blueprint_name)
         # check & yield
         if entry.status != 'FINISHED':
             composer_cli('compose', 'log', entry.id)
@@ -242,7 +241,7 @@ class Guest(virt.Guest):
         super().wipe()
         log = Path(self.osbuild_log)
         if log.exists():
-            os.remove(log)
+            log.unlink()
 
     def install(*args, **kwargs):
         raise NotImplementedError("install() is not supported, use create()")
@@ -282,7 +281,7 @@ class Guest(virt.Guest):
 
             with Compose.build(bp_name) as ident:
                 if image_path.exists():
-                    os.remove(image_path)
+                    image_path.unlink()
                 composer_cli('compose', 'image', ident, '--filename', image_path)
 
                 # get image building log, try to limit its size by cutting off

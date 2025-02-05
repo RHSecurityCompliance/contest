@@ -102,7 +102,7 @@ with guest.booted():
     # scan the remediated system
     proc, lines = guest.ssh_stream(
         f'oscap xccdf eval --profile {profile} --progress --report report.html'
-        f' --results-arf scan-arf.xml scan-ds.xml'
+        f' --results-arf scan-arf.xml scan-ds.xml',
     )
     oscap.report_from_verbose(lines)
     if proc.returncode not in [0,2]:

@@ -219,16 +219,16 @@ class Host:
         dest.chmod(0o755)
 
     @classmethod
-    def setup(self):
-        if not self.check_virt_capability():
+    def setup(cls):
+        if not cls.check_virt_capability():
             raise RuntimeError("host has no HVM virtualization support")
 
         ret = subprocess.run(['systemctl', 'is-active', '--quiet', 'libvirtd'])
         if ret.returncode != 0:
             util.subprocess_run(['systemctl', 'start', 'libvirtd'], check=True)
 
-        self.setup_network()
-        self.create_sshvm('/root/contest-sshvm')
+        cls.setup_network()
+        cls.create_sshvm('/root/contest-sshvm')
 
 
 #
@@ -360,12 +360,12 @@ class Guest:
         self.tag = tag or str(uuid.uuid4())
         self.name = name
         self.ipaddr = None
-        self.ssh_keyfile_path = f'{GUEST_IMG_DIR}/{name}.sshkey'
+        self.ssh_keyfile_path = Path(f'{GUEST_IMG_DIR}/{name}.sshkey')
         self.ssh_pubkey = None
         self.disk_path = None
         self.disk_format = None
-        self.state_file_path = f'{GUEST_IMG_DIR}/{name}.state'
-        self.snapshot_path = f'{GUEST_IMG_DIR}/{name}-snap.qcow2'
+        self.state_file_path = Path(f'{GUEST_IMG_DIR}/{name}.state')
+        self.snapshot_path = Path(f'{GUEST_IMG_DIR}/{name}-snap.qcow2')
         # if it exists, guest was successfully installed
         self.install_ready_path = Path(f'{GUEST_IMG_DIR}/{name}.install_ready')
         # if exists, all snapshot preparation processes were successful
@@ -400,7 +400,7 @@ class Guest:
             kickstart = Kickstart()
 
         disk_extension = 'qcow2' if disk_format == 'qcow2' else 'img'
-        disk_path = f'{GUEST_IMG_DIR}/{self.name}.{disk_extension}'
+        disk_path = Path(f'{GUEST_IMG_DIR}/{self.name}.{disk_extension}')
         cpus = os.cpu_count() or 1
 
         with kickstart.to_tmpfile() as ksfile:
@@ -507,7 +507,8 @@ class Guest:
         Ideally, the image should be located in GUEST_IMG_DIR and named
         after the '.name' attribute of the guest instance.
         """
-        if not Path(disk_path).exists():
+        disk_path = Path(disk_path)
+        if not disk_path.exists():
             raise RuntimeError(f"{disk_path} doesn't exist")
 
         util.log(f"importing {disk_path} as {disk_format}")
@@ -574,13 +575,13 @@ class Guest:
             )
 
     def is_installed(self):
-        if not os.path.exists(self.install_ready_path):
+        if not self.install_ready_path.exists():
             return False
         tag = self.install_ready_path.read_text()
         return tag == self.tag
 
     def can_be_snapshotted(self):
-        if not os.path.exists(self.snapshot_ready_path):
+        if not self.snapshot_ready_path.exists():
             return False
         tag = self.snapshot_ready_path.read_text()
         return tag == self.tag
@@ -625,7 +626,7 @@ class Guest:
                         stdout=PIPE, check=True, universal_newlines=True)
             _, _, _, driver, source = domain_xml_diskinfo(ret.stdout)
             self.disk_format = driver.get('type')
-            self.disk_path = source.get('file')
+            self.disk_path = Path(source.get('file'))
 
         # running domain left over from a crashed test,
         # or by CONTEST_LEAVE_GUEST_RUNNING
@@ -634,7 +635,7 @@ class Guest:
         cmd = [
             'qemu-img', 'create', '-f', 'qcow2',
             '-b', self.disk_path, '-F', self.disk_format,
-            self.snapshot_path
+            self.snapshot_path,
         ]
         util.subprocess_run(cmd, check=True)
 
@@ -642,8 +643,8 @@ class Guest:
 
     def _destroy_snapshotted(self):
         self.destroy()
-        if os.path.exists(self.snapshot_path):
-            os.remove(self.snapshot_path)
+        if self.snapshot_path.exists():
+            self.snapshot_path.unlink()
 
     def _log_leave_running_notice(self):
         out = textwrap.dedent("""\n
@@ -706,7 +707,7 @@ class Guest:
         ssh_cmdline = [
             'ssh', '-q', '-i', self.ssh_keyfile_path, '-o', 'BatchMode=yes',
             '-o', 'StrictHostKeyChecking=no', '-o', 'UserKnownHostsFile=/dev/null',
-            f'{GUEST_SSH_USER}@{self.ipaddr}', '--', *cmd
+            f'{GUEST_SSH_USER}@{self.ipaddr}', '--', *cmd,
         ]
         return func(ssh_cmdline, **run_args)
 
@@ -721,7 +722,7 @@ class Guest:
         cmd = [
             'scp', '-q', '-i', self.ssh_keyfile_path, '-o', 'BatchMode=yes',
             '-o', 'StrictHostKeyChecking=no', '-o', 'UserKnownHostsFile=/dev/null',
-            *args
+            *args,
         ]
         return util.subprocess_run(cmd, check=True)
 
@@ -745,7 +746,7 @@ class Guest:
         self._do_rsync(local_path, f'{GUEST_SSH_USER}@{self.ipaddr}:{remote_path}')
 
     def generate_ssh_keypair(self):
-        private = Path(self.ssh_keyfile_path)
+        private = self.ssh_keyfile_path
         # don't use .with_suffix() as it would destroy anything after first '.'
         public = Path(f'{private}.pub')
         for filepath in [private, public]:
@@ -780,13 +781,13 @@ class Guest:
         self.destroy()
         self.undefine(incl_storage=True)
         files = [
-            self.ssh_keyfile_path, f'{self.ssh_keyfile_path}.pub',
+            self.ssh_keyfile_path, Path(f'{self.ssh_keyfile_path}.pub'),
             self.snapshot_path, self.state_file_path,
             self.install_ready_path, self.snapshot_ready_path,
         ]
         for f in files:
-            if os.path.exists(f):
-                os.remove(f)
+            if f.exists():
+                f.unlink()
 
 
 #
@@ -800,7 +801,7 @@ def guest_domstate(name):
     return ret.stdout.strip()
 
 
-def wait_for_domstate(name, state, timeout=300, sleep=0.5):
+def wait_for_domstate(name, state, timeout=300):
     """
     Wait until the guest reaches a specified libvirt domain state
     ('running', 'shut off', etc.).
@@ -959,7 +960,7 @@ def get_state_image_disk(image):
     ret = virsh('save-image-dumpxml', image, stdout=PIPE, check=True, universal_newlines=True)
     _, _, _, driver, source = domain_xml_diskinfo(ret.stdout)
     image_format = driver.get('type')
-    source_file = source.get('file')
+    source_file = Path(source.get('file'))
     return (source_file, image_format)
 
 
@@ -968,7 +969,7 @@ def set_state_image_disk(image, source_file, image_format):
     ret = virsh('save-image-dumpxml', image, stdout=PIPE, check=True, universal_newlines=True)
     domain, _, disk, driver, source = domain_xml_diskinfo(ret.stdout)
     driver.set('type', image_format)
-    source.set('file', source_file)
+    source.set('file', str(source_file))
     # saved state images have empty <backingStore/> for some weird reason,
     # breaking our snapshotting hack -- just remove it
     backing_store = disk.find('backingStore')

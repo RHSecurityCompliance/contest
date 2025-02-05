@@ -61,7 +61,7 @@ class _BackgroundHTTPServerHandler(SimpleHTTPRequestHandler):
             self.send_response(403)
             self.end_headers()
 
-    def do_GET(self):
+    def do_GET(self):  # noqa: N802
         file_map = self.server.file_mapping
         dir_map = self.server.dir_mapping
         get_path = Path(self.path).relative_to('/')

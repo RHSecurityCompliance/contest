@@ -27,7 +27,7 @@ _valid_statuses = ['pass', 'fail', 'warn', 'error', 'info', 'skip']
 # TODO: replace by collections.Counter on python 3.10+
 class Counter(collections.defaultdict):
     def __init__(self):
-        return super().__init__(lambda: 0)
+        super().__init__(lambda: 0)
 
     def total(self):
         return sum(self.values())

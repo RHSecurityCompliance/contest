@@ -45,7 +45,7 @@ with g.snapshotted(), util.get_old_datastream() as old_xml:
     g.copy_to(util.get_datastream(), 'scan-new.xml')
     proc, lines = g.ssh_stream(
         f'oscap xccdf eval --profile {profile} --progress --report report.html'
-        f' --results-arf scan-arf.xml scan-new.xml'
+        f' --results-arf scan-arf.xml scan-new.xml',
     )
     oscap.report_from_verbose(lines)
     if proc.returncode not in [0,2]:
