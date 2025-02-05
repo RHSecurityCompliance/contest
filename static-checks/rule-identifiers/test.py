@@ -9,7 +9,7 @@ from lib import util, results, oscap
 profile_references = {
     # srg, disa, stigid@PRODUCT or controls file
     'stig': [
-        'https://public.cyber.mil/stigs/downloads/?_dl_facet_stigs=operating-systems%2Cgeneral-purpose-os',  # noqa:E501
+        'https://public.cyber.mil/stigs/downloads/?_dl_facet_stigs=operating-systems%2Cgeneral-purpose-os',
         'https://public.cyber.mil/stigs/cci/',
         'https://public.cyber.mil/stigs/downloads/?_dl_facet_stigs=operating-systems%2Cunix-linux',
     ],
@@ -22,7 +22,7 @@ profile_references = {
     # ism
     'ism_o': ['https://www.cyber.gov.au/acsc/view-all-content/ism'],
     # hipaa
-    'hipaa': ['https://www.gpo.gov/fdsys/pkg/CFR-2007-title45-vol1/pdf/CFR-2007-title45-vol1-chapA-subchapC.pdf'],  # noqa: E501
+    'hipaa': ['https://www.gpo.gov/fdsys/pkg/CFR-2007-title45-vol1/pdf/CFR-2007-title45-vol1-chapA-subchapC.pdf'],
     # pcidss4
     'pci-dss': ['https://docs-prv.pcisecuritystandards.org/PCI%20DSS/Standard/PCI-DSS-v4_0.pdf'],
 }

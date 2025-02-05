@@ -11,7 +11,7 @@ from lib import util, results, versions, oscap
 
 # extract audit rules filepaths + contents from the datastream XML
 def get_ds_remediations():
-    remediations = dict()
+    remediations = {}
     for frames, elements in oscap.parse_xml(util.get_datastream()):
         if len(frames) < 3 or frames[-3:] != ['Group', 'Rule', 'fix']:
             continue

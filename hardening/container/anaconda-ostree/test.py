@@ -89,7 +89,7 @@ with podman.Registry(host_addr=virt.NETWORK_HOST) as registry:
     raddr, rport = registry.get_listen_addr()
     ks.add_pre(
         fr'''echo -e '[[registry]]\nlocation = "{raddr}:{rport}"\n'''
-        r'''insecure = true\n' >> /etc/containers/registries.conf'''
+        r'''insecure = true\n' >> /etc/containers/registries.conf''',
     )
     guest.install_basic(
         kickstart=ks,
@@ -103,7 +103,7 @@ with guest.booted():
     # scan the remediated system
     proc, lines = guest.ssh_stream(
         f'oscap xccdf eval --profile {profile} --progress --report report.html'
-        f' --results-arf scan-arf.xml scan-ds.xml'
+        f' --results-arf scan-arf.xml scan-ds.xml',
     )
     oscap.report_from_verbose(lines)
     if proc.returncode not in [0,2]:

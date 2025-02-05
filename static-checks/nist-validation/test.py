@@ -1,11 +1,11 @@
 #!/usr/bin/python3
 
-import os
 import io
 import zipfile
 import requests
 import subprocess
 import xml.etree.ElementTree as ET
+from pathlib import Path
 
 from lib import util, results
 
@@ -15,7 +15,7 @@ r = requests.get(url)
 r.raise_for_status()
 zip = zipfile.ZipFile(io.BytesIO(r.content))
 zip.extractall()
-os.chmod('scapval.sh', 0o755)
+Path('scapval.sh').chmod(0o755)
 
 ns = {'nist': 'http://csrc.nist.gov/ns/decima/results/1.0'}
 

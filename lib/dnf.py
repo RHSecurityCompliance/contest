@@ -86,7 +86,7 @@ def repo_files():
     Yield Paths of all enabled repository files (yum.repos.d) on the host.
     """
     # deduplicate paths
-    files = set(repo.file for repo in _get_repos())
+    files = {repo.file for repo in _get_repos()}
     yield from files
 
 

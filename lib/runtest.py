@@ -30,7 +30,7 @@ def _setup_timeout_handling():
     #  and tmt's timeout logic, for long-running tests)
     duration -= 50
 
-    def _alarm_timed_out(signum, frame):
+    def _alarm_timed_out(signum, frame):  # noqa: ARG001
         # sys.exit does run all cleanups (context manager, atexit, etc.),
         # but do not rely on them finishing within 10 seconds - instead,
         # emit the error result now + let TMT kill the test if cleanups

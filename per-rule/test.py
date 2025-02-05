@@ -60,7 +60,7 @@ def report_test_with_log(status, note, log_dir, rule_name, test_name):
     log_part = between_strings(
         log,
         f'##### {rule_name} / {test_name}',
-        f'##### {rule_name} / '
+        f'##### {rule_name} / ',
     )
 
     # report the result
@@ -71,7 +71,7 @@ def report_test_with_log(status, note, log_dir, rule_name, test_name):
             status,
             f'{rule_name}/{test_name}',
             note,
-            logs=[log_part_file] + extras_logs,
+            logs=[log_part_file, *extras_logs],
         )
 
     # clean up logs for this test

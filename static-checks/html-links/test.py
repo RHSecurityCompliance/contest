@@ -9,7 +9,7 @@ from lib import util, results
 headers = {'User-Agent': 'Mozilla/5.0 (X11; Linux x86_64;)'}
 url_regex = re.compile(r'href=[\'"]?(http[^\'" ]+)', re.IGNORECASE)
 
-with open(util.get_datastream(), 'r') as ds:
+with open(util.get_datastream()) as ds:
     ds_content = ds.read()
     urls = set(url_regex.findall(ds_content))
 
