@@ -78,6 +78,10 @@
 # https://github.com/ComplianceAsCode/content/issues/11649
 /scanning/disa-alignment/.*/installed_OS_is_vendor_supported
     True
+# This sysctl setting breaks some services and according to STIG it can be skipped if there is a need
+# https://github.com/ComplianceAsCode/content/pull/12824
+/scanning/disa-alignment/.*/sysctl_user_max_user_namespaces
+    rhel >= 9
 
 # CentOS-specific waivers
 #
