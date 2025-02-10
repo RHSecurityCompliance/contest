@@ -112,3 +112,16 @@ class RpmPack:
             repodir = binrpm.parent
             util.subprocess_run(['createrepo', repodir], check=True)
             yield repodir
+
+    def install(self):
+        """
+        Build the binary RPM and call 'dnf install' on it.
+        """
+        with self.build() as binrpm:
+            util.subprocess_run(['dnf', 'install', '-y', binrpm], check=True)
+
+    def uninstall(self):
+        """
+        Call 'dnf remove' on a previously-installed built RPM.
+        """
+        util.subprocess_run(['dnf', 'remove', '--noautoremove', '-y', self.NAME], check=True)

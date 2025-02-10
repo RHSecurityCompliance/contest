@@ -34,6 +34,9 @@ if util.get_reboot_count() == 0:
         shutil.rmtree(tmpdir)
     tmpdir.mkdir()
 
+    pack = util.RpmPack()
+    pack.install()
+
     oscap.unselect_rules(util.get_datastream(), remediation_ds, remediation.excludes())
 
     do_one_remediation(remediation_ds, profile, tmpdir / 'remediation-arf.xml')
@@ -63,6 +66,9 @@ else:
     oscap.report_from_verbose(lines)
     if proc.returncode not in [0,2]:
         raise RuntimeError("post-reboot oscap failed unexpectedly")
+
+    pack = util.RpmPack()
+    pack.uninstall()
 
     # TODO: str() because of python 3.6 shutil.move() not supporting Path
     shutil.move(str(tmpdir / 'remediation-arf.xml'), '.')

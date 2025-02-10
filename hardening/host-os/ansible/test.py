@@ -17,6 +17,9 @@ if util.get_reboot_count() == 0:
 
     ansible.install_deps()
 
+    pack = util.RpmPack()
+    pack.install()
+
     playbook = util.get_playbook(profile)
     skip_tags = ','.join(remediation.excludes())
     skip_tags_arg = ['--skip-tags', skip_tags] if skip_tags else []
@@ -43,6 +46,9 @@ else:
     oscap.report_from_verbose(lines)
     if proc.returncode not in [0,2]:
         raise RuntimeError("post-reboot oscap failed unexpectedly")
+
+    pack = util.RpmPack()
+    pack.uninstall()
 
     util.subprocess_run(['gzip', '-9', 'scan-arf.xml'], check=True)
 
