@@ -42,6 +42,7 @@ else:
 # - copy it to CWD because podman cannot handle absolute paths (or relative ones
 #   going above CWD) as source for COPY or RUN --mount
 pack = util.RpmPack()
+pack.add_sshd_late_start()
 with pack.build() as pack_binrpm:
     shutil.copy(pack_binrpm, 'contest-rpmpack.rpm')
 
