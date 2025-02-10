@@ -1,6 +1,7 @@
 #!/usr/bin/python3
 
 import os
+import shutil
 from lib import results, oscap, versions, virt, podman, util
 from conf import remediation
 
@@ -26,20 +27,37 @@ if versions.rhel.is_true_rhel():
 else:
     src_image = f'quay.io/centos-bootc/centos-bootc:stream{major}'
 
-# RHEL-9 and older use 'maint-1.3' openscap git repo branch, newer use 'main'
+# TODO: remove after new OpenSCAP with oscap-im is released on RHEL-9
 if versions.rhel <= 9:
     copr = 'packit/OpenSCAP-openscap-maint-1.3'
+    openscap_from_copr = [
+        'RUN dnf -y install dnf-plugins-core',
+        f'RUN dnf -y copr enable {copr} centos-stream-{versions.rhel.major}-x86_64',
+    ]
+    openscap_from_copr_str = '\n    '.join(openscap_from_copr)
 else:
-    copr = 'packit/OpenSCAP-openscap-main'
+    openscap_from_copr_str = ''
+
+# prepare a RpmPack with testing-specific hacks
+# - copy it to CWD because podman cannot handle absolute paths (or relative ones
+#   going above CWD) as source for COPY or RUN --mount
+pack = util.RpmPack()
+with pack.build() as pack_binrpm:
+    shutil.copy(pack_binrpm, 'contest-rpmpack.rpm')
 
 # prepare a Container file for making a hardened image
 cfile = podman.Containerfile()
 cfile += util.dedent(fr'''
     FROM {src_image}
-    RUN dnf -y install dnf-plugins-core
-    RUN dnf -y copr enable {copr} centos-stream-{versions.rhel.major}-x86_64
-    RUN dnf -y install openscap-utils
+    # install testing-specific RpmPack
+    COPY contest-rpmpack.rpm /root/.
+    RUN dnf -y install /root/contest-rpmpack.rpm
+    RUN rm -f /root/contest-rpmpack.rpm
+    # copy over testing-specific datastream
     COPY remediation-ds.xml /root/.
+    # install and run oscap-im to harden the image
+    {openscap_from_copr_str}
+    RUN dnf -y install openscap-utils
     RUN oscap-im --profile '{profile}' \
         --results-arf /root/remediation-arf.xml /root/remediation-ds.xml
 ''')
