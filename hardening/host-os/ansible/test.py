@@ -18,6 +18,7 @@ if util.get_reboot_count() == 0:
     ansible.install_deps()
 
     pack = util.RpmPack()
+    pack.add_sshd_late_start()
     pack.install()
 
     playbook = util.get_playbook(profile)

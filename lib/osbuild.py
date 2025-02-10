@@ -322,6 +322,7 @@ class Guest(virt.Guest):
         # RPM scriptlets, so add custom guest setup via RpmPack
         pack = rpmpack or util.RpmPack()
         pack.add_host_repos()
+        pack.add_sshd_late_start()
         # inherited from virt.Guest
         pack.requires += self.GUEST_REQUIRES
         with pack.build_as_repo() as repo:

@@ -480,6 +480,7 @@ class Guest:
         # and install it during Anaconda installation
         pack = rpmpack or util.RpmPack()
         pack.requires += self.GUEST_REQUIRES
+        pack.add_sshd_late_start()
         with pack.build_as_repo() as repo:
             # host the custom RPM on a HTTP server, as Anaconda needs a YUM repo
             # to pull packages from

@@ -35,6 +35,7 @@ if util.get_reboot_count() == 0:
     tmpdir.mkdir()
 
     pack = util.RpmPack()
+    pack.add_sshd_late_start()
     pack.install()
 
     oscap.unselect_rules(util.get_datastream(), remediation_ds, remediation.excludes())

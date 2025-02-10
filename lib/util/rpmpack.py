@@ -87,6 +87,32 @@ class RpmPack:
         """
         self.scripts[script_type].append(content)
 
+    def add_sshd_late_start(self):
+        """
+        The sshd daemon starts on network.target, but some other important
+        services rely on network-online.target or even multi-user.target,
+        sometimes starting much, much later than sshd. When we connect and
+        run oscap scan, these falsely show as 'inactive' (because we're too
+        quick with ssh connection).
+
+        To fix this, make sshd start after multi-user.target, making our
+        connection more representative of a longer-running system.
+        """
+        override_contents = util.dedent('''
+            [Unit]
+            After=multi-user.target
+        ''')
+        self.add_file_contents(
+            Path('/usr/lib/systemd/system/sshd.service.d/contest-override.conf'),
+            override_contents,
+        )
+        reload_systemd = util.dedent('''
+            systemctl is-system-running >/dev/null || exit 0  # offline install
+            systemctl daemon-reload
+        ''')
+        self.add_script('%post', reload_systemd)
+        self.add_script('%postun', reload_systemd)
+
     def create_spec(self):
         install_block = files_block = ''
         created_dirs = set()
