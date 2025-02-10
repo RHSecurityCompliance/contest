@@ -135,6 +135,9 @@
 # https://github.com/ComplianceAsCode/content/issues/11778 (issue on DISA side)
 /scanning/disa-alignment/.*/file_permission_user_init_files_root
     rhel == 9
+# https://github.com/ComplianceAsCode/content/issues/13006 (issues on both sides)
+/scanning/disa-alignment/.*/mount_option_boot_efi_nosuid
+    rhel == 8 or rhel == 9
 
 # https://github.com/ComplianceAsCode/content/issues/12030
 /per-rule/.*/set_nftables_table/.*
