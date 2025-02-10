@@ -37,6 +37,8 @@ duration: 2h
       - subset-profile
 
 /cui:
+    environment+:
+        WITH_FIPS: 1
     adjust+:
       - when: distro == rhel-8
         enabled: false
@@ -52,8 +54,12 @@ duration: 2h
 /hipaa:
 
 /ism_o:
+    environment+:
+        WITH_FIPS: 1
 
 /ospp:
+    environment+:
+        WITH_FIPS: 1
     adjust+:
       - when: distro == rhel-8
         enabled: false
