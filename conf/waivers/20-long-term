@@ -138,6 +138,9 @@
 # https://github.com/ComplianceAsCode/content/issues/13006 (issues on both sides)
 /scanning/disa-alignment/.*/mount_option_boot_efi_nosuid
     rhel == 8 or rhel == 9
+# https://github.com/ComplianceAsCode/content/issues/13011
+/scanning/disa-alignment/.*/accounts_password_pam_pwquality_retry
+    rhel == 9
 
 # https://github.com/ComplianceAsCode/content/issues/12030
 /per-rule/.*/set_nftables_table/.*
