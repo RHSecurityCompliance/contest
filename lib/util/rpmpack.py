@@ -31,14 +31,14 @@ class RpmPack:
     FileContents = collections.namedtuple('RpmPackFileContents', ['target', 'contents'])
 
     def __init__(self):
-        # strings, bash scripts to be run during/after RPM installation
-        self.post = []
         # FilePath/FileContents to files to be included in the RPM
         self.files = []
         # RPM names, hard-depend on them, run %post after them in a transaction
         self.requires = []
         # no hard RPM require dependencies, just run %post after these
         self.softreq = []
+        # %pre / %post / other RPM scripts
+        self.scripts = collections.defaultdict(list)
 
     # we intentionally don't track %dir and directories in general in %files
     # for simplicity reasons
@@ -71,6 +71,22 @@ class RpmPack:
         for repofile in dnf.repo_files():
             self.add_file(repofile, repofile)
 
+    def add_script(self, script_type, content):
+        """
+        Add a shell script under a given 'script_type', which can be '%pre',
+        '%post' or any other RPM scriptlet, incl. with arguments like
+        '%triggerun -- sendmail'.
+
+        If there is only one content for a given type when building the RPM,
+        the content is used as-is. If there are multiple contents (from several
+        add_script() calls with the same 'script_type'), they will be joined
+        together and isolated using ( ) bash subshells, hopefully GEFN.
+
+        See https://docs.fedoraproject.org/en-US/packaging-guidelines/Scriptlets/#_syntax
+        for details about using $1 to check for upgrade.
+        """
+        self.scripts[script_type].append(content)
+
     def create_spec(self):
         install_block = files_block = ''
         created_dirs = set()
@@ -89,11 +105,16 @@ class RpmPack:
                 raise RuntimeError(f"invalid file entry: {file}")
             files_block += f'%attr(0644,root,root) {file.target}\n'
 
-        # on rpm install only, not on upgrade
-        post_block = '[ "$1" != 1 ] && exit 0\n'
-        for script in self.post:
-            post_block += f'(\n{script}\n) || exit $?\n'
-        post_block += 'exit 0\n'
+        scripts_blocks = []
+        for script_type, contents in self.scripts.items():
+            block = f'{script_type}\n'
+            if len(contents) == 1:
+                block += f'{contents[0]}\nexit 0'
+            else:
+                block += '(\n'
+                block += '\n)\n(\n'.join(contents)
+                block += '\n)\nexit 0'
+            scripts_blocks.append(block)
 
         return (
             (f'''Requires: {' '.join(self.requires)}\n''' if self.requires else '')
@@ -101,7 +122,7 @@ class RpmPack:
             + f'{self.HEADER}\n\n'
             + f'%install\n{install_block}\n'
             + f'%files\n{files_block}\n'
-            + f'%post\n{post_block}'
+            + '\n\n'.join(scripts_blocks)
         )
 
     @contextlib.contextmanager
