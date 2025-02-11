@@ -82,6 +82,15 @@
 # https://github.com/ComplianceAsCode/content/pull/12824
 /scanning/disa-alignment/.*/sysctl_user_max_user_namespaces
     rhel >= 9
+# Our rules are smart and they cover two STIGs each.
+# The rule accounts_passwords_pam_faillock_silent covers RHEL-08-020018 and RHEL-08-020019.
+# The rule accounts_passwords_pam_faillock_interval covers RHEL-08-020012 and RHEL-08-020013.
+# STIGs RHEL-08-020018 and RHEL-08-020012 are aplicable only on RHEL >= 8.0 < 8.2.
+# Therefore, the misalignment test reports a fail because one of checks provided by official DISA SCAP content will report "not applicable" (since we test on RHEL >= 8.2)
+# but our check will report "pass".
+/scanning/disa-alignment/.*/accounts_passwords_pam_faillock_silent
+/scanning/disa-alignment/.*/accounts_passwords_pam_faillock_interval
+    rhel == 8
 
 # CentOS-specific waivers
 #
