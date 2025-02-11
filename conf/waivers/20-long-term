@@ -5,16 +5,6 @@
 # ie. failures that we don't expect to fix until a big feature is implemented,
 # even if it might take a year or two for the feature to be done
 
-# requires running firewalld (firewall-cmd) and NetworkManager,
-# which are not available in their final form in the Anaconda environment
-# - see https://github.com/ComplianceAsCode/content/issues/9746
-/hardening/anaconda(/with-gui)?/[^/]+/firewalld_sshd_port_enabled
-# - possibly unrelated https://github.com/ComplianceAsCode/content/issues/12276
-/hardening/kickstart(/with-gui)?/[^/]+/firewalld_sshd_port_enabled
-# https://github.com/ComplianceAsCode/content/issues/11625
-/hardening/image-builder/.+/firewalld_sshd_port_enabled
-    True
-
 # kdump being forcibly enabled somewhere
 # https://github.com/ComplianceAsCode/content/issues/12832
 /hardening/kickstart(/with-gui)?/(hipaa|stig|stig_gui)/service_kdump_disabled
@@ -49,13 +39,8 @@
 # https://github.com/ComplianceAsCode/content/issues/10424
 # happens on host-os hardening too, probably because Beaker doesn't have
 # firewall enabled or even installed
+# TODO: unfixed
 /hardening/host-os/oscap/[^/]+/service_nftables_disabled
-    True
-
-# caused by us not caring whether the VM has it installed,
-# - remediation should fix it, but doesn't -- possibly caused by
-#   https://github.com/RHSecurityCompliance/contest/issues/15
-/hardening/oscap/.+/package_scap-security-guide_installed
     True
 
 # RHEL-8: https://bugzilla.redhat.com/show_bug.cgi?id=1834716
@@ -145,15 +130,6 @@
 /scanning/disa-alignment/.*/directory_permissions_sshd_config_d
     rhel == 9
 
-# https://github.com/ComplianceAsCode/content/issues/12030
-/per-rule/.*/set_nftables_table/.*
-    rhel == 9
-# https://github.com/ComplianceAsCode/content/issues/12893
-/per-rule/.+/file_groupownership_sshd_private_key/correct_groupowner.pass
-# https://github.com/ComplianceAsCode/content/issues/12894
-/per-rule/.+/package_xorg-x11-server-common_removed/package-installed.fail
-    rhel == 10
-
 # RHEL10 - No official RHEL10 STIG/CIS benchmark yet
 /static-checks/rule-identifiers/(stig|cis.*)/.*
     rhel == 10
@@ -166,12 +142,6 @@
 # RHEL10 https://github.com/ComplianceAsCode/content/issues/12430
 /static-checks/rule-identifiers/ism_o/.*
     rhel == 8 or rhel == 9 or rhel == 10
-
-# UEFI/SecureBoot
-#
-# https://github.com/ComplianceAsCode/content/issues/12510
-/hardening/image-builder/uefi/.+/mount_option_boot_efi_nosuid
-    True
 
 # Container / Image Mode remediations
 #

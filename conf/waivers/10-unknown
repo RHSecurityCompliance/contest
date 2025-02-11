@@ -5,49 +5,6 @@
 # their root cause, filing issues/bugs or fixing tests as appropriate,
 # eventually either removing the waivers or moving them to other files
 
-# https://github.com/ComplianceAsCode/content/issues/12766
-
-/hardening/anaconda/stig/file_permissions_etc_audit_rulesd
-/hardening/anaconda/with-gui/stig_gui/file_permissions_etc_audit_rulesd
-/scanning/disa-alignment/anaconda/file_permissions_etc_audit_rulesd
-    rhel <= 9
-
-/hardening/image-builder/stig/file_permissions_etc_audit_rulesd
-    True
-
-/hardening/kickstart/stig/file_permissions_etc_audit_rulesd
-/hardening/kickstart/with-gui/stig_gui/file_permissions_etc_audit_rulesd
-    rhel == 10
-
-# ssh either doesn't start up, or gets blocked, possibly related
-# to new firewalld rules being added?
-# https://github.com/ComplianceAsCode/content/pull/10573
-# (happens only with GUI)
-#
-# or perhaps one of
-# https://github.com/ComplianceAsCode/content/issues/10592
-# https://github.com/ComplianceAsCode/content/issues/10593
-# https://github.com/ComplianceAsCode/content/issues/10594
-/hardening/oscap/with-gui/cis_workstation_l[12]
-    status == 'error'
-
-# https://github.com/ComplianceAsCode/content/issues/12768
-/hardening/ansible/stig/accounts_password_pam_retry
-/hardening/ansible/with-gui/stig_gui/accounts_password_pam_retry
-/hardening/host-os/ansible/stig/accounts_password_pam_retry
-    rhel == 10
-
-# https://github.com/ComplianceAsCode/content/issues/12769
-/hardening/host-os/oscap/anssi_bp28_high/set_password_hashing_algorithm_systemauth
-/hardening/host-os/oscap/ism_o/set_password_hashing_algorithm_systemauth
-/hardening/image-builder/anssi_bp28_high/set_password_hashing_algorithm_systemauth
-/hardening/image-builder/ism_o/set_password_hashing_algorithm_systemauth
-/hardening/kickstart/anssi_bp28_high/set_password_hashing_algorithm_systemauth
-/hardening/kickstart/ism_o/set_password_hashing_algorithm_systemauth
-/hardening/oscap/anssi_bp28_high/set_password_hashing_algorithm_systemauth
-/hardening/oscap/ism_o/set_password_hashing_algorithm_systemauth
-    rhel == 10
-
 # Ansible TODO: completely unknown, investigate and sort
 #
 # all RHELs
@@ -75,6 +32,7 @@
 # not sure what enables the service, but second remediation fixes the problem
 # TODO: we do run double remediation, but this still sometimes fails,
 #       investigate why
+# TODO: unfixed
 /hardening/anaconda/with-gui/[^/]+/service_rpcbind_disabled
     rhel == 8
 
@@ -120,13 +78,10 @@
 /hardening/host-os/oscap/[^/]+/package_.+_installed
     True
 
-# https://github.com/ComplianceAsCode/content/issues/12874
-/per-rule/.+/accounts_root_gid_zero/other_user_uid_0.fail
-    True
-
 # RHEL-10 specific /per-rule issues
 #
 # audit rules, https://github.com/ComplianceAsCode/content/pull/12867
+# TODO: unfixed
 /per-rule/.+/audit_rules_unsuccessful_file_modification_open_rule_order/ordered_arch.pass
 /per-rule/.+/audit_rules_unsuccessful_file_modification_open_rule_order/ordered_filter.pass
 /per-rule/.+/audit_rules_unsuccessful_file_modification_openat_rule_order/ordered_arch.pass
@@ -134,18 +89,6 @@
 /per-rule/.+/audit_rules_unsuccessful_file_modification_openat_o_creat/o_creat_last.pass
 /per-rule/.+/audit_rules_unsuccessful_file_modification_openat_o_creat/o_creat_rules.pass
 /per-rule/.+/audit_rules_unsuccessful_file_modification_openat_o_trunc_write/o_trunc.pass
-# https://github.com/ComplianceAsCode/content/issues/12880
-/per-rule/.+/audit_rules_privileged_commands_unix2_chkpwd/only_chkpwd_rule.fail
-# https://github.com/ComplianceAsCode/content/issues/12875
-/per-rule/.+/package_xinetd_removed/package-installed.fail
-# https://github.com/ComplianceAsCode/content/issues/12878
-/per-rule/.+/coredump_disable_storage/coredumps_storage_none.pass
-# https://github.com/ComplianceAsCode/content/issues/12876
-/per-rule/.+/logind_session_timeout/not_configured.fail
-# https://github.com/ComplianceAsCode/content/issues/12879
-/per-rule/.+/grub2_enable_fips_mode/grub_cmdline_linux_correct_value.pass
-# https://github.com/ComplianceAsCode/content/issues/12877
-/per-rule/.+/kernel_module_sctp_disabled/missing_blacklist.fail
     rhel == 10
 
 # DISA Alignment waivers
@@ -190,10 +133,5 @@
     True
 /hardening/image-builder(/.+)?/hipaa/sebool_selinuxuser_execmod
     rhel == 9
-
-# https://github.com/ComplianceAsCode/content/issues/12907
-/hardening/.+/sssd_enable_smartcards
-/hardening/.+/playbook: Enable Smartcards in SSSD.*
-    rhel == 10
 
 # vim: syntax=python
