@@ -141,6 +141,9 @@
 # https://github.com/ComplianceAsCode/content/issues/13011
 /scanning/disa-alignment/.*/accounts_password_pam_pwquality_retry
     rhel == 9
+# https://github.com/ComplianceAsCode/content/issues/13021
+/scanning/disa-alignment/.*/directory_permissions_sshd_config_d
+    rhel == 9
 
 # https://github.com/ComplianceAsCode/content/issues/12030
 /per-rule/.*/set_nftables_table/.*
