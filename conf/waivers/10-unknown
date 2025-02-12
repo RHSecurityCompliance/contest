@@ -148,6 +148,6 @@
 # https://github.com/ComplianceAsCode/content/issues/13036
 /hardening/container/anaconda-ostree/ism_o
 /hardening/container/anaconda-ostree/stig
-    rhel == 10
+    rhel == 10 and status == 'error'
 
 # vim: syntax=python
