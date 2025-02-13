@@ -149,10 +149,6 @@
 # https://issues.redhat.com/browse/OPENSCAP-5272
 /hardening/container/[^/]+/[^/]+/enable_authselect
     rhel == 9
-# https://issues.redhat.com/browse/RHEL-66155 and
-# https://issues.redhat.com/browse/RHEL-73029
-/hardening/container/anaconda-ostree/[^/]+/enable_fips_mode
-    True
 # https://issues.redhat.com/browse/RHEL-77158
 # (we unselect max_age in conf/remediations.py)
 /hardening/container/anaconda-ostree/.+/accounts_password_set_min_life_existing
