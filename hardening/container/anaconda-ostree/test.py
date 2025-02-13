@@ -1,5 +1,6 @@
 #!/usr/bin/python3
 
+import os
 from lib import results, oscap, versions, virt, podman, util
 from conf import remediation
 
@@ -7,6 +8,7 @@ from conf import remediation
 virt.Host.setup()
 
 _, variant, profile = util.get_test_name().rsplit('/', 2)
+with_fips = os.environ.get('WITH_FIPS') == '1'
 
 oscap.unselect_rules(util.get_datastream(), 'remediation-ds.xml', remediation.excludes())
 
@@ -70,7 +72,10 @@ with podman.Registry(host_addr=virt.NETWORK_HOST) as registry:
         fr'''echo -e '[[registry]]\nlocation = "{raddr}:{rport}"\n'''
         r'''insecure = true\n' >> /etc/containers/registries.conf'''
     )
-    guest.install_basic(kickstart=ks)
+    guest.install_basic(
+        kickstart=ks,
+        kernel_args=['fips=1'] if with_fips else None,
+    )
 
 # boot up and scan the VM
 with guest.booted():
