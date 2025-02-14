@@ -44,15 +44,24 @@ class RpmPack:
     # for simplicity reasons
     # - RPM does auto-create them on install, so the only issue is them being
     #   left there after RPM uninstall, which we don't care about here
-    def add_file(self, source, target):
+    def add_file(self, source, target=None):
         """
         Add a file path to the RPM, 'source' specifies a file path on the host,
         'target' is the installed path in the RPM.
+
+        If 'target' is not specified, it is equal to 'source', which then must
+        be an absolute path.
         """
-        target = Path(target)
-        if not target.is_absolute():
-            raise SyntaxError(f"target {target} not an absolute path")
-        entry = self.FilePath(Path(source).absolute(), target)
+        source = Path(source)
+        if target:
+            target = Path(target)
+            if not target.is_absolute():
+                raise SyntaxError(f"target {target} not an absolute path")
+        else:
+            if not source.is_absolute():
+                raise SyntaxError(f"source {source} must be absolute if target is missing")
+            target = source
+        entry = self.FilePath(source.absolute(), target)
         self.files.append(entry)
 
     def add_file_contents(self, target, contents):
