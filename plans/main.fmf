@@ -68,6 +68,7 @@ adjust:
                 exit 0
             fi
             repofile=/etc/yum.repos.d/openscap-upstream-packit.repo
+            echo "CONTEST_OSCAP_REPOFILE=$repofile" >> "$TMT_PLAN_ENVIRONMENT_FILE"
             rm -f "$repofile"
             if rpm -q openscap-scanner; then
                 # the RPM might have been upgraded from another PR, sanitize it
