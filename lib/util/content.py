@@ -1,15 +1,65 @@
+"""
+Utility functions for acquiring binary/source CaC/content.
+
+Content can come from two sources:
+ - CONTEST_CONTENT as a git-repo-style directory
+ - scap-security-guide RPM
+
+Each of these has binary/sources on different places:
+ - CONTEST_CONTENT
+   - binary content needs to be built, is located in build/*
+   - source content already exists as the directory itself
+ - scap-security-guide RPM
+   - binary content already exists in /usr/share
+   - source content needs to be downloaded as SRPM
+
+Unifying these under one API is therefore a significant challenge,
+especially since the scap-security-guide RPM fragments binary content
+to multiple paths in /usr/share.
+
+This module therefore provides
+ - several get_*() functions for getting binary content
+   - if CONTEST_CONTENT is used, the content is built as-needed
+ - one get_content_source() function for getting source content
+   - if scap-security-guide RPM is used, a SRPM gets downloaded + extracted
+
+The get_*() functions for binary content prefer CONTEST_CONTENT (if it is
+defined) over the scap-security-guide RPM content. This can be overriden
+with a function argument.
+
+It is assumed only one process/thread is using either content location,
+and downloaded SRPM sources or built CONTEST_CONTENT content is left
+for further tests to be re-used if possible.
+
+If a test needs binary content built with specific flags/options, or access
+any binary artifacts other than what is provided here via get_*(), it should
+get_source_content() and call build_content() on it, or build it itself.
+"""
+
 import os
+import shutil
 import subprocess
 import contextlib
 import tempfile
 from pathlib import Path
 
-from lib import util, dnf
+from lib import util, dnf, versions
 from lib.versions import rhel
 
-user_content = os.environ.get('CONTEST_CONTENT')
-if user_content:
-    user_content = Path(user_content)
+CONTENT_BUILD_DIR = 'build'
+
+
+def get_user_content(build=True):
+    user_content = os.environ.get('CONTEST_CONTENT')
+    if not user_content:
+        return None
+    user_content = Path(user_content).absolute()
+    # variable defined, but path specified does not exist
+    if not user_content.exists():
+        raise RuntimeError(f"CONTEST_CONTENT={user_content} does not exist")
+    if build:
+        build_content(user_content)
+    return user_content
 
 
 def _find_datastreams(force_ssg):
@@ -18,8 +68,9 @@ def _find_datastreams(force_ssg):
     if force_ssg:
         return ssg_path
     # if CONTEST_CONTENT was specified
+    user_content = get_user_content()
     if user_content:
-        return user_content / 'build'
+        return user_content / CONTENT_BUILD_DIR
     # default to the OS-wide scap-security-guide content
     return ssg_path
 
@@ -51,8 +102,9 @@ def _find_playbooks(force_ssg):
     if force_ssg:
         return ssg_path
     # if CONTEST_CONTENT was specified
+    user_content = get_user_content()
     if user_content:
-        return user_content / 'build' / 'ansible'
+        return user_content / CONTENT_BUILD_DIR / 'ansible'
     # default to the OS-wide scap-security-guide content
     return ssg_path
 
@@ -63,8 +115,9 @@ def _find_per_rule_playbooks(force_ssg):
     if force_ssg:
         return ssg_path
     # if CONTEST_CONTENT was specified
+    user_content = get_user_content()
     if user_content:
-        return user_content / 'build' / f'rhel{rhel.major}' / 'playbooks' / 'all'
+        return user_content / CONTENT_BUILD_DIR / f'rhel{rhel.major}' / 'playbooks' / 'all'
     # default to the OS-wide scap-security-guide content
     return ssg_path
 
@@ -93,6 +146,7 @@ def iter_playbooks(force_ssg=False):
 
 
 def get_kickstart(profile):
+    user_content = get_user_content()
     if user_content:
         kickstart = (
             user_content / 'products' / f'rhel{rhel.major}' / 'kickstart'
@@ -107,27 +161,83 @@ def get_kickstart(profile):
     return kickstart
 
 
-def content_is_built(path):
-    return (Path(path) / 'build' / f'ssg-rhel{rhel.major}-ds.xml').exists()
+def _parse_cmake_config(path):
+    with open(path) as f:
+        for line in f:
+            line = line.strip()
+            if not line or line.startswith(('#','//')) or '=' not in line:
+                continue
+            name, _, value = line.partition('=')
+            yield (name, value)
+
+
+def build_content(path, extra_cmake_opts=None):
+    """
+    Given a CaC/content source as 'path', build it with some sensible CMake
+    options.
+
+    Specify any additional ones as 'extra_cmake_opts' (dict); make sure to use
+    the full option name with :DATATYPE as visible in CMakeCache.txt.
+    See also https://cmake.org/cmake/help/latest/prop_cache/TYPE.html.
+    """
+    path = Path(path)
+    build_dir = path / CONTENT_BUILD_DIR
+    extra_cmake_opts = extra_cmake_opts or {}
+
+    # assemble CMake options
+    cmake_opts = {
+        'CMAKE_BUILD_TYPE:STRING': 'Release',
+        'SSG_CENTOS_DERIVATIVES_ENABLED:BOOL': 'ON' if versions.rhel.is_centos() else 'OFF',
+        'SSG_PRODUCT_DEFAULT:BOOL': 'OFF',
+        f'SSG_PRODUCT_RHEL{versions.rhel.major}:BOOL': 'ON',
+        'SSG_SCE_ENABLED:BOOL': 'ON',
+        'SSG_BASH_SCRIPTS_ENABLED:BOOL': 'OFF',
+    }
+    cmake_opts.update(extra_cmake_opts)
+
+    # if there is pre-built content, check if it was built with options
+    # we care about - if it was, do not rebuild it
+    cmake_cache = build_dir / 'CMakeCache.txt'
+    if cmake_cache.exists():
+        built_opts = dict(_parse_cmake_config(cmake_cache))
+        for key, value in cmake_opts.items():
+            if key not in built_opts or value != built_opts[key]:
+                break
+        else:
+            # all opts were ignored or passed equality checking
+            return
+
+    # install dependencies from an upstream-bundled spec file
+    cmd = ['dnf', '-y', 'builddep', '--spec', path / 'scap-security-guide.spec']
+    util.subprocess_run(cmd, check=True)
+
+    if build_dir.exists():
+        shutil.rmtree(build_dir)
+    build_dir.mkdir()
+
+    cli_opts = (f'-D{name}={val}' for name, val in cmake_opts.items())
+    util.subprocess_run(['cmake', '../', *cli_opts], cwd=build_dir, check=True)
+
+    cpus = os.cpu_count() or 1
+    util.subprocess_run(['make', f'-j{cpus}'], cwd=build_dir, check=True)
 
 
 @contextlib.contextmanager
-def get_content(build=True):
+def get_source_content():
     """
-    Acquire and return a path to a fully built content source,
+    Acquire and return a path to a CaC/content style content source distribution
     from either a user-provided directory or a SRPM.
-
-    Optionally, specify build=False to save some time if you're accessing
-    plain files or executing utils and need just the content source.
     """
+    user_content = get_user_content(build=False)
     if user_content:
-        # content already built by a TMT plan prepare step
         yield user_content
     else:
         # fall back to SRPM
         with dnf.download_rpm('scap-security-guide', source=True) as src_rpm:
             with tempfile.TemporaryDirectory() as tmpdir:
                 # install dependencies
+                # - unfortunately, we cannot move this to build_content()
+                #   because extracting + patching SRPM needs all builddeps
                 cmd = ['dnf', '-y', 'builddep', src_rpm]
                 util.subprocess_run(cmd, check=True, cwd=tmpdir)
                 # extract + patch SRPM
@@ -149,8 +259,4 @@ def get_content(build=True):
                 except StopIteration:
                     raise FileNotFoundError("extracted SRPM content sources not found")
                 util.log(f"using {extracted} as content source")
-                # build content
-                if build:
-                    cmd = ['./build_product', '--playbook-per-rule', f'rhel{rhel.major}']
-                    util.subprocess_run(cmd, check=True, cwd=extracted)
                 yield extracted

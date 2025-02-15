@@ -115,7 +115,8 @@ if not g.is_installed():
     ks.packages.append('tar')
     g.install(kickstart=ks, disk_format='qcow2')
 
-with util.get_content() as content_dir, g.booted():
+with util.get_source_content() as content_dir, g.booted():
+    util.build_content(content_dir)
     env = os.environ.copy()
     env['SSH_ADDITIONAL_OPTIONS'] = f'-o IdentityFile={g.ssh_keyfile_path}'
     cmd = [
@@ -123,6 +124,7 @@ with util.get_content() as content_dir, g.booted():
         '--libvirt', 'qemu:///system', virt.GUEST_NAME,
         '--product', f'rhel{versions.rhel.major}',
         '--dontclean', '--remediate-using', fix_type,
+        '--datastream', util.get_datastream(),
         *our_rules,
     ]
     _, lines = util.subprocess_stream(

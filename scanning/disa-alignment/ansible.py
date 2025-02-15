@@ -35,7 +35,7 @@ with g.snapshotted():
     ansible.report_from_output(lines)
     g.soft_reboot()
 
-    with util.get_content(build=False) as content_dir:
+    with util.get_source_content() as content_dir:
         g.copy_to(util.get_datastream(), 'ssg-ds.xml')
         shared.content_scan(g, 'ssg-ds.xml', html='ssg-report.html', arf='ssg-arf.xml')
         g.copy_from('ssg-report.html')
