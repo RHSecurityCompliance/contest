@@ -55,7 +55,8 @@ def get_old_datastream():
 
     # "new" content is CONTEST_CONTENT,
     # "old" is the installed scap-security-guide RPM
-    if util.user_content:
+    user_content = util.get_user_content(build=False)
+    if user_content:
         yield ssg_datastream
 
     # "new" is the installed scap-security-guide RPM,
