@@ -192,6 +192,8 @@ def build_content(path, extra_cmake_opts=None):
         f'SSG_PRODUCT_RHEL{versions.rhel.major}:BOOL': 'ON',
         'SSG_SCE_ENABLED:BOOL': 'ON',
         'SSG_BASH_SCRIPTS_ENABLED:BOOL': 'OFF',
+        'SSG_BUILD_DISA_DELTA_FILES:BOOL': 'OFF',
+        'SSG_SEPARATE_SCAP_FILES_ENABLED:BOOL': 'OFF',
     }
     cmake_opts.update(extra_cmake_opts)
 
