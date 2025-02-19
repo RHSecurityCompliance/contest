@@ -116,7 +116,7 @@ if not g.is_installed():
     g.install(kickstart=ks, disk_format='qcow2')
 
 with util.get_source_content() as content_dir, g.booted():
-    util.build_content(content_dir)
+    util.build_content(content_dir, force=True)
     env = os.environ.copy()
     env['SSH_ADDITIONAL_OPTIONS'] = f'-o IdentityFile={g.ssh_keyfile_path}'
     cmd = [
