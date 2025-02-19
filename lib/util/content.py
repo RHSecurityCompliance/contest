@@ -171,7 +171,7 @@ def _parse_cmake_config(path):
             yield (name, value)
 
 
-def build_content(path, extra_cmake_opts=None):
+def build_content(path, extra_cmake_opts=None, force=False):
     """
     Given a CaC/content source as 'path', build it with some sensible CMake
     options.
@@ -179,6 +179,8 @@ def build_content(path, extra_cmake_opts=None):
     Specify any additional ones as 'extra_cmake_opts' (dict); make sure to use
     the full option name with :DATATYPE as visible in CMakeCache.txt.
     See also https://cmake.org/cmake/help/latest/prop_cache/TYPE.html.
+
+    Set 'force=True' to always re-build content, even with compatible options.
     """
     path = Path(path)
     build_dir = path / CONTENT_BUILD_DIR
@@ -200,7 +202,7 @@ def build_content(path, extra_cmake_opts=None):
     # if there is pre-built content, check if it was built with options
     # we care about - if it was, do not rebuild it
     cmake_cache = build_dir / 'CMakeCache.txt'
-    if cmake_cache.exists():
+    if cmake_cache.exists() and not force:
         built_opts = dict(_parse_cmake_config(cmake_cache))
         for key, value in cmake_opts.items():
             if key not in built_opts or value != built_opts[key]:

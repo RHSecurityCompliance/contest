@@ -11,7 +11,13 @@ python_modules = ['lxml', 'pytest', 'trestle', 'openpyxl', 'cmakelint']
 util.subprocess_run(['python3', '-m', 'pip', 'install', *python_modules])
 
 with util.get_source_content() as content_dir:
-    util.build_content(content_dir, {'SSG_ANSIBLE_PLAYBOOKS_PER_RULE_ENABLED:BOOL': 'ON'})
+    # force a build, because CTest uses absolute paths somewhere in the built
+    # content, which breaks when the content was pre-build elsewhere
+    util.build_content(
+        content_dir,
+        {'SSG_ANSIBLE_PLAYBOOKS_PER_RULE_ENABLED:BOOL': 'ON'},
+        force=True,
+    )
     build_dir = content_dir / util.CONTENT_BUILD_DIR
 
     # ctest
