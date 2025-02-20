@@ -96,11 +96,6 @@
 # https://github.com/ComplianceAsCode/content/issues/12561
 /scanning/disa-alignment/.*/logind_session_timeout
     rhel == 8
-# https://github.com/ComplianceAsCode/content/issues/13020
-/scanning/disa-alignment/.*/accounts_passwords_pam_faillock_interval
-/scanning/disa-alignment/.*/accounts_passwords_pam_faillock_silent
-/scanning/disa-alignment/.*/accounts_passwords_pam_faillock_unlock_time
-    rhel == 8
 # https://github.com/ComplianceAsCode/content/issues/13033
 /scanning/disa-alignment/(oscap|ansible)/file_permission_user_init_files_root
     rhel == 8
