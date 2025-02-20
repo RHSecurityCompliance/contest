@@ -24,7 +24,7 @@ class SSGRuleResult:
         self.rule_title = rule_title
         self.stig_ids = stig_ids
         self.result = result
-        self.stig_ids_results = dict()
+        self.stig_ids_results = {}
         self.final_result = None
 
     def __repr__(self):
@@ -169,8 +169,7 @@ def print_ssg_results(ssg_results):
             f"{ssg_result.cce_id} "
             f"{ssg_result.rule_id:<55} "
             f"{ssg_result.result:<20} "
-            f"{disa}"
-        )
+            f"{disa}")
 
 
 def report_misalignments(ssg_results):

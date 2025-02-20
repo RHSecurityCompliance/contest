@@ -1,6 +1,4 @@
 #!/usr/bin/python3
-import os
-import subprocess
 
 import shared
 from lib import util, results, virt, oscap, versions
