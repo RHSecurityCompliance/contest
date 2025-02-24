@@ -6,10 +6,15 @@ a custom file format. See WAIVERS.md.
 import os
 import re
 import platform
+import collections
 from pathlib import Path
 
 from lib import util, versions
 
+WaiverSection = collections.namedtuple(
+    'WaiverSection',
+    ['regexes', 'python_code', 'python_source'],
+)
 _sections_cache = None
 
 
@@ -109,7 +114,9 @@ def _parse_waiver_file(stream, filename):
                 # non-indented line - either empty (between regex+python blocks)
                 # or the start of a new regex+python block -- either case, we're
                 # done with the current block, so add it to the list & cleanup
-                sections.append((regexes, _compile_eval(lines, python_code)))
+                sections.append(
+                    WaiverSection(regexes, _compile_eval(lines, python_code), python_code.strip()),
+                )
                 regexes = set()
                 python_code = ''
                 state = 'skipping_empty_lines'
@@ -123,7 +130,9 @@ def _parse_waiver_file(stream, filename):
     # in the text file after the last python block (not even an empty line),
     # so do the appending here
     if python_code:
-        sections.append((regexes, _compile_eval(lines, python_code)))
+        sections.append(
+            WaiverSection(regexes, _compile_eval(lines, python_code), python_code.strip()),
+        )
 
     return sections
 
@@ -175,7 +184,7 @@ def match_result(status, name, note):
     if _sections_cache is None:
         _sections_cache = list(collect_waivers())
 
-    # make sure "'someting' in name" always works
+    # make sure "'something' in name" always works
     if name is None:
         name = ''
     if note is None:
@@ -204,10 +213,8 @@ def match_result(status, name, note):
     }
 
     for section in _sections_cache:
-        regexes, python_code = section
-
-        if any(x.fullmatch(name) for x in regexes):
-            ret = eval(python_code, objs, None)
+        if any(x.fullmatch(name) for x in section.regexes):
+            ret = eval(section.python_code, objs, None)
 
             if not isinstance(ret, Match):
                 if not isinstance(ret, bool):
