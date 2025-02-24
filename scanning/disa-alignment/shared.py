@@ -1,4 +1,4 @@
-from collections import namedtuple
+import collections
 import xml.etree.ElementTree as ET
 
 from lib import results
@@ -11,7 +11,7 @@ CCE = "https://ncp.nist.gov/cce"
 SSG_RULE_PREFIX = "xccdf_org.ssgproject.content_rule_"
 DISA_RULE_PREFIX = "xccdf_mil.disa.stig_rule_"
 
-DISARuleResult = namedtuple('DISARuleResult', ['rule_id', 'result'])
+DISARuleResult = collections.namedtuple('DISARuleResult', ['rule_id', 'result'])
 
 profile = 'stig'
 
@@ -37,10 +37,10 @@ class SSGRuleResult:
         )
 
 
-class ComparisonResult:
-    SAME = "SAME"
-    DIFFERENT = "DIFFERENT"
-    MISSING = "MISSING"
+class ComparisonResult(enum.Enum):
+    SAME = enum.auto()
+    DIFFERENT = enum.auto()
+    MISSING = enum.auto()
 
 
 def content_scan(host, ds, html, arf):
@@ -152,9 +152,9 @@ def compare_results(ssg_results, disa_results):
 
 
 def get_disa_result_to_str(stig_ids_results):
-    if len(stig_ids_results) == 0:
+    if stig_ids_results:
         return "Empty"
-    ll = [f"{k}:{v}" for k, v in stig_ids_results.items()]
+    ll = (f"{k}:{v}" for k, v in stig_ids_results.items())
     return ", ".join(ll)
 
 
