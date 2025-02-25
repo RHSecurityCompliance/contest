@@ -1,4 +1,5 @@
 import collections
+import enum
 import xml.etree.ElementTree as ET
 
 from lib import results
