@@ -1,6 +1,5 @@
 #!/usr/bin/python3
 import os
-import subprocess
 
 import shared
 from lib import util, results, virt, versions, ansible
@@ -51,12 +50,7 @@ with g.snapshotted():
         g.copy_from('disa-report.html')
         g.copy_from('disa-arf.xml')
 
-        # Compare ARFs via CaC/content script and report results from output
-        compare_script = content_dir / 'utils' / 'compare_results.py'
-        env = os.environ.copy()
-        env['PYTHONPATH'] = str(content_dir)
-        cmd = [compare_script, 'ssg-arf.xml', 'disa-arf.xml']
-        proc = util.subprocess_run(cmd, env=env, universal_newlines=True, stdout=subprocess.PIPE)
-        shared.comparison_report(proc.stdout.rstrip('\n'))
+        # Compare ARFs and report results from output
+        shared.compare_arfs('ssg-arf.xml', 'disa-arf.xml')
 
 results.report_and_exit(logs=['ssg-report.html', 'disa-report.html'])
