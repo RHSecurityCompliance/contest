@@ -131,6 +131,10 @@
 /scanning/disa-alignment/[^/]+/auditd_audispd_configure_sufficiently_large_partition
     True
 
+# https://github.com/ComplianceAsCode/content/issues/13100
+/hardening/.*/file_permission_user_init_files_root
+    True
+
 # Image Builder
 #
 # TODO: file issues ?
