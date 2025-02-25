@@ -73,9 +73,12 @@ class Datastream:
         #   self.path = Path(file_the_datastream_was_parsed_from)
         def make_profile():
             return types.SimpleNamespace(title=None, rules=set(), values=set())
+
         self.profiles = collections.defaultdict(make_profile)
+
         def make_rule():
             return types.SimpleNamespace(fixes=self.FixType(0))
+
         self.rules = collections.defaultdict(make_rule)
         self._parse_datastream_xml(xml_file)
         self.path = Path(xml_file)
@@ -94,14 +97,14 @@ class Datastream:
             if frames[-1] == 'Profile':
                 profile = elements[-1].get('id')
                 # TODO: use str.removeprefix on python 3.9+
-                profile = re.sub('^xccdf_org.ssgproject.content_profile_', '', profile)
+                profile = re.sub(r'^xccdf_org.ssgproject.content_profile_', '', profile)
                 self.profiles[profile]  # let defaultdict fill in the values
 
             # profile contents
             elif frames[-2] == 'Profile':
                 profile = elements[-2].get('id')
                 # TODO: use str.removeprefix on python 3.9+
-                profile = re.sub('^xccdf_org.ssgproject.content_profile_', '', profile)
+                profile = re.sub(r'^xccdf_org.ssgproject.content_profile_', '', profile)
                 # title
                 if frames[-1] == 'title':
                     text = elements[-1].text
@@ -111,13 +114,13 @@ class Datastream:
                     if elements[-1].get('selected') == 'true':
                         rule = elements[-1].get('idref')
                         # TODO: use str.removeprefix on python 3.9+
-                        rule = re.sub('^xccdf_org.ssgproject.content_rule_', '', rule)
+                        rule = re.sub(r'^xccdf_org.ssgproject.content_rule_', '', rule)
                         self.profiles[profile].rules.add(rule)
                 # variable refinement
                 elif frames[-1] == 'refine-value':
                     name = elements[-1].get('idref')
                     # TODO: use str.removeprefix on python 3.9+
-                    name = re.sub('^xccdf_org.ssgproject.content_value_', '', name)
+                    name = re.sub(r'^xccdf_org.ssgproject.content_value_', '', name)
                     contents = elements[-1].get('selector')
                     self.profiles[profile].values.add((name, contents))
 
@@ -125,7 +128,7 @@ class Datastream:
             elif frames[-1] == 'Rule':
                 rule_id = elements[-1].get('id')
                 # TODO: use str.removeprefix on python 3.9+
-                rule_id = re.sub('^xccdf_org.ssgproject.content_rule_', '', rule_id)
+                rule_id = re.sub(r'^xccdf_org.ssgproject.content_rule_', '', rule_id)
                 self.rules[rule_id]  # let defaultdict fill in the values
 
             # fixes / remediations

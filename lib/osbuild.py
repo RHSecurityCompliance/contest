@@ -272,7 +272,7 @@ class Guest(virt.Guest):
                 sys.stdout.write(ret.stdout)
                 if ret.returncode == 0:
                     break
-                elif re.match('ERROR: Depsolve Error: Get "[^"]+": EOF\n', ret.stdout):
+                elif re.match(r'ERROR: Depsolve Error: Get "[^"]+": EOF\n', ret.stdout):
                     continue
                 else:
                     raise RuntimeError(f"depsolve:\n{ret.stdout}")
@@ -366,7 +366,7 @@ def translate_oscap_blueprint(lines, datastream):
     # however replace only the first occurence of 'name', as later sections
     # like [[packages]] would also match ^name=...
     bp_text = re.sub(
-        '^name = .*',
+        r'^name = .*',
         f'name = "{Blueprint.NAME}"',
         bp_text, count=1, flags=re.M,
     )

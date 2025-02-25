@@ -646,7 +646,8 @@ class Guest:
         if self.snapshot_path.exists():
             self.snapshot_path.unlink()
 
-    def _log_leave_running_notice(self):
+    @staticmethod
+    def _log_leave_running_notice():
         out = textwrap.dedent("""\n
             Leaving guest running, the test might break!
             To ssh into it, log in (ssh) into the VM host first, then do:
@@ -870,21 +871,21 @@ def translate_ssg_kickstart(ks_file):
             line = line.rstrip('\n')
 
             # use our own password
-            if re.match('^rootpw ', line):
+            if re.match(r'^rootpw ', line):
                 line = f'rootpw {GUEST_LOGIN_PASS}'
 
             # don't hardcode interface name because we use network installs,
             # which fill in the booted-from device automatically
-            elif re.match('^network ', line):
-                line = re.sub(' --device[= ][^ ]+', '', line)
+            elif re.match(r'^network ', line):
+                line = re.sub(r' --device[= ][^ ]+', '', line)
 
             # STIG uses 10 GB audit because of DISA requiring large partitions,
             # checked by 'auditd_audispd_configure_sufficiently_large_partition'
             # (see https://github.com/ComplianceAsCode/content/pull/7141)
             # - reducing this to 512 makes the rest of the partitions align
             #   perfectly at 20448 MB, same as other kickstarts
-            elif re.match('^logvol /var/log/audit .*--size=10240', line):
-                line = re.sub('--size=[^ ]+', '--size=512', line)
+            elif re.match(r'^logvol /var/log/audit .*--size=10240', line):
+                line = re.sub(r'--size=[^ ]+', '--size=512', line)
 
             ks_text += f'{line}\n'
 
@@ -906,12 +907,12 @@ def translate_oscap_kickstart(lines, datastream):
     ks_text = ''
     for line in lines:
         # use our own password
-        if re.match('^rootpw ', line):
+        if re.match(r'^rootpw ', line):
             line = f'rootpw {GUEST_LOGIN_PASS}'
 
         # append some optimizations to the existing bootloader line,
         # see Kickstart.TEMPLATE
-        elif re.match('^bootloader', line):
+        elif re.match(r'^bootloader', line):
             bootloader_seen = True
             if '--append' in line:
                 line = re.sub(r'--append="([^"]+)"', fr'--append="\1 {bootloader_append}"', line)
@@ -923,11 +924,11 @@ def translate_oscap_kickstart(lines, datastream):
         # (see https://github.com/ComplianceAsCode/content/pull/7141)
         # - reducing this to 512 makes the rest of the partitions align
         #   perfectly at 20448 MB, same as other kickstarts
-        elif re.match('^logvol /var/log/audit .*--size=10240', line):
-            line = re.sub('--size=[^ ]+', '--size=512', line)
+        elif re.match(r'^logvol /var/log/audit .*--size=10240', line):
+            line = re.sub(r'--size=[^ ]+', '--size=512', line)
 
         # replace datastream path for the 'oscap' in %post
-        elif re.match('^oscap xccdf eval --remediate', line):
+        elif re.match(r'^oscap xccdf eval --remediate', line):
             line = re.sub(r'/usr/share/xml/scap[^ ]+\.xml', datastream, line)
 
         ks_text += f'{line}\n'

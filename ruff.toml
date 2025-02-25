@@ -3,6 +3,7 @@ indent-width = 4
 target-version = "py37"  # doesn't support older
 
 [lint]
+preview = true
 select = [
     "F",    # Pyflakes
     "E",    # pycodestyle
@@ -33,6 +34,16 @@ ignore = [
     "PLW2901",  # redefined-loop-name
     "RUF010",   # explicit-f-string-type-conversion
     "RUF012",   # mutable-class-default
+
+    # rules from preview
+    "E226",     # missing-whitespace-around-arithmetic-operator
+    "E231",     # missing-whitespace
+    "E265",     # no-space-after-block-comment
+    "PLR0904",  # too-many-public-methods
+    "PLR0917",  # too-many-positional-arguments
+    "PLR6201",  # literal-membership
+    "PLW1514",  # unspecified-encoding
+    "PLW1641",  # eq-without-hash
 ]
 
 [format]

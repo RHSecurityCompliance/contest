@@ -38,7 +38,7 @@ def report_test_with_log(status, note, log_dir, rule_name, test_name):
         # rule_name-test_name.sh-initial.html -> initial.html
         # TODO: python 3.9+
         #basename = path.name.removeprefix(extras_prefix)
-        basename = re.sub(f'^{extras_prefix}', '', path.name, count=1)
+        basename = re.sub(fr'^{extras_prefix}', '', path.name, count=1)
         path.rename(path.parent / basename)
         path = path.parent / basename
 
@@ -139,7 +139,7 @@ with util.get_source_content() as content_dir, g.booted():
         sys.stdout.flush()
 
         # cut off log level
-        line = re.sub('^[A-Z]+ - ', '', line, count=1, flags=re.M)
+        line = re.sub(r'^[A-Z]+ - ', '', line, count=1, flags=re.M)
 
         # rule without remediation
         match = re.fullmatch(r'''No remediation is available for rule 'xccdf_org\.ssgproject\.content_rule_(.+)'\.''', line)  # noqa
@@ -150,7 +150,7 @@ with util.get_source_content() as content_dir, g.booted():
 
         # remember the log file for log parsing/upload
         #   INFO - Logging into /tmp/.../logs/rule-custom-2024-02-17-1859/test_suite.log
-        match = re.fullmatch('Logging into (.+)', line)
+        match = re.fullmatch(r'Logging into (.+)', line)
         if match:
             log_dir = Path(match.group(1)).parent
             util.log(f"using automatus log dir: {log_dir}")
@@ -173,7 +173,7 @@ with util.get_source_content() as content_dir, g.booted():
             test_name, profile, status = match.groups()
             # TODO: python 3.9+
             #profile = profile.removeprefix('xccdf_org.ssgproject.content_profile_')
-            profile = re.sub('^xccdf_org.ssgproject.content_profile_', '', profile, count=1)
+            profile = re.sub(r'^xccdf_org.ssgproject.content_profile_', '', profile, count=1)
 
             if status == 'OK':
                 status = 'pass'

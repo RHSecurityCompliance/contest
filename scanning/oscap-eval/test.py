@@ -31,13 +31,13 @@ for line in lines:
 
     # random spurious ERRORs / WARNINGs
     elif line.startswith(('E: ', 'ERROR: ')):
-        line = re.sub(' +', ' ', line)
+        line = re.sub(r' +', ' ', line)
         if line not in problems_seen:
             results.report('fail', 'ERROR', line)
             problems_seen.add(line)
 
     elif line.startswith(('W: ', 'WARNING: ')):
-        line = re.sub(' +', ' ', line)
+        line = re.sub(r' +', ' ', line)
         if line not in problems_seen:
             results.report('warn', 'WARNING', line)
             problems_seen.add(line)
