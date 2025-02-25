@@ -153,7 +153,7 @@ def compare_results(ssg_results, disa_results):
 
 
 def get_disa_result_to_str(stig_ids_results):
-    if stig_ids_results:
+    if len(stig_ids_results) == 0:
         return "Empty"
     ll = (f"{k}:{v}" for k, v in stig_ids_results.items())
     return ", ".join(ll)
