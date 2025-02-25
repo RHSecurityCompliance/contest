@@ -51,7 +51,7 @@ def get_old_datastream():
     installed = _installed_ssg_version()
     ssg_datastream = util.get_datastream(force_ssg=True)
     if not ssg_datastream.exists():
-        raise RuntimeError("DS not found on {ssg_datastream}, no clue what to diff")
+        raise RuntimeError(f"DS not found on {ssg_datastream}, no clue what to diff")
 
     # "new" content is CONTEST_CONTENT,
     # "old" is the installed scap-security-guide RPM

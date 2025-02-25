@@ -115,7 +115,7 @@ class Registry:
         """
         proc = podman('container', 'port', self.name, stdout=subprocess.PIPE)
         portmap = proc.stdout.rstrip('\n')
-        match = re.fullmatch('[0-9]+/tcp -> ([^:]+):([0-9]+)', portmap)
+        match = re.fullmatch(r'[0-9]+/tcp -> ([^:]+):([0-9]+)', portmap)
         if not match:
             raise RuntimeError(f"could not parse port mapping from: {portmap}")
         host, port = match.groups()

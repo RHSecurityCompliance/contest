@@ -18,9 +18,9 @@ def get_ds_remediations():
 
         group, rule, fix = elements[-3:]
         # TODO: use str.removeprefix on python 3.9+
-        group_name = re.sub('^xccdf_org.ssgproject.content_group_', '', group.get('id'))
+        group_name = re.sub(r'^xccdf_org.ssgproject.content_group_', '', group.get('id'))
         # TODO: use str.removeprefix on python 3.9+
-        rule_name = re.sub('^xccdf_org.ssgproject.content_rule_', '', rule.get('id'))
+        rule_name = re.sub(r'^xccdf_org.ssgproject.content_rule_', '', rule.get('id'))
 
         # only rules in the policy_rules group
         if group_name != 'policy_rules':

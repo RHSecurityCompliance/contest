@@ -18,6 +18,7 @@ profile = 'stig'
 
 shared_cmd = ['oscap', 'xccdf', 'eval', '--progress']
 
+
 class SSGRuleResult:
     def __init__(self, rule_id, cce_id, rule_title, stig_ids, result):
         self.rule_id = rule_id
