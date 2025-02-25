@@ -180,10 +180,7 @@ def report_misalignments(ssg_results):
     for ssg_result in ssg_results.values():
         result = "pass"
         disa = get_disa_result_to_str(ssg_result.stig_ids_results)
-        result_note = (
-            f"{ssg_result.rule_id}: "
-            f"SSG result: {ssg_result.result}, "
-            f"DISA result(s): {disa}")
+        result_note = f"SSG result: {ssg_result.result}, DISA result(s): {disa}"
         if ssg_result.final_result == ComparisonResult.DIFFERENT and \
                 ssg_result.result != "notapplicable":
             result = "fail"
