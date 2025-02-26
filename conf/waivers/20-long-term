@@ -36,13 +36,6 @@
 /hardening/[^/]+/with-gui/[^/]+/sysctl_net_ipv4_ip_forward
     rhel == 8
 
-# https://github.com/ComplianceAsCode/content/issues/10424
-# happens on host-os hardening too, probably because Beaker doesn't have
-# firewall enabled or even installed
-# TODO: unfixed
-/hardening/host-os/oscap/[^/]+/service_nftables_disabled
-    True
-
 # RHEL-8: https://bugzilla.redhat.com/show_bug.cgi?id=1834716
 # RHEL-9: https://bugzilla.redhat.com/show_bug.cgi?id=1999587
 # https://issues.redhat.com/browse/RHEL-45706
@@ -98,15 +91,9 @@
 # https://issues.redhat.com/browse/RHEL-25574
 /hardening/image-builder/ccn_[^/]+
     rhel == 9 and status == 'error'
-# https://github.com/ComplianceAsCode/content/issues/12968
-/hardening/image-builder/stig
-    rhel == 9 and status == 'error'
 
 # DISA Alignment waivers
 #
-# https://github.com/ComplianceAsCode/content/issues/9308 (DISA issue)
-/scanning/disa-alignment/.*/sysctl_kernel_core_pattern
-    rhel == 8
 # https://github.com/ComplianceAsCode/content/issues/9307 (DISA issue)
 /scanning/disa-alignment/.*/sysctl_kernel_yama_ptrace_scope
 # https://github.com/ComplianceAsCode/content/issues/10044 (DISA issue)

@@ -21,13 +21,6 @@
 /hardening/ansible/with-gui/stig_gui/sysctl_net_ipv4_conf_all_forwarding
     rhel == 8
 
-# Ansible, on 9.0 / 9.2 / 9.6 / 8.10
-# https://github.com/ComplianceAsCode/content/issues/12831
-# https://github.com/ComplianceAsCode/content/issues/12870
-/hardening/host-os/ansible/anssi_.+/timer_dnf-automatic_enabled
-/hardening/host-os/ansible/anssi_.+/timer_logrotate_enabled
-    True
-
 # https://github.com/ComplianceAsCode/content/issues/10901
 # not sure what enables the service, but second remediation fixes the problem
 # TODO: we do run double remediation, but this still sometimes fails,
@@ -49,13 +42,6 @@
 /per-rule/.+/harden_sshd_ciphers_openssh_conf_crypto_policy/stig_correct_followed_by_incorrect_commented.pass
 /per-rule/.+/sudo_add_umask/0027_var_multiple_values.pass
     rhel == 8
-/per-rule/.+/directory_permissions_var_log_audit/correct_value_0700.pass
-/per-rule/.+/directory_permissions_var_log_audit/incorrect_value_0700.fail
-/per-rule/.+/dconf_gnome_lock_screen_on_smartcard_removal/wrong_value.fail
-/per-rule/.+/file_ownership_var_log_audit_stig/correct_value_default_file.pass
-/per-rule/.+/tftpd_uses_secure_mode/correct.pass
-/per-rule/.+/tftpd_uses_secure_mode/wrong.fail
-    rhel == 9
 # unit tests that try installing packages that don't even exist in the repos,
 # or messing with services of packages that are not installed
 /per-rule/.+/package_quagga_removed/package-installed.fail
@@ -63,8 +49,6 @@
 /per-rule/.+/package_rsh_removed/package-installed.fail
 /per-rule/.+/package_mcafeetp_installed/package-installed.pass
     True
-/per-rule/.+/package_talk_removed/package-installed.fail
-    rhel == 8
 /per-rule/.+/package_xinetd_removed/package-installed.fail
 /per-rule/.+/package_ypbind_removed/package-installed.fail
 /per-rule/.+/package_ypserv_removed/package-installed.fail
@@ -77,19 +61,6 @@
 /hardening/host-os/oscap/[^/]+/timer_.+_enabled
 /hardening/host-os/oscap/[^/]+/package_.+_installed
     True
-
-# RHEL-10 specific /per-rule issues
-#
-# audit rules, https://github.com/ComplianceAsCode/content/pull/12867
-# TODO: unfixed
-/per-rule/.+/audit_rules_unsuccessful_file_modification_open_rule_order/ordered_arch.pass
-/per-rule/.+/audit_rules_unsuccessful_file_modification_open_rule_order/ordered_filter.pass
-/per-rule/.+/audit_rules_unsuccessful_file_modification_openat_rule_order/ordered_arch.pass
-/per-rule/.+/audit_rules_unsuccessful_file_modification_openat_rule_order/ordered_filter.pass
-/per-rule/.+/audit_rules_unsuccessful_file_modification_openat_o_creat/o_creat_last.pass
-/per-rule/.+/audit_rules_unsuccessful_file_modification_openat_o_creat/o_creat_rules.pass
-/per-rule/.+/audit_rules_unsuccessful_file_modification_openat_o_trunc_write/o_trunc.pass
-    rhel == 10
 
 # DISA Alignment waivers
 #
@@ -107,9 +78,6 @@
 /scanning/disa-alignment/.*/grub2_audit_argument
 /scanning/disa-alignment/.*/grub2_audit_backlog_limit_argument
     rhel == 8
-# https://github.com/ComplianceAsCode/content/issues/12149
-/scanning/disa-alignment/.*/harden_sshd_ciphers_opensshserver_conf_crypto_policy
-    rhel == 9
 # https://github.com/ComplianceAsCode/content/issues/11804
 /scanning/disa-alignment/.*/harden_sshd_ciphers_openssh_conf_crypto_policy
 # https://github.com/ComplianceAsCode/content/issues/11692
@@ -127,9 +95,6 @@
 # https://github.com/ComplianceAsCode/content/issues/11693
 /scanning/disa-alignment/(oscap|ansible)/accounts_password_pam_retry
     rhel == 9
-# https://github.com/ComplianceAsCode/content/issues/11802
-/scanning/disa-alignment/[^/]+/auditd_audispd_configure_sufficiently_large_partition
-    True
 
 # https://github.com/ComplianceAsCode/content/issues/13100
 /hardening/.*/file_permission_user_init_files_root
