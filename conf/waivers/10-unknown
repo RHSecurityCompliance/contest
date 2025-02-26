@@ -99,7 +99,9 @@
 # https://github.com/ComplianceAsCode/content/issues/13100
 /hardening/.*/file_permission_user_init_files_root
     True
-
+# https://github.com/ComplianceAsCode/content/issues/13107
+/per-rule/.+/oscap/package_bind_removed/package-installed.fail
+    rhel == 9
 # Image Builder
 #
 # TODO: file issues ?
