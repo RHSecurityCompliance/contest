@@ -71,7 +71,7 @@
 /scanning/disa-alignment/(oscap|ansible)/file_permission_user_init_files_root
     rhel == 8
 # https://github.com/ComplianceAsCode/content/issues/13034
-/scanning/disa-alignment/.*/grub2_pti_argument_argument
+/scanning/disa-alignment/.*/grub2_pti_argument
 /scanning/disa-alignment/.*/grub2_vsyscall_argument
 /scanning/disa-alignment/.*/grub2_page_poison_argument
 /scanning/disa-alignment/.*/grub2_slub_debug_argument
