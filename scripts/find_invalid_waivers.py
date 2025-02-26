@@ -92,8 +92,8 @@ def match_result_mark_waiver(regexes_matched_list, version, arch, status, name, 
                     raise RuntimeError(f"waiver python code did not return bool or Match: {ret}")
                 ret = waive.Match(ret)
 
-            if ret and status != 'pass':
-                # both regex and python code matched and the test result is not 'pass'
+            if ret:
+                # both regex and python code matched
                 if section.regexes not in regexes_matched_list:
                     regexes_matched_list.append(section.regexes)
 
@@ -106,7 +106,9 @@ def load_and_process_results(file, regexes_matched_list):
 
             if version == 'rhel':  # skip the header
                 continue
-            if status not in ['pass', 'fail', 'error', 'warn']:
+            # do not consider 'pass' test results, even if waivers would match them
+            # we still want to remove such waivers
+            if status not in ['fail', 'error', 'warn']:
                 continue
 
             match_result_mark_waiver(regexes_matched_list, version, arch, status, name, note)
