@@ -95,6 +95,11 @@
 # https://github.com/ComplianceAsCode/content/issues/11693
 /scanning/disa-alignment/(oscap|ansible)/accounts_password_pam_retry
     rhel == 9
+# https://github.com/ComplianceAsCode/content/issues/13108
+/scanning/disa-alignment/.*/configure_crypto_policy
+/scanning/disa-alignment/.*/configure_kerberos_crypto_policy
+/scanning/disa-alignment/.*/configure_libreswan_crypto_policy
+    rhel == 9 or rhel == 8
 
 # https://github.com/ComplianceAsCode/content/issues/13100
 /hardening/.*/file_permission_user_init_files_root
