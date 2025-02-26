@@ -100,7 +100,13 @@
 /scanning/disa-alignment/.*/configure_kerberos_crypto_policy
 /scanning/disa-alignment/.*/configure_libreswan_crypto_policy
     rhel == 9 or rhel == 8
-
+# https://github.com/ComplianceAsCode/content/issues/13109
+/scanning/disa-alignment/.+/file_permissions_sshd_config
+/scanning/disa-alignment/.+/file_permissions_sshd_drop_in_config
+    rhel == 9
+# https://github.com/ComplianceAsCode/content/issues/13110
+/scanning/disa-alignment/anaconda/ensure_gpgcheck_globally_activated
+    rhel == 8
 # https://github.com/ComplianceAsCode/content/issues/13100
 /hardening/.*/file_permission_user_init_files_root
     True
