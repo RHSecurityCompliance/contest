@@ -94,6 +94,8 @@
 /scanning/disa-alignment/.*/sshd_set_keepalive
 # https://github.com/ComplianceAsCode/content/issues/11693
 /scanning/disa-alignment/(oscap|ansible)/accounts_password_pam_retry
+# https://github.com/ComplianceAsCode/content/issues/11802
+/scanning/disa-alignment/[^/]+/auditd_audispd_configure_sufficiently_large_partition
     rhel == 9
 # https://github.com/ComplianceAsCode/content/issues/13108
 /scanning/disa-alignment/.*/configure_crypto_policy
