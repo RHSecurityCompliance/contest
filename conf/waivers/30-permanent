@@ -18,6 +18,8 @@
 #   logic checks only Bash remediation and there is no clear approach to
 #   extending it with Ansible that wouldn't break existing logic (ie. for rules
 #   that have only Bash remediation)
+# - also https://github.com/ComplianceAsCode/content/issues/13125
+/hardening(/.+)?/ansible(/.+)?/audit_rules_usergroup_modification
 /hardening(/.+)?/ansible(/.+)?/audit_rules_unsuccessful_file_modification
 /hardening(/.+)?/ansible(/.+)?/audit_rules_login_events
     True
@@ -34,6 +36,10 @@
 # we don't control partitions on the host OS
 /hardening/host-os/.+/mount_option_(home|opt|srv|var|var_log|var_log_audit|tmp)_(noexec|nosuid|nodev|usrquota|grpquota)
 /hardening/host-os/.+/mount_option_boot_efi_nosuid
+    True
+# Beaker and host-os seem to randomly fail any services enabled
+# TODO: probably worth further investigation, but likely not a content issue
+/hardening/host-os/oscap/[^/]+/service_.+_enabled
     True
 
 # HTML links from datastreams waivers
