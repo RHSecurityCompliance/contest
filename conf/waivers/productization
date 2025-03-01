@@ -1,0 +1,225 @@
+# waivers for content issues found during productization (stabilization) testing
+# approximately sorted by test categories and history
+
+# https://github.com/ComplianceAsCode/content/issues/13126
+/per-rule/.+/accounts_password_set_max_life_root/correct.pass
+/per-rule/.+/accounts_password_set_max_life_root/wrong.fail
+/per-rule/.+/postfix_client_configure_mail_alias/correct.pass
+/per-rule/.+/package_quagga_removed/package-installed.fail
+/per-rule/.+/package_rsh-server_removed/package-installed.fail
+/per-rule/.+/package_rsh_removed/package-installed.fail
+/per-rule/.+/package_mcafeetp_installed/package-installed.pass
+    True
+/per-rule/.+/grub2_audit_backlog_limit_argument/correct_grubenv.pass
+/per-rule/.+/grub2_password/invalid_username.fail
+/per-rule/.+/harden_sshd_ciphers_openssh_conf_crypto_policy/stig_correct.pass
+/per-rule/.+/harden_sshd_ciphers_openssh_conf_crypto_policy/stig_correct_followed_by_incorrect_commented.pass
+/per-rule/.+/sudo_add_umask/0027_var_multiple_values.pass
+    rhel == 8
+/per-rule/.+/package_xinetd_removed/package-installed.fail
+/per-rule/.+/package_ypbind_removed/package-installed.fail
+/per-rule/.+/package_ypserv_removed/package-installed.fail
+/per-rule/.+/service_telnet_disabled/service_disabled.pass
+    rhel == 9
+
+# https://github.com/ComplianceAsCode/content/issues/12561
+/scanning/disa-alignment/.*/logind_session_timeout
+    rhel == 8
+# https://github.com/ComplianceAsCode/content/issues/13033
+/scanning/disa-alignment/(oscap|ansible)/file_permission_user_init_files_root
+    rhel == 8
+# https://github.com/ComplianceAsCode/content/issues/13034
+/scanning/disa-alignment/.*/grub2_pti_argument
+/scanning/disa-alignment/.*/grub2_vsyscall_argument
+/scanning/disa-alignment/.*/grub2_page_poison_argument
+/scanning/disa-alignment/.*/grub2_slub_debug_argument
+/scanning/disa-alignment/.*/grub2_audit_argument
+/scanning/disa-alignment/.*/grub2_audit_backlog_limit_argument
+    rhel == 8
+# https://github.com/ComplianceAsCode/content/issues/11804
+/scanning/disa-alignment/.*/harden_sshd_ciphers_openssh_conf_crypto_policy
+# https://github.com/ComplianceAsCode/content/issues/11692
+/scanning/disa-alignment/.*/accounts_password_pam_pwhistory_remember_system_auth
+# https://github.com/ComplianceAsCode/content/issues/11695
+/scanning/disa-alignment/.*/service_pcscd_enabled
+# https://github.com/ComplianceAsCode/content/issues/11698
+/scanning/disa-alignment/.*/no_shelllogin_for_systemaccounts
+# https://github.com/ComplianceAsCode/content/issues/11802
+/scanning/disa-alignment/.*/CCE-88173-0
+# https://github.com/ComplianceAsCode/content/issues/11703
+/scanning/disa-alignment/.*/file_permissions_library_dirs
+# https://github.com/ComplianceAsCode/content/issues/12573
+/scanning/disa-alignment/.*/sshd_set_keepalive
+# https://github.com/ComplianceAsCode/content/issues/11693
+/scanning/disa-alignment/(oscap|ansible)/accounts_password_pam_retry
+# https://github.com/ComplianceAsCode/content/issues/11802
+/scanning/disa-alignment/[^/]+/auditd_audispd_configure_sufficiently_large_partition
+    rhel == 9
+# https://github.com/ComplianceAsCode/content/issues/13108
+/scanning/disa-alignment/.*/configure_crypto_policy
+/scanning/disa-alignment/.*/configure_kerberos_crypto_policy
+/scanning/disa-alignment/.*/configure_libreswan_crypto_policy
+    rhel == 9 or rhel == 8
+# https://github.com/ComplianceAsCode/content/issues/13109
+/scanning/disa-alignment/.+/file_permissions_sshd_config
+/scanning/disa-alignment/.+/file_permissions_sshd_drop_in_config
+    rhel == 9
+# https://github.com/ComplianceAsCode/content/issues/13110
+/scanning/disa-alignment/anaconda/ensure_gpgcheck_globally_activated
+    rhel == 8
+# https://github.com/ComplianceAsCode/content/issues/9307 (DISA issue)
+/scanning/disa-alignment/.*/sysctl_kernel_yama_ptrace_scope
+# https://github.com/ComplianceAsCode/content/issues/10044 (DISA issue)
+/scanning/disa-alignment/.*/accounts_password_pam_pwhistory_remember_password_auth
+# https://github.com/ComplianceAsCode/content/issues/11197 (DISA issue)
+/scanning/disa-alignment/.*/display_login_attempts
+    rhel == 8 or rhel == 9
+# the feature used in this stigid is not ported to 9.0
+/scanning/disa-alignment/.*/CCE-90785-7
+    rhel == 9.0
+# https://github.com/ComplianceAsCode/content/issues/11778 (issue on DISA side)
+/scanning/disa-alignment/.*/file_permission_user_init_files_root
+    rhel == 9
+# https://github.com/ComplianceAsCode/content/issues/13006 (issues on both sides)
+/scanning/disa-alignment/.*/mount_option_boot_efi_nosuid
+    rhel == 8 or rhel == 9
+# https://github.com/ComplianceAsCode/content/issues/13011
+/scanning/disa-alignment/.*/accounts_password_pam_pwquality_retry
+    rhel == 9
+# https://github.com/ComplianceAsCode/content/issues/13021
+/scanning/disa-alignment/.*/directory_permissions_sshd_config_d
+    rhel == 9
+
+# RHEL10 - No official RHEL10 STIG/CIS benchmark yet
+/static-checks/rule-identifiers/(stig|cis.*)/.*
+    rhel == 10
+# RHEL8 https://github.com/ComplianceAsCode/content/issues/12422
+# RHEL9 https://github.com/ComplianceAsCode/content/issues/12425
+/static-checks/rule-identifiers/ospp/.*
+    rhel == 8 or rhel == 9
+# RHEL8 https://github.com/ComplianceAsCode/content/issues/12423
+# RHEL9 https://github.com/ComplianceAsCode/content/issues/12427
+# RHEL10 https://github.com/ComplianceAsCode/content/issues/12430
+/static-checks/rule-identifiers/ism_o/.*
+    rhel == 8 or rhel == 9 or rhel == 10
+
+# https://github.com/ComplianceAsCode/content/issues/13128
+/hardening/ansible/.+/network_nmcli_permissions
+    rhel == 9
+
+# bz1825810 or maybe bz1929805
+# can be reproduced mostly reliably (95%) both via anaconda and oscap CLI,
+# but apparently we don't really care about old releases
+#
+# also re-discovered on RHEL-8 via
+#   https://github.com/ComplianceAsCode/content/issues/10937
+# and afterwards on other profiles (anssi_bp28_high), but still
+# only on GUI
+/hardening/[^/]+/with-gui/[^/]+/sysctl_net_ipv4_ip_forward
+# https://github.com/ComplianceAsCode/content/issues/13129
+/hardening/ansible/with-gui/stig_gui/sysctl_net_ipv4_conf_all_forwarding
+    rhel == 8
+
+# https://github.com/ComplianceAsCode/content/issues/10901
+# not sure what enables the service, but second remediation fixes the problem
+# and we cannot easily do double-remediation with OAA
+/hardening/anaconda/with-gui/[^/]+/service_rpcbind_disabled
+    rhel == 8
+
+# rule ordering issue - accounts_password_pam_retry is checked first and passes,
+# and a later enable_authselect remediation breaks it
+# - see https://github.com/OpenSCAP/openscap/issues/1880
+/hardening/anaconda/.+/accounts_password_pam_retry
+# - happens for kickstarts too, even when those should not fail on ordering,
+#   https://github.com/ComplianceAsCode/content/issues/12277
+/hardening/kickstart/.+/accounts_password_pam_retry
+    True
+
+# https://github.com/ComplianceAsCode/content/issues/13100
+/hardening/.*/file_permission_user_init_files_root
+    True
+
+# https://github.com/ComplianceAsCode/content/issues/13107
+/per-rule/.+/oscap/package_bind_removed/package-installed.fail
+    rhel == 9
+
+# kdump being forcibly enabled somewhere
+# https://github.com/ComplianceAsCode/content/issues/12832
+/hardening/kickstart(/with-gui)?/(hipaa|stig|stig_gui)/service_kdump_disabled
+    rhel == 10
+
+# caused by one of:
+# - bz1778661 (abrt)
+# - bz2209266 (RHEL-9 gdm)
+/hardening/.+/rpm_verify_(ownership|permissions)
+    True
+
+# RHEL-8: https://bugzilla.redhat.com/show_bug.cgi?id=1834716
+# RHEL-9: https://bugzilla.redhat.com/show_bug.cgi?id=1999587
+# https://issues.redhat.com/browse/RHEL-45706
+/hardening/anaconda/with-gui/[^/]+/service_avahi-daemon_disabled
+/hardening/anaconda(/with-gui)?/cis[^/]*/socket_systemd-journal-remote_disabled
+# https://github.com/ComplianceAsCode/content/issues/11498
+/hardening/anaconda/with-gui/[^/]+/service_bluetooth_disabled
+# related to, but probably not caused by:
+# https://github.com/ComplianceAsCode/content/issues/10424
+/hardening/anaconda(/with-gui)?/[^/]+/service_nftables_disabled
+    True
+
+# https://github.com/ComplianceAsCode/content/issues/12282
+/hardening/kickstart/.+/service_avahi-daemon_disabled
+/hardening/kickstart/.+/socket_systemd-journal-remote_disabled
+/hardening/kickstart/.+/service_bluetooth_disabled
+/hardening/kickstart/.+/service_nftables_disabled
+/hardening/kickstart/.+/systemd_tmp_mount_enabled
+    True
+
+# RHEL 9 and 10 are not FIPS certified yet
+/hardening/.+/aide_use_fips_hashes
+    rhel >= 9
+
+# https://github.com/ComplianceAsCode/content/issues/12942
+# https://issues.redhat.com/browse/RHEL-4722
+/hardening/anaconda/ospp/configure_crypto_policy
+/hardening/anaconda/ospp/enable_fips_mode
+/hardening/anaconda/.+/configure_gnutls_tls_crypto_policy
+/hardening/anaconda/.+/harden_sshd_ciphers_openssh_conf_crypto_policy
+/hardening/anaconda/.+/harden_sshd_ciphers_opensshserver_conf_crypto_policy
+/hardening/anaconda/.+/harden_sshd_macs_openssh_conf_crypto_policy
+/hardening/anaconda/.+/harden_sshd_macs_opensshserver_conf_crypto_policy
+    rhel == 8
+
+# OAA just failed without an error, as usual
+# https://issues.redhat.com/browse/OPENSCAP-3321
+# seems to be happening much more reliably with GUI
+/hardening/anaconda/with-gui/cis_workstation_l[12]
+    status == 'error'
+
+# https://github.com/ComplianceAsCode/content/issues/11565
+/hardening/image-builder/.*/audit_rules_privileged_commands
+# https://github.com/ComplianceAsCode/content/issues/11566
+/hardening/image-builder/.+/sebool_selinuxuser_execstack
+# https://github.com/ComplianceAsCode/content/issues/11567
+/hardening/image-builder/.*/enable_dracut_fips_module
+/hardening/image-builder/.*/enable_fips_mode
+# https://github.com/ComplianceAsCode/content/issues/13127
+/hardening/image-builder(/.+)?/anssi_[^/]+/mount_option_tmp_noexec
+/hardening/image-builder(/.+)?/anssi_[^/]+/sebool_polyinstantiation_enabled
+/hardening/image-builder(/.+)?/hipaa/sebool_selinuxuser_execmod
+    True
+# OpenSCAP unsupported profile: xccdf_org.ssgproject.content_profile_ccn_advanced
+# https://issues.redhat.com/browse/RHEL-25574
+/hardening/image-builder/ccn_[^/]+
+    rhel == 9 and status == 'error'
+
+# enable_authselect failing on image-mode
+# https://issues.redhat.com/browse/OPENSCAP-5272
+/hardening/container/[^/]+/[^/]+/enable_authselect
+    rhel == 9
+# https://issues.redhat.com/browse/RHEL-77158
+# (we unselect max_age in conf/remediations.py)
+/hardening/container/anaconda-ostree/.+/accounts_password_set_min_life_existing
+/hardening/container/anaconda-ostree/.+/accounts_password_set_warn_age_existing
+    True
+
+# vim: syntax=python
