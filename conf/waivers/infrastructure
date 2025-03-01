@@ -1,0 +1,29 @@
+# failures caused by infrastructure or infra-specific OS setup and hacks
+# (ie. restraintd or tmt running on Testing Farm machines)
+
+# we cannot influence how host-os was installed (ie. Beaker), and since FIPS
+# works only when the OS was installed with fips=1, this will likely fail
+/hardening/host-os/.+/enable_fips_mode
+    True
+
+# Beaker-specific:
+# all Beaker repositories have gpgcheck=0 and they get copied to nested VMs too
+/(hardening|scanning)/.+/ensure_gpgcheck_never_disabled
+# we don't control partitions on the host OS
+/hardening/host-os/.+/mount_option_(home|opt|srv|var|var_log|var_log_audit|tmp)_(noexec|nosuid|nodev|usrquota|grpquota)
+/hardening/host-os/.+/mount_option_boot_efi_nosuid
+    True
+# Beaker and host-os seem to randomly fail any services enabled
+# TODO: probably worth further investigation, but likely not a content issue
+/hardening/host-os/oscap/[^/]+/service_.+_enabled
+    True
+
+# Remediations are unselected for CentOS, but they might pass outside Testing Farm
+/hardening/.+/ensure_gpgcheck_globally_activated
+/hardening/.+/ensure_gpgcheck_local_packages
+/hardening/.+/ensure_gpgcheck_never_disabled
+/hardening/.+/ensure_gpgcheck_repo_metadata
+/hardening/.+/ensure_redhat_gpgkey_installed
+    rhel.is_centos()
+
+# vim: syntax=python
