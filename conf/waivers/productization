@@ -212,9 +212,12 @@
 /hardening/image-builder/ccn_[^/]+
     rhel == 9 and status == 'error'
 
-# enable_authselect failing on image-mode
-# https://issues.redhat.com/browse/OPENSCAP-5272
-/hardening/container/[^/]+/[^/]+/enable_authselect
+# rule accounts_password_pam_retry passes during initial scan but it is then
+# broken by the enable_authselect rule remediation (as on RHEL9 bootc container
+# image there is no default authselect profile selected); there is a documentation
+# informing users to select default authselect profile in a Containerfile
+# until https://issues.redhat.com/browse/RHEL-82079 is fixed (9.7+)
+/hardening/container/[^/]+/[^/]+/accounts_password_pam_retry
     rhel == 9
 # https://issues.redhat.com/browse/RHEL-77158
 # (we unselect max_age in conf/remediations.py)
