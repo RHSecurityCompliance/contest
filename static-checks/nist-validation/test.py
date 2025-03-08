@@ -3,14 +3,13 @@
 import io
 import zipfile
 import requests
-import subprocess
 import xml.etree.ElementTree as ET
 from pathlib import Path
 
 from lib import util, results
 
 
-url = 'https://github.com/RHSecurityCompliance/contest-data/raw/main/data/scapval-1.3.6-rc3.zip'
+url = 'https://github.com/RHSecurityCompliance/contest-data/raw/main/data/scapval-1.3.6.zip'
 r = requests.get(url)
 r.raise_for_status()
 zip = zipfile.ZipFile(io.BytesIO(r.content))
@@ -30,7 +29,12 @@ for datastream in util.iter_datastreams():
         '-valresultfile', result_file,
         '-file', datastream,
     ]
-    util.subprocess_run(cmd, stdout=subprocess.DEVNULL, check=True)
+    with util.LastLinesBuffer(100) as f:
+        proc = util.subprocess_run(cmd, stdout=f, stderr=f)
+    if proc.returncode != 0:
+        util.log(f"scapval.sh output:\n----------\n{f.output.rstrip()}\n----------")
+        proc.check_returncode()
+
     tree = ET.parse(result_file)
     root = tree.getroot()
     for elem in root.findall('./nist:results/nist:base-requirement', ns):
