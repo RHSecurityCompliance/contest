@@ -11,6 +11,7 @@ from .backup        import *  # noqa
 from .dedent        import *  # noqa
 from .environment   import *  # noqa
 from .httpsrv       import *  # noqa
+from .last_lines_buffer import *  # noqa
 from .log           import *  # noqa
 from .old_content   import *  # noqa
 from .network       import *  # noqa
