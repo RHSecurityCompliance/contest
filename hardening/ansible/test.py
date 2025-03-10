@@ -1,6 +1,7 @@
 #!/usr/bin/python3
 
 import os
+import subprocess
 
 from lib import util, results, virt, oscap, ansible
 from conf import remediation, partitions
@@ -51,8 +52,8 @@ with g.snapshotted():
         *skip_tags_arg,
         playbook,
     ]
-    _, lines = util.subprocess_stream(ansible_cmd, check=True)
-    ansible.report_from_output(lines)
+    _, lines = util.subprocess_stream(ansible_cmd, stderr=subprocess.STDOUT, check=True)
+    ansible.report_from_output(lines, to_file='ansible-playbook.log')
     g.soft_reboot()
 
     # scan the remediated system
@@ -69,5 +70,6 @@ with g.snapshotted():
     g.copy_from('scan-arf.xml')
 
 util.subprocess_run(['gzip', '-9', 'scan-arf.xml'], check=True)
+util.subprocess_run(['gzip', '-9', 'ansible-playbook.log'], check=True)
 
-results.report_and_exit(logs=['report.html', 'scan-arf.xml.gz'])
+results.report_and_exit(logs=['report.html', 'scan-arf.xml.gz', 'ansible-playbook.log.gz'])
