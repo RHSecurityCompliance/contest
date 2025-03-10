@@ -78,6 +78,7 @@ import sys
 import re
 import time
 import subprocess
+import collections
 import textwrap
 import contextlib
 import tempfile
@@ -113,6 +114,7 @@ INSTALL_FAILURES = [
     br"Non interactive installation failed",
     # Anaconda died due to oscap crashing (or other reasons)
     br"Kernel panic - not syncing",
+    br"The installer will now terminate",
 ]
 
 PIPE = subprocess.PIPE
@@ -430,11 +432,12 @@ class Guest:
             executable = util.libdir / 'pseudotty'
             proc = subprocess.Popen(virt_install, stdout=PIPE, executable=executable)
             fail_exprs = [re.compile(x) for x in INSTALL_FAILURES]
+            # keep only the last 100 lines
+            line_buff = collections.deque(maxlen=100)
 
             try:
                 for line in proc.stdout:
-                    sys.stdout.buffer.write(line)
-                    sys.stdout.buffer.flush()
+                    line_buff.append(line)
                     if any(x.search(line) for x in fail_exprs):
                         proc.terminate()
                         proc.wait()
@@ -442,6 +445,9 @@ class Guest:
                 if proc.wait() > 0:
                     raise RuntimeError("virt-install failed")
             except Exception as e:
+                for line in line_buff:
+                    sys.stdout.buffer.write(line)
+                sys.stdout.buffer.flush()
                 self.destroy()
                 self.undefine()
                 raise e from None
