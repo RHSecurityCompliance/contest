@@ -1,12 +1,15 @@
 #!/usr/bin/python3
 
 import os
+import subprocess
 
 from lib import util, results, oscap, ansible
 from conf import remediation
 
 
 profile = util.get_test_name().rpartition('/')[2]
+
+ansible_playbook_log = '/var/tmp/ansible-playbook.log'
 
 # the VM guest ssh code doesn't use $HOME/.known_hosts, so Ansible blocks
 # on trying to accept its ssh key - tell it to ignore this
@@ -29,8 +32,8 @@ if util.get_reboot_count() == 0:
         *skip_tags_arg,
         playbook,
     ]
-    _, lines = util.subprocess_stream(cmd, check=True)
-    ansible.report_from_output(lines)
+    _, lines = util.subprocess_stream(cmd, stderr=subprocess.STDOUT, check=True)
+    ansible.report_from_output(lines, to_file=ansible_playbook_log)
 
     util.reboot()
 
@@ -52,5 +55,6 @@ else:
     pack.uninstall()
 
     util.subprocess_run(['gzip', '-9', 'scan-arf.xml'], check=True)
+    util.subprocess_run(['gzip', '-9', ansible_playbook_log], check=True)
 
-    results.report_and_exit(logs=['report.html', 'scan-arf.xml.gz'])
+    results.report_and_exit(logs=['report.html', 'scan-arf.xml.gz', f'{ansible_playbook_log}.gz'])

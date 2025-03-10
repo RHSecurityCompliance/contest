@@ -1,5 +1,7 @@
 #!/usr/bin/python3
+
 import os
+import subprocess
 
 import shared
 from lib import util, results, virt, versions, ansible
@@ -30,8 +32,8 @@ with g.snapshotted():
         *skip_tags_arg,
         playbook,
     ]
-    _, lines = util.subprocess_stream(ansible_cmd, check=True)
-    ansible.report_from_output(lines)
+    _, lines = util.subprocess_stream(ansible_cmd, stderr=subprocess.STDOUT, check=True)
+    ansible.report_from_output(lines, to_file='ansible-playbook.log')
     g.soft_reboot()
 
     with util.get_source_content() as content_dir:
@@ -53,4 +55,6 @@ with g.snapshotted():
         # Compare ARFs and report results from output
         shared.compare_arfs('ssg-arf.xml', 'disa-arf.xml')
 
-results.report_and_exit(logs=['ssg-report.html', 'disa-report.html'])
+util.subprocess_run(['gzip', '-9', 'ansible-playbook.log'], check=True)
+
+results.report_and_exit(logs=['ssg-report.html', 'disa-report.html', 'ansible-playbook.log.gz'])
