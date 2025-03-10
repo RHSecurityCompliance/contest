@@ -3,6 +3,8 @@
 import io
 import zipfile
 import requests
+import subprocess
+import collections
 import xml.etree.ElementTree as ET
 from pathlib import Path
 
@@ -29,11 +31,15 @@ for datastream in util.iter_datastreams():
         '-valresultfile', result_file,
         '-file', datastream,
     ]
-    with util.LastLinesBuffer(100) as f:
-        proc = util.subprocess_run(cmd, stdout=f, stderr=f)
+    proc, lines = util.subprocess_stream(cmd)
+
+    # keep only the last 100 lines
+    line_buff = collections.deque(maxlen=100)
+    line_buff += lines
     if proc.returncode != 0:
-        util.log(f"scapval.sh output:\n----------\n{f.output.rstrip()}\n----------")
-        proc.check_returncode()
+        output = '\n'.join(line_buff)
+        util.log(f"scapval.sh output:\n----------\n{output}\n----------")
+        raise subprocess.CalledProcessError(cmd=cmd, returncode=proc.returncode)
 
     tree = ET.parse(result_file)
     root = tree.getroot()
