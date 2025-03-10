@@ -126,15 +126,6 @@
 /hardening/anaconda/with-gui/[^/]+/service_rpcbind_disabled
     rhel == 8
 
-# rule ordering issue - accounts_password_pam_retry is checked first and passes,
-# and a later enable_authselect remediation breaks it
-# - see https://github.com/OpenSCAP/openscap/issues/1880
-/hardening/anaconda/.+/accounts_password_pam_retry
-# - happens for kickstarts too, even when those should not fail on ordering,
-#   https://github.com/ComplianceAsCode/content/issues/12277
-/hardening/kickstart/.+/accounts_password_pam_retry
-    True
-
 # https://github.com/ComplianceAsCode/content/issues/13100
 /hardening/.*/file_permission_user_init_files_root
     True
