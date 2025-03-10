@@ -131,7 +131,7 @@
     True
 
 # https://github.com/ComplianceAsCode/content/issues/13107
-/per-rule/.+/oscap/package_bind_removed/package-installed.fail
+/per-rule/.+/package_bind_removed/package-installed.fail
     rhel == 9
 
 # kdump being forcibly enabled somewhere
