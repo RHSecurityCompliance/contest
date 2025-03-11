@@ -102,7 +102,7 @@ def report_tmt(status, name=None, note=None, logs=None, *, add_output=True):
         'result': status,
     }
     if note:
-        new_result['note'] = note
+        new_result['note'] = [note]
 
     log_entries = []
 
