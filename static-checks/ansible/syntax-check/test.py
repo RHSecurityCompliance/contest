@@ -7,8 +7,7 @@ from lib import ansible, util, oscap, results
 
 ansible.install_deps()
 
-ds = util.get_datastream()
-all_profiles = oscap.Datastream(ds).profiles
+all_profiles = oscap.global_ds().profiles
 
 # Generated playbooks
 for profile in all_profiles:
