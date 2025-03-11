@@ -89,6 +89,9 @@
 # https://github.com/ComplianceAsCode/content/issues/13021
 /scanning/disa-alignment/.*/directory_permissions_sshd_config_d
     rhel == 9
+# https://github.com/ComplianceAsCode/content/issues/13160
+/scanning/disa-alignment/.+/rootfiles_configured
+    rhel == 9
 
 # RHEL10 - No official RHEL10 STIG/CIS benchmark yet
 /static-checks/rule-identifiers/(stig|cis.*)/.*
