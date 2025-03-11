@@ -1,6 +1,10 @@
 # waivers for content issues found during productization (stabilization) testing
 # approximately sorted by test categories and history
 
+# https://github.com/ComplianceAsCode/content/issues/13159
+/per-rule/.+/oscap/partition_for_var_log/no_partition.fail
+    rhel == 9
+
 # https://github.com/ComplianceAsCode/content/issues/13126
 /per-rule/.+/accounts_password_set_max_life_root/correct.pass
 /per-rule/.+/accounts_password_set_max_life_root/wrong.fail
