@@ -9,5 +9,7 @@ discover:
     exclude:
       # frequently fails on transient issues, run it only in stabilization
       - /static-checks/html-links
+      # occasionally fails, is not useful on a daily/weekly basis
+      - /static-checks/nist-validation
 
 # vim: syntax=yaml
