@@ -25,6 +25,7 @@ ignore = [
     "SIM102",   # collapsible-if
     "SIM117",   # multiple-with-statements
     "SIM401",   # if-else-block-instead-of-dict-get
+    "PLR0911",  # too-many-return-statements
     "PLR0912",  # too-many-branches
     "PLR0913",  # too-many-arguments
     "PLR2004",  # magic-value-comparison
