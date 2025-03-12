@@ -636,7 +636,7 @@ class Guest:
         self._destroy_snapshotted()
 
         cmd = [
-            'qemu-img', 'create', '-f', 'qcow2',
+            'qemu-img', 'create', '-q', '-f', 'qcow2',
             '-b', self.disk_path, '-F', self.disk_format,
             self.snapshot_path,
         ]
@@ -666,7 +666,6 @@ class Guest:
         if not self.can_be_snapshotted():
             raise RuntimeError(f"guest {self.name} not ready for snapshotting")
         self._restore_snapshotted()
-        util.log(f"guest {self.name} ready")
         try:
             yield self
         finally:
@@ -687,7 +686,6 @@ class Guest:
         self.start()
         self.ipaddr = wait_for_ifaddr(self.name)
         wait_for_ssh(self.ipaddr)
-        util.log(f"guest {self.name} ready")
         try:
             yield self
         finally:
