@@ -635,11 +635,11 @@ class Guest:
         self._destroy_snapshotted()
 
         cmd = [
-            'qemu-img', 'create', '-f', 'qcow2',
+            'qemu-img', 'create', '-q', '-f', 'qcow2',
             '-b', self.disk_path, '-F', self.disk_format,
             self.snapshot_path,
         ]
-        util.subprocess_run(cmd, check=True)
+        subprocess.run(cmd, check=True)
 
         virsh('restore', self.state_file_path, check=True)
 
@@ -667,7 +667,6 @@ class Guest:
         self._restore_snapshotted()
         self.ipaddr = wait_for_ifaddr(self.name)
         wait_for_ssh(self.ipaddr)
-        util.log(f"guest {self.name} ready")
         try:
             yield self
         finally:
@@ -688,7 +687,6 @@ class Guest:
         self.start()
         self.ipaddr = wait_for_ifaddr(self.name)
         wait_for_ssh(self.ipaddr)
-        util.log(f"guest {self.name} ready")
         try:
             yield self
         finally:
@@ -737,7 +735,7 @@ class Guest:
 
     def _do_rsync(self, *args):
         ssh = (
-            f'ssh -i {self.ssh_keyfile_path}'
+            f'ssh -q -i {self.ssh_keyfile_path}'
             ' -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null'
         )
         return util.subprocess_run(['rsync', '-a', '-e', ssh, *args], check=True)
