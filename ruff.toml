@@ -25,6 +25,7 @@ ignore = [
     "SIM102",   # collapsible-if
     "SIM117",   # multiple-with-statements
     "SIM401",   # if-else-block-instead-of-dict-get
+    "PLR0911",  # too-many-return-statements
     "PLR0912",  # too-many-branches
     "PLR0913",  # too-many-arguments
     "PLR2004",  # magic-value-comparison
@@ -36,9 +37,11 @@ ignore = [
     "RUF012",   # mutable-class-default
 
     # rules from preview
+    "E115",     # no-indented-block-comment
     "E226",     # missing-whitespace-around-arithmetic-operator
     "E231",     # missing-whitespace
     "E265",     # no-space-after-block-comment
+    "E266",     # multiple-leading-hashes-for-block-comment
     "PLR0904",  # too-many-public-methods
     "PLR0917",  # too-many-positional-arguments
     "PLR6201",  # literal-membership
