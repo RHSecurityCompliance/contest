@@ -62,20 +62,20 @@ def get_user_content(build=True):
     return user_content
 
 
-def _find_datastreams(force_ssg):
+def find_datastreams(force_ssg, content_dir=None):
     ssg_path = Path('/usr/share/xml/scap/ssg/content')
     # if specifically requested by the user
     if force_ssg:
         return ssg_path
-    # if CONTEST_CONTENT was specified
-    user_content = get_user_content()
+    # if given content dir override or if CONTEST_CONTENT was specified
+    user_content = content_dir or get_user_content()
     if user_content:
         return user_content / CONTENT_BUILD_DIR
     # default to the OS-wide scap-security-guide content
     return ssg_path
 
 
-def get_datastream(force_ssg=False):
+def get_datastream(force_ssg=False, content_dir=None):
     if rhel.is_true_rhel():
         name = f'ssg-rhel{rhel.major}-ds.xml'
     elif rhel.is_centos():
@@ -83,46 +83,46 @@ def get_datastream(force_ssg=False):
             name = f'ssg-centos{rhel.major}-ds.xml'
         else:
             name = f'ssg-cs{rhel.major}-ds.xml'
-    datastream = _find_datastreams(force_ssg) / name
+    datastream = find_datastreams(force_ssg, content_dir) / name
     if not datastream.exists():
         raise RuntimeError(f"could not find datastream as {datastream}")
     return datastream
 
 
-def iter_datastreams(force_ssg=False):
-    for file in _find_datastreams(force_ssg).rglob('*'):
+def iter_datastreams(force_ssg=False, content_dir=None):
+    for file in find_datastreams(force_ssg, content_dir).rglob('*'):
         # Return only DS v1.3, do not return v1.2 (ends with '-ds-1.2.xml')
         if file.name.endswith('-ds.xml'):
             yield file
 
 
-def _find_playbooks(force_ssg):
+def find_playbooks(force_ssg=False, content_dir=None):
     ssg_path = Path('/usr/share/scap-security-guide/ansible')
     # if specifically requested by the user
     if force_ssg:
         return ssg_path
-    # if CONTEST_CONTENT was specified
-    user_content = get_user_content()
+    # if given content dir override or if CONTEST_CONTENT was specified
+    user_content = content_dir or get_user_content()
     if user_content:
         return user_content / CONTENT_BUILD_DIR / 'ansible'
     # default to the OS-wide scap-security-guide content
     return ssg_path
 
 
-def _find_per_rule_playbooks(force_ssg):
+def find_per_rule_playbooks(force_ssg=False, content_dir=None):
     ssg_path = Path(f'/usr/share/scap-security-guide/ansible/rule_playbooks/rhel{rhel.major}/all')
     # if specifically requested by the user
     if force_ssg:
         return ssg_path
-    # if CONTEST_CONTENT was specified
-    user_content = get_user_content()
+    # if given content dir override or if CONTEST_CONTENT was specified
+    user_content = content_dir or get_user_content()
     if user_content:
         return user_content / CONTENT_BUILD_DIR / f'rhel{rhel.major}' / 'playbooks' / 'all'
     # default to the OS-wide scap-security-guide content
     return ssg_path
 
 
-def get_playbook(profile, force_ssg=False):
+def get_playbook(profile, force_ssg=False, content_dir=None):
     if rhel.is_true_rhel():
         name = f'rhel{rhel.major}-playbook-{profile}.yml'
     elif rhel.is_centos():
@@ -130,23 +130,24 @@ def get_playbook(profile, force_ssg=False):
             name = f'centos{rhel.major}-playbook-{profile}.yml'
         else:
             name = f'cs{rhel.major}-playbook-{profile}.yml'
-    playbook = _find_playbooks(force_ssg) / name
+    playbook = find_playbooks(force_ssg, content_dir) / name
     if not playbook.exists():
         raise RuntimeError(f"cound not find playbook as {playbook}")
     return playbook
 
 
-def iter_playbooks(force_ssg=False):
-    for file in _find_playbooks(force_ssg).iterdir():
+def iter_playbooks(force_ssg=False, content_dir=None):
+    for file in find_playbooks(force_ssg, content_dir).iterdir():
         if file.suffix == '.yml':
             yield file
-    per_rule_dir = _find_per_rule_playbooks(force_ssg)
+    per_rule_dir = find_per_rule_playbooks(force_ssg, content_dir)
     if per_rule_dir.exists():
         yield from per_rule_dir.iterdir()
 
 
-def get_kickstart(profile):
-    user_content = get_user_content()
+def get_kickstart(profile, content_dir=None):
+    # if given content dir override or if CONTEST_CONTENT was specified
+    user_content = content_dir or get_user_content()
     if user_content:
         kickstart = (
             user_content / 'products' / f'rhel{rhel.major}' / 'kickstart'
