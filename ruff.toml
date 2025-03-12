@@ -39,6 +39,7 @@ ignore = [
     "E226",     # missing-whitespace-around-arithmetic-operator
     "E231",     # missing-whitespace
     "E265",     # no-space-after-block-comment
+    "E266",     # multiple-leading-hashes-for-block-comment
     "PLR0904",  # too-many-public-methods
     "PLR0917",  # too-many-positional-arguments
     "PLR6201",  # literal-membership
