@@ -172,7 +172,7 @@ def _parse_cmake_config(path):
             yield (name, value)
 
 
-def build_content(path, extra_cmake_opts=None, force=False):
+def build_content(path, extra_cmake_opts=None, make_targets=None, force=False):
     """
     Given a CaC/content source as 'path', build it with some sensible CMake
     options.
@@ -180,6 +180,9 @@ def build_content(path, extra_cmake_opts=None, force=False):
     Specify any additional ones as 'extra_cmake_opts' (dict); make sure to use
     the full option name with :DATATYPE as visible in CMakeCache.txt.
     See also https://cmake.org/cmake/help/latest/prop_cache/TYPE.html.
+
+    If 'make_targets' (iterable) is given, it is appended to the 'make' CLI,
+    rather than leaving it to build the default 'all'.
 
     Set 'force=True' to always re-build content, even with compatible options.
     """
@@ -224,7 +227,8 @@ def build_content(path, extra_cmake_opts=None, force=False):
     util.subprocess_run(['cmake', '../', *cli_opts], cwd=build_dir, check=True)
 
     cpus = os.cpu_count() or 1
-    util.subprocess_run(['make', f'-j{cpus}'], cwd=build_dir, check=True)
+    targets = make_targets or ()
+    util.subprocess_run(['make', f'-j{cpus}', *targets], cwd=build_dir, check=True)
 
 
 @contextlib.contextmanager
