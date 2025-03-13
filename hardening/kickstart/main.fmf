@@ -27,9 +27,7 @@ adjust:
     because: we want to run virtualization on x86_64 only
   - when: distro < rhel-10
     enabled: false
-    because: >
-        too late in the RHEL-8 lifecycle for this,
-        TODO enable this on RHEL-9 once OpenSCAP v1.4 is there
+    because: on RHEL <= 9 oscap-anaconda-addon is used instead
 
 /anssi_bp28_high:
 
@@ -61,8 +59,7 @@ adjust:
     environment+:
         WITH_FIPS: 1
     adjust+:
-      - when: distro >= rhel-10
-        enabled: false
+      - enabled: false
         because: there is no CUI profile on RHEL-10+
 
 /e8:
@@ -77,8 +74,7 @@ adjust:
     environment+:
         WITH_FIPS: 1
     adjust+:
-      - when: distro >= rhel-10
-        enabled: false
+      - enabled: false
         because: there is no OSPP profile on RHEL-10+
 
 /pci-dss:
@@ -90,26 +86,26 @@ adjust:
 /stig_gui:
     adjust+:
       - enabled: false
-        because: CCN profiles are not present on RHEL-8
+        because: only supported with GUI installations
 
 /ccn_advanced:
     adjust+:
-      - when: distro == rhel-8 or distro == rhel-10
+      - when: distro == rhel-10
         enabled: false
-        because: CCN profiles are not present on RHEL-8 and on RHEL-10
+        because: CCN profiles are not present on RHEL-10
 
 /ccn_intermediate:
     tag+:
       - subset-profile
     adjust+:
-      - when: distro == rhel-8 or distro == rhel-10
+      - when: distro == rhel-10
         enabled: false
-        because: CCN profiles are not present on RHEL-8 and on RHEL-10
+        because: CCN profiles are not present on RHEL-10
 
 /ccn_basic:
     tag+:
       - subset-profile
     adjust+:
-      - when: distro == rhel-8 or distro == rhel-10
+      - when: distro == rhel-10
         enabled: false
-        because: CCN profiles are not present on RHEL-8 and on RHEL-10
+        because: CCN profiles are not present on RHEL-10
