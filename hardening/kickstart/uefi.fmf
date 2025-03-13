@@ -29,8 +29,7 @@ tag+:
 
 /cui:
     adjust+:
-      - when: distro >= rhel-10
-        enabled: false
+      - enabled: false
         because: there is no CUI profile on RHEL-10+
 
 /e8:
@@ -41,8 +40,7 @@ tag+:
 
 /ospp:
     adjust+:
-      - when: distro >= rhel-10
-        enabled: false
+      - enabled: false
         because: there is no OSPP profile on RHEL-10+
 
 /pci-dss:
@@ -52,26 +50,26 @@ tag+:
 /stig_gui:
     adjust+:
       - enabled: false
-        because: CCN profiles are not present on RHEL-8
+        because: only supported with GUI installations
 
 /ccn_advanced:
     adjust+:
-      - when: distro == rhel-8 or distro == rhel-10
+      - when: distro == rhel-10
         enabled: false
-        because: CCN profiles are not present on RHEL-8 and on RHEL-10
+        because: CCN profiles are not present on RHEL-10
 
 /ccn_intermediate:
     tag+:
       - subset-profile
     adjust+:
-      - when: distro == rhel-8 or distro == rhel-10
+      - when: distro == rhel-10
         enabled: false
-        because: CCN profiles are not present on RHEL-8 and on RHEL-10
+        because: CCN profiles are not present on RHEL-10
 
 /ccn_basic:
     tag+:
       - subset-profile
     adjust+:
-      - when: distro == rhel-8 or distro == rhel-10
+      - when: distro == rhel-10
         enabled: false
-        because: CCN profiles are not present on RHEL-8 and on RHEL-10
+        because: CCN profiles are not present on RHEL-10

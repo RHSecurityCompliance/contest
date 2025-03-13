@@ -40,13 +40,7 @@ duration: 2h
     environment+:
         WITH_FIPS: 1
     adjust+:
-      - when: distro == rhel-8
-        enabled: false
-        because: >
-            not supported on RHEL-8 according to RHEL documentation,
-            the "Profiles not compatible with Server with GUI" table
-      - when: distro >= rhel-10
-        enabled: false
+      - enabled: false
         because: there is no CUI profile on RHEL-10+
 
 /e8:
@@ -61,13 +55,7 @@ duration: 2h
     environment+:
         WITH_FIPS: 1
     adjust+:
-      - when: distro == rhel-8
-        enabled: false
-        because: >
-            not supported on RHEL-8 according to RHEL documentation,
-            the "Profiles not compatible with Server with GUI" table
-      - when: distro >= rhel-10
-        enabled: false
+      - enabled: false
         because: there is no OSPP profile on RHEL-10+
 
 /pci-dss:
@@ -77,8 +65,6 @@ duration: 2h
       - enabled: false
         because: >
             not supported with GUI, use stig_gui instead;
-            not supported on RHEL-8 or RHEL-9 according to RHEL documentation,
-            the "Profiles not compatible with Server with GUI" table
 
 /stig_gui:
     environment+:
@@ -86,22 +72,22 @@ duration: 2h
 
 /ccn_advanced:
     adjust+:
-      - when: distro == rhel-8 or distro == rhel-10
+      - when: distro == rhel-10
         enabled: false
-        because: CCN profiles are not present on RHEL-8 and on RHEL-10
+        because: CCN profiles are not present on RHEL-10
 
 /ccn_intermediate:
     tag+:
       - subset-profile
     adjust+:
-      - when: distro == rhel-8 or distro == rhel-10
+      - when: distro == rhel-10
         enabled: false
-        because: CCN profiles are not present on RHEL-8 and on RHEL-10
+        because: CCN profiles are not present on RHEL-10
 
 /ccn_basic:
     tag+:
       - subset-profile
     adjust+:
-      - when: distro == rhel-8 or distro == rhel-10
+      - when: distro == rhel-10
         enabled: false
-        because: CCN profiles are not present on RHEL-8 and on RHEL-10
+        because: CCN profiles are not present on RHEL-10
