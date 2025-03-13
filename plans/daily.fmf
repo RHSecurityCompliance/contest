@@ -8,12 +8,14 @@ discover:
       - tag:-subset-profile
     test:
       # every remediation method, but only the basic reference environment,
-      # without GUI/UEFI/etc. variants
+      # without GUI variants
       - /hardening/oscap/[^/]+$
       - /hardening/anaconda/[^/]+$
       - /hardening/kickstart/[^/]+$
       - /hardening/ansible/[^/]+$
       - /hardening/image-builder/[^/]+$
+      # UEFI tests, due to capacity we run them only on RHEL-10
+      - /hardening/[^/]+/uefi
       # add stig_gui as an exception here, since it needs to be tested somehow
       # but the only way to do it is via GUI
       - /hardening/oscap/with-gui/stig_gui
