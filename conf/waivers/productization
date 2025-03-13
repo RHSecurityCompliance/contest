@@ -139,7 +139,7 @@
 
 # kdump being forcibly enabled somewhere
 # https://github.com/ComplianceAsCode/content/issues/12832
-/hardening/kickstart(/with-gui)?/(hipaa|stig|stig_gui)/service_kdump_disabled
+/hardening/kickstart(/with-gui|/uefi)?/(hipaa|stig|stig_gui)/service_kdump_disabled
     rhel == 10
 
 # caused by one of:
