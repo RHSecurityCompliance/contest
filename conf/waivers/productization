@@ -129,6 +129,10 @@
 /hardening/anaconda/with-gui/[^/]+/service_rpcbind_disabled
     rhel == 8
 
+# https://github.com/ComplianceAsCode/content/issues/13175
+/hardening/anaconda/.+/enable_gpgcheck_for_all_repositories
+    rhel == 8
+
 # https://github.com/ComplianceAsCode/content/issues/13100
 /hardening/.*/file_permission_user_init_files_root
     True
