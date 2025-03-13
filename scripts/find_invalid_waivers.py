@@ -14,10 +14,17 @@ import gzip
 import pathlib
 import argparse
 import textwrap
+import collections
 
 # add the parent directory to the sys.path so we can import from the lib directory
 sys.path.append(str(pathlib.Path(__file__).resolve().parent.parent))
 from lib import waive, versions
+
+
+MatchedWaiver = collections.namedtuple(
+    'MatchedWaiver',
+    ['regex', 'python_source'],
+)
 
 
 class _FakeRhel(versions._RpmVerCmp):
@@ -63,9 +70,7 @@ def match_result_mark_waiver(regexes_matched_list, version, arch, status, name, 
     if note is None or note == '[]':
         note = ''
 
-    if '(waived pass)' in note:
-        note = unwaive_note('(waived pass)', note)
-    elif '(waived fail)' in note:
+    if '(waived fail)' in note:
         note = unwaive_note('(waived fail)', note)
         status = 'fail'
     elif '(waived error)' in note:
@@ -84,18 +89,22 @@ def match_result_mark_waiver(regexes_matched_list, version, arch, status, name, 
     }
 
     for section in _sections_cache:
-        if any(x.fullmatch(name) for x in section.regexes):
-            ret = eval(section.python_code, objs, None)
+        for regex in section.regexes:
+            if regex.fullmatch(name):
+                ret = eval(section.python_code, objs, None)
 
-            if not isinstance(ret, waive.Match):
-                if not isinstance(ret, bool):
-                    raise RuntimeError(f"waiver python code did not return bool or Match: {ret}")
-                ret = waive.Match(ret)
+                if not isinstance(ret, waive.Match):
+                    if not isinstance(ret, bool):
+                        raise RuntimeError(
+                            f"waiver python code did not return bool or Match: {ret}",
+                        )
+                    ret = waive.Match(ret)
 
-            if ret:
-                # both regex and python code matched
-                if section.regexes not in regexes_matched_list:
-                    regexes_matched_list.append(section.regexes)
+                if ret:
+                    # both regex and python code matched
+                    m = MatchedWaiver(regex, section.python_source)
+                    if m not in regexes_matched_list:
+                        regexes_matched_list.append(m)
 
 
 def load_and_process_results(file, regexes_matched_list):
@@ -115,7 +124,8 @@ def load_and_process_results(file, regexes_matched_list):
 
 
 def get_invalid_waivers(result_file_list):
-    # list of sets of regexes that matched 'fail' or 'error' test results
+    # list of MatchedWaiver tuples containing regex that matched 'fail' or 'error'
+    # test result and the associated python source code
     regexes_matched_list = []
 
     global _sections_cache
@@ -131,19 +141,22 @@ def get_invalid_waivers(result_file_list):
         "===============================================================\n",
     )
     for section in _sections_cache:
-        if section.regexes not in regexes_matched_list:
-            python_source = next(
-                (i.python_source for i in _sections_cache if i.regexes == section.regexes),
-                None,
-            )
-            # if "is_centos()" is in python_src_code variable and there is no "or"
-            # logical operator the section is only applicable for centos so skip it
-            or_operator_in_py_code = bool(re.search(r'\s+or\s+', python_source) is not None)
-            centos_section = bool('is_centos()' in python_source and not or_operator_in_py_code)
-            if not centos_section:
-                for regex in section.regexes:
-                    print(regex.pattern)
-                print(f"    {python_source}\n")
+        # if "is_centos()" is in section.python_source and there is no "or"
+        # logical operator the section is only applicable for centos so skip it
+        or_operator_in_py_code = bool(re.search(r'\s+or\s+', section.python_source) is not None)
+        centos_section = bool(
+            'is_centos()' in section.python_source and not or_operator_in_py_code,
+        )
+        if centos_section:
+            continue
+
+        found_non_matching = False
+        for regex in section.regexes:
+            if MatchedWaiver(regex, section.python_source) not in regexes_matched_list:
+                found_non_matching = True
+                print(regex.pattern)
+        if found_non_matching:
+            print(f"    {section.python_source}\n")
 
 
 if __name__ == '__main__':
