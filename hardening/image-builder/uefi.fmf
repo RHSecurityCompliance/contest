@@ -1,5 +1,9 @@
-tag+:
-  - broken
+adjust+:
+  - when: distro < rhel-10
+    enabled: false
+    because: >
+        we don't have capacity to test this everywhere, but RHEL-10 is UEFI
+        by default, so run it at least there
 
 /anssi_bp28_high:
 
