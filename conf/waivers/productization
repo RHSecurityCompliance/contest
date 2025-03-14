@@ -200,10 +200,6 @@
 # https://github.com/ComplianceAsCode/content/issues/11567
 /hardening/image-builder/.*/enable_dracut_fips_module
 /hardening/image-builder/.*/enable_fips_mode
-# https://github.com/ComplianceAsCode/content/issues/13127
-/hardening/image-builder(/.+)?/anssi_[^/]+/mount_option_tmp_noexec
-/hardening/image-builder(/.+)?/anssi_[^/]+/sebool_polyinstantiation_enabled
-/hardening/image-builder(/.+)?/hipaa/sebool_selinuxuser_execmod
     True
 # OpenSCAP unsupported profile: xccdf_org.ssgproject.content_profile_ccn_advanced
 # https://issues.redhat.com/browse/RHEL-25574

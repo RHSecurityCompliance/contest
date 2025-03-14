@@ -75,6 +75,9 @@
 # https://github.com/ComplianceAsCode/content/pull/12755.
 /hardening/container/.+/file_groupownership_sshd_private_key
 /hardening/container/.+/file_permissions_sshd_private_key
+# There is no mounted /tmp directory when hardening the system during osbuild image creation.
+# Therefore, the rule cannot be remediated.
+/hardening/image-builder(/.+)?/anssi_[^/]+/mount_option_tmp_noexec
     True
 
 # vim: syntax=python
