@@ -1,0 +1,10 @@
+summary: Check Automatus unit tests for metadata sanity
+test: python3 -m lib.runtest ./test.py
+result: custom
+environment+:
+    PYTHONPATH: ../..
+duration: 10m
+adjust:
+  - when: arch != x86_64
+    enabled: false
+    because: tests are the same on all architectures
