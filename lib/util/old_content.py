@@ -6,7 +6,6 @@ content version, typically in comparison to "new content", the current release.
 import subprocess
 import functools
 import contextlib
-import rpm
 
 from lib import util, dnf
 
@@ -30,6 +29,12 @@ def _installed_ssg_version():
     return ret.stdout
 
 
+def _compare_ssg_versions(ver_a, ver_b):
+    cmd = ['rpm', '--eval', f'%{{lua:print(rpm.vercmp("{ver_a}", "{ver_b}"))}}']
+    ret = util.subprocess_run(cmd, stdout=subprocess.PIPE, universal_newlines=True)
+    return int(ret.stdout)
+
+
 def _available_ssg_versions():
     cmd = [
         'dnf', '-q', 'repoquery', '--available', '--arch', 'noarch',
@@ -37,12 +42,8 @@ def _available_ssg_versions():
     ]
     ret = util.subprocess_run(cmd, check=True, stdout=subprocess.PIPE, universal_newlines=True)
     versions = ret.stdout.rstrip('\n').split('\n')
-    # transform a list of NVRs to (name, version, release) tuples,
-    # older rpm.labelCompare requires it
-    versions = ((None, x, None) for x in versions)
     # sort from newest to oldest
-    ordered = sorted(versions, key=functools.cmp_to_key(rpm.labelCompare), reverse=True)
-    return [version for _, version, _ in ordered]
+    return sorted(versions, key=functools.cmp_to_key(_compare_ssg_versions), reverse=True)
 
 
 @contextlib.contextmanager
