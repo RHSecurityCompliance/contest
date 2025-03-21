@@ -137,10 +137,6 @@
 /hardening/.*/file_permission_user_init_files_root
     True
 
-# https://github.com/ComplianceAsCode/content/issues/13107
-/per-rule/.+/package_bind_removed/package-installed.fail
-    rhel == 9
-
 # kdump being forcibly enabled somewhere
 # https://github.com/ComplianceAsCode/content/issues/12832
 /hardening/kickstart(/with-gui|/uefi)?/(hipaa|stig|stig_gui)/service_kdump_disabled
