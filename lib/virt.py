@@ -375,7 +375,7 @@ class Guest:
 
     def install_basic(
         self, location=None, kickstart=None, secure_boot=False, virt_install_args=None,
-        kernel_args=None, disk_format='raw',
+        kernel_args=None, final_mem=2000, disk_format='raw',
     ):
         """
         Install a new guest, to a shut down state.
@@ -390,6 +390,10 @@ class Guest:
 
         'virt_install_args' are an optional list of extra 'virt-install' arguments
         and 'kernel_args' an optional list to be passed to kernel during installation.
+
+        By default, we shrink the guest to 2 GB RAM after install to give more space
+        to the host running tests. Specify 'final_mem' in MBs to override this.
+        A value of None will disable the feature.
         """
         util.log(f"installing guest {self.name}")
 
@@ -449,7 +453,8 @@ class Guest:
                 raise e from None
 
         # installed system doesn't need as much RAM, alleviate swap pressure
-        set_domain_memory(self.name, 2000)
+        if final_mem:
+            set_domain_memory(self.name, final_mem)
 
         self.install_ready_path.write_text(self.tag)
 
