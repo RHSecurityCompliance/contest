@@ -746,11 +746,19 @@ class Guest:
         )
         return util.subprocess_run(['rsync', '-a', '-e', ssh, *args], check=True)
 
-    def rsync_from(self, remote_path, local_path='.'):
-        self._do_rsync(f'{GUEST_SSH_USER}@{self.ipaddr}:{remote_path}', local_path)
+    def rsync_from(self, remote_path, local_path='.', rsync_opts=()):
+        if isinstance(remote_path, (tuple,list)):
+            remote_args = (f'{GUEST_SSH_USER}@{self.ipaddr}:{x}' for x in remote_path)
+        else:
+            remote_args = (f'{GUEST_SSH_USER}@{self.ipaddr}:{remote_path}',)
+        self._do_rsync(*rsync_opts, *remote_args, local_path)
 
-    def rsync_to(self, local_path, remote_path='.'):
-        self._do_rsync(local_path, f'{GUEST_SSH_USER}@{self.ipaddr}:{remote_path}')
+    def rsync_to(self, local_path, remote_path='.', rsync_opts=()):
+        if isinstance(local_path, (tuple,list)):
+            local_args = local_path
+        else:
+            local_args = (local_path,)
+        self._do_rsync(*rsync_opts, *local_args, f'{GUEST_SSH_USER}@{self.ipaddr}:{remote_path}')
 
     def generate_ssh_keypair(self):
         private = self.ssh_keyfile_path
