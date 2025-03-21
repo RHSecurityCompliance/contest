@@ -1,0 +1,44 @@
+#!/usr/libexec/platform-python
+
+import sys
+import json
+
+from pathlib import Path
+
+# we need to remove the directory of the running script (lib) from sys.path
+# to avoid importing the dnf module from lib instead of the system module
+script_dir = Path(__file__).resolve().parent
+if str(script_dir) in sys.path:
+    sys.path.remove(str(script_dir))
+
+# ruff: noqa: E402
+import dnf
+
+
+# TODO RHEL-11+ (RHEL-30615): the dnf4 API will change (confirmed by developers)
+def get_repos_dnf5():
+    pass
+
+
+# dnf up to dnf4
+def get_repos_dnf():
+    db = dnf.Base()
+    # black magic to make the dnf python API load /etc/dnf/dnf.conf
+    # and variables from /etc/dnf/vars/*, used by CentOS Stream to
+    # define $stream, used in metalinks
+    # source: https://bugzilla.redhat.com/show_bug.cgi?id=1920735#c2
+    db.conf.read(priority=dnf.conf.PRIO_MAINCONFIG)
+    db.conf.substitutions.update_from_etc(installroot=db.conf.installroot, varsdir=db.conf.varsdir)
+    db.read_all_repos()
+    for name, repo in db.repos.items():
+        # no disabled repos
+        if not repo.enabled:
+            continue
+        repo.load()
+        baseurl = repo.remote_location('/')
+        data = dict(repo.cfg.items(name))
+        yield {'name': name, 'baseurl': baseurl, 'data': data, 'file': repo.repofile}
+
+
+if __name__ == '__main__':
+    json.dump(list(get_repos_dnf()), sys.stdout)
