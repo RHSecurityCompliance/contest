@@ -670,8 +670,9 @@ class Guest:
         if not self.can_be_snapshotted():
             raise RuntimeError(f"guest {self.name} not ready for snapshotting")
         self._restore_snapshotted()
-        self.ipaddr = wait_for_ifaddr(self.name)
-        wait_for_ssh(self.ipaddr)
+        if not self.ipaddr:
+            self.ipaddr = wait_for_ifaddr(self.name)
+            wait_for_ssh(self.ipaddr)
         try:
             yield self
         finally:
