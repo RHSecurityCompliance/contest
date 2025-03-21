@@ -217,6 +217,9 @@
 # (we unselect max_age in conf/remediations.py)
 /hardening/container/anaconda-ostree/.+/accounts_password_set_min_life_existing
 /hardening/container/anaconda-ostree/.+/accounts_password_set_warn_age_existing
+# https://github.com/ComplianceAsCode/content/issues/13214
+/hardening/container/bootc-image-builder/.+/dir_perms_world_writable_sticky_bits
+/hardening/container/anaconda-ostree/.+/dir_perms_world_writable_sticky_bits
     True
 
 # vim: syntax=python
