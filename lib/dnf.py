@@ -3,7 +3,7 @@ import collections
 import tempfile
 import subprocess
 import requests
-import dnf
+import json
 from pathlib import Path
 
 from lib import util
@@ -12,41 +12,30 @@ from lib import util
 _Repo = collections.namedtuple('Repo', ['name', 'baseurl', 'data', 'file'])
 
 
-# dnf up to dnf4
 def _get_repos_dnf():
-    db = dnf.Base()
-    # black magic to make the dnf python API load /etc/dnf/dnf.conf
-    # and variables from /etc/dnf/vars/*, used by CentOS Stream to
-    # define $stream, used in metalinks
-    # source: https://bugzilla.redhat.com/show_bug.cgi?id=1920735#c2
-    db.conf.read(priority=dnf.conf.PRIO_MAINCONFIG)
-    db.conf.substitutions.update_from_etc(installroot=db.conf.installroot, varsdir=db.conf.varsdir)
-    db.read_all_repos()
-    for name, repo in db.repos.items():
-        # no disabled repos
-        if not repo.enabled:
-            continue
-        repo.load()
-        baseurl = repo.remote_location('/')
+    cmd = util.libdir / 'dnf_get_repos'
+    ret = util.subprocess_run(cmd, check=True, stdout=subprocess.PIPE, universal_newlines=True)
+    try:
+        json_data = json.loads(ret.stdout)
+    except json.JSONDecodeError as e:
+        raise RuntimeError(f"Failed to decode JSON data from {cmd}: {str(e)}") from None
+
+    for repo in json_data:
         # no local-only repos that aren't portable to VM guests
-        if baseurl.startswith('file://'):
+        if repo['baseurl'].startswith('file://'):
             continue
         # sanity check for (in)valid URLs as Anaconda fails on broken ones
-        if baseurl.startswith(('http://', 'https://')):
+        if repo['baseurl'].startswith(('http://', 'https://')):
             try:
-                repomd = baseurl.rstrip('/') + '/repodata/repomd.xml'
+                repomd = repo['baseurl'].rstrip('/') + '/repodata/repomd.xml'
                 reply = requests.head(repomd, verify=False, allow_redirects=True)
                 reply.raise_for_status()
             except requests.exceptions.RequestException as e:
                 util.log(f"skipping: {e}")
                 continue
-        data = dict(repo.cfg.items(name))
-        yield _Repo(name=name, baseurl=baseurl, data=data, file=repo.repofile)
-
-
-# TODO: the dnf4 API will change (confirmed by developers)
-def _get_repos_dnf5():
-    pass
+        yield _Repo(
+            name=repo['name'], baseurl=repo['baseurl'], data=repo['data'], file=repo['file'],
+        )
 
 
 _repos_cache = None
