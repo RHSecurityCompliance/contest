@@ -205,7 +205,6 @@ def match_result(status, name, note):
         # platform related
         'arch': platform.machine(),
         'rhel': versions.rhel,
-        'oscap': versions.oscap,
         # environmental
         'env': os.environ.get,
         # special
