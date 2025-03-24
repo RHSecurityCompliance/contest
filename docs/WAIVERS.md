@@ -47,7 +47,7 @@ Each section consists of two parts:
         True if some_other_condition else False
 
 /some/more/test/results
-    rhel < 9 and oscap < '1.3.6'
+    rhel < 9
 ```
 
 ## Regular expressions
@@ -90,20 +90,17 @@ The expression has these globals available:
 - `arch` - platform (architecture) name (`x86_64`, `ppc64le`, etc.)
 - `rhel` - an object capable of RHEL version comparison, see
   [versions.rhel](lib/versions.py)
-- `oscap` - an object capable of `openscap-scanner` RPM version comparisons,
-  see [versions.oscap](lib/versions.py)
 - `env` - environment variable retrieval function, same as `os.environ.get()`
 - `Match` - a class for complex waive results, able to contain both a boolean
   expression as well as additional parameters
 
 The version comparison objects also support a boolean evaluation, with
-`bool(rhel)` returning `False` if not running on RHEL, and ie. `bool(oscap)`
-returning `False` if the RPM is not installed.
+`bool(rhel)` returning `False` if not running on RHEL or CentOS.
 
 ```python
 /some/result/name
     (rhel < 7.9 and 'some thing' in note) or \
-    (rhel < 8.4 and oscap < '0.1.66')
+    (rhel < 8.4 and arch == 'x86_64')
 
 /some/other/result
     rhel == 8 and 'some thing' in note and env('INFRA') == 'jenkins'

@@ -27,14 +27,7 @@ MatchedWaiver = collections.namedtuple(
 )
 
 
-class _FakeRhel(versions._RpmVerCmp):
-    def __init__(self, fake_major, fake_minor):
-        self._release_separator = '.'
-        self.version = fake_major
-        self.release = fake_minor
-        self.major = int(fake_major)
-        self.minor = int(fake_minor)
-
+class _FakeRhel(versions._Rhel):
     @staticmethod
     def is_true_rhel():
         return True  # always assume we're on RHEL
@@ -62,8 +55,6 @@ def unwaive_note(waive_text, note):
 
 def match_result_mark_waiver(regexes_matched_list, version, arch, status, name, note):
     """This function is an updated version of the match_result() function from the lib/waive.py."""
-    v = version.split('.')
-
     # make sure "'something' in name" always works
     if name is None:
         name = ''
@@ -82,8 +73,7 @@ def match_result_mark_waiver(regexes_matched_list, version, arch, status, name, 
         'name': name,
         'note': note,
         'arch': arch,
-        'rhel': _FakeRhel(v[0], v[1]),
-        'oscap': '',
+        'rhel': _FakeRhel(version),
         'env': '',
         'Match': waive.Match,
     }
