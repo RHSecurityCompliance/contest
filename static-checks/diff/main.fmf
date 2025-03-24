@@ -4,29 +4,29 @@ environment+:
 duration: 10m
 tag:
   - always-fails
-adjust:
+adjust+:
   - when: arch != x86_64
     enabled: false
     because: datastream is same on all architectures
 
 /profiles:
     summary: Diff datastreams, output added/removed profiles
-    test: python3 -m lib.runtest ./profiles.py
+    test: $CONTEST_PYTHON -m lib.runtest ./profiles.py
 
 /profile-titles:
     summary: Diff datastreams, output profile title differences
-    test: python3 -m lib.runtest ./profile-titles.py
+    test: $CONTEST_PYTHON -m lib.runtest ./profile-titles.py
 
 /profile-rules:
     summary: Diff datastreams, output profile rule/variable differences
-    test: python3 -m lib.runtest ./profile-rules.py
+    test: $CONTEST_PYTHON -m lib.runtest ./profile-rules.py
 
 /profile-variables:
     summary: Diff datastreams, output profile variable refine differences
-    test: python3 -m lib.runtest ./profile-variables.py
+    test: $CONTEST_PYTHON -m lib.runtest ./profile-variables.py
 
 /audit-sample-rules:
     summary: Diff audit.rules between Content and installed auditd samples
-    test: python3 -m lib.runtest ./audit-sample-rules.py
+    test: $CONTEST_PYTHON -m lib.runtest ./audit-sample-rules.py
     require+:
       - audit

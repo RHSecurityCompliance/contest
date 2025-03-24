@@ -1,10 +1,10 @@
 summary: Check that no rule has been removed between old/new datastreams
-test: python3 -m lib.runtest ./test.py
+test: $CONTEST_PYTHON -m lib.runtest ./test.py
 result: custom
 environment+:
     PYTHONPATH: ../..
 duration: 10m
-adjust:
+adjust+:
   - when: arch != x86_64
     enabled: false
     because: datastream is same on all architectures

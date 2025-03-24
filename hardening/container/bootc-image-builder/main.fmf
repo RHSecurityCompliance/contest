@@ -1,5 +1,5 @@
 summary: Runs bootc-image-builder remediation and scan inside VMs
-test: python3 -m lib.runtest ./test.py
+test: $CONTEST_PYTHON -m lib.runtest ./test.py
 result: custom
 environment+:
     PYTHONPATH: ../../..
@@ -21,7 +21,7 @@ require+:
 extra-hardware: |
     keyvalue = HVM=1
     hostrequire = memory>=3720
-adjust:
+adjust+:
   - when: arch != x86_64
     enabled: false
     because: we want to run virtualization on x86_64 only

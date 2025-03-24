@@ -8,13 +8,9 @@ require:
 # shared by all tests
 recommend:
   - python3
-  - python36
   - python3-requests
-  - python36-requests
   - python3-pyyaml
-  - python36-pyyaml
-  - python3-rpm
-  - python36-rpm
+  - python3-dnf
   # - preparing/patching downloaded SRPM
   - rpm-build
 component:
@@ -26,3 +22,25 @@ environment:
     # use on-disk /var/tmp for all temporary directories, saving RAM by avoiding
     # the tmpfs on /tmp and giving tests more space to operate
     TMPDIR: /var/tmp
+
+# RHEL and python3 versions (https://access.redhat.com/solutions/6879401):
+# - RHEL-10 defaults to python 3.12, there is only python3 RPM package
+# - RHEL-9 defaults to python 3.9, python3.11 RPM is available since RHEL-9.2
+# - RHEL-8 defaults to python 3.6, python3.11 RPM is available since RHEL-8.8
+# Effectively, we are limited by RHEL-9.0 where only python 3.9 is available
+# so contest can currently only use python features up to version 3.9.
+adjust:
+  - when: distro >= rhel-10
+    environment+:
+        CONTEST_PYTHON: python3
+  - when: distro == rhel-8 or distro == rhel-9
+    environment+:
+        CONTEST_PYTHON: python3.11
+    recommend+:
+      - python3.11
+      - python3.11-requests
+      - python3.11-pyyaml
+      - python3.11-urllib3
+  - when: distro ~= rhel-9.0
+    environment+:
+        CONTEST_PYTHON: python3

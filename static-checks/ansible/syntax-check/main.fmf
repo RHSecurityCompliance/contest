@@ -2,7 +2,7 @@ summary: Check Ansible playbooks syntax.
 description: |-
     Verify that all generated playbooks and all playbooks provided
     by the scap-security-guide package have correct Ansible syntax.
-test: python3 -m lib.runtest ./test.py
+test: $CONTEST_PYTHON -m lib.runtest ./test.py
 result: custom
 environment+:
     PYTHONPATH: ../../..
@@ -15,7 +15,7 @@ recommend+:
   - rhc-worker-playbook
   # individual rule playbooks
   - scap-security-guide-rule-playbooks
-adjust:
+adjust+:
   - when: arch != x86_64
     enabled: false
     because: Ansible playbooks are same on all architectures

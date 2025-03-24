@@ -3,7 +3,7 @@ description: |-
     Ansible modules which are allowed to be used in the scap-security-guide
     content include modules from the ansible-core RPM and modules from
     posix and community collections (on RHEL-8+ packaged in rhc-worker-playbook).
-test: python3 -m lib.runtest ./test.py
+test: $CONTEST_PYTHON -m lib.runtest ./test.py
 result: custom
 environment+:
     PYTHONPATH: ../../..
@@ -14,7 +14,7 @@ require+:
 recommend+:
   # needed for the ini_file ansible plugin, and more
   - rhc-worker-playbook
-adjust:
+adjust+:
   - when: arch == aarch64
     enabled: false
     because: RHEL-8+ requires rhc-worker-playbook which is not available for aarch64

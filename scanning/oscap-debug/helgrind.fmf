@@ -1,5 +1,5 @@
 summary: Runs oscap via valgrind - helgrind
-test: python3 -m lib.runtest ./helgrind.py
+test: $CONTEST_PYTHON -m lib.runtest ./helgrind.py
 duration: 4h
 require+:
   - valgrind

@@ -1,5 +1,5 @@
 summary: Runs ansible remediation directly on the target system
-test: python3 -m lib.runtest ./test.py
+test: $CONTEST_PYTHON -m lib.runtest ./test.py
 result: custom
 environment+:
     PYTHONPATH: ../../..
@@ -12,7 +12,7 @@ recommend+:
   - rhc-worker-playbook
 tag:
   - destructive
-adjust:
+adjust+:
   - when: arch == aarch64
     enabled: false
     because: RHEL-8+ requires rhc-worker-playbook which is not available for aarch64
