@@ -1,12 +1,12 @@
 summary: Verify that HTML links from datastream are accessible.
-test: python3 -m lib.runtest ./test.py
+test: $CONTEST_PYTHON -m lib.runtest ./test.py
 result: custom
 environment+:
     PYTHONPATH: ../..
 duration: 5m
 recommend+:
   - python3-requests
-adjust:
+adjust+:
   - enabled: false
     when: arch != x86_64
     continue: false

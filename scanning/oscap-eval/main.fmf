@@ -1,5 +1,5 @@
 summary: Runs oscap xccdf eval as a simple sanity check
-test: python3 -m lib.runtest ./test.py
+test: $CONTEST_PYTHON -m lib.runtest ./test.py
 result: custom
 environment+:
     PYTHONPATH: ../..

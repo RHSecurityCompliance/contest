@@ -1,5 +1,5 @@
 summary: Runs oscap remediation directly on the target system
-test: python3 -m lib.runtest ./test.py
+test: $CONTEST_PYTHON -m lib.runtest ./test.py
 result: custom
 environment+:
     PYTHONPATH: ../../..

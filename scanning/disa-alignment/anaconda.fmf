@@ -1,5 +1,5 @@
 summary: Compare SSG and DISA STIG benchmark scan results after Anaconda installation
-test: python3 -m lib.runtest ./anaconda.py
+test: $CONTEST_PYTHON -m lib.runtest ./anaconda.py
 result: custom
 environment+:
     PYTHONPATH: ../..

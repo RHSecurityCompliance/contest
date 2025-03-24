@@ -1,5 +1,5 @@
 summary: Check content with NIST SCAP Content Validation Tool.
-test: python3 -m lib.runtest ./test.py
+test: $CONTEST_PYTHON -m lib.runtest ./test.py
 result: custom
 environment+:
     PYTHONPATH: ../..
@@ -7,7 +7,7 @@ duration: 15m
 recommend+:
   - java-17-openjdk
   - java-21-openjdk
-adjust:
+adjust+:
   - when: arch != x86_64
     enabled: false
     because: the test is not architecture-specific, one is enough

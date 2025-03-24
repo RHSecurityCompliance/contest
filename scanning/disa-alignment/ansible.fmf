@@ -1,5 +1,5 @@
 summary: Compare SSG and DISA STIG benchmark scan results after Ansible remediation
-test: python3 -m lib.runtest ./ansible.py
+test: $CONTEST_PYTHON -m lib.runtest ./ansible.py
 result: custom
 environment+:
     PYTHONPATH: ../..

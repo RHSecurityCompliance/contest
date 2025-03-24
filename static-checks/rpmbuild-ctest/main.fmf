@@ -1,5 +1,5 @@
 summary: Builds from source and runs ctest
-test: python3 -m lib.runtest ./test.py
+test: $CONTEST_PYTHON -m lib.runtest ./test.py
 result: custom
 environment+:
     PYTHONPATH: ../..
@@ -19,7 +19,7 @@ recommend+:
   - ansible-core
   - rhc-worker-playbook
   - bats
-adjust:
+adjust+:
   - when: arch == aarch64 and distro == rhel-9.0
     enabled: false
     because: rhc-worker-playbook or community.general collection not available there

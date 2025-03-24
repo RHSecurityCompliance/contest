@@ -1,5 +1,5 @@
 summary: Compare SSG and DISA STIG benchmark scan results after Bash remediation
-test: python3 -m lib.runtest ./oscap.py
+test: $CONTEST_PYTHON -m lib.runtest ./oscap.py
 result: custom
 environment+:
     PYTHONPATH: ../..
