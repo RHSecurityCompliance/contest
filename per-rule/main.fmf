@@ -11,8 +11,7 @@ test: $CONTEST_PYTHON -m lib.runtest ./test.py
 result: custom
 environment+:
     PYTHONPATH: ..
-    TOTAL_SLICES: 15
-duration: 3h
+duration: 2h
 require+:
   # virt library dependencies
   - libvirt-daemon
@@ -25,13 +24,6 @@ require+:
   - virt-install
   - rpm-build
   - createrepo
-  # automatus dependencies (oscap-ssh, etc.)
-  - openscap-utils
-  # for ansible variant
-  - ansible-core
-recommend+:
-  # needed for the ini_file ansible plugin, and more
-  - rhc-worker-playbook
 extra-hardware: |
     keyvalue = HVM=1
     hostrequire = memory>=6000
@@ -39,70 +31,37 @@ adjust+:
   - when: arch != x86_64
     enabled: false
     because: we want to run virtualization on x86_64 only
+  - when: distro == rhel-9.0
+    enabled: false
+    because: xmlstarlet not available on 9.0
 
-# for use with the RULE environment variable
-/from-env:
-    tag:
-      - needs-param
-    /oscap:
-    /ansible:
+/oscap:
+    environment+:
+        TOTAL_SLICES: 5
+    /1:
+    /2:
+    /3:
+    /4:
+    /5:
+    # for use with the RULE environment variable
+    /from-env:
+        tag+:
+          - needs-param
 
-/1:
-    /oscap:
-    /ansible:
-
-/2:
-    /oscap:
-    /ansible:
-
-/3:
-    /oscap:
-    /ansible:
-
-/4:
-    /oscap:
-    /ansible:
-
-/5:
-    /oscap:
-    /ansible:
-
-/6:
-    /oscap:
-    /ansible:
-
-/7:
-    /oscap:
-    /ansible:
-
-/8:
-    /oscap:
-    /ansible:
-
-/9:
-    /oscap:
-    /ansible:
-
-/10:
-    /oscap:
-    /ansible:
-
-/11:
-    /oscap:
-    /ansible:
-
-/12:
-    /oscap:
-    /ansible:
-
-/13:
-    /oscap:
-    /ansible:
-
-/14:
-    /oscap:
-    /ansible:
-
-/15:
-    /oscap:
-    /ansible:
+/ansible:
+    environment+:
+        TOTAL_SLICES: 10
+    /1:
+    /2:
+    /3:
+    /4:
+    /5:
+    /6:
+    /7:
+    /8:
+    /9:
+    /10:
+    # for use with the RULE environment variable
+    /from-env:
+        tag+:
+          - needs-param

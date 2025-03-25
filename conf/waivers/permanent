@@ -80,4 +80,15 @@
 /hardening/image-builder(/.+)?/anssi_[^/]+/mount_option_tmp_noexec
     True
 
+# these tests modify /etc/bashrc to set PATH, but our current /per-rule test
+# implementation doesn't re-execute the shell runner before executing 'oscap'
+# (doing so would incur a performance penalty for all tests), so the 'oscap'
+# inherits an outdated PATH, making the scan fail
+/per-rule/oscap/.+/root_path_no_dot/absolute_path.fail
+/per-rule/oscap/.+/root_path_no_dot/colon_on_path.fail
+/per-rule/oscap/.+/root_path_no_dot/doublecolon_on_path.fail
+/per-rule/oscap/.+/root_path_no_dot/doubleperiod_on_path.fail
+/per-rule/oscap/.+/root_path_no_dot/period_on_path.fail
+    True
+
 # vim: syntax=python
