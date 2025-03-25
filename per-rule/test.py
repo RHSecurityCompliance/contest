@@ -1,207 +1,245 @@
 #!/usr/bin/python3
 
 import os
-import sys
 import re
+import inspect
 import subprocess
-import tempfile
-import textwrap
 from pathlib import Path
 
-from lib import util, results, oscap, virt, versions, ansible
-from conf import partitions
+from lib import util, results, versions, virt, oscap, unit_tests
+from conf import remediation
 
+rule_excludes = [
+    # because of inter-rule dependencies and their incompatibility with
+    # thin datastreams:
+    #   W: oscap: Rule 'xccdf_org.ssgproject.content_rule_sshd_set_keepalive'
+    #   requires rule 'xccdf_org.ssgproject.content_rule_sshd_set_idle_timeout',
+    #   but it hasn't been specified using the '--rule' option.
+    'sshd_set_keepalive',
+]
 
-def between_strings(full_text, before, after):
-    """
-    Cut off a middle section of a 'full_text' string between the
-    'before' and 'after' substrings.
-    """
-    start = full_text.find(before)
-    if start == -1:
-        start = 0
-    end = full_text[start+len(before):].find(after)
-    if end == -1:
-        return full_text[start:]
-    else:
-        return full_text[start:start+len(before)+end]
+_, fix_type, test_basename = util.get_test_name().rsplit('/', 2)
 
-
-def report_test_with_log(status, note, log_dir, rule_name, test_name):
-    # collect additional automatus.py-generated files and reports
-    extras_all = []
-    extras_logs = []
-    extras_prefix = f'{rule_name}-{test_name}.sh-'
-
-    for path in log_dir.glob(f'{extras_prefix}*'):
-        # rename automatus.py generated files to simple names,
-        # rule_name-test_name.sh-initial.html -> initial.html
-        # TODO: python 3.9+
-        #basename = path.name.removeprefix(extras_prefix)
-        basename = re.sub(fr'^{extras_prefix}', '', path.name, count=1)
-        path.rename(path.parent / basename)
-        path = path.parent / basename
-
-        if basename == 'initial.html':
-            extras_logs.append(path)
-        elif basename == 'initial-arf.xml':
-            util.subprocess_run(['gzip', '-9', path], check=True)
-            path = path.with_suffix('.xml.gz')
-            extras_logs.append(path)
-
-        extras_all.append(path)
-
-    # handle test script outputs:
-    # Automatus groups test outputs by rule (one file per rule),
-    # and it uses ##### denoted sections for individual tests outputs
-    # within each file
-    log_file = log_dir / (rule_name + '.prescripts.log')
-    log = log_file.read_text()
-    log_part = between_strings(
-        log,
-        f'##### {rule_name} / {test_name}',
-        f'##### {rule_name} / ',
-    )
-
-    # report the result
-    with tempfile.TemporaryDirectory() as tmpdir:
-        log_part_file = Path(tmpdir) / 'out.txt'
-        log_part_file.write_text(log_part)
-        results.report(
-            status,
-            f'{rule_name}/{test_name}',
-            note,
-            logs=[log_part_file, *extras_logs],
-        )
-
-    # clean up logs for this test
-    for path in extras_all:
-        path.unlink()
-
+# directory containing this test.py; necessary because we run in a tmpdir
+testdir = Path(inspect.getfile(inspect.currentframe())).parent
 
 virt.Host.setup()
 
-# /per-rule/from-env/oscap --> test_basename=from-env, fix_type=oscap
-test_basename, fix_type = util.get_test_name().rsplit('/')[-2:]
-if test_basename == 'from-env':
-    our_rules = os.environ.get('RULE')
-    if our_rules:
-        our_rules = our_rules.split()  # space-separated
-    else:
-        raise RuntimeError("RULE env variable not defined or empty")
-else:
-    all_rules = sorted(oscap.global_ds().get_all_profiles_rules())
-    start = int(test_basename) - 1
-    total = int(os.environ['TOTAL_SLICES'])
-    # slice all_rules, get every total-th member
-    our_rules = all_rules[start::total]
+remediation_excludes = set(remediation.excludes())
 
-if not our_rules:
-    raise RuntimeError("no rules to test")
 
-if fix_type == 'ansible':
-    ansible.install_deps()
+def format_test(test):
+    pass_fail = 'pass' if test.is_pass else 'fail'
+    return f'{test.rule}/{test.test}.{pass_fail}'
 
-our_rules_textblock = textwrap.indent(('\n'.join(our_rules)), '    ')
-util.log(f"testing rules:\n{our_rules_textblock}")
 
-# tag named after the tool that modifies the VM/image
-g = virt.Guest('automatus')
+def unit_tests_from_rules(built_tests_dir, rules):
+    for rule in sorted(rules):
+        rule_dir = built_tests_dir / rule
+        # rule without tests
+        if not rule_dir.is_dir():
+            continue
+        for partial, test_file in unit_tests.iter_tests(rule_dir):
+            try:
+                full = unit_tests.fill_in_metadata(partial, test_file)
+            except ValueError as e:
+                results.report(
+                    'error',
+                    format_test(partial),
+                    f"metadata syntax error: {str(e)}",
+                )
+                continue
+            # skip explicitly excluded rules
+            if full.rule in rule_excludes:
+                continue
+            # skip any tests with profile= for now
+            if full.profiles:
+                continue
+            # skip .fail.sh tests that require remediation for rules that we
+            # explicitly avoid remediation for
+            if not full.is_pass and full.remediation != 'none':
+                if full.rule in remediation_excludes:
+                    continue
+            yield full
 
-if not g.is_installed():
-    # install a qcow2-backed VM, so automatus.py can snapshot it
-    # - use hardening-style partitions, automatus tests need them
-    ks = virt.Kickstart(partitions=partitions.partitions)
-    ks.packages.append('tar')
-    g.install(kickstart=ks, disk_format='qcow2')
 
-with util.get_source_content() as content_dir, g.booted():
-    util.build_content(content_dir, force=True)
-    env = os.environ.copy()
-    env['SSH_ADDITIONAL_OPTIONS'] = f'-o IdentityFile={g.ssh_keyfile_path}'
-    cmd = [
-        './automatus.py', 'rule',
-        '--libvirt', 'qemu:///system', virt.GUEST_NAME,
-        '--product', f'rhel{versions.rhel.major}',
-        '--dontclean', '--remediate-using', fix_type,
-        '--datastream', util.get_datastream(),
-        *our_rules,
-    ]
-    _, lines = util.subprocess_stream(
-        cmd, check=True, stderr=subprocess.STDOUT,
-        env=env, cwd=(content_dir / 'tests'),
+with util.get_source_content() as content_dir:
+    # thin datastreams cannot be built alongside other content, build them first
+    # (separately), move aside the XMLs
+    util.build_content(
+        content_dir,
+        {
+            'SSG_THIN_DS:BOOL': 'ON',
+            'SSG_THIN_DS_RULE_ID:STRING': 'ALL_RULES',
+            'SSG_BUILT_TESTS_ENABLED:BOOL': 'ON',
+            'SSG_ANSIBLE_PLAYBOOKS_PER_RULE_ENABLED:BOOL': 'ON',
+        },
     )
+    build_dir = content_dir / util.CONTENT_BUILD_DIR
+    product_dir = build_dir / f'rhel{versions.rhel.major}'
+    thin_ds_dir = build_dir / 'thin_ds'
 
-    log_file = rule_name = None
-    for line in lines:
-        # copy the exact output to console
-        sys.stdout.write(f'{line}\n')
-        sys.stdout.flush()
+    ds_path = util.get_datastream(content_dir=content_dir)
+    ds = oscap.Datastream(ds_path)
+    built_tests = product_dir / 'tests'
+    playbooks_dir = util.find_per_rule_playbooks(content_dir=content_dir)
 
-        # cut off log level
-        line = re.sub(r'^[A-Z]+ - ', '', line, count=1, flags=re.M)
+    if test_basename == 'from-env':
+        our_rules = os.environ.get('RULE')
+        if not our_rules:
+            raise RuntimeError("RULE env variable not defined or empty")
+        our_rules = re.split(r'[, ]+', our_rules)
+    else:
+        if 'RULE' in os.environ:
+            raise RuntimeError("RULE env variable defined, but not running as from-env")
+        all_rules = sorted(ds.get_all_profiles_rules())
+        start = int(test_basename) - 1
+        total = int(os.environ['TOTAL_SLICES'])
+        # slice all_rules, get every total-th member
+        our_rules = all_rules[start::total]
 
-        # rule without remediation
-        match = re.fullmatch(r'''No remediation is available for rule 'xccdf_org\.ssgproject\.content_rule_(.+)'\.''', line)  # noqa
-        if match:
-            rule_name = match.group(1)
-            results.report('info', rule_name, 'no remediation')
+    util.log(f"will be testing {len(our_rules)} rules")
+
+    tests = unit_tests_from_rules(built_tests, our_rules)
+    # if remediating via ansible, filter out any tests without playbooks
+    if fix_type == 'ansible':
+        tests = (t for t in tests if (playbooks_dir / f'{t.rule}.yml').exists())
+    tests = list(tests)
+    if not tests:
+        raise RuntimeError("no tests to run")
+
+    # write out all variables for all tests
+    # (we do this instead of passing them as CLI arguments because variable
+    #  values may contain spaces, special chars like $, backslash, etc.,
+    #  and ssh(1) always works with shell input, not discrete CLI args)
+    vars_dir = Path('variables')
+    vars_dir.mkdir()
+    for test in tests:
+        if not test.variables:
+            continue
+        vars_rule_dir = vars_dir / test.rule
+        vars_rule_dir.mkdir(exist_ok=True)
+        filename = f'{test.test}.' + ('pass' if test.is_pass else 'fail')
+        with open(vars_rule_dir / filename, 'w') as f:
+            for key, value in test.variables.items():
+                f.write(f'{key}={value}\n')
+
+    # collect all packages from all unit_tests
+    packages = {pkg for t in tests if t.packages is not None for pkg in t.packages}
+
+    # prepare a kickstart for the VM
+    ks = virt.Kickstart()
+    ks.packages += ['rsync', 'xmlstarlet', 'ansible-core']
+    # if RHEL, use rhc-worker-playbook, else install from galaxy
+    if versions.rhel.is_true_rhel():
+        ks.packages.append('rhc-worker-playbook')
+        # per https://access.redhat.com/articles/remediation
+        ks.add_post(util.dedent('''
+            cat >> /etc/ansible/ansible.cfg <<EOF
+            [defaults]
+            collections_path=/usr/share/rhc-worker-playbook/ansible/collections/ansible_collections/
+            EOF
+        '''))
+    else:
+        ks.add_post(util.dedent('''
+            ansible-galaxy collection install community.general
+            ansible-galaxy collection install ansible.posix
+        '''))
+
+    # install the VM
+    g = virt.Guest()
+    g.install(kickstart=ks, final_mem=None)
+
+    with g.booted(safe_shutdown=True):
+        # install extra test dependencies now
+        # (Anaconda seems to crash with some of these, hence install-after-boot)
+        if packages:
+            g.ssh('dnf install -y --skip-broken', *packages, check=True)
+        # copy built artifacts to the guest
+        g.rsync_to(f'{thin_ds_dir}/', 'thin_ds')
+        g.rsync_to(f'{built_tests}/', 'tests')
+        g.rsync_to(f'{vars_dir}/', 'variables')
+        g.rsync_to(f'{playbooks_dir}/', 'playbooks')
+        # copy guest setup/runner
+        g.rsync_to((testdir / 'setup.sh', testdir / 'runner.sh'))
+        g.ssh('chmod 0755 setup.sh runner.sh', check=True)
+        # perform additional guest setup
+        # - this modifies some testing data, which is why we do it in the guest,
+        #   rather than from python here - we want to preserve content_dir as-is
+        g.ssh('./setup.sh', check=True)
+
+    g.prepare_for_snapshot()
+
+guest_logs_template = [
+    'initial-report.html', 'initial-results-arf.xml',
+    'report.html', 'results-arf.xml',
+    'ds.xml', *(('playbook.yml',) if fix_type == 'ansible' else ()),
+    'runner.log', 'test.log',
+]
+
+for test in tests:
+    pass_fail = 'pass' if test.is_pass else 'fail'
+    guest_logs = [*guest_logs_template, f'test.{pass_fail}.sh']
+
+    # skip tests with explicitly defined remediation that is != the fix_type
+    # we started with (according to fmf metadata)
+    if test.remediation == 'bash' and fix_type != 'oscap':
+        continue
+    if test.remediation == 'ansible' and fix_type != 'ansible':
+        continue
+
+    # if unspecified by test, default to test type from fmf metadata
+    if test.remediation == 'bash':
+        remediation_type = 'oscap'
+    elif test.remediation:
+        remediation_type = test.remediation
+    else:
+        remediation_type = fix_type
+
+    # try a first run, if it passes, report it without extra overhead
+    with g.snapshotted():
+        proc = g.ssh(
+            './runner.sh', test.rule, test.test, pass_fail, remediation_type, 'nodebug',
+            stdout=subprocess.PIPE, universal_newlines=True,
+        )
+        if proc.returncode == 0:
+            results.report('pass', format_test(test), proc.stdout.rstrip('\n'))
+            continue
+        elif proc.returncode == 3:
+            results.report('skip', format_test(test), proc.stdout.rstrip('\n'))
             continue
 
-        # remember the log file for log parsing/upload
-        #   INFO - Logging into /tmp/.../logs/rule-custom-2024-02-17-1859/test_suite.log
-        match = re.fullmatch(r'Logging into (.+)', line)
-        if match:
-            log_dir = Path(match.group(1)).parent
-            util.log(f"using automatus log dir: {log_dir}")
+    # something failed, do a second run and collect debug details
+    # - note that it is possible the fail was transient and the following
+    #   may still pass
+    with g.snapshotted():
+        proc = g.ssh(
+            './runner.sh', test.rule, test.test, pass_fail, remediation_type, 'debug',
+            stdout=subprocess.PIPE, universal_newlines=True,
+        )
+
+        if proc.returncode == 0:
+            status = 'pass'
+        elif proc.returncode == 2:
+            status = 'fail'
+        elif proc.returncode == 3:
+            status = 'skip'
+        else:
+            status = 'error'
+
+        for log in guest_logs:
+            Path(log).unlink(missing_ok=True)
+        try:
+            g.rsync_from(guest_logs, rsync_opts=('--ignore-missing-args',))
+        except subprocess.CalledProcessError as e:
+            results.report('error', format_test(test), str(e))
             continue
 
-        # running tests for a new rule
-        #   INFO - xccdf_org.ssgproject.content_rule_timer_dnf-automatic_enabled
-        match = re.fullmatch(r'xccdf_org\.ssgproject\.content_rule_(.+)', line)
-        if match:
-            rule_name = match.group(1)
-            util.log(f"running for rule: {rule_name}")
-            continue
-
-        # result for one test - report it under the current rule:
-        #   INFO - Script line_missing.fail.sh using profile (all) OK
-        #   WARNING - Script correct_option.pass.sh using profile (all) notapplicable
-        #   ERROR - Script correct.pass.sh using profile (all) found issue:
-        match = re.fullmatch(r'Script (.+).sh using profile ([^ ]+) (.+)', line)
-        if match:
-            test_name, profile, status = match.groups()
-            # TODO: python 3.9+
-            #profile = profile.removeprefix('xccdf_org.ssgproject.content_profile_')
-            profile = re.sub(r'^xccdf_org.ssgproject.content_profile_', '', profile, count=1)
-
-            if status == 'OK':
-                status = 'pass'
-                note = f'profile:{profile}' if profile != '(all)' else None
-            elif status == 'notapplicable':
-                status = 'info'
-                note = 'not applicable'
-            elif status == 'found issue:':
-                status = 'fail'
-                note = f'profile:{profile}' if profile != '(all)' else None
-            else:
-                status = 'error'
-                note = "unknown Script status"
-
-            report_test_with_log(status, note, log_dir, rule_name, test_name)
-            continue
-
-        # this is separate, because Automatus prints 4 ERROR lines for this,
-        # using a non-standard format (unlike the above):
-        #   ERROR - Rule evaluation resulted in error, instead of expected fixed during remediation stage        # noqa
-        #   ERROR - The remediation failed for rule 'xccdf_org.ssgproject.content_rule_tftpd_uses_secure_mode'.  # noqa
-        #   ERROR - Rule 'tftpd_uses_secure_mode' test setup script 'wrong.fail.sh' failed with exit code 1      # noqa
-        #   ERROR - Environment failed to prepare, skipping test
-        # so we parse just the one important line and ignore the rest
-        match = re.fullmatch(r'''Rule '[^']+' test setup script '(.+).sh' failed with exit code [0-9]+''', line)  # noqa
-        if match:
-            test_name = match.group(1)
-            report_test_with_log('fail', None, log_dir, rule_name, test_name)
-            continue
+        results.report(
+            status=status,
+            name=format_test(test),
+            note=proc.stdout.rstrip('\n'),
+            logs=[x for x in guest_logs if Path(x).exists()],
+        )
 
 results.report_and_exit()
