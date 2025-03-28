@@ -204,7 +204,7 @@ def report(status, name=None, note=None, logs=None, *, add_output=True):
     Returns the final 'status', potentially modified by the waiving logic.
     """
     if status not in _valid_statuses:
-        raise SyntaxError(f"{status} is not a valid status")
+        raise ValueError(f"{status} is not a valid status")
 
     # apply to all report variants
     if name:
