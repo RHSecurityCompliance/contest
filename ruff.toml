@@ -1,6 +1,6 @@
 line-length = 99
 indent-width = 4
-target-version = "py37"  # doesn't support older
+target-version = "py39"
 
 [lint]
 preview = true
