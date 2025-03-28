@@ -266,6 +266,36 @@ feel free to use them (under some appropriate name).
 
 Avoid (for now) using `@property` to hack this, we don't have public APIs.
 
+## Use walrus operators (`:=`) only with limited scope
+
+This is fine:
+
+```
+if match := re.fullmatch(r'/some/([^/]+)/test', test_name):
+    variant = match.group(1)
+```
+
+as long as `variant` never leaves the `if` scope. If it does, assign it without
+walrus above the condition:
+
+```
+test_type = os.environ.get('SOME_VAR')
+
+if test_type:
+    do_something(test_type)
+
+another_func(test_type)
+```
+
+Avoid this:
+
+```
+if test_type := os.environ.get('SOME_VAR'):
+    do_something(test_type)
+
+another_func(test_type)
+```
+
 ## Log tactically
 
 Use `util.log('something')` when something
