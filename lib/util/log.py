@@ -38,7 +38,7 @@ def log(msg, *, skip_frames=0):
     """
     stack = inspect.stack()
     if len(stack)-1 <= skip_frames:
-        raise SyntaxError("skip_frames exceeds call stack (frame count)")
+        raise ValueError("skip_frames exceeds call stack (frame count)")
     stack = stack[skip_frames+1:]
 
     # bottom of the stack, or runpy executed module
