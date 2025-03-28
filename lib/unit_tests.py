@@ -14,8 +14,6 @@ To satisfy various use cases, the logic is modularized into functions:
 """
 
 import re
-import io
-import contextlib
 import collections
 from pathlib import Path
 
@@ -84,8 +82,6 @@ def fill_in_metadata(unit_test, test_file):
     """
     Given an (incomplete) UnitTest tuple as 'unit_test', fill in values
     from unit test file metadata, returning the complete UnitTest.
-
-    'test_file' may be a file path or a file-like object.
     """
     packages = None
     profiles = None
@@ -93,17 +89,9 @@ def fill_in_metadata(unit_test, test_file):
     remediation = None
     check = None
 
-    with contextlib.ExitStack() as stack:
-        if isinstance(test_file, io.IOBase):
-            f = test_file
-        else:
-            f = stack.enter_context(open(test_file))
-
-        for line in f:
+    with open(test_file) as fobj:
+        for line in fobj:
             line = line.rstrip('\n')
-            # skip empty lines and comments
-            if not line or re.fullmatch(r'\s+', line):
-                continue
             # packages
             if m := re.fullmatch(r'# packages = (.+)', line):
                 if packages is not None:
@@ -136,11 +124,6 @@ def fill_in_metadata(unit_test, test_file):
                     raise ValueError(f"check already defined as: {check}")
                 check = m.group(1)
                 continue
-            # other unrecognized comments
-            if line.startswith('#'):
-                continue
-            # first non-metadata line hit, abort parsing
-            break
 
     return unit_test._replace(
         packages=packages,
