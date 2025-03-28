@@ -204,7 +204,7 @@ class Blueprint:
     def set_openscap_datastream(self, ds_file):
         pre, header, post = self.assembled.partition('\n[customizations.openscap]\n')
         if not header:
-            raise SyntaxError("openscap section not found")
+            raise ValueError("openscap section not found")
         self.assembled = '\n'.join([
             pre,
             header.strip('\n'),

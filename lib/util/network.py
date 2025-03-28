@@ -14,7 +14,7 @@ def wait_for_tcp(host, port, *, timeout=600, to_shutdown=False, compare=None):
     Useful for waiting for b'SSH-' to start answering on port 22.
     """
     if compare is not None and to_shutdown:
-        raise SyntaxError("compare and to_shutdown are mutually exclusive")
+        raise ValueError("compare and to_shutdown are mutually exclusive")
 
     state = 'stop' if to_shutdown else 'start'
     util.log(f"waiting for {host}:{port} to {state} listening for {timeout}s", skip_frames=1)
