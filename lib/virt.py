@@ -78,7 +78,6 @@ import sys
 import re
 import time
 import subprocess
-import collections
 import textwrap
 import contextlib
 import tempfile
@@ -115,6 +114,7 @@ INSTALL_FAILURES = [
     # Anaconda died due to oscap crashing (or other reasons)
     br"Kernel panic - not syncing",
     br"The installer will now terminate",
+    br"Failed to start .*the anaconda installation program",
 ]
 
 PIPE = subprocess.PIPE
@@ -375,7 +375,7 @@ class Guest:
 
     def install_basic(
         self, location=None, kickstart=None, secure_boot=False, virt_install_args=None,
-        kernel_args=None, disk_format='raw',
+        kernel_args=None, final_mem=2000, disk_format='raw',
     ):
         """
         Install a new guest, to a shut down state.
@@ -390,6 +390,10 @@ class Guest:
 
         'virt_install_args' are an optional list of extra 'virt-install' arguments
         and 'kernel_args' an optional list to be passed to kernel during installation.
+
+        By default, we shrink the guest to 2 GB RAM after install to give more space
+        to the host running tests. Specify 'final_mem' in MBs to override this.
+        A value of None will disable the feature.
         """
         util.log(f"installing guest {self.name}")
 
@@ -432,12 +436,11 @@ class Guest:
             executable = util.libdir / 'pseudotty'
             proc = subprocess.Popen(virt_install, stdout=PIPE, executable=executable)
             fail_exprs = [re.compile(x) for x in INSTALL_FAILURES]
-            # keep only the last 100 lines
-            line_buff = collections.deque(maxlen=100)
 
             try:
                 for line in proc.stdout:
-                    line_buff.append(line)
+                    sys.stdout.buffer.write(line)
+                    sys.stdout.buffer.flush()
                     if any(x.search(line) for x in fail_exprs):
                         proc.terminate()
                         proc.wait()
@@ -445,15 +448,13 @@ class Guest:
                 if proc.wait() > 0:
                     raise RuntimeError("virt-install failed")
             except Exception as e:
-                for line in line_buff:
-                    sys.stdout.buffer.write(line)
-                sys.stdout.buffer.flush()
                 self.destroy()
                 self.undefine()
                 raise e from None
 
         # installed system doesn't need as much RAM, alleviate swap pressure
-        set_domain_memory(self.name, 2000)
+        if final_mem:
+            set_domain_memory(self.name, final_mem)
 
         self.install_ready_path.write_text(self.tag)
 
@@ -639,11 +640,11 @@ class Guest:
         self._destroy_snapshotted()
 
         cmd = [
-            'qemu-img', 'create', '-f', 'qcow2',
+            'qemu-img', 'create', '-q', '-f', 'qcow2',
             '-b', self.disk_path, '-F', self.disk_format,
             self.snapshot_path,
         ]
-        util.subprocess_run(cmd, check=True)
+        subprocess.run(cmd, check=True)
 
         virsh('restore', self.state_file_path, check=True)
 
@@ -669,9 +670,9 @@ class Guest:
         if not self.can_be_snapshotted():
             raise RuntimeError(f"guest {self.name} not ready for snapshotting")
         self._restore_snapshotted()
-        self.ipaddr = wait_for_ifaddr(self.name)
-        wait_for_ssh(self.ipaddr)
-        util.log(f"guest {self.name} ready")
+        if not self.ipaddr:
+            self.ipaddr = wait_for_ifaddr(self.name)
+            wait_for_ssh(self.ipaddr)
         try:
             yield self
         finally:
@@ -692,7 +693,6 @@ class Guest:
         self.start()
         self.ipaddr = wait_for_ifaddr(self.name)
         wait_for_ssh(self.ipaddr)
-        util.log(f"guest {self.name} ready")
         try:
             yield self
         finally:
@@ -741,16 +741,24 @@ class Guest:
 
     def _do_rsync(self, *args):
         ssh = (
-            f'ssh -i {self.ssh_keyfile_path}'
+            f'ssh -q -i {self.ssh_keyfile_path}'
             ' -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null'
         )
         return util.subprocess_run(['rsync', '-a', '-e', ssh, *args], check=True)
 
-    def rsync_from(self, remote_path, local_path='.'):
-        self._do_rsync(f'{GUEST_SSH_USER}@{self.ipaddr}:{remote_path}', local_path)
+    def rsync_from(self, remote_path, local_path='.', rsync_opts=()):
+        if isinstance(remote_path, (tuple,list)):
+            remote_args = (f'{GUEST_SSH_USER}@{self.ipaddr}:{x}' for x in remote_path)
+        else:
+            remote_args = (f'{GUEST_SSH_USER}@{self.ipaddr}:{remote_path}',)
+        self._do_rsync(*rsync_opts, *remote_args, local_path)
 
-    def rsync_to(self, local_path, remote_path='.'):
-        self._do_rsync(local_path, f'{GUEST_SSH_USER}@{self.ipaddr}:{remote_path}')
+    def rsync_to(self, local_path, remote_path='.', rsync_opts=()):
+        if isinstance(local_path, (tuple,list)):
+            local_args = local_path
+        else:
+            local_args = (local_path,)
+        self._do_rsync(*rsync_opts, *local_args, f'{GUEST_SSH_USER}@{self.ipaddr}:{remote_path}')
 
     def generate_ssh_keypair(self):
         private = self.ssh_keyfile_path
