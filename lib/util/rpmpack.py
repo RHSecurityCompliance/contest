@@ -56,10 +56,10 @@ class RpmPack:
         if target:
             target = Path(target)
             if not target.is_absolute():
-                raise SyntaxError(f"target {target} not an absolute path")
+                raise ValueError(f"target {target} not an absolute path")
         else:
             if not source.is_absolute():
-                raise SyntaxError(f"source {source} must be absolute if target is missing")
+                raise ValueError(f"source {source} must be absolute if target is missing")
             target = source
         entry = self.FilePath(source.absolute(), target)
         self.files.append(entry)
@@ -72,7 +72,7 @@ class RpmPack:
         """
         target = Path(target)
         if not target.is_absolute():
-            raise SyntaxError(f"target {target} not an absolute path")
+            raise ValueError(f"target {target} not an absolute path")
         entry = self.FileContents(target, contents)
         self.files.append(entry)
 
