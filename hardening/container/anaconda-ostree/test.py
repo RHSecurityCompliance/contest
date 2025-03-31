@@ -55,6 +55,7 @@ cfile += util.dedent(fr'''
 cfile.add_ssh_pubkey(guest.ssh_pubkey)
 cfile.write_to('Containerfile')
 
+podman.podman('pull', src_image)
 podman.podman('image', 'build', '--tag', 'contest-hardened', '.')
 
 # we can't use standard CaC/content style partitioning scheme because the
