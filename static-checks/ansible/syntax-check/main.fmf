@@ -6,7 +6,7 @@ test: $CONTEST_PYTHON -m lib.runtest ./test.py
 result: custom
 environment+:
     PYTHONPATH: ../../..
-duration: 3h
+duration: 15m
 require+:
   - openscap-scanner
   - ansible-core
