@@ -13,7 +13,7 @@ require+:
 extra-hardware: |
     keyvalue = HVM=1
     hostrequire = memory>=3720
-adjust:
+adjust+:
   - when: arch != x86_64
     enabled: false
     because: run virtualization on x86_64 only
