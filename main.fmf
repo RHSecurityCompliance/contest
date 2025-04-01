@@ -24,6 +24,10 @@ environment:
     TMPDIR: /var/tmp
     CONTEST_PYTHON: python3
 
+# needed for fmf filtering because some tests use tag+: without any parent
+# defining tag: without the +
+tag: []
+
 # RHEL and python3 versions (https://access.redhat.com/solutions/6879401):
 # - RHEL-10 defaults to python 3.12, there is only python3 RPM package
 # - RHEL-9 defaults to python 3.9, python3.11 RPM is available since RHEL-9.2
