@@ -2,6 +2,7 @@
 
 import re
 
+from pathlib import Path
 from lib import util, results, ansible
 
 
@@ -27,14 +28,40 @@ with util.get_source_content() as content_dir:
     ]
     util.subprocess_run(cmd, cwd=build_dir)
 
-    with open(build_dir / 'ctest_results') as f:
-        # Result format: X/Y Test  #X: test_name .................  test_result   Z sec
-        result_regex = re.compile(r'\d+\s+Test\s+#\d+:\s+([^\s]+)\s+\.+')
-        for line in f:
-            result_match = result_regex.search(line)
-            if result_match:
-                test_name = result_match.group(1)
-                result = 'pass' if 'Passed' in line else 'fail'
-                results.report(result, test_name)
+    with open(build_dir / 'Testing' / 'Temporary' / 'LastTest.log') as f:
+        state = 'start'
+        test_output = []
 
-    results.report_and_exit(logs=[build_dir / 'Testing' / 'Temporary' / 'LastTest.log'])
+        for line in f:
+            line = line.rstrip('\n')
+
+            if state == 'output':
+                test_output.append(line)
+                if line == '<end of output>':
+                    state = 'after_output'
+                continue
+
+            if state == 'after_output' and re.match(r'^-{10,}\s*$', line):
+                test_output.append(line)
+                state = 'result'
+                continue
+
+            if state == 'start':
+                if m := re.fullmatch(r'^[0-9]+/[0-9]+\s+Testing:\s+(.+)$', line):
+                    test_name = m.group(1)
+                    test_output.append(line)
+                    state = 'output'
+                    continue
+
+            if state == 'result':
+                test_output.append(line)
+                if 'Test Passed' in line:
+                    results.report('pass', test_name)
+                else:
+                    test_log = f'{test_name}.log'
+                    Path(test_log).write_text('\n'.join(test_output))
+                    results.report('fail', test_name, logs=[test_log])
+                test_output.clear()
+                state = 'start'
+
+    results.report_and_exit()
