@@ -101,6 +101,11 @@ NETWORK_HOST = '192.168.120.1'
 NETWORK_RANGE = ['192.168.120.2', '192.168.123.254']
 NETWORK_EXPIRY = 168
 
+# installing from HTTP URL leads to Anaconda downloading stage2
+# to RAM, leading to notably higher memory requirements during
+# installation
+INSTALL_TIME_RAM = 3072  # in MBs
+
 # as byte-strings
 INSTALL_FAILURES = [
     br"org\.fedoraproject\.Anaconda\.Addons\.OSCAP\.*: The installation should be aborted",
@@ -375,7 +380,7 @@ class Guest:
 
     def install_basic(
         self, location=None, kickstart=None, secure_boot=False, virt_install_args=None,
-        kernel_args=None, final_mem=2000, disk_format='raw',
+        kernel_args=None, final_mem=None, disk_format='raw',
     ):
         """
         Install a new guest, to a shut down state.
@@ -391,9 +396,8 @@ class Guest:
         'virt_install_args' are an optional list of extra 'virt-install' arguments
         and 'kernel_args' an optional list to be passed to kernel during installation.
 
-        By default, we shrink the guest to 2 GB RAM after install to give more space
-        to the host running tests. Specify 'final_mem' in MBs to override this.
-        A value of None will disable the feature.
+        Specify 'final_mem' in MBs to shrink the guest RAM after installation,
+        useful for small snapshots if you don't need too much memory.
         """
         util.log(f"installing guest {self.name}")
 
@@ -414,8 +418,8 @@ class Guest:
                 'pseudotty', 'virt-install',
                 # installing from HTTP URL leads to Anaconda downloading stage2
                 # to RAM, leading to notably higher memory requirements during
-                # installation - we reduce it down to 2000M after install
-                '--name', self.name, '--vcpus', str(cpus), '--memory', '3072',
+                # installation
+                '--name', self.name, '--vcpus', str(cpus), '--memory', str(INSTALL_TIME_RAM),
                 '--disk', f'path={disk_path},size=20,format={disk_format},cache=unsafe',
                 '--network', 'network=default', '--location', location,
                 '--graphics', 'none', '--console', 'pty', '--rng', '/dev/urandom',
@@ -506,6 +510,7 @@ class Guest:
 
     def import_image(
         self, disk_path, disk_format='raw', *, secure_boot=False, virt_install_args=None,
+        final_mem=None,
     ):
         """
         Import an existing disk image, creating a new guest domain from it.
@@ -524,7 +529,7 @@ class Guest:
 
         virt_install = [
             'pseudotty', 'virt-install',
-            '--name', self.name, '--vcpus', str(cpus), '--memory', '2000',
+            '--name', self.name, '--vcpus', str(cpus), '--memory', str(INSTALL_TIME_RAM),
             '--disk', f'path={disk_path},format={disk_format},cache=unsafe',
             '--network', 'network=default',
             '--graphics', 'none', '--console', 'pty', '--rng', '/dev/urandom',
@@ -541,6 +546,10 @@ class Guest:
 
         executable = util.libdir / 'pseudotty'
         util.subprocess_run(virt_install, executable=executable, check=True)
+
+        # installed system doesn't need as much RAM, alleviate swap pressure
+        if final_mem:
+            set_domain_memory(self.name, final_mem)
 
         self.disk_path = disk_path
         self.disk_format = disk_format
