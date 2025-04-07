@@ -61,7 +61,7 @@ with g.snapshotted():
     )
     oscap.report_from_verbose(lines)
     if proc.returncode not in [0,2]:
-        raise RuntimeError("post-reboot oscap failed unexpectedly")
+        raise RuntimeError(f"post-reboot oscap failed unexpectedly with {proc.returncode}")
 
     g.copy_from('report.html')
     g.copy_from('remediation-arf.xml')
