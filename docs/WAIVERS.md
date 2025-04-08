@@ -2,7 +2,7 @@
 
 ## Directory structure
 
-The files inside the [waivers directory](conf/waivers) are read in
+The files inside the [waivers directory](../conf/waivers) are read in
 an alphanumeric order, including (sub)directories and any files inside them,
 forming a contiguous list of `<section>`s (as described below) from their
 contents.
@@ -89,7 +89,7 @@ The expression has these globals available:
 - `note` - an optional note associated with the result, or empty string
 - `arch` - platform (architecture) name (`x86_64`, `ppc64le`, etc.)
 - `rhel` - an object capable of RHEL version comparison, see
-  [versions.rhel](lib/versions.py)
+  [versions.rhel](../lib/versions.py)
 - `env` - environment variable retrieval function, same as `os.environ.get()`
 - `Match` - a class for complex waive results, able to contain both a boolean
   expression as well as additional parameters
