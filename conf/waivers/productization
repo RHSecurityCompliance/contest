@@ -1,6 +1,16 @@
 # waivers for content issues found during productization (stabilization) testing
 # approximately sorted by test categories and history
 
+# https://github.com/ComplianceAsCode/content/issues/13287
+# The old-new test for enable_fips_mode rules is failing
+/hardening/oscap/old-new/.*/enable_fips_mode
+    rhel == 8 or rhel == 9
+
+# https://github.com/ComplianceAsCode/content/issues/13272
+# Rules audit_rules_* misaligned with DISA content
+/scanning/disa-alignment/.*/audit_rules_.+
+    True
+
 # https://github.com/ComplianceAsCode/content/issues/13126
 /per-rule/.+/accounts_password_set_max_life_root/correct.pass
 /per-rule/.+/accounts_password_set_max_life_root/wrong.fail
