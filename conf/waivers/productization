@@ -231,7 +231,7 @@
 /hardening/container/anaconda-ostree/.+/dir_perms_world_writable_sticky_bits
     True
 # https://github.com/ComplianceAsCode/content/issues/13296
-/scanning/disa-alignment/anaconda/audit_privileged_commands_.+
+/scanning/disa-alignment/.+/audit_privileged_commands_.+
     rhel == 9
 
 # vim: syntax=python
