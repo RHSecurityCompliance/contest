@@ -6,11 +6,6 @@
 /hardening/oscap/old-new/.*/enable_fips_mode
     rhel == 8 or rhel == 9
 
-# https://github.com/ComplianceAsCode/content/issues/13272
-# Rules audit_rules_* misaligned with DISA content
-/scanning/disa-alignment/.*/audit_rules_.+
-    True
-
 # https://github.com/ComplianceAsCode/content/issues/13126
 /per-rule/.+/accounts_password_set_max_life_root/correct.pass
 /per-rule/.+/accounts_password_set_max_life_root/wrong.fail
@@ -42,10 +37,11 @@
 /scanning/disa-alignment/.*/grub2_pti_argument
 /scanning/disa-alignment/.*/grub2_vsyscall_argument
 /scanning/disa-alignment/.*/grub2_page_poison_argument
-/scanning/disa-alignment/.*/grub2_slub_debug_argument
 /scanning/disa-alignment/.*/grub2_audit_argument
 /scanning/disa-alignment/.*/grub2_audit_backlog_limit_argument
     rhel == 8
+/scanning/disa-alignment/.*/grub2_slub_debug_argument
+    rhel == 8 or rhel == 9
 # https://github.com/ComplianceAsCode/content/issues/11804
 /scanning/disa-alignment/.*/harden_sshd_ciphers_openssh_conf_crypto_policy
 # https://github.com/ComplianceAsCode/content/issues/11692
@@ -104,6 +100,12 @@
     rhel == 8 or rhel == 9
 # https://github.com/ComplianceAsCode/content/issues/13236
 /scanning/disa-alignment/ansible/networkmanager_dns_mode
+    rhel == 9
+# https://github.com/ComplianceAsCode/content/issues/13272
+/scanning/disa-alignment/.*/audit_rules_.+
+    True
+# https://github.com/ComplianceAsCode/content/issues/13391
+/scanning/disa-alignment/.+/logind_session_timeout
     rhel == 9
 
 # RHEL10 - No official RHEL10 STIG/CIS benchmark yet
