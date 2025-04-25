@@ -10,7 +10,6 @@ profile_references = {
     # srg, disa, stigid@PRODUCT or controls file
     'stig': [
         'https://public.cyber.mil/stigs/downloads/?_dl_facet_stigs=operating-systems%2Cgeneral-purpose-os',
-        'https://public.cyber.mil/stigs/cci/',
         'https://public.cyber.mil/stigs/downloads/?_dl_facet_stigs=operating-systems%2Cunix-linux',
     ],
     # ospp
