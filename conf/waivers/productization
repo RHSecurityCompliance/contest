@@ -239,9 +239,10 @@
 # These rules require OpenSCAP 1.3.12 or 1.4.2 to pass because they depend on
 # processing negative numbers by textfilecontent54_probe which is fixed by
 # https://github.com/OpenSCAP/openscap/pull/2210
+# https://github.com/ComplianceAsCode/content/issues/13412
 /hardening/.+/configure_gnutls_tls_crypto_policy
-/hardening/.+/harden_sshd_ciphers_opensshserver_conf_crypto_policy
-/hardening/.+/harden_sshd_macs_opensshserver_conf_crypto_policy
+/hardening/.+/harden_sshd_ciphers_(openssh|opensshserver)_conf_crypto_policy
+/hardening/.+/harden_sshd_macs_(openssh|opensshserver)_conf_crypto_policy
     rhel == 8
 
 # vim: syntax=python
