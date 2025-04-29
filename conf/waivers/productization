@@ -236,4 +236,12 @@
 /scanning/disa-alignment/.+/audit_privileged_commands_.+
     rhel == 9
 
+# These rules require OpenSCAP 1.3.12 or 1.4.2 to pass because they depend on
+# processing negative numbers by textfilecontent54_probe which is fixed by
+# https://github.com/OpenSCAP/openscap/pull/2210
+/hardening/.+/configure_gnutls_tls_crypto_policy
+/hardening/.+/harden_sshd_ciphers_opensshserver_conf_crypto_policy
+/hardening/.+/harden_sshd_macs_opensshserver_conf_crypto_policy
+    rhel == 8
+
 # vim: syntax=python
