@@ -15,7 +15,12 @@ def reboot():
     """Reboot the system using whatever means appropriate."""
     # flush buffers to disk, just in case reboot doesn't do it
     os.sync()
-    if shutil.which('tmt-reboot'):
+    if 'ATEX_TEST_CONTROL' in os.environ:
+        fd = int(os.environ['ATEX_TEST_CONTROL'])
+        with os.fdopen(fd, 'w', closefd=False) as control:
+            control.write('reconnect\n')
+        util.subprocess_run('reboot')
+    elif shutil.which('tmt-reboot'):
         util.subprocess_run('tmt-reboot')
     elif shutil.which('rstrnt-reboot'):
         util.subprocess_run('rstrnt-reboot')

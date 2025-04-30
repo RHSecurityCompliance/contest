@@ -16,6 +16,7 @@ import sys
 import shutil
 import collections
 import requests
+import json
 import yaml
 from pathlib import Path
 
@@ -34,6 +35,11 @@ class Counter(collections.defaultdict):
 
 
 global_counts = Counter()
+
+
+def have_atex_api():
+    """Return True if we can report results via ATEX Minitmt natively."""
+    return bool(os.environ.get('ATEX_TEST_CONTROL'))
 
 
 def have_tmt_api():
@@ -75,6 +81,50 @@ def _count_yaml_results(path):
         if 'result' in item:
             counter[item['result']] += 1
     return counter
+
+
+def report_atex(status, name=None, note=None, logs=None, *, partial=False):
+    result = {
+        'status': status,
+    }
+    # for subresults
+    if name:
+        result['name'] = name
+    # not standard ATEX, Contest-specific
+    if note:
+        result['note'] = note
+    # output of the test itself
+    if not name:
+        result['testout'] = 'output.txt'
+    # partial result (non-partial to follow)
+    if partial:
+        result['partial'] = True
+
+    # for protocol specification, see
+    # https://github.com/RHSecurityCompliance/atex/blob/main/atex/minitmt/TEST_CONTROL.md
+    # https://github.com/RHSecurityCompliance/atex/blob/main/atex/minitmt/RESULTS.md
+    fd = int(os.environ['ATEX_TEST_CONTROL'])
+    with os.fdopen(fd, 'wb', closefd=False) as control:
+        if logs:
+            files = []
+            for log in logs:
+                log = Path(log)
+                files.append({
+                    'name': log.name,
+                    'length': log.stat().st_size,
+                })
+            result['files'] = files
+        # send the JSON result, followed by any log data
+        # (pause duration in case logs are being uploaded over slow link)
+        json_data = json.dumps(result).encode()
+        control.write(b'duration save\n')
+        control.write(f'result {len(json_data)}\n'.encode())
+        control.write(json_data)
+        if logs:
+            for log in logs:
+                with open(log, 'rb') as f:
+                    shutil.copyfileobj(f, control)
+        control.write(b'duration restore\n')
 
 
 def report_tmt(status, name=None, note=None, logs=None, *, add_output=True):
@@ -214,7 +264,9 @@ def report(status, name=None, note=None, logs=None, *, add_output=True):
 
     status, name, note = waive.rewrite_result(status, name, note)
 
-    if have_beaker_api():
+    if have_atex_api():
+        report_atex(status, name, note, logs)
+    elif have_beaker_api():
         report_beaker(status, name, note, logs)
     elif have_tmt_api():
         report_tmt(status, name, note, logs, add_output=add_output)
