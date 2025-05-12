@@ -127,9 +127,26 @@ with util.get_source_content() as content_dir:
     # collect all packages from all unit_tests
     packages = {pkg for t in tests if t.packages is not None for pkg in t.packages}
 
-    # install a VM
+    # prepare a kickstart for the VM
     ks = virt.Kickstart()
     ks.packages += ['rsync', 'xmlstarlet', 'ansible-core']
+    # if RHEL, use rhc-worker-playbook, else install from galaxy
+    if versions.rhel.is_true_rhel():
+        ks.packages.append('rhc-worker-playbook')
+        # per https://access.redhat.com/articles/remediation
+        ks.add_post(util.dedent('''
+            cat >> /etc/ansible/ansible.cfg <<EOF
+            [defaults]
+            collections_path=/usr/share/rhc-worker-playbook/ansible/collections/ansible_collections/
+            EOF
+        '''))
+    else:
+        ks.add_post(util.dedent('''
+            ansible-galaxy collection install community.general
+            ansible-galaxy collection install ansible.posix
+        '''))
+
+    # install the VM
     g = virt.Guest()
     g.install(kickstart=ks, final_mem=None)
 
