@@ -243,6 +243,8 @@
 /hardening/.+/configure_gnutls_tls_crypto_policy
 /hardening/.+/harden_sshd_ciphers_(openssh|opensshserver)_conf_crypto_policy
 /hardening/.+/harden_sshd_macs_(openssh|opensshserver)_conf_crypto_policy
+/per-rule/.+/harden_sshd_ciphers_(openssh|opensshserver)_conf_crypto_policy
+/per-rule/.+/harden_sshd_macs_(openssh|opensshserver)_conf_crypto_policy
     rhel == 8
 
 # vim: syntax=python
