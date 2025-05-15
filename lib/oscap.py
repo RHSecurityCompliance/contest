@@ -215,6 +215,7 @@ def report_from_verbose(lines):
       - with stderr discarded or left on the console
     """
     total = 0
+    total_nonresults = 0
 
     for rule, status in rules_from_verbose(lines):
         total += 1
@@ -227,6 +228,7 @@ def report_from_verbose(lines):
                 note = 'no remediation'
                 status = 'warn'
         elif status in ['notapplicable', 'notchecked', 'notselected', 'informational']:
+            total_nonresults += 1
             note = status
             status = 'info'
         else:
@@ -237,6 +239,8 @@ def report_from_verbose(lines):
 
     if total == 0:
         raise RuntimeError("oscap returned no results")
+    if total == total_nonresults:
+        raise RuntimeError("oscap didn't return any pass/fail/error results")
 
     util.log(f"all done: {total} total results")
 
