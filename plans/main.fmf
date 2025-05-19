@@ -90,4 +90,31 @@ adjust:
                 rm -f "$repofile"
             fi
 
+    # The problem with current Testing Farm composes (both ranches) is that they
+    # are optimized for errata testing, with a special "tag" repository inserted
+    # above nightly composes and many system packages upgraded from it.
+    # Testing Farm then disables this repo, breaking "dnf install" for some test
+    # dependencies. The code below tries to work around that.
+  - prepare+:
+      - how: shell
+        name: Restore original compose versions of installed packages
+        script: |
+            set -xe
+            # clean up packages from extra repos, restoring original vanilla OS (sorta)
+            rm -v -f \
+                /etc/yum.repos.d/{tag-repository,*beakerlib*,rcmtools}.repo \
+                /etc/yum.repos.d/beaker-{client,harness,tasks}.repo
+            # downgrade any packages installed/upgraded from the extra package repos
+            function list_foreign_rpms {
+                dnf list --installed \
+                | grep -e @koji-override -e @testing-farm -e @rcmtools -e @@commandline \
+                | sed 's/ .*//'
+            }
+            rpms=$(list_foreign_rpms)
+            [[ $rpms ]] && dnf downgrade -y --skip-broken $rpms
+            rpms=$(list_foreign_rpms)
+            [[ $rpms ]] && dnf remove -y --noautoremove $rpms
+            dnf clean all
+        when: trigger == build or newa_batch is defined
+
 # vim: syntax=yaml

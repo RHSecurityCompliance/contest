@@ -26,6 +26,3 @@ adjust+:
   - when: newa_batch is defined and arch == s390x or newa_batch is defined and arch == ppc64le
     enabled: false
     because: srpm repo is not available, see https://issues.redhat.com/browse/TFT-2972
-  - when: trigger == build and distro == rhel-8.8
-    enabled: false
-    because: python3-pip fails to install in OSCI due to testing-farm-tag repo
