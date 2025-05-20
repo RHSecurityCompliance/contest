@@ -56,10 +56,10 @@
 /hardening/host-os/.+/grub2_enable_fips_mode
 /hardening/host-os/.+/aide_use_fips_hashes
     rhel.is_centos()
-# Presumably not valid for CentOS
+# Presumably not valid for CentOS, see also conf/remediation.py
 /hardening/.+/ospp/enable_fips_mode
 /hardening/.*/ospp/configure_crypto_policy
-    rhel.is_centos() and rhel == 9
+    rhel.is_centos() and (rhel == 9 or rhel == 10)
 
 # Caused by SCE content being built by default, enabled
 # in https://github.com/ComplianceAsCode/content/pull/12488
