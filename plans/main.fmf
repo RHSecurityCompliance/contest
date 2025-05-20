@@ -111,7 +111,7 @@ adjust:
                 | sed 's/ .*//'
             }
             rpms=$(list_foreign_rpms)
-            [[ $rpms ]] && dnf downgrade -y --skip-broken $rpms
+            [[ $rpms ]] && dnf downgrade -y --skip-broken $rpms || true
             rpms=$(list_foreign_rpms)
             [[ $rpms ]] && dnf remove -y --noautoremove $rpms
             dnf clean all
