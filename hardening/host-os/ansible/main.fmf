@@ -48,6 +48,11 @@ adjust+:
       - when: distro >= rhel-10
         enabled: false
         because: there is no CUI profile on RHEL-10+
+      - when: distro == rhel-8
+        require+: [rng-tools]
+        because: >
+            RHEL-8 doesn't have fast /dev/random under OSPP/CUI,
+            compensate with rngd
 
 /e8:
 
@@ -60,6 +65,11 @@ adjust+:
       - when: distro >= rhel-10
         enabled: false
         because: there is no OSPP profile on RHEL-10+
+      - when: distro == rhel-8
+        require+: [rng-tools]
+        because: >
+            RHEL-8 doesn't have fast /dev/random under OSPP/CUI,
+            compensate with rngd
 
 /pci-dss:
 
