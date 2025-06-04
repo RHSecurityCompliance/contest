@@ -197,7 +197,6 @@ for test in tests:
         remediation_type = fix_type
 
     # try a first run, if it passes, report it without extra overhead
-    # TODO: some env variable to skip this and always run with debug
     with g.snapshotted():
         proc = g.ssh(
             './runner.sh', test.rule, test.test, pass_fail, remediation_type, 'nodebug',

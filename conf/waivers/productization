@@ -227,31 +227,4 @@
 /per-rule/.+/harden_sshd_macs_(openssh|opensshserver)_conf_crypto_policy
     rhel == 8
 
-# https://github.com/ComplianceAsCode/content/issues/13371
-/per-rule/oscap/.+/dir_group_ownership_library_dirs/no_file.pass
-    rhel == 9
-/per-rule/oscap/.+/package_pam_pwquality_installed/package-installed-removed.fail
-/per-rule/oscap/.+/package_pam_pwquality_installed/package-removed.fail
-/per-rule/oscap/.+/package_sudo_installed/package-installed-removed.fail
-/per-rule/oscap/.+/package_sudo_installed/package-removed.fail
-/per-rule/oscap/.+/package_libselinux_installed/package-installed-removed.fail
-/per-rule/oscap/.+/package_libselinux_installed/package-removed.fail
-# possibly https://github.com/OpenSCAP/openscap/issues/2221
-# but might be test code related (we execute oscap in a bash shell without
-# re-initializing the shell from scratch, so its environment is not changed)
-# TODO: move to permanent if the OpenSCAP issue fix doesn't fix this
-/per-rule/oscap/.+/accounts_root_path_dirs_no_write/wrong.fail
-/per-rule/oscap/.+/root_path_no_dot/absolute_path.fail
-/per-rule/oscap/.+/root_path_no_dot/colon_on_path.fail
-/per-rule/oscap/.+/root_path_no_dot/doublecolon_on_path.fail
-/per-rule/oscap/.+/root_path_no_dot/doubleperiod_on_path.fail
-/per-rule/oscap/.+/root_path_no_dot/period_on_path.fail
-    True
-# https://issues.redhat.com/browse/OPENSCAP-5723
-/per-rule/oscap/.+/package_rsh-server_removed/package-installed.fail
-    rhel == 8 or rhel == 9
-/per-rule/oscap/.+/package_ypserv_removed/package-installed.fail
-/per-rule/oscap/.+/package_quagga_removed/package-installed.fail
-    rhel == 9
-
 # vim: syntax=python
