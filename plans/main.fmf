@@ -115,6 +115,6 @@ adjust:
             rpms=$(list_foreign_rpms)
             [[ $rpms ]] && dnf remove -y --noautoremove $rpms
             dnf clean all
-        when: trigger == build or newa_batch is defined
+    when: trigger == build or newa_batch is defined
 
 # vim: syntax=yaml
