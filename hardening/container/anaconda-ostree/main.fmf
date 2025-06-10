@@ -20,7 +20,7 @@ require+:
   - podman
 extra-hardware: |
     keyvalue = HVM=1
-    hostrequire = memory>=3720
+    hostrequire = memory>=6000
 adjust+:
   - when: arch != x86_64
     enabled: false
