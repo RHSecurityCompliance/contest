@@ -104,7 +104,7 @@ NETWORK_EXPIRY = 168
 # installing from HTTP URL leads to Anaconda downloading stage2
 # to RAM, leading to notably higher memory requirements during
 # installation
-INSTALL_TIME_RAM = 3072  # in MBs
+INSTALL_TIME_RAM = 4096  # in MBs
 
 # as byte-strings
 INSTALL_FAILURES = [
