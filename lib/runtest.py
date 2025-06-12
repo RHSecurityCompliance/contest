@@ -38,7 +38,10 @@ def _setup_timeout_handling():
         # - the sys.exit() here also skips the exception catch-all in
         #   the wider runtest.py body because SystemExit is not a subclass
         #   of Exception
-        results.report_and_exit('error', note="timed out: test exceeded duration time")
+        results.report_and_exit(
+            'error',
+            note="timed out: test probably froze on something, investigate logs",
+        )
 
     signal.signal(signal.SIGALRM, _alarm_timed_out)
     signal.alarm(duration)
