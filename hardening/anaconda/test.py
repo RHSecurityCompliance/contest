@@ -8,14 +8,15 @@ virt.Host.setup()
 
 g = virt.Guest()
 
-_, variant, profile = util.get_test_name().rsplit('/', 2)
+profile = util.get_test_name().rpartition('/')[2]
 with_fips = 'fips' in metadata.tags()
+with_gui = 'with-gui' in metadata.tags()
 
 # use kickstart from content, not ours
 ks_file = util.get_kickstart(profile)
 ks = virt.translate_ssg_kickstart(ks_file)
 
-if variant == 'with-gui':
+if with_gui:
     ks.packages.append('@Server with GUI')
 
 # host a HTTP server with a datastream and let the guest download it

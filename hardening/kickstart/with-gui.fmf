@@ -1,4 +1,6 @@
 duration: 2h
+tag+:
+  - with-gui
 
 /anssi_bp28_high:
 
