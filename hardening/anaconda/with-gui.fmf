@@ -37,8 +37,8 @@ duration: 2h
       - subset-profile
 
 /cui:
-    environment+:
-        WITH_FIPS: 1
+    tag+:
+      - fips
     adjust+:
       - when: distro == rhel-8
         enabled: false
@@ -54,12 +54,12 @@ duration: 2h
 /hipaa:
 
 /ism_o:
-    environment+:
-        WITH_FIPS: 1
+    tag+:
+      - fips
 
 /ospp:
-    environment+:
-        WITH_FIPS: 1
+    tag+:
+      - fips
     adjust+:
       - when: distro == rhel-8
         enabled: false
@@ -78,8 +78,8 @@ duration: 2h
             the "Profiles not compatible with Server with GUI" table
 
 /stig_gui:
-    environment+:
-        WITH_FIPS: 1
+    tag+:
+      - fips
 
 /ccn_advanced:
     adjust+:

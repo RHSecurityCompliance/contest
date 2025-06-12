@@ -37,8 +37,8 @@ duration: 2h
       - subset-profile
 
 /cui:
-    environment+:
-        WITH_FIPS: 1
+    tag+:
+      - fips
     adjust+:
       - enabled: false
         because: there is no CUI profile on RHEL-10+
@@ -48,12 +48,12 @@ duration: 2h
 /hipaa:
 
 /ism_o:
-    environment+:
-        WITH_FIPS: 1
+    tag+:
+      - fips
 
 /ospp:
-    environment+:
-        WITH_FIPS: 1
+    tag+:
+      - fips
     adjust+:
       - enabled: false
         because: there is no OSPP profile on RHEL-10+
@@ -67,8 +67,8 @@ duration: 2h
             not supported with GUI, use stig_gui instead;
 
 /stig_gui:
-    environment+:
-        WITH_FIPS: 1
+    tag+:
+      - fips
 
 /ccn_advanced:
     adjust+:

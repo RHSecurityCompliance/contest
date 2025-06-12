@@ -3,7 +3,7 @@
 import os
 import subprocess
 
-from lib import util, results, virt, oscap, ansible
+from lib import util, results, virt, oscap, ansible, metadata
 from conf import remediation, partitions
 
 
@@ -11,7 +11,7 @@ ansible.install_deps()
 virt.Host.setup()
 
 _, variant, profile = util.get_test_name().rsplit('/', 2)
-with_fips = os.environ.get('WITH_FIPS') == '1'
+with_fips = 'fips' in metadata.tags()
 
 if variant == 'with-gui':
     guest_tag = 'gui_with_oscap'

@@ -2,14 +2,14 @@
 
 import os
 import shutil
-from lib import results, oscap, versions, virt, podman, util
+from lib import results, oscap, versions, virt, podman, util, metadata
 from conf import remediation
 
 
 virt.Host.setup()
 
 _, variant, profile = util.get_test_name().rsplit('/', 2)
-with_fips = os.environ.get('WITH_FIPS') == '1'
+with_fips = 'fips' in metadata.tags()
 oscap_repo = os.environ.get('CONTEST_OSCAP_REPOFILE')
 
 oscap.unselect_rules(util.get_datastream(), 'remediation-ds.xml', remediation.excludes())
