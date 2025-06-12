@@ -4,7 +4,7 @@ import time
 import subprocess
 import tempfile
 
-from lib import util, results, virt
+from lib import util, results, virt, metadata
 
 
 profile = 'cis_workstation_l1'
@@ -55,7 +55,6 @@ with g.booted():
     # run for all of the configured test duration, minus 600 seconds for safety
     # (running gdb, compressing corefile which takes forever, etc.)
     attempt = 1
-    metadata = util.TestMetadata()
     duration = metadata.duration_seconds() - oscap_timeout - 600
     util.log(f"trying to freeze oscap for {duration} total seconds")
 
