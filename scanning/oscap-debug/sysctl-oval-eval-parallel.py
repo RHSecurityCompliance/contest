@@ -4,7 +4,7 @@ import time
 import subprocess
 import concurrent.futures
 
-from lib import util, results
+from lib import util, results, metadata
 
 
 # sysctl ovals only take about 1 second
@@ -51,7 +51,6 @@ with util.get_source_content() as content_dir:
 # run for all the configured test duration, minus 600 seconds for safety
 # (running gdb, compressing corefile which takes forever, etc.)
 attempt = 1
-metadata = util.TestMetadata()
 duration = metadata.duration_seconds() - 600
 util.log(f"trying to freeze oscap for {duration} total seconds")
 

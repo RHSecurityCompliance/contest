@@ -7,7 +7,7 @@ import tempfile
 import urllib3
 from pathlib import Path
 
-from lib import util, results
+from lib import util, metadata, results
 
 
 # handle test duration on our own, don't rely on TMT -
@@ -22,7 +22,6 @@ from lib import util, results
 # this is not a problem for Beaker, which captures test output separately and
 # actually cares about the exit code of the test script
 def _setup_timeout_handling():
-    metadata = util.TestMetadata()
     duration = metadata.duration_seconds()
 
     # leave 50 seconds for our alarm timeout code
