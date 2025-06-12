@@ -7,30 +7,18 @@ from conf import remediation, partitions
 virt.Host.setup()
 
 profile = util.get_test_name().rpartition('/')[2]
-with_fips = 'fips' in metadata.tags()
-with_gui = 'with-gui' in metadata.tags()
-with_uefi = 'uefi' in metadata.tags()
 
-if with_gui:
-    guest_tag = 'gui_with_oscap'
-elif with_uefi:
-    guest_tag = 'uefi_with_oscap'
-else:
-    guest_tag = 'minimal_with_oscap'
-
-if with_fips:
-    guest_tag += '_fips'
-
+guest_tag = virt.calculate_guest_tag(metadata.tags())
 g = virt.Guest(guest_tag)
 
 if not g.can_be_snapshotted():
     ks = virt.Kickstart(partitions=partitions.partitions)
-    if with_gui:
+    if 'with-gui' in metadata.tags():
         ks.packages.append('@Server with GUI')
     g.install(
         kickstart=ks,
-        secure_boot=with_uefi,
-        kernel_args=['fips=1'] if with_fips else None,
+        secure_boot=('uefi' in metadata.tags()),
+        kernel_args=['fips=1'] if 'fips' in metadata.tags() else None,
     )
     g.prepare_for_snapshot()
 

@@ -4,14 +4,15 @@ import os
 import subprocess
 
 import shared
-from lib import util, results, virt, versions, ansible
+from lib import util, results, virt, versions, ansible, metadata
 from conf import partitions, remediation
 
 
 ansible.install_deps()
 virt.Host.setup()
 
-g = virt.Guest('minimal_with_oscap')
+guest_tag = virt.calculate_guest_tag(metadata.tags())
+g = virt.Guest(guest_tag)
 
 if not g.can_be_snapshotted():
     ks = virt.Kickstart(partitions=partitions.partitions)
