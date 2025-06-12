@@ -1,3 +1,5 @@
+tag+:
+  - uefi
 adjust+:
   - when: distro < rhel-10
     enabled: false

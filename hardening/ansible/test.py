@@ -10,12 +10,14 @@ from conf import remediation, partitions
 ansible.install_deps()
 virt.Host.setup()
 
-_, variant, profile = util.get_test_name().rsplit('/', 2)
+profile = util.get_test_name().rpartition('/')[2]
 with_fips = 'fips' in metadata.tags()
+with_gui = 'with-gui' in metadata.tags()
+with_uefi = 'uefi' in metadata.tags()
 
-if variant == 'with-gui':
+if with_gui:
     guest_tag = 'gui_with_oscap'
-elif variant == 'uefi':
+elif with_uefi:
     guest_tag = 'uefi_with_oscap'
 else:
     guest_tag = 'minimal_with_oscap'
@@ -27,11 +29,11 @@ g = virt.Guest(guest_tag)
 
 if not g.can_be_snapshotted():
     ks = virt.Kickstart(partitions=partitions.partitions)
-    if variant == 'with-gui':
+    if with_gui:
         ks.packages.append('@Server with GUI')
     g.install(
         kickstart=ks,
-        secure_boot=(variant == 'uefi'),
+        secure_boot=with_uefi,
         kernel_args=['fips=1'] if with_fips else None,
     )
     g.prepare_for_snapshot()

@@ -8,8 +8,10 @@ virt.Host.setup()
 
 g = virt.Guest()
 
-_, variant, profile = util.get_test_name().rsplit('/', 2)
+profile = util.get_test_name().rpartition('/')[2]
 with_fips = 'fips' in metadata.tags()
+with_gui = 'with-gui' in metadata.tags()
+with_uefi = 'uefi' in metadata.tags()
 
 oscap.unselect_rules(util.get_datastream(), 'remediation-ds.xml', remediation.excludes())
 
@@ -26,12 +28,12 @@ cmd = [
 _, lines = util.subprocess_stream(cmd, check=True)
 ks = virt.translate_oscap_kickstart(lines, '/root/remediation-ds.xml')
 
-if variant == 'with-gui':
+if with_gui:
     ks.packages.append('@Server with GUI')
 
 g.install(
     kickstart=ks, rpmpack=rpmpack,
-    secure_boot=(variant == 'uefi'),
+    secure_boot=with_uefi,
     kernel_args=['fips=1'] if with_fips else None,
 )
 

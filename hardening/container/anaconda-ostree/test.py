@@ -8,7 +8,7 @@ from conf import remediation
 
 virt.Host.setup()
 
-_, variant, profile = util.get_test_name().rsplit('/', 2)
+profile = util.get_test_name().rpartition('/')[2]
 with_fips = 'fips' in metadata.tags()
 oscap_repo = os.environ.get('CONTEST_OSCAP_REPOFILE')
 
