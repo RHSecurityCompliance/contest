@@ -32,8 +32,8 @@ adjust+:
       - subset-profile
 
 /cui:
-    environment+:
-        WITH_FIPS: 1
+    tag+:
+      - fips
     adjust+:
       - enabled: false
         because: there is no CUI profile on RHEL-10+
@@ -43,12 +43,12 @@ adjust+:
 /hipaa:
 
 /ism_o:
-    environment+:
-        WITH_FIPS: 1
+    tag+:
+      - fips
 
 /ospp:
-    environment+:
-        WITH_FIPS: 1
+    tag+:
+      - fips
     adjust+:
       - enabled: false
         because: there is no OSPP profile on RHEL-10+
@@ -56,8 +56,8 @@ adjust+:
 /pci-dss:
 
 /stig:
-    environment+:
-        WITH_FIPS: 1
+    tag+:
+      - fips
 
 /stig_gui:
     adjust+:

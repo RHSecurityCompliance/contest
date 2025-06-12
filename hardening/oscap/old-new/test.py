@@ -1,15 +1,13 @@
 #!/usr/bin/python3
 
-import os
-
-from lib import util, results, virt, oscap
+from lib import util, results, virt, oscap, metadata
 from conf import remediation, partitions
 
 
 virt.Host.setup()
 
 profile = util.get_test_name().rpartition('/')[2]
-with_fips = os.environ.get('WITH_FIPS') == '1'
+with_fips = 'fips' in metadata.tags()
 
 guest_tag = 'minimal_with_oscap'
 if with_fips:

@@ -1,7 +1,6 @@
 #!/usr/bin/python3
 
-import os
-from lib import util, results, virt, oscap
+from lib import util, results, virt, oscap, metadata
 from conf import remediation
 
 
@@ -10,7 +9,7 @@ virt.Host.setup()
 g = virt.Guest()
 
 _, variant, profile = util.get_test_name().rsplit('/', 2)
-with_fips = os.environ.get('WITH_FIPS') == '1'
+with_fips = 'fips' in metadata.tags()
 
 oscap.unselect_rules(util.get_datastream(), 'remediation-ds.xml', remediation.excludes())
 
