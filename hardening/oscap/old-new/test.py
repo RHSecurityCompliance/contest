@@ -7,19 +7,15 @@ from conf import remediation, partitions
 virt.Host.setup()
 
 profile = util.get_test_name().rpartition('/')[2]
-with_fips = 'fips' in metadata.tags()
 
-guest_tag = 'minimal_with_oscap'
-if with_fips:
-    guest_tag += '_fips'
-
+guest_tag = virt.calculate_guest_tag(metadata.tags())
 g = virt.Guest(guest_tag)
 
 if not g.can_be_snapshotted():
     ks = virt.Kickstart(partitions=partitions.partitions)
     g.install(
         kickstart=ks,
-        kernel_args=['fips=1'] if with_fips else None,
+        kernel_args=['fips=1'] if 'fips' in metadata.tags() else None,
     )
     g.prepare_for_snapshot()
 

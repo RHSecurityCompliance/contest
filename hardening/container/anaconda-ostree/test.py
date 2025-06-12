@@ -9,7 +9,6 @@ from conf import remediation
 virt.Host.setup()
 
 profile = util.get_test_name().rpartition('/')[2]
-with_fips = 'fips' in metadata.tags()
 oscap_repo = os.environ.get('CONTEST_OSCAP_REPOFILE')
 
 oscap.unselect_rules(util.get_datastream(), 'remediation-ds.xml', remediation.excludes())
@@ -87,7 +86,7 @@ with podman.Registry(host_addr=virt.NETWORK_HOST) as registry:
         # Anaconda installer may itself perform cryptographic operations so
         # it also needs to run with fips=1, see
         # https://docs.fedoraproject.org/en-US/bootc/security-and-hardening/
-        kernel_args=['fips=1'] if with_fips else None,
+        kernel_args=['fips=1'] if 'fips' in metadata.tags() else None,
     )
 
 # boot up and scan the VM
