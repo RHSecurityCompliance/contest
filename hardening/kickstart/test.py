@@ -1,7 +1,6 @@
 #!/usr/bin/python3
 
-import os
-from lib import util, results, virt, oscap
+from lib import util, results, virt, oscap, metadata
 from conf import remediation
 
 
@@ -9,8 +8,7 @@ virt.Host.setup()
 
 g = virt.Guest()
 
-_, variant, profile = util.get_test_name().rsplit('/', 2)
-with_fips = os.environ.get('WITH_FIPS') == '1'
+profile = util.get_test_name().rpartition('/')[2]
 
 oscap.unselect_rules(util.get_datastream(), 'remediation-ds.xml', remediation.excludes())
 
@@ -27,13 +25,13 @@ cmd = [
 _, lines = util.subprocess_stream(cmd, check=True)
 ks = virt.translate_oscap_kickstart(lines, '/root/remediation-ds.xml')
 
-if variant == 'with-gui':
+if 'with-gui' in metadata.tags():
     ks.packages.append('@Server with GUI')
 
 g.install(
     kickstart=ks, rpmpack=rpmpack,
-    secure_boot=(variant == 'uefi'),
-    kernel_args=['fips=1'] if with_fips else None,
+    secure_boot=('uefi' in metadata.tags()),
+    kernel_args=['fips=1'] if 'fips' in metadata.tags() else None,
 )
 
 with g.booted():

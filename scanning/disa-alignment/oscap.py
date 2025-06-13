@@ -1,13 +1,14 @@
 #!/usr/bin/python3
 
 import shared
-from lib import util, results, virt, oscap, versions
+from lib import util, results, virt, oscap, versions, metadata
 from conf import partitions, remediation
 
 
 virt.Host.setup()
 
-g = virt.Guest('minimal_with_oscap')
+guest_tag = virt.calculate_guest_tag(metadata.tags())
+g = virt.Guest(guest_tag)
 
 if not g.can_be_snapshotted():
     ks = virt.Kickstart(partitions=partitions.partitions)

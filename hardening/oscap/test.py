@@ -1,36 +1,24 @@
 #!/usr/bin/python3
 
-import os
-
-from lib import util, results, virt, oscap
+from lib import util, results, virt, oscap, metadata
 from conf import remediation, partitions
 
 
 virt.Host.setup()
 
-_, variant, profile = util.get_test_name().rsplit('/', 2)
-with_fips = os.environ.get('WITH_FIPS') == '1'
+profile = util.get_test_name().rpartition('/')[2]
 
-if variant == 'with-gui':
-    guest_tag = 'gui_with_oscap'
-elif variant == 'uefi':
-    guest_tag = 'uefi_with_oscap'
-else:
-    guest_tag = 'minimal_with_oscap'
-
-if with_fips:
-    guest_tag += '_fips'
-
+guest_tag = virt.calculate_guest_tag(metadata.tags())
 g = virt.Guest(guest_tag)
 
 if not g.can_be_snapshotted():
     ks = virt.Kickstart(partitions=partitions.partitions)
-    if variant == 'with-gui':
+    if 'with-gui' in metadata.tags():
         ks.packages.append('@Server with GUI')
     g.install(
         kickstart=ks,
-        secure_boot=(variant == 'uefi'),
-        kernel_args=['fips=1'] if with_fips else None,
+        secure_boot=('uefi' in metadata.tags()),
+        kernel_args=['fips=1'] if 'fips' in metadata.tags() else None,
     )
     g.prepare_for_snapshot()
 

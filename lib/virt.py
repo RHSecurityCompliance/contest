@@ -964,6 +964,23 @@ def translate_oscap_kickstart(lines, datastream):
     return Kickstart(template=ks_text, partitions=[])
 
 
+def calculate_guest_tag(tags):
+    """
+    Return a string representing a unified form of a Guest tag string,
+    calculated from fmf metadata based test tags passed as 'tags'.
+    """
+    # these must be appended in specific deterministic order across tests
+    # so that multiple tests with identical requirements can share snapshots
+    name = 'default'
+    if 'with-gui' in tags:
+        name += '_gui'
+    if 'uefi' in tags:
+        name += '_uefi'
+    if 'fips' in tags:
+        name += '_fips'
+    return name
+
+
 #
 # libvirt domain (guest) XML operations
 #

@@ -1,6 +1,6 @@
 #!/usr/bin/python3
 
-from lib import results, oscap, osbuild, util
+from lib import results, oscap, osbuild, util, metadata
 from conf import remediation
 
 
@@ -8,7 +8,7 @@ osbuild.Host.setup()
 
 g = osbuild.Guest()
 
-_, variant, profile = util.get_test_name().rsplit('/', 2)
+profile = util.get_test_name().rpartition('/')[2]
 
 oscap.unselect_rules(util.get_datastream(), 'remediation-ds.xml', remediation.excludes())
 
@@ -25,7 +25,7 @@ cmd = [
 _, lines = util.subprocess_stream(cmd, check=True)
 blueprint = osbuild.translate_oscap_blueprint(lines, '/root/remediation-ds.xml')
 
-g.create(blueprint=blueprint, rpmpack=rpmpack, secure_boot=(variant == 'uefi'))
+g.create(blueprint=blueprint, rpmpack=rpmpack, secure_boot=('uefi' in metadata.tags()))
 
 with g.booted():
     # copy the original DS to the guest

@@ -4,7 +4,7 @@ import time
 import signal
 import subprocess
 
-from lib import util, results, oscap
+from lib import util, results, oscap, metadata
 
 
 start_time = time.monotonic()
@@ -50,7 +50,6 @@ oscap_cmd = [
 # run for all of the configured test duration, minus 600 seconds for safety
 # (running gdb, compressing corefile which takes forever, etc.)
 attempt = 1
-metadata = util.TestMetadata()
 duration = metadata.duration_seconds() - oscap_timeout - 600
 util.log(f"trying to freeze oscap for {duration} total seconds")
 
