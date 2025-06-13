@@ -20,26 +20,6 @@
 /hardening/oscap/old-new/.*/enable_fips_mode
     rhel == 8 or rhel == 9
 
-# https://github.com/ComplianceAsCode/content/issues/13126
-/per-rule/.+/accounts_password_set_max_life_root/correct.pass
-/per-rule/.+/accounts_password_set_max_life_root/wrong.fail
-/per-rule/.+/postfix_client_configure_mail_alias/correct.pass
-/per-rule/.+/package_quagga_removed/package-installed.fail
-/per-rule/.+/package_rsh-server_removed/package-installed.fail
-/per-rule/.+/package_rsh_removed/package-installed.fail
-/per-rule/.+/package_mcafeetp_installed/package-installed.pass
-    True
-/per-rule/.+/grub2_audit_backlog_limit_argument/correct_grubenv.pass
-/per-rule/.+/grub2_password/invalid_username.fail
-/per-rule/.+/harden_sshd_ciphers_openssh_conf_crypto_policy/stig_correct.pass
-/per-rule/.+/harden_sshd_ciphers_openssh_conf_crypto_policy/stig_correct_followed_by_incorrect_commented.pass
-/per-rule/.+/sudo_add_umask/0027_var_multiple_values.pass
-    rhel == 8
-/per-rule/.+/package_xinetd_removed/package-installed.fail
-/per-rule/.+/package_ypbind_removed/package-installed.fail
-/per-rule/.+/package_ypserv_removed/package-installed.fail
-/per-rule/.+/service_telnet_disabled/service_disabled.pass
-    rhel == 9
 
 # https://github.com/ComplianceAsCode/content/issues/12561
 /scanning/disa-alignment/.*/logind_session_timeout
