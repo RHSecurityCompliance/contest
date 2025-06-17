@@ -19,13 +19,15 @@ def reboot():
         fd = int(os.environ['ATEX_TEST_CONTROL'])
         with os.fdopen(fd, 'w', closefd=False) as control:
             control.write('reconnect\n')
-        util.subprocess_run('reboot')
+        # prevent the test runner from reconnecting before reboot
+        util.subprocess_run(['systemctl', 'stop', 'sshd'], check=True)
+        util.subprocess_run(['reboot'])
     elif shutil.which('tmt-reboot'):
-        util.subprocess_run('tmt-reboot')
+        util.subprocess_run(['tmt-reboot'])
     elif shutil.which('rstrnt-reboot'):
-        util.subprocess_run('rstrnt-reboot')
+        util.subprocess_run(['rstrnt-reboot'])
     else:
-        util.subprocess_run('reboot')
+        util.subprocess_run(['reboot'])
     while True:
         time.sleep(1000000)
 
