@@ -100,7 +100,8 @@ class Registry:
             util.wait_for_tcp(host, port)
         except Exception as e:
             # make sure we always clean up
-            proc.terminate()
+            self.proc.terminate()
+            self.proc = None
             raise e from None
 
     def stop(self):
