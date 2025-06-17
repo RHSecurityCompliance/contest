@@ -74,16 +74,15 @@ class Registry:
     def __init__(self, name='contest-registry', host_addr='127.0.0.1'):
         self.name = name
         self.addr = host_addr
-        self.proc = None
+        self.registry_proc = None
         self.tagged = set()
 
     def start(self):
         util.log(f"starting container for {self.name}")
-        proc = util.subprocess_Popen([
+        self.registry_proc = util.subprocess_Popen([
             'podman', 'container', 'run', '--rm', '--name', self.name,
             '--publish', f'{self.addr}::5000', 'registry:2',
         ])
-        self.proc = proc
         try:
             # wait for the registry server to start existing
             for _ in range(100):
@@ -100,15 +99,15 @@ class Registry:
             util.wait_for_tcp(host, port)
         except Exception as e:
             # make sure we always clean up
-            self.proc.terminate()
-            self.proc = None
+            self.registry_proc.terminate()
+            self.registry_proc = None
             raise e from None
 
     def stop(self):
-        if self.proc:
+        if self.registry_proc:
             util.log(f"stopping container for {self.name}")
-            self.proc.terminate()
-            self.proc.wait()
+            self.registry_proc.terminate()
+            self.registry_proc.wait()
 
     def get_listen_addr(self):
         """
