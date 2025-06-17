@@ -968,7 +968,12 @@ def calculate_guest_tag(tags):
     """
     Return a string representing a unified form of a Guest tag string,
     calculated from fmf metadata based test tags passed as 'tags'.
+
+    May return None (which is still a valid Guest tag).
     """
+    if 'snapshottable' not in tags:
+        return None
+
     # these must be appended in specific deterministic order across tests
     # so that multiple tests with identical requirements can share snapshots
     name = 'default'
