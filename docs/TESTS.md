@@ -125,3 +125,32 @@ are themselves a subset of another level (profile).
 There are other minor factors (content profile variables) that break this
 relationship, however, if you want a smaller test set at the cost of ignoring
 these factors, exclude tests with this tag.
+
+## `snapshottable`
+
+This indicates a test that can share virtual machine snapshots with other
+tests, typically via a clause like
+
+```python
+g = virt.Guest(guest_tag)
+if not g.can_be_snapshotted():
+    g.install(...)
+    g.prepare_for_snapshot()
+
+with g.snapshotted():
+    ...
+```
+
+This allows any test with the same `guest_tag` (ie. feature set of the VM)
+to install that VM, snapshot it, and let others re-use that snapshot.
+
+## `with-gui`, `uefi`, `fips`
+
+These are very specific tags for some `/hardening` tests to indicate that they
+install a VM or run on a system that
+
+* has the "Server with GUI" package set installed,
+* is running via UEFI / has Secure Boot enabled,
+* was installed with `fips=1` passed to Anaconda,
+
+respectively.
