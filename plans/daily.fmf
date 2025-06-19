@@ -30,7 +30,7 @@ discover:
       # Image Mode testing
       - /hardening/container
       # run /per-rule as oscap only - this almost halves the runtime (for now)
-      - /per-rule/[^/]+/oscap$
+      - /per-rule/oscap/[0-9]+$
       # the rest is cheap to run
       - /scanning
       - /static-checks
