@@ -230,6 +230,13 @@
 /scanning/disa-alignment/.+/audit_privileged_commands_.+
     rhel == 9
 
+# File /boot/grub2/grub2.cfg is created with lenient permissions by
+# bootupd during the installation of a bootable container image.
+# https://github.com/coreos/bootupd/issues/952
+# https://issues.redhat.com/browse/OPENSCAP-5326
+/hardening/container/(anaconda-ostree|bootc-image-builder)/.+/file_permissions_grub2_cfg
+    True
+
 # These rules require OpenSCAP 1.3.12 or 1.4.2 to pass because they depend on
 # processing negative numbers by textfilecontent54_probe which is fixed by
 # https://github.com/OpenSCAP/openscap/pull/2210
