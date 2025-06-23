@@ -253,7 +253,7 @@ def get_source_content():
                 #   because of '-rhel6' content on RHEL-8
                 ret = util.subprocess_run(
                     ['rpm', '-q', '--qf', '%{NAME}-%{VERSION}', '-p', src_rpm],
-                    check=True, stdout=subprocess.PIPE, universal_newlines=True, cwd=tmpdir,
+                    check=True, stdout=subprocess.PIPE, text=True, cwd=tmpdir,
                 )
                 name_version = ret.stdout.strip()
                 # extracted sources directory varies across distro versions, thus

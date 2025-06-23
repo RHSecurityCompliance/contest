@@ -25,7 +25,7 @@ def podman(*args, log=True, check=True, **kwargs):
 
     return run(
         ['podman', *args],
-        check=check, universal_newlines=True,
+        check=check, text=True,
         **kwargs,
     )
 

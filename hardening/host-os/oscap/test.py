@@ -71,9 +71,8 @@ else:
     pack = util.RpmPack()
     pack.uninstall()
 
-    # TODO: str() because of python 3.6 shutil.move() not supporting Path
-    shutil.move(str(tmpdir / 'remediation-arf.xml'), '.')
-    shutil.move(str(tmpdir / 'remediation2-arf.xml'), '.')
+    shutil.move(tmpdir / 'remediation-arf.xml', '.')
+    shutil.move(tmpdir / 'remediation2-arf.xml', '.')
 
     tar = [
         'tar', '-cvJf', 'results-arf.tar.xz',

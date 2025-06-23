@@ -68,7 +68,7 @@ while time.monotonic() - start_time < duration:
         # figure out oscap PID on the remote system
         pgrep = util.subprocess_run(
             ['pgrep', '-n', 'oscap'],
-            stdout=subprocess.PIPE, universal_newlines=True,
+            stdout=subprocess.PIPE, text=True,
         )
         if pgrep.returncode != 0:
             results.report(

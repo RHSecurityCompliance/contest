@@ -266,7 +266,7 @@ class Guest(virt.Guest):
             # ERROR: Depsolve Error: Get "http://localhost/.../depsolve/contest_blueprint": EOF
             for _ in range(5):
                 ret = composer_cli(
-                    'blueprints', 'depsolve', bp_name, check=False, universal_newlines=True,
+                    'blueprints', 'depsolve', bp_name, check=False, text=True,
                     stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
                 )
                 sys.stdout.write(ret.stdout)
@@ -352,7 +352,7 @@ def composer_cli(*args, log=True, check=True, **kwargs):
 
 
 def composer_cli_out(*args, **kwargs):
-    out = composer_cli(*args, stdout=subprocess.PIPE, universal_newlines=True, **kwargs)
+    out = composer_cli(*args, stdout=subprocess.PIPE, text=True, **kwargs)
     return out.stdout.rstrip('\n')
 
 

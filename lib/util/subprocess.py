@@ -38,7 +38,7 @@ def subprocess_stream(cmd, *, check=False, skip_frames=0, **kwargs):
     To capture both stdout and stderr as yielded lines, use subprocess.STDOUT.
     """
     util.log(f'running: {_format_subprocess_cmd(cmd)}', skip_frames=skip_frames+1)
-    proc = subprocess.Popen(cmd, stdout=subprocess.PIPE, universal_newlines=True, **kwargs)
+    proc = subprocess.Popen(cmd, stdout=subprocess.PIPE, text=True, **kwargs)
 
     def generate_lines():
         for line in proc.stdout:

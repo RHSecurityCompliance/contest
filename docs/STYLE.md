@@ -61,7 +61,7 @@ Prefer modern Python features over older (but still valid) ones, namely:
   - `Path('some/path') / subdir / another_dir`
   - `Path().name` instead of `os.path.basename()`
   - `Path().parent` instead of `os.path.dirname()`
-  - see others on https://docs.python.org/3.6/library/pathlib.html#methods
+  - see others on https://docs.python.org/3.9/library/pathlib.html#methods
 - `subprocess.run()` over `.check_output()` and `.call()`
 
 However avoid using these new features:
@@ -310,10 +310,6 @@ For insignificant or harmless (read-only) commands, use `subprocess.run(...)`
 to not flood the logs.
 
 ## TODOs
-
-Obsoletes/replaces when we drop support for Python 3.6:
-
-- `subprocess.run()` - replace `universal_newlines` with `text`
 
 Misc:
 

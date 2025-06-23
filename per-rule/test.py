@@ -200,7 +200,7 @@ for test in tests:
     with g.snapshotted():
         proc = g.ssh(
             './runner.sh', test.rule, test.test, pass_fail, remediation_type, 'nodebug',
-            stdout=subprocess.PIPE, universal_newlines=True,
+            stdout=subprocess.PIPE, text=True,
         )
         if proc.returncode == 0:
             results.report('pass', format_test(test), proc.stdout.rstrip('\n'))
@@ -215,7 +215,7 @@ for test in tests:
     with g.snapshotted():
         proc = g.ssh(
             './runner.sh', test.rule, test.test, pass_fail, remediation_type, 'debug',
-            stdout=subprocess.PIPE, universal_newlines=True,
+            stdout=subprocess.PIPE, text=True,
         )
 
         if proc.returncode == 0:

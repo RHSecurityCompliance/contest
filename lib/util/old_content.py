@@ -22,7 +22,7 @@ def _downloaded_extracted_ds(version):
 
 def _installed_ssg_version():
     cmd = ['rpm', '-q', '--qf', '%{VERSION}-%{RELEASE}', 'scap-security-guide']
-    ret = util.subprocess_run(cmd, stdout=subprocess.PIPE, universal_newlines=True)
+    ret = util.subprocess_run(cmd, stdout=subprocess.PIPE, text=True)
     if ret.returncode != 0:
         util.log(f"rpm: {ret.stdout}")
         ret.check_returncode()
@@ -31,7 +31,7 @@ def _installed_ssg_version():
 
 def _compare_ssg_versions(ver_a, ver_b):
     cmd = ['rpm', '--eval', f'%{{lua:print(rpm.vercmp("{ver_a}", "{ver_b}"))}}']
-    ret = util.subprocess_run(cmd, stdout=subprocess.PIPE, universal_newlines=True)
+    ret = util.subprocess_run(cmd, stdout=subprocess.PIPE, text=True)
     return int(ret.stdout)
 
 
@@ -40,7 +40,7 @@ def _available_ssg_versions():
         'dnf', '-q', 'repoquery', '--available', '--arch', 'noarch',
         '--qf', '%{VERSION}-%{RELEASE}', 'scap-security-guide',
     ]
-    ret = util.subprocess_run(cmd, check=True, stdout=subprocess.PIPE, universal_newlines=True)
+    ret = util.subprocess_run(cmd, check=True, stdout=subprocess.PIPE, text=True)
     versions = ret.stdout.rstrip('\n').split('\n')
     # sort from newest to oldest
     return sorted(versions, key=functools.cmp_to_key(_compare_ssg_versions), reverse=True)
