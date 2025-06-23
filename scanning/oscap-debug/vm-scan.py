@@ -73,7 +73,7 @@ with g.booted():
 
         except subprocess.TimeoutExpired:
             # figure out oscap PID on the remote system
-            pgrep = g.ssh('pgrep -n oscap', stdout=subprocess.PIPE, universal_newlines=True)
+            pgrep = g.ssh('pgrep -n oscap', stdout=subprocess.PIPE, text=True)
             if pgrep.returncode != 0:
                 results.report(
                     'warn',

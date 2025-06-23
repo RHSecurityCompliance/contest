@@ -14,7 +14,7 @@ _Repo = collections.namedtuple('Repo', ['name', 'baseurl', 'data', 'file'])
 
 def _get_repos_dnf():
     cmd = util.libdir / 'dnf_get_repos'
-    ret = util.subprocess_run(cmd, check=True, stdout=subprocess.PIPE, universal_newlines=True)
+    ret = util.subprocess_run(cmd, check=True, stdout=subprocess.PIPE, text=True)
     try:
         json_data = json.loads(ret.stdout)
     except json.JSONDecodeError as e:

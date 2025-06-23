@@ -181,10 +181,10 @@ class Host:
             virsh('net-autostart', net_name, check=True)
             virsh('net-start', net_name, check=True)
 
-        info = virsh('net-info', net_name, stdout=PIPE, stderr=DEVNULL, universal_newlines=True)
+        info = virsh('net-info', net_name, stdout=PIPE, stderr=DEVNULL, text=True)
         # if default already exists
         if info.returncode == 0:
-            dumpxml = virsh('net-dumpxml', net_name, stdout=PIPE, universal_newlines=True)
+            dumpxml = virsh('net-dumpxml', net_name, stdout=PIPE, text=True)
             if not is_our_network(dumpxml.stdout):
                 if re.search(r'\nActive: +yes\n', info.stdout):
                     virsh('net-destroy', net_name, check=True)
@@ -639,7 +639,7 @@ class Guest:
         # were not run for this class instance
         if not self.disk_path:
             ret = virsh('dumpxml', self.name, '--inactive',
-                        stdout=PIPE, check=True, universal_newlines=True)
+                        stdout=PIPE, check=True, text=True)
             _, _, _, driver, source = domain_xml_diskinfo(ret.stdout)
             self.disk_format = driver.get('type')
             self.disk_path = Path(source.get('file'))
@@ -790,7 +790,7 @@ class Guest:
         if args:
             request['arguments'] = args
         ret = virsh('qemu-agent-command', self.name, json.dumps(request), check=not blind,
-                    universal_newlines=True, stdout=PIPE, stderr=DEVNULL if blind else None)
+                    text=True, stdout=PIPE, stderr=DEVNULL if blind else None)
         if blind:
             return
         return json.loads(ret.stdout)['return']
@@ -819,7 +819,7 @@ class Guest:
 #
 
 def guest_domstate(name):
-    ret = virsh('domstate', name, stdout=PIPE, stderr=DEVNULL, universal_newlines=True)
+    ret = virsh('domstate', name, stdout=PIPE, stderr=DEVNULL, text=True)
     if ret.returncode != 0:  # not defined
         return ''
     return ret.stdout.strip()
@@ -846,7 +846,7 @@ def domifaddr(name):
     """
     Return a guest's IP address, queried from libvirt.
     """
-    ret = virsh('domifaddr', name, stdout=PIPE, universal_newlines=True, check=True)
+    ret = virsh('domifaddr', name, stdout=PIPE, text=True, check=True)
     first = ret.stdout.strip().split('\n')[0]  # in case of multiple interfaces
     if not first:
         raise ConnectionError(f"guest {name} has no address assigned yet")
@@ -1003,7 +1003,7 @@ def domain_xml_diskinfo(xmlstr):
 
 def get_state_image_disk(image):
     """Get path/format of the first <disk> definition in a RAM image file."""
-    ret = virsh('save-image-dumpxml', image, stdout=PIPE, check=True, universal_newlines=True)
+    ret = virsh('save-image-dumpxml', image, stdout=PIPE, check=True, text=True)
     _, _, _, driver, source = domain_xml_diskinfo(ret.stdout)
     image_format = driver.get('type')
     source_file = Path(source.get('file'))
@@ -1012,7 +1012,7 @@ def get_state_image_disk(image):
 
 def set_state_image_disk(image, source_file, image_format):
     """Set a disk path inside a saved guest RAM image to 'diskpath'."""
-    ret = virsh('save-image-dumpxml', image, stdout=PIPE, check=True, universal_newlines=True)
+    ret = virsh('save-image-dumpxml', image, stdout=PIPE, check=True, text=True)
     domain, _, disk, driver, source = domain_xml_diskinfo(ret.stdout)
     driver.set('type', image_format)
     source.set('file', str(source_file))
@@ -1029,7 +1029,7 @@ def set_state_image_disk(image, source_file, image_format):
 
 def set_domain_memory(domain, amount, unit='MiB'):
     """Set the amount of RAM allowed for a defined guest."""
-    ret = virsh('dumpxml', domain, stdout=PIPE, check=True, universal_newlines=True)
+    ret = virsh('dumpxml', domain, stdout=PIPE, check=True, text=True)
     domain = ET.fromstring(ret.stdout)
     for name in ['memory', 'currentMemory']:
         mem = domain.find(name)

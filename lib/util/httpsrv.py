@@ -156,7 +156,7 @@ class BackgroundHTTPServer:
             if res.returncode == 0:
                 res = util.subprocess_run(
                     ['firewall-cmd', '--get-zones'], stdout=subprocess.PIPE,
-                    universal_newlines=True, check=True)
+                    text=True, check=True)
                 self.firewalld_zones = res.stdout.strip().split(' ')
                 for zone in self.firewalld_zones:
                     util.subprocess_run(

@@ -1,6 +1,5 @@
 #!/usr/bin/python3
 
-import re
 from collections import defaultdict
 
 from lib import util, results, oscap
@@ -35,8 +34,7 @@ for frames, elements in oscap.parse_xml(util.get_datastream()):
         continue
 
     rule, reference = elements[-2:]
-    # TODO: use str.removeprefix on python 3.9+
-    rule = re.sub(r'^xccdf_org.ssgproject.content_rule_', '', rule.get('id'))
+    rule = rule.get('id').removeprefix('xccdf_org.ssgproject.content_rule_')
     reference = reference.get('href')
     rule_references[rule].add(reference)
 
