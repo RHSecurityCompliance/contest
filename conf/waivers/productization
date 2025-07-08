@@ -101,6 +101,9 @@
 # https://github.com/ComplianceAsCode/content/issues/13391
 /scanning/disa-alignment/.+/logind_session_timeout
     rhel == 9
+# https://github.com/ComplianceAsCode/content/issues/13676
+/scanning/disa-alignment/.*/coredump_disable_.+
+    True
 
 # RHEL10 - No official RHEL10 STIG/CIS benchmark yet
 /static-checks/rule-identifiers/(stig|cis.*)/.*
