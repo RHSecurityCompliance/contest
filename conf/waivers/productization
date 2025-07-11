@@ -250,5 +250,8 @@
 /per-rule/.+/harden_sshd_ciphers_(openssh|opensshserver)_conf_crypto_policy
 /per-rule/.+/harden_sshd_macs_(openssh|opensshserver)_conf_crypto_policy
     rhel == 8
+# https://github.com/ComplianceAsCode/content/issues/13690
+/per-rule/.+/banner_etc_issue
+    True
 
 # vim: syntax=python
