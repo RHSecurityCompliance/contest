@@ -1,14 +1,6 @@
 # waivers for content issues found during productization (stabilization) testing
 # approximately sorted by test categories and history
 
-# https://github.com/ComplianceAsCode/content/issues/13552
-/hardening/container/.+/account_password_selinux_faillock_dir
-    rhel == 9 or rhel == 10
-
-# https://github.com/ComplianceAsCode/content/issues/13551
-/hardening/container/.+/ensure_pam_wheel_group_empty
-    rhel == 9 or rhel == 10
-
 # https://github.com/ComplianceAsCode/content/issues/13287
 # The old-new test for enable_fips_mode rules is failing
 /hardening/oscap/old-new/.*/enable_fips_mode
