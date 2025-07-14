@@ -9,12 +9,6 @@
 /hardening/container/.+/ensure_pam_wheel_group_empty
     rhel == 9 or rhel == 10
 
-# https://github.com/ComplianceAsCode/content/issues/13550
-/hardening/container/.+/sebool_polyinstantiation_enabled
-/hardening/container/.+/sebool_selinuxuser_execstack
-/hardening/container/.+/sebool_selinuxuser_execmod
-    rhel == 9 or rhel == 10
-
 # https://github.com/ComplianceAsCode/content/issues/13287
 # The old-new test for enable_fips_mode rules is failing
 /hardening/oscap/old-new/.*/enable_fips_mode
