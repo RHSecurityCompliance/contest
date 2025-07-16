@@ -5,7 +5,7 @@ description: |-
 test: $CONTEST_PYTHON -m lib.runtest ./test.py
 result: custom
 environment+:
-    PYTHONPATH: ../../..
+    PYTHONPATH: ../../../..
 duration: 1h
 require+:
   - openscap-scanner
