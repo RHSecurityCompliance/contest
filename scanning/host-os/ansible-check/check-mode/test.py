@@ -13,11 +13,6 @@ profile = util.get_test_name().rpartition('/')[2]
 os.environ['ANSIBLE_HOST_KEY_CHECKING'] = 'False'
 
 ansible.install_deps()
-
-pack = util.RpmPack()
-pack.add_sshd_late_start()
-pack.install()
-
 playbook = util.get_playbook(profile)
 ansible_cmd = [
     'ansible-playbook', '-v', '-c', 'local', '-i', 'localhost,', '--check',
