@@ -13,8 +13,6 @@ require+:
 recommend+:
   # needed for the ini_file ansible plugin, and more
   - rhc-worker-playbook
-  # individual rule playbooks
-  - scap-security-guide-rule-playbooks
 adjust+:
   - when: arch != x86_64
     enabled: false
