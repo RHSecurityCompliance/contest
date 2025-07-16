@@ -1,12 +1,6 @@
 # waivers for content issues found during productization (stabilization) testing
 # approximately sorted by test categories and history
 
-# https://github.com/ComplianceAsCode/content/issues/13287
-# The old-new test for enable_fips_mode rules is failing
-/hardening/oscap/old-new/.*/enable_fips_mode
-    rhel == 8 or rhel == 9
-
-
 # https://github.com/ComplianceAsCode/content/issues/12561
 /scanning/disa-alignment/.*/logind_session_timeout
     rhel == 8
