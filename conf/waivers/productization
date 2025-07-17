@@ -26,11 +26,6 @@
 # https://github.com/ComplianceAsCode/content/issues/11802
 /scanning/disa-alignment/[^/]+/auditd_audispd_configure_sufficiently_large_partition
     rhel == 9
-# https://github.com/ComplianceAsCode/content/issues/13108
-/scanning/disa-alignment/.*/configure_crypto_policy
-/scanning/disa-alignment/.*/configure_kerberos_crypto_policy
-/scanning/disa-alignment/.*/configure_libreswan_crypto_policy
-    rhel == 9 or rhel == 8
 # https://github.com/ComplianceAsCode/content/issues/13109
 /scanning/disa-alignment/.+/file_permissions_sshd_config
 /scanning/disa-alignment/.+/file_permissions_sshd_drop_in_config

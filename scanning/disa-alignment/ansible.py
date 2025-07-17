@@ -16,7 +16,7 @@ g = virt.Guest(guest_tag)
 
 if not g.can_be_snapshotted():
     ks = virt.Kickstart(partitions=partitions.partitions)
-    g.install(kickstart=ks)
+    g.install(kickstart=ks, kernel_args=['fips=1'])
     g.prepare_for_snapshot()
 
 # the VM guest ssh code doesn't use $HOME/.known_hosts, so Ansible blocks
