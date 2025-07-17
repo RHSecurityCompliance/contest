@@ -26,7 +26,7 @@ with util.BackgroundHTTPServer(virt.NETWORK_HOST, 0) as srv:
     }
     ks.add_oscap_addon(oscap_conf)
 
-    g.install(kickstart=ks)
+    g.install(kickstart=ks, kernel_args=['fips=1'])
 
 with g.booted(), util.get_source_content() as content_dir:
     g.copy_to(util.get_datastream(), 'ssg-ds.xml')
