@@ -216,8 +216,13 @@
 /per-rule/.+/harden_sshd_ciphers_(openssh|opensshserver)_conf_crypto_policy
 /per-rule/.+/harden_sshd_macs_(openssh|opensshserver)_conf_crypto_policy
     rhel == 8
+
 # https://github.com/ComplianceAsCode/content/issues/13690
-/per-rule/.+/banner_etc_issue
+/per-rule/.+/banner_etc_issue.+
     True
+
+# https://github.com/ComplianceAsCode/content/issues/13720
+/per-rule/.+/sshd_rekey_limit/correct_value_directory.pass
+    rhel == 8
 
 # vim: syntax=python
