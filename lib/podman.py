@@ -104,6 +104,8 @@ class Registry:
             raise e from None
 
     def stop(self):
+        for tag in self.tagged:
+            podman('image', 'untag', tag)
         if self.registry_proc:
             util.log(f"stopping container for {self.name}")
             self.registry_proc.terminate()
@@ -144,10 +146,12 @@ class Registry:
         return full_local_path
 
     def __enter__(self):
-        self.start()
-        return self
+        try:
+            self.start()
+            return self
+        except Exception:
+            self.stop()
+            raise
 
     def __exit__(self, exc_type, exc_value, traceback):
         self.stop()
-        for tag in self.tagged:
-            podman('image', 'untag', tag)
