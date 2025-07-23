@@ -230,4 +230,10 @@
 /per-rule/oscap/.+/grub2_pti_argument/wrong_value_entries.fail
     rhel == 8
 
+# https://github.com/ComplianceAsCode/content/issues/13737
+/hardening/kickstart/with-gui/stig_gui/dconf_gnome_login_banner_text
+/hardening/oscap/with-gui/stig_gui/dconf_gnome_login_banner_text
+/hardening/anaconda/with-gui/stig_gui/dconf_gnome_login_banner_text
+    True
+
 # vim: syntax=python
