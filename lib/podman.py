@@ -5,11 +5,17 @@ containers using the 'podman' utility.
 
 import re
 import time
+import gzip
+import shutil
 import textwrap
+import tempfile
+import requests
 import subprocess
 from pathlib import Path
 
 from lib import util
+
+REGISTRY_IMAGE = 'https://github.com/RHSecurityCompliance/contest-data/raw/refs/heads/main/data/docker-registry.tar.gz'
 
 
 def podman(*args, log=True, check=True, **kwargs):
@@ -74,14 +80,26 @@ class Registry:
     def __init__(self, name='contest-registry', host_addr='127.0.0.1'):
         self.name = name
         self.addr = host_addr
+        self.registry_image = None
         self.registry_proc = None
         self.tagged = set()
 
+    @staticmethod
+    def _download_image():
+        result = requests.get(REGISTRY_IMAGE, stream=True)
+        result.raise_for_status()
+        gz_file = gzip.GzipFile(fileobj=result.raw)
+        with tempfile.NamedTemporaryFile(suffix='.tar', delete=False) as tmpf:
+            shutil.copyfileobj(gz_file, tmpf)
+        return tmpf.name
+
     def start(self):
         util.log(f"starting container for {self.name}")
+        # download the registry image and start it as a container
+        self.registry_image = Path(self._download_image())
         self.registry_proc = util.subprocess_Popen([
             'podman', 'container', 'run', '--rm', '--name', self.name,
-            '--publish', f'{self.addr}::5000', 'registry:2',
+            '--publish', f'{self.addr}::5000', f'docker-archive:{self.registry_image}',
         ])
         try:
             # wait for the registry server to start existing
@@ -110,6 +128,9 @@ class Registry:
             util.log(f"stopping container for {self.name}")
             self.registry_proc.terminate()
             self.registry_proc.wait()
+        if self.registry_image:
+            self.registry_image.unlink()
+            self.registry_image = None
 
     def get_listen_addr(self):
         """
