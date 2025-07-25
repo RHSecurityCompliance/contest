@@ -221,15 +221,6 @@
 /per-rule/.+/banner_etc_issue.+
     True
 
-# https://github.com/ComplianceAsCode/content/issues/13720
-/per-rule/.+/sshd_rekey_limit/correct_value_directory.pass
-    rhel == 8
-
-# https://github.com/ComplianceAsCode/content/issues/13732
-/per-rule/oscap/.+/grub2_pti_argument/arg_not_in_entries.fail
-/per-rule/oscap/.+/grub2_pti_argument/wrong_value_entries.fail
-    rhel == 8
-
 # https://github.com/ComplianceAsCode/content/issues/13737
 /hardening/kickstart/with-gui/stig_gui/dconf_gnome_login_banner_text
 /hardening/oscap/with-gui/stig_gui/dconf_gnome_login_banner_text
