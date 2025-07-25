@@ -236,4 +236,10 @@
 /hardening/anaconda/with-gui/stig_gui/dconf_gnome_login_banner_text
     True
 
+# https://github.com/ComplianceAsCode/content/issues/13743
+/hardening/host-os/ansible/cis/file_permission_user_init_files
+/hardening/host-os/ansible/cis_workstation_l2/file_permission_user_init_files
+    rhel  == 10
+
+
 # vim: syntax=python
