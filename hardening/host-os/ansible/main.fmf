@@ -31,6 +31,12 @@ adjust+:
     tag+:
       - subset-profile
 
+/bsi:
+    adjust+:
+      - when: distro != rhel-9
+        enabled: false
+        because: BSI profile is currently only on RHEL-9
+
 /cis:
 
 /cis_server_l1:
