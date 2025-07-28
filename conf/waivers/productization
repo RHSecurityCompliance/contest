@@ -251,5 +251,10 @@
 /hardening/host-os/ansible/cis_workstation_l2/file_permission_user_init_files
     rhel  == 10
 
+# https://github.com/ComplianceAsCode/content/issues/13844
+/hardening/.+/bsi/rpm_verify_permissions
+/hardening/.+/bsi/file_permissions_cron.*
+/hardening/container/.+/bsi/file_permissions_efi_grub2_cfg
+    rhel == 9
 
 # vim: syntax=python

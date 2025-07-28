@@ -21,6 +21,7 @@ def excludes():
         'accounts_password_set_max_life_root',
         # also just allow root without -oPermitRootLogin=yes hacks
         'sshd_disable_root_login',
+        'sshd_disable_root_password_login',
     ]
 
     # CentOS specific
