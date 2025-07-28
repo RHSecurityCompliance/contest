@@ -120,11 +120,11 @@
 /hardening/kickstart(/with-gui|/uefi)?/(hipaa|stig|stig_gui)/service_kdump_disabled
     rhel == 10
 
-# /run/fapolicyd file mode and groupownership differes from RPM database
-# RHEL 9: https://issues.redhat.com/browse/RHEL-59626
-# RHEL 10: https://issues.redhat.com/browse/RHEL-94536
+# caused by one of:
+# - bz1778661 (abrt)
+# - bz2209266 (RHEL-9 gdm)
 /hardening/.+/rpm_verify_(ownership|permissions)
-    (rhel == 9 and rhel <= 9.6) or rhel == 10.0
+    True
 
 # RHEL-8: https://bugzilla.redhat.com/show_bug.cgi?id=1834716
 # RHEL-9: https://bugzilla.redhat.com/show_bug.cgi?id=1999587
