@@ -1,3 +1,5 @@
+import math
+
 # cache /etc/os-release on a module-wide basis
 _os_release = {}
 
@@ -20,13 +22,12 @@ class _Rhel:
             _update_os_release()
             version = _os_release['VERSION_ID']
 
-        version = str(version)
-        major, _, minor = version.partition('.')
-        self.major = int(major)
+        self.major, self.minor = self._parse_version(version)
         # to make version comparison on CentOS Stream possible we assign
-        # it a minor version of 999 as CentOS Stream is always the latest
-        # minor version of RHEL
-        self.minor = int(minor) if minor else 999
+        # it a minor version of math.inf as CentOS Stream is always the
+        # latest minor version of RHEL
+        if self.is_centos():
+            self.minor = math.inf
 
     @staticmethod
     def is_true_rhel():
@@ -42,56 +43,55 @@ class _Rhel:
 
     @staticmethod
     def _parse_version(version):
-        if isinstance(version, _Rhel):
-            return version
-        return _Rhel(version)
+        major, _, minor = str(version).partition('.')
+        return (int(major), int(minor) if minor else None)
 
     def __eq__(self, other):
-        other = self._parse_version(other)
-        if other.minor is None:
-            return bool(self) and self.major == other.major
-        return bool(self) and ((self.major == other.major) and (self.minor == other.minor))
+        other_major, other_minor = self._parse_version(other)
+        if other_minor is None:
+            return bool(self) and self.major == other_major
+        return bool(self) and ((self.major == other_major) and (self.minor == other_minor))
 
     def __ne__(self, other):
-        other = self._parse_version(other)
-        if other.minor is None:
-            return bool(self) and self.major != other.major
-        return bool(self) and ((self.major != other.major) or (self.minor != other.minor))
+        other_major, other_minor = self._parse_version(other)
+        if other_minor is None:
+            return bool(self) and self.major != other_major
+        return bool(self) and ((self.major != other_major) or (self.minor != other_minor))
 
     def __lt__(self, other):
-        other = self._parse_version(other)
-        if other.minor is None:
-            return bool(self) and self.major < other.major
+        other_major, other_minor = self._parse_version(other)
+        if other_minor is None:
+            return bool(self) and self.major < other_major
         return bool(self) and (
-            (self.major < other.major) or
-            (self.major == other.major and self.minor < other.minor)
+            (self.major < other_major) or
+            (self.major == other_major and self.minor < other_minor)
         )
 
     def __le__(self, other):
-        other = self._parse_version(other)
-        if other.minor is None:
-            return bool(self) and self.major <= other.major
+        other_major, other_minor = self._parse_version(other)
+        if other_minor is None:
+            return bool(self) and self.major <= other_major
         return bool(self) and (
-            (self.major < other.major) or
-            (self.major == other.major and self.minor <= other.minor)
+            (self.major < other_major) or
+            (self.major == other_major and self.minor <= other_minor)
         )
 
     def __gt__(self, other):
-        other = self._parse_version(other)
-        if other.minor is None:
-            return bool(self) and self.major > other.major
+        other_major, other_minor = self._parse_version(other)
+        if other_minor is None:
+            return bool(self) and self.major > other_major
         return bool(self) and (
-            (self.major > other.major) or
-            (self.major == other.major and self.minor > other.minor)
+            (self.major > other_major) or
+            (self.major == other_major and self.minor > other_minor)
         )
 
     def __ge__(self, other):
-        other = self._parse_version(other)
-        if other.minor is None:
-            return bool(self) and self.major >= other.major
+        other_major, other_minor = self._parse_version(other)
+        if other_minor is None:
+            return bool(self) and self.major >= other_major
         return bool(self) and (
-            (self.major > other.major) or
-            (self.major == other.major and self.minor >= other.minor)
+            (self.major > other_major) or
+            (self.major == other_major and self.minor >= other_minor)
         )
 
     def __str__(self):

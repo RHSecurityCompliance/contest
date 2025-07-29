@@ -124,7 +124,7 @@
 # RHEL 9: https://issues.redhat.com/browse/RHEL-59626
 # RHEL 10: https://issues.redhat.com/browse/RHEL-94536
 /hardening/.+/rpm_verify_(ownership|permissions)
-    (rhel == 9 and rhel <= 9.6) or rhel == 10.0
+    rhel <= 9.6 or rhel == 10.0
 
 # https://issues.redhat.com/browse/RHEL-92260
 /hardening/.+/ism_o/rpm_verify_permissions
