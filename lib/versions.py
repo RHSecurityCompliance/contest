@@ -23,7 +23,10 @@ class _Rhel:
         version = str(version)
         major, _, minor = version.partition('.')
         self.major = int(major)
-        self.minor = int(minor) if minor else None
+        # to make version comparison on CentOS Stream possible we assign
+        # it a minor version of 999 as CentOS Stream is always the latest
+        # minor version of RHEL
+        self.minor = int(minor) if minor else 999
 
     @staticmethod
     def is_true_rhel():
