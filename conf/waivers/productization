@@ -126,6 +126,10 @@
 /hardening/.+/rpm_verify_(ownership|permissions)
     (rhel == 9 and rhel <= 9.6) or rhel == 10.0
 
+# https://issues.redhat.com/browse/RHEL-92260
+/hardening/.+/ism_o/rpm_verify_permissions
+    rhel == 9
+
 # RHEL-8: https://bugzilla.redhat.com/show_bug.cgi?id=1834716
 # RHEL-9: https://bugzilla.redhat.com/show_bug.cgi?id=1999587
 # https://issues.redhat.com/browse/RHEL-45706
