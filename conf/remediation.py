@@ -33,6 +33,7 @@ def excludes():
             'ensure_gpgcheck_local_packages',
             'ensure_gpgcheck_never_disabled',
             'ensure_gpgcheck_repo_metadata',
+            'enable_gpgcheck_for_all_repositories',
         ]
         # Remove when CentOS repos use at least 3072b RSA key
         if versions.rhel in [9,10] and re.fullmatch(r'/hardening/.+/ospp', test_name):
