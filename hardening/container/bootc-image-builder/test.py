@@ -52,6 +52,7 @@ cfile += util.dedent(fr'''
     RUN dnf -y install openscap-utils
     RUN oscap-im --profile '{profile}' \
         --results-arf /root/remediation-arf.xml /root/remediation-ds.xml
+    RUN bootc container lint
 ''')
 cfile.add_ssh_pubkey(guest.ssh_pubkey)
 cfile.write_to('Containerfile')
