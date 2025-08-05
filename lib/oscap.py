@@ -225,7 +225,7 @@ def report_from_verbose(lines):
         elif status in ['notapplicable', 'notchecked', 'notselected', 'informational']:
             total_nonresults += 1
             note = status
-            status = 'info'
+            status = 'skip'
         else:
             note = status
             status = 'error'
