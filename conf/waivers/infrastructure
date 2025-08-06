@@ -19,11 +19,12 @@
     True
 
 # Remediations are unselected for CentOS, but they might pass outside Testing Farm
+/hardening/.+/ensure_redhat_gpgkey_installed
 /hardening/.+/ensure_gpgcheck_globally_activated
 /hardening/.+/ensure_gpgcheck_local_packages
 /hardening/.+/ensure_gpgcheck_never_disabled
 /hardening/.+/ensure_gpgcheck_repo_metadata
-/hardening/.+/ensure_redhat_gpgkey_installed
+/hardening/.+/enable_gpgcheck_for_all_repositories
     rhel.is_centos()
 
 # vim: syntax=python
