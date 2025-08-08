@@ -225,6 +225,12 @@
 /per-rule/.+/banner_etc_issue.+
     True
 
+# https://github.com/ComplianceAsCode/content/issues/13778
+/per-rule/.+/file_permissions_ungroupowned/unowned_file_tmp.fail
+/per-rule/.+/no_files_unowned_by_user/unowned_file_tmp.fail
+/per-rule/.+/file_permissions_unauthorized_world_writable/world_writable_tmp.fail
+    True
+
 # https://github.com/ComplianceAsCode/content/issues/13737
 /hardening/kickstart/with-gui/stig_gui/dconf_gnome_login_banner_text
 /hardening/oscap/with-gui/stig_gui/dconf_gnome_login_banner_text
