@@ -1,0 +1,13 @@
+summary: Check rules applicability when scanning containers.
+test: $CONTEST_PYTHON -m lib.runtest ./test.py
+result: custom
+environment+:
+    PYTHONPATH: ../..
+duration: 30m
+require+:
+  - openscap-utils
+  - podman
+adjust+:
+  - when: arch != x86_64
+    enabled: false
+    because: sufficient to check only on x86_64
