@@ -70,6 +70,9 @@
 # https://github.com/ComplianceAsCode/content/issues/13676
 /scanning/disa-alignment/.*/coredump_disable_.+
     True
+# https://github.com/ComplianceAsCode/content/issues/13799
+/scanning/disa-alignment/.+/sysctl_kernel_core_pattern
+    rhel == 8
 
 # RHEL10 - No official RHEL10 STIG/CIS benchmark yet
 /static-checks/rule-identifiers/(stig|cis.*)/.*
