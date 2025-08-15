@@ -25,9 +25,9 @@ adjust+:
   - when: arch != x86_64
     enabled: false
     because: we want to run virtualization on x86_64 only
-  - when: distro < rhel-9 or distro ~< rhel-9.7 or distro ~< rhel-10.1
+  - when: distro < rhel-9 or distro ~< rhel-9.6
     enabled: false
-    because: Image Mode not supported for older RHELs + 9.6/10.0 images expired (BIFROST-768)
+    because: Image Mode not supported for older RHELs
 
 /anssi_bp28_high:
 
