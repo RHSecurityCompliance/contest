@@ -9,6 +9,11 @@ from pathlib import Path
 
 from lib import util, results
 
+FixType = enum.Flag(
+    'FixType',
+    ['bash', 'ansible', 'anaconda', 'kickstart', 'blueprint', 'bootc'],
+)
+
 
 def parse_xml(path):
     """
@@ -51,8 +56,6 @@ def parse_xml(path):
 
 
 class Datastream:
-    FixType = enum.Flag('FixType', ['bash', 'ansible'])
-
     def __init__(self, xml_file):
         # extracted datastream metadata
         #   self.profiles = {
@@ -64,7 +67,7 @@ class Datastream:
         #   }
         #   self.rules = {
         #     'configure_crypto_policy': namespace(
-        #       .fixes = FixType.bash | FixType.ansible,
+        #       .fixes = FixType.bash | FixType.ansible | ...
         #     ),
         #     'account_password_selinux_faillock_dir': namespace(
         #       .fixes = FixType.bash,
@@ -77,7 +80,7 @@ class Datastream:
         self.profiles = collections.defaultdict(make_profile)
 
         def make_rule():
-            return types.SimpleNamespace(fixes=self.FixType(0))
+            return types.SimpleNamespace(fixes=FixType(0))
 
         self.rules = collections.defaultdict(make_rule)
         self._parse_datastream_xml(xml_file)
@@ -129,25 +132,38 @@ class Datastream:
             # fixes / remediations
             elif frames[-2:] == ['Rule', 'fix']:
                 system = elements[-1].get('system')
+                for_rule = elements[-1].get('id')
                 if system == 'urn:xccdf:fix:script:sh':
-                    fix_type = self.FixType.bash
+                    self.rules[for_rule].fixes |= FixType.bash
                 elif system == 'urn:xccdf:fix:script:ansible':
-                    fix_type = self.FixType.ansible
-                else:
-                    fix_type = None
-                if fix_type:
-                    for_rule = elements[-1].get('id')
-                    self.rules[for_rule].fixes |= fix_type
+                    self.rules[for_rule].fixes |= FixType.ansible
+                elif system == 'urn:redhat:anaconda:pre':
+                    self.rules[for_rule].fixes |= FixType.anaconda
+                elif system == 'urn:xccdf:fix:script:kickstart':
+                    self.rules[for_rule].fixes |= FixType.kickstart
+                elif system == 'urn:redhat:osbuild:blueprint':
+                    self.rules[for_rule].fixes |= FixType.blueprint
+                elif system == 'urn:xccdf:fix:script:bootc':
+                    self.rules[for_rule].fixes |= FixType.bootc
 
-    def has_remediation(self, rule):
+    def has_remediation(self, rule, remediation_type):
         """
-        Return True if 'rule' has bash remediation, False otherwise.
+        'rule' is a rule name, as returned by 'oscap xccdf eval --progress'
+        and without the 'xccdf_org.ssgproject.content_rule_' prefix.
+
+        'remediation_type' (FixType enum value or an expression of FixType enum values)
+        contains the remediation (fix) types which we want to check for in the 'rule'
+        remediations found in the datastream.
+
+        Return True if 'rule' has remediations of 'remediation_type', False otherwise.
         """
+        if not remediation_type:
+            raise ValueError("remediation_type must be specified")
+
         if rule not in self.rules:
-            return False
-        # TODO: come up with a different way of handling "no remediation" cases,
-        #       retain the current "has no *bash* remediation" behavior for now
-        return bool(self.rules[rule].fixes & self.FixType.bash)
+            raise ValueError(f"rule {rule} not found in datastream")
+
+        return bool(self.rules[rule].fixes & remediation_type)
 
     def get_all_profiles_rules(self):
         """
@@ -216,12 +232,8 @@ def report_from_verbose(lines):
         total += 1
         note = None
 
-        if status in ['pass', 'error']:
+        if status in ['pass', 'error', 'fail']:
             pass
-        elif status == 'fail':
-            if not global_ds().has_remediation(rule):
-                note = 'no remediation'
-                status = 'warn'
         elif status in ['notapplicable', 'notchecked', 'notselected', 'informational']:
             total_nonresults += 1
             note = status

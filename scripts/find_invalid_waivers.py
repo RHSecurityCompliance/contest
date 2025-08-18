@@ -18,7 +18,7 @@ import collections
 
 # add the parent directory to the sys.path so we can import from the lib directory
 sys.path.append(str(pathlib.Path(__file__).resolve().parent.parent))
-from lib import waive, versions
+from lib import waive, versions, oscap
 
 
 MatchedWaiver = collections.namedtuple(
@@ -69,12 +69,18 @@ def match_result_mark_waiver(regexes_matched_list, version, arch, status, name, 
         status = 'error'
 
     objs = {
+        # result related
         'status': status,
         'name': name,
         'note': note,
+        # platform related
         'arch': arch,
         'rhel': _FakeRhel(version),
+        # environmental
         'env': '',
+        'no_remediation': lambda *_args, **_kwargs: False,
+        'fix': oscap.FixType,
+        # special
         'Match': waive.Match,
     }
 
@@ -131,6 +137,11 @@ def get_invalid_waivers(result_file_list):
         "===============================================================\n",
     )
     for section in _sections_cache:
+        # ignore the waivers using the no_remediation function, we always
+        # want to keep these waivers even if they don't match anything
+        if 'no_remediation(' in section.python_source:
+            continue
+
         # if "is_centos()" is in section.python_source and there is no "or"
         # logical operator the section is only applicable for centos so skip it
         or_operator_in_py_code = bool(re.search(r'\s+or\s+', section.python_source) is not None)

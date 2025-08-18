@@ -91,6 +91,11 @@ The expression has these globals available:
 - `rhel` - an object capable of RHEL version comparison, see
   [versions.rhel](../lib/versions.py)
 - `env` - environment variable retrieval function, same as `os.environ.get()`
+- `no_remediation` - function which takes remediation (fix) type(s) as an argument,
+  returns `bool` whether the rule extracted from the test `name` (see `match_result()`
+  function in [lib/waive.py](../lib/waive.py)) has no remediation(s) of the given remediation
+  type(s) in the tested datastream (under `<fix system="...">`)
+- `fix` - `oscap.FixType` enum, defined in [lib/oscap.py](../lib/oscap.py)
 - `Match` - a class for complex waive results, able to contain both a boolean
   expression as well as additional parameters
 
@@ -106,6 +111,28 @@ The version comparison objects also support a boolean evaluation, with
     rhel == 8 and 'some thing' in note and env('INFRA') == 'jenkins'
 ```
 
+The `no_remediation` function allows to waive rule results which don't
+have the respective remediation type in the tested datastream. Currently,
+contest supports waiving of the following remediation (fix) types:
+* `fix.bash` - `urn:xccdf:fix:script:sh`
+* `fix.ansible` - `urn:xccdf:fix:script:ansible`
+* `fix.anaconda` - `urn:redhat:anaconda:pre`
+* `fix.kickstart` - `urn:xccdf:fix:script:kickstart`
+* `fix.blueprint` - `urn:redhat:osbuild:blueprint`
+* `fix.bootc` - `urn:xccdf:fix:script:bootc`
+
+For example, to waive `/hardening/kickstart` rule test results which don't
+have `bash` nor `kickstart` remediation (fix) type in the datastream:
+```python
+/hardening/kickstart/.+
+    Match(no_remediation(fix.bash | fix.kickstart), note="no bash nor kickstart remediation")
+```
+Results with the `name` like `/hardening/kickstart/stig/configure_crypto_policy`
+would match and python expression would be evaluated. First, the rule name is
+extracted from the `name` (`configure_crypto_policy`) and then if the rule doesn't
+have `bash` nor `kickstart` remediation in the tested datastream it will be waived
+with the specified note `no bash nor kickstart remediation`.
+
 ## Collecting a list of sections
 
 Sections (as defined above) are gathered from multiple waiver files
@@ -119,8 +146,8 @@ that is later used for waiving.
 Before a result (e.g. rule result or overall test result) is reported,
 the waiving logic looks at the status (`pass`, `fail`, etc.).
 
-If the status is `info` or `warn`, no further processing is done, and
-the result remains intact.  
+If the status is `info`, `skip` or `warn`, no further processing is done,
+and the result remains intact.
 All other statuses continue below.
 
 The waiving logic then goes through the big list of sections (gathered

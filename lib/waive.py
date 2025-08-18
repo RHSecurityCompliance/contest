@@ -9,7 +9,7 @@ import platform
 import collections
 from pathlib import Path
 
-from lib import util, versions
+from lib import util, versions, oscap
 
 WaiverSection = collections.namedtuple(
     'WaiverSection',
@@ -171,9 +171,10 @@ class Match:
 
     Use 'strict=True' to fail when the waiver matches on 'pass'.
     """
-    def __init__(self, matches, *, strict=False):
+    def __init__(self, matches, *, strict=False, note=None):
         self.matches = matches
         self.strict = strict
+        self.note = note
 
     def __bool__(self):
         return self.matches
@@ -193,9 +194,23 @@ def match_result(status, name, note):
     if name:
         # prepend test name to a sub-result
         name = util.get_test_name() + f'/{name}'
+        subresult = True
     else:
         # use the actual test name, not '/'
         name = util.get_test_name()
+        subresult = False
+
+    def _rule_has_no_remediation(remediation_type):
+        # if the test name is not provided (None), we are not processing a sub-result with rule
+        # name, but the full (absolute) test name of the currently running test as returned
+        # by the util.get_test_name() function (e.g. '/hardening/kickstart/stig') and in such
+        # cases we want `no_remediation` function to return False
+        if not subresult:
+            return False
+        # extract the rule name from the test name
+        # (e.g. '/hardening/kickstart/stig/configure_crypto_policy')
+        rule = name.rpartition('/')[2]
+        return not oscap.global_ds().has_remediation(rule, remediation_type)
 
     objs = {
         # result related
@@ -207,6 +222,8 @@ def match_result(status, name, note):
         'rhel': versions.rhel,
         # environmental
         'env': os.environ.get,
+        'no_remediation': _rule_has_no_remediation,
+        'fix': oscap.FixType,
         # special
         'Match': Match,
     }
@@ -227,7 +244,7 @@ def match_result(status, name, note):
 
 
 def rewrite_result(status, name, note, new_status='warn'):
-    if os.environ.get('CONTEST_VERBATIM_RESULTS') == '1' or status in ['info', 'warn']:
+    if os.environ.get('CONTEST_VERBATIM_RESULTS') == '1' or status in ['info', 'skip', 'warn']:
         return (status, name, note)
 
     matched = match_result(status, name, note)
@@ -242,6 +259,10 @@ def rewrite_result(status, name, note, new_status='warn'):
             return ('fail', name, add_note("waive: expected fail/error, got pass"))
         else:
             return (status, name, add_note("waived pass"))
+    elif status == 'fail':
+        # if Match object overrides the note, use it
+        if matched.note:
+            return (new_status, name, add_note(matched.note))
 
-    # fail or error
+    # remaining fail or error statuses
     return (new_status, name, add_note(f"waived {status}"))
