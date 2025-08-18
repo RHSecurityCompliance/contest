@@ -199,8 +199,7 @@
 /hardening/container/anaconda-ostree/.+/accounts_password_set_min_life_existing
 /hardening/container/anaconda-ostree/.+/accounts_password_set_warn_age_existing
 # https://github.com/ComplianceAsCode/content/issues/13214
-/hardening/container/bootc-image-builder/.+/dir_perms_world_writable_sticky_bits
-/hardening/container/anaconda-ostree/.+/dir_perms_world_writable_sticky_bits
+/hardening/container/(anaconda-ostree|bootc-image-builder|old-new)/.+/dir_perms_world_writable_sticky_bits
     True
 # https://github.com/ComplianceAsCode/content/issues/13296
 /scanning/disa-alignment/.+/audit_privileged_commands_.+
@@ -210,7 +209,10 @@
 # bootupd during the installation of a bootable container image.
 # https://github.com/coreos/bootupd/issues/952
 # https://issues.redhat.com/browse/OPENSCAP-5326
-/hardening/container/(anaconda-ostree|bootc-image-builder)/.+/file_permissions_grub2_cfg
+/hardening/container/(anaconda-ostree|bootc-image-builder|old-new)/.+/file_permissions_grub2_cfg
+    True
+# https://issues.redhat.com/browse/OPENSCAP-6167
+/hardening/container/old-new/.+/account_password_selinux_faillock_dir
     True
 
 # These rules require OpenSCAP 1.3.12 or 1.4.2 to pass because they depend on
