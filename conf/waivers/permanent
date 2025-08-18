@@ -2,21 +2,12 @@
 # to fix them, or because we intentionally expect the failure and a pass should
 # trigger alarms and be invetigated
 
-# remediation for this is globally disabled in Contest,
+# remediation for this is globally disabled in Contest by unselecting
+# the rules from the datastream used for remediation, the rules are still
+# selected in the datastream used for scanning so we need to waive them,
 # see conf/remediation.py
 /hardening/.+/accounts_password_set_max_life_(existing|root)
 /hardening/.+/sshd_disable_root_login
-    True
-
-# missing Ansible remediation
-# - we need to track these as manual waivers, because the current lib/oscap.py
-#   logic checks only Bash remediation and there is no clear approach to
-#   extending it with Ansible that wouldn't break existing logic (ie. for rules
-#   that have only Bash remediation)
-# - also https://github.com/ComplianceAsCode/content/issues/13125
-/hardening(/.+)?/ansible(/.+)?/audit_rules_usergroup_modification
-/hardening(/.+)?/ansible(/.+)?/audit_rules_unsuccessful_file_modification
-/hardening(/.+)?/ansible(/.+)?/audit_rules_login_events
     True
 
 # the service_sssd_enabled will be failing even if the service is enabled
@@ -90,5 +81,21 @@
 /per-rule/oscap/.+/root_path_no_dot/doubleperiod_on_path.fail
 /per-rule/oscap/.+/root_path_no_dot/period_on_path.fail
     True
+
+# waive rules that have no respective remediation based on their test name
+/hardening/oscap/.+
+/hardening/host-os/oscap/.+
+    Match(no_remediation(fix.bash), note="no bash remediation")
+/hardening/ansible/.+
+/hardening/host-os/ansible/.+
+    Match(no_remediation(fix.ansible), note="no ansible remediation")
+/hardening/anaconda/.+
+    Match(no_remediation(fix.bash | fix.anaconda), note="no bash nor anaconda remediation")
+/hardening/kickstart/.+
+    Match(no_remediation(fix.bash | fix.kickstart), note="no bash nor kickstart remediation")
+/hardening/image-builder/.+
+    Match(no_remediation(fix.bash | fix.blueprint), note="no bash nor blueprint remediation")
+/hardening/container/.+
+    Match(no_remediation(fix.bash | fix.bootc), note="no bash nor bootc remediation")
 
 # vim: syntax=python
