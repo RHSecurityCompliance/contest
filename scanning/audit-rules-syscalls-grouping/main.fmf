@@ -1,0 +1,20 @@
+summary: Verify audit rules for similar syscalls are grouped
+description: |
+    The grouping of similar syscalls was added in
+    https://github.com/ComplianceAsCode/content/pull/7329
+    (syscall_grouping parameter). The goal of grouping audit
+    rules for similar syscalls is to reduce the overall number
+    of audit rules which leads to improved performance.
+    Also see https://bugzilla.redhat.com/show_bug.cgi?id=1876483.
+test: $CONTEST_PYTHON -m lib.runtest ./test.py
+result: custom
+environment+:
+    PYTHONPATH: ../..
+duration: 15m
+recommend+:
+  - audit
+  - audit-rules
+adjust+:
+  - when: arch != x86_64
+    enabled: false
+    because: sufficient to test only on x86_64
