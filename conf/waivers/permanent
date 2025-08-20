@@ -8,6 +8,7 @@
 # see conf/remediation.py
 /hardening/.+/accounts_password_set_max_life_(existing|root)
 /hardening/.+/sshd_disable_root_login
+/hardening/.+/sshd_disable_root_password_login
     True
 
 # the service_sssd_enabled will be failing even if the service is enabled
