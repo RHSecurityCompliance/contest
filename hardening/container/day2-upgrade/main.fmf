@@ -1,4 +1,4 @@
-summary: Runs bootc-image-builder remediation and scan inside VMs
+summary: Build two hardened bootable container images, deploy a VM from the first and then upgrade it to the second image by "bootc switch".
 test: $CONTEST_PYTHON -m lib.runtest ./test.py
 result: custom
 environment+:
