@@ -13,8 +13,6 @@ virt.Host.setup()
 profile = util.get_test_name().rpartition('/')[2]
 oscap_repo = os.environ.get('CONTEST_OSCAP_REPOFILE')
 
-oscap.unselect_rules(util.get_datastream(), 'remediation-new-ds.xml', remediation.excludes())
-
 # note that the .wipe() is necessary here, as we are not calling any .install()
 # function that would normally perform it
 guest = virt.Guest()
@@ -40,7 +38,7 @@ with pack.build() as pack_binrpm:
     shutil.copy(pack_binrpm, 'contest-pack.rpm')
 
 with util.get_old_datastream() as old_xml:
-    # prepare a Container file for making a hardened image
+    # prepare a Container file for making a hardened image using the old data stream
     oscap.unselect_rules(old_xml, 'remediation-old.xml', remediation.excludes())
     cfile = podman.Containerfile()
     cfile += util.dedent(fr'''
@@ -62,7 +60,8 @@ with util.get_old_datastream() as old_xml:
     podman.podman('pull', src_image)
     podman.podman('image', 'build', '--tag', 'contest-hardened-old', '.')
 
-# prepare a Container file for making a hardened image
+# prepare a Container file for making a hardened image using the new data stream
+oscap.unselect_rules(util.get_datastream(), 'remediation-new-ds.xml', remediation.excludes())
 cfile2 = podman.Containerfile()
 cfile2 += util.dedent(fr'''
     FROM {src_image}
@@ -79,7 +78,6 @@ cfile2 += util.dedent(fr'''
 ''')
 cfile2.add_ssh_pubkey(guest.ssh_pubkey)
 cfile2.write_to('Containerfile')
-
 podman.podman('image', 'build', '--tag', 'contest-hardened-new', '.')
 
 # pre-create a directory (inside GUEST_IMG_DIR) for storing the
@@ -89,7 +87,7 @@ if bootc_output_dir.exists():
     shutil.rmtree(bootc_output_dir)
 bootc_output_dir.mkdir(parents=True)
 
-# build the hardened image using a containerized builder,
+# build the hardened image using a containerized builder
 podman.podman(
     'container', 'run',
     '--rm',
@@ -128,6 +126,7 @@ with podman.Registry(host_addr=virt.NETWORK_HOST) as registry:
         print("\n".join(lines))
 
         # reboot the VM to apply the new image
+        # we can't use guest.soft_reboot() here, because we don't have a guest agent
         guest.ssh("reboot")
         virt.wait_for_ssh(guest.ipaddr, to_shutdown=True)
         guest.ipaddr = virt.wait_for_ifaddr(guest.name)
