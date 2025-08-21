@@ -26,10 +26,8 @@ major = versions.rhel.major
 minor = versions.rhel.minor
 if versions.rhel.is_true_rhel():
     src_image = f'images.paas.redhat.com/testingfarm/rhel-bootc:{major}.{minor}'
-    ds_fname = f'ssg-rhel{major}-ds.xml'
 else:
     src_image = f'quay.io/centos-bootc/centos-bootc:stream{major}'
-    ds_fname = f'ssg-cs{major}-ds.xml'
 
 # prepare a RpmPack with testing-specific hacks
 # - copy it to CWD because podman cannot handle absolute paths (or relative ones
