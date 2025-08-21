@@ -211,6 +211,9 @@
 # https://issues.redhat.com/browse/OPENSCAP-5326
 /hardening/container/(anaconda-ostree|bootc-image-builder|day2-upgrade)/.+/file_permissions_grub2_cfg
     True
+# https://issues.redhat.com/browse/OPENSCAP-6167
+/hardening/container/day2-upgrade/.+/account_password_selinux_faillock_dir
+    True
 
 # These rules require OpenSCAP 1.3.12 or 1.4.2 to pass because they depend on
 # processing negative numbers by textfilecontent54_probe which is fixed by
