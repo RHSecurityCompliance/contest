@@ -1,4 +1,10 @@
-summary: Build two hardened bootable container images, deploy a VM from the first and then upgrade it to the second image by "bootc switch".
+summary: Test day 2 image mode upgrade
+description: |
+    Build two hardened bootable container images. The first image will be
+    hardened using the currently shipped content, the second image will be
+    hardened using the tested CaC content. Deploy a VM from the first image,
+    start the VM and then upgrade it to the second image by "bootc switch".
+    Perform an oscap scan after the upgrade.
 test: $CONTEST_PYTHON -m lib.runtest ./test.py
 result: custom
 environment+:
@@ -25,9 +31,9 @@ adjust+:
   - when: arch != x86_64
     enabled: false
     because: we want to run virtualization on x86_64 only
-  - when: distro < rhel-9 or distro ~< rhel-9.7 or distro ~< rhel-10.1
+  - when: distro < rhel-9 or distro ~< rhel-9.6 or distro ~< rhel-10.0
     enabled: false
-    because: Image Mode not supported for older RHELs + 9.6/10.0 images expired (BIFROST-768)
+    because: Image Mode not supported for older RHELs
 
 /anssi_bp28_high:
 
