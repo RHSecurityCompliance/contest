@@ -19,7 +19,7 @@ def build_image(image_version):
         data_stream = 'remediation-new-ds.xml'
         oscap.unselect_rules(
             util.get_datastream(), data_stream, remediation.excludes())
-        arf_path = f'/etc/remediation-new-arf.xml'
+        arf_path = '/etc/remediation-new-arf.xml'
     else:
         raise ValueError("image_version must be 'old' or 'new'")
     cfile = podman.Containerfile()

@@ -1,5 +1,8 @@
-summary: Test day 2 image mode upgrade
+summary: Test Day 2 image mode upgrade
 description: |
+    The purpose of the test is to test Day 2 upgrades in Image Mode.
+    However, for consistency with '/hardening/oscap/old-new', this test
+    has been renamed to '/hardening/container/old-new'.
     Build two hardened bootable container images. The first image will be
     hardened using the currently shipped content, the second image will be
     hardened using the tested CaC content. Deploy a VM from the first image,
