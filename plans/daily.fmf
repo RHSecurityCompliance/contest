@@ -32,6 +32,7 @@ discover:
       # run /per-rule as oscap only - this almost halves the runtime (for now)
       - /per-rule/oscap/[0-9]+$
       # the rest is cheap to run
+      - /hardening/audit-rules-grouping
       - /scanning
       - /static-checks
     exclude:
