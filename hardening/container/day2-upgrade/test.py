@@ -8,6 +8,43 @@ from lib import results, oscap, versions, virt, podman, util
 from conf import remediation
 
 
+def build_image(image_version):
+    # prepare a Container file for making a hardened image using the data stream
+    if image_version == 'old':
+        data_stream = 'remediation-old-ds.xml'
+        arf_path = '/root/remediation-old-arf.xml'
+        with util.get_old_datastream() as old_ds:
+            oscap.unselect_rules(old_ds, data_stream, remediation.excludes())
+    elif image_version == 'new':
+        data_stream = 'remediation-new-ds.xml'
+        oscap.unselect_rules(
+            util.get_datastream(), data_stream, remediation.excludes())
+        arf_path = f'/etc/remediation-new-arf.xml'
+    else:
+        raise ValueError("image_version must be 'old' or 'new'")
+    cfile = podman.Containerfile()
+    cfile += util.dedent(fr'''
+        FROM {src_image}
+        # install testing-specific RpmPack
+        COPY contest-pack.rpm /root/.
+        RUN dnf -y install /root/contest-pack.rpm && rm -f /root/contest-pack.rpm
+        # copy over testing-specific datastream
+        COPY {data_stream} /root/
+        # install and run oscap-im to harden the image
+        RUN dnf -y install openscap-utils
+        RUN oscap-im --profile '{profile}' \
+            --results-arf {arf_path} /root/{data_stream}
+        RUN bootc container lint
+    ''')
+    cfile.add_ssh_pubkey(guest.ssh_pubkey)
+    cfile.write_to('Containerfile')
+
+    podman.podman('pull', src_image)
+    podman.podman(
+        'image', 'build', '--tag', 'contest-hardened-' + image_version, '.')
+
+
+# prepare the host
 virt.Host.setup()
 
 profile = util.get_test_name().rpartition('/')[2]
@@ -37,49 +74,8 @@ pack.add_sshd_late_start()
 with pack.build() as pack_binrpm:
     shutil.copy(pack_binrpm, 'contest-pack.rpm')
 
-# prepare a Container file for making a hardened image using the old data stream
-with util.get_old_datastream() as old_ds:
-    oscap.unselect_rules(
-        old_ds, 'remediation-old-ds.xml', remediation.excludes())
-cfile = podman.Containerfile()
-cfile += util.dedent(fr'''
-    FROM {src_image}
-    # install testing-specific RpmPack
-    COPY contest-pack.rpm /root/.
-    RUN dnf -y install /root/contest-pack.rpm && rm -f /root/contest-pack.rpm
-    # copy over testing-specific datastream
-    COPY remediation-old-ds.xml /root/
-    # install and run oscap-im to harden the image
-    RUN dnf -y install openscap-utils
-    RUN oscap-im --profile '{profile}' \
-        --results-arf /root/remediation-old-arf.xml /root/remediation-old-ds.xml
-    RUN bootc container lint
-''')
-cfile.add_ssh_pubkey(guest.ssh_pubkey)
-cfile.write_to('Containerfile')
-
-podman.podman('pull', src_image)
-podman.podman('image', 'build', '--tag', 'contest-hardened-old', '.')
-
-# prepare a Container file for making a hardened image using the new data stream
-oscap.unselect_rules(util.get_datastream(), 'remediation-new-ds.xml', remediation.excludes())
-cfile2 = podman.Containerfile()
-cfile2 += util.dedent(fr'''
-    FROM {src_image}
-    # install testing-specific RpmPack
-    COPY contest-pack.rpm /root/.
-    RUN dnf -y install /root/contest-pack.rpm && rm -f /root/contest-pack.rpm
-    # copy over testing-specific datastream
-    COPY remediation-new-ds.xml /root/
-    # install and run oscap-im to harden the image
-    RUN dnf -y install openscap-utils
-    RUN oscap-im --profile '{profile}' \
-        --results-arf /etc/remediation-new-arf.xml /root/remediation-new-ds.xml
-    RUN bootc container lint
-''')
-cfile2.add_ssh_pubkey(guest.ssh_pubkey)
-cfile2.write_to('Containerfile')
-podman.podman('image', 'build', '--tag', 'contest-hardened-new', '.')
+build_image('old')
+build_image('new')
 
 # pre-create a directory (inside GUEST_IMG_DIR) for storing the
 # hardened image, built by bootc-image-builder
