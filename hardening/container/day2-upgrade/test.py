@@ -107,7 +107,6 @@ guest.import_image(qcow2_path, 'qcow2')
 
 with podman.Registry(host_addr=virt.NETWORK_HOST) as registry:
     image_url = registry.push('contest-hardened-new')
-    # work around it using registries.conf
     raddr, rport = registry.get_listen_addr()
     # boot up and scan the VM
     with guest.booted():
