@@ -263,12 +263,14 @@ def unselect_rules(orig_ds, new_ds, rules):
     specified rules.
     """
     prefix = 'xccdf_org.ssgproject.content_rule_'
-    rules = (x if x.startswith(prefix) else prefix + x for x in rules)
+    # prefix rules once and store in a set for O(1) membership checks
+    prefixed_rules = {
+        (x if x.startswith(prefix) else prefix + x)
+        for x in rules
+    }
 
-    exprs = set()
-    for rule in rules:
-        exprs.add(re.compile(fr'<.*Rule.*id="{rule}'))
-        exprs.add(re.compile(fr'<.*select.*idref="{rule}'))
+    rule_def_re = re.compile(r'<[^>]*Rule[^>]*\bid="([^\"]+)"')
+    select_re = re.compile(r'<[^>]*select[^>]*\bidref="([^\"]+)"')
 
     new_ds = Path(new_ds)
     # remove a possible existing/old file
@@ -276,10 +278,19 @@ def unselect_rules(orig_ds, new_ds, rules):
         new_ds.unlink()
 
     util.log(f"reading {orig_ds}, writing to {new_ds}")
-    with open(orig_ds) as orig_ds_f:
-        with open(new_ds, 'w') as new_ds_f:
-            for line in orig_ds_f:
-                if any(x.search(line) for x in exprs):
-                    line = line.replace('selected="true"', 'selected="false"')
-                    util.log(f"unselected {line.strip()}")
-                new_ds_f.write(line)
+    with open(orig_ds) as orig_ds_f, open(new_ds, 'w') as new_ds_f:
+        for line in orig_ds_f:
+            matched = False
+
+            rule_def_match = rule_def_re.search(line)
+            if rule_def_match and rule_def_match.group(1) in prefixed_rules:
+                matched = True
+            else:
+                select_match = select_re.search(line)
+                if select_match and select_match.group(1) in prefixed_rules:
+                    matched = True
+
+            if matched:
+                line = line.replace('selected="true"', 'selected="false"')
+                util.log(f"unselected {line.strip()}")
+            new_ds_f.write(line)
