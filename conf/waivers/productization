@@ -74,6 +74,10 @@
 /scanning/disa-alignment/.+/sysctl_kernel_core_pattern
     rhel == 8
 
+# https://github.com/ComplianceAsCode/content/issues/13828
+/scanning/disa-alignment/.+/sysctl_net_ipv4_conf_default_rp_filter
+    rhel == 9
+
 # RHEL10 - No official RHEL10 STIG/CIS benchmark yet
 /static-checks/rule-identifiers/(stig|cis.*)/.*
     rhel == 10
