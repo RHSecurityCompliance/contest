@@ -38,11 +38,14 @@ def get_ds_remediations():
             continue
 
         # do extra sanity checking to get a reasonable error message
-        if 'copy' not in section or any(k not in section['copy'] for k in ['dest','content']):
+        if (
+            'ansible.builtin.copy' not in section
+            or any(k not in section['ansible.builtin.copy'] for k in ['dest','content'])
+        ):
             results.report('error', rule_name, 'copy playbook section or dest/content not found')
             continue
 
-        copy = section['copy']
+        copy = section['ansible.builtin.copy']
         remediations[rule_name] = (Path(copy['dest']), copy['content'])
 
     return remediations
