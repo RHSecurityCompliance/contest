@@ -74,19 +74,21 @@ class Datastream:
         #     ),
         #   }
         #   self.path = Path(file_the_datastream_was_parsed_from)
-        def make_profile():
-            return types.SimpleNamespace(title=None, rules=set(), values=set())
-
-        self.profiles = collections.defaultdict(make_profile)
-
-        def make_rule():
-            return types.SimpleNamespace(fixes=FixType(0))
-
-        self.rules = collections.defaultdict(make_rule)
+        self.profiles = collections.defaultdict()
+        self.rules = collections.defaultdict()
         self._parse_datastream_xml(xml_file)
         self.path = Path(xml_file)
 
     def _parse_datastream_xml(self, xml_file):
+        def make_profile():
+            return types.SimpleNamespace(title=None, rules=set(), values=set())
+
+        def make_rule():
+            return types.SimpleNamespace(fixes=FixType(0))
+
+        self.profiles.default_factory = make_profile
+        self.rules.default_factory = make_rule
+
         for frames, elements in parse_xml(xml_file):
             # optimize a bit - filter out elements too shallow for anything below
             if len(frames) < 4:
@@ -145,6 +147,11 @@ class Datastream:
                     self.rules[for_rule].fixes |= FixType.blueprint
                 elif system == 'urn:xccdf:fix:script:bootc':
                     self.rules[for_rule].fixes |= FixType.bootc
+
+        # "convert" to regular dict, make external logic get KeyError
+        # on bad profile or rule name
+        self.profiles.default_factory = None
+        self.rules.default_factory = None
 
     def has_remediation(self, rule, remediation_type):
         """
