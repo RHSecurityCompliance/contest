@@ -26,12 +26,9 @@
 /static-checks/html-links/https://docs-prv.pcisecuritystandards.org/PCI%20DSS/Standard/PCI-DSS-v4_0.pdf
     True
 
-# no STIG ID, but the rule is needed for other authselect rules
-/static-checks/rule-identifiers/stig/enable_authselect
-    rhel == 8
 # no STIG ID for CentOS products
-/static-checks/rule-identifiers/stig/.*
-    rhel.is_centos() and note == 'missing https://public.cyber.mil/stigs/downloads/?_dl_facet_stigs=operating-systems%2Cunix-linux'
+/static-checks/rule-identifiers/stig/stigid/.*
+    rhel.is_centos()
 
 # DISA benchmark allows only released OS versions. Our content is fine with unreleased versions.
 # https://github.com/ComplianceAsCode/content/issues/11649

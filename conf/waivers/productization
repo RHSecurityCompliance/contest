@@ -78,18 +78,32 @@
 /scanning/disa-alignment/.+/sysctl_net_ipv4_conf_default_rp_filter
     rhel == 9
 
-# RHEL10 - No official RHEL10 STIG/CIS benchmark yet
-/static-checks/rule-identifiers/(stig|cis.*)/.*
+# RHEL10 - No official RHEL10 STIG benchmark yet
+/static-checks/rule-identifiers/stig/stigid/.*
     rhel == 10
 # RHEL8 https://github.com/ComplianceAsCode/content/issues/12422
-# RHEL9 https://github.com/ComplianceAsCode/content/issues/12425
-/static-checks/rule-identifiers/ospp/.*
-    rhel == 8 or rhel == 9
+/static-checks/rule-identifiers/ospp/ospp/.*
+    rhel == 8
 # RHEL8 https://github.com/ComplianceAsCode/content/issues/12423
 # RHEL9 https://github.com/ComplianceAsCode/content/issues/12427
 # RHEL10 https://github.com/ComplianceAsCode/content/issues/12430
-/static-checks/rule-identifiers/ism_o/.*
-    rhel == 8 or rhel == 9 or rhel == 10
+/static-checks/rule-identifiers/ism_o/ism/.*
+    True
+
+# https://github.com/ComplianceAsCode/content/issues/13856
+/static-checks/rule-identifiers/stig/os-srg/package_sssd_installed
+/static-checks/rule-identifiers/stig/os-srg/service_sssd_enabled
+    rhel == 10
+
+# https://github.com/ComplianceAsCode/content/issues/13857
+/static-checks/rule-identifiers/anssi_bp28_high/anssi/service_chronyd_enabled
+    rhel == 8 or rhel == 10
+/static-checks/rule-identifiers/anssi_bp28_high/anssi/audit_rules_mac_modification_etc_selinux
+    rhel == 10
+/static-checks/rule-identifiers/anssi_bp28_high/anssi/no_nis_in_nsswitch
+/static-checks/rule-identifiers/anssi_bp28_high/anssi/ldap_client_tls_cacertpath
+/static-checks/rule-identifiers/anssi_bp28_high/anssi/ldap_client_start_tls
+    rhel == 8
 
 # https://github.com/ComplianceAsCode/content/issues/13128
 /hardening/ansible/.+/network_nmcli_permissions

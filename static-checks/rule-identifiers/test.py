@@ -4,29 +4,42 @@ from collections import defaultdict
 
 from lib import util, results, oscap
 
-
+# reference names taken from
+# https://github.com/ComplianceAsCode/content/blob/master/ssg/constants.py
 profile_references = {
     # srg, disa, stigid@PRODUCT or controls file
-    'stig': [
-        'https://public.cyber.mil/stigs/downloads/?_dl_facet_stigs=operating-systems%2Cgeneral-purpose-os',
-        'https://public.cyber.mil/stigs/downloads/?_dl_facet_stigs=operating-systems%2Cunix-linux',
-    ],
+    'stig': {
+        'stigid': 'https://public.cyber.mil/stigs/downloads/?_dl_facet_stigs=operating-systems%2Cunix-linux',
+        'os-srg': 'https://public.cyber.mil/stigs/downloads/?_dl_facet_stigs=operating-systems%2Cgeneral-purpose-os',
+    },
     # ospp
-    'ospp': ['https://www.niap-ccevs.org/Profile/PP.cfm'],
+    'ospp': {
+        'ospp': 'https://www.niap-ccevs.org/Profile/PP.cfm',
+    },
     # cis@PRODUCT or controls file
-    'cis': ['https://www.cisecurity.org/benchmark/red_hat_linux/'],
-    # anssi (controls file)
-    'anssi': ['https://cyber.gouv.fr/sites/default/files/document/linux_configuration-en-v2.pdf'],
+    'cis': {
+        'cis': 'https://www.cisecurity.org/benchmark/red_hat_linux/',
+    },
+    # anssi_bp28_high (controls file)
+    'anssi_bp28_high': {
+        'anssi': 'https://cyber.gouv.fr/sites/default/files/document/linux_configuration-en-v2.pdf',
+    },
     # ism
-    'ism_o': ['https://www.cyber.gov.au/acsc/view-all-content/ism'],
+    'ism_o': {
+        'ism': 'https://www.cyber.gov.au/acsc/view-all-content/ism',
+    },
     # hipaa
-    'hipaa': ['https://www.gpo.gov/fdsys/pkg/CFR-2007-title45-vol1/pdf/CFR-2007-title45-vol1-chapA-subchapC.pdf'],
+    'hipaa': {
+        'hipaa': 'https://www.gpo.gov/fdsys/pkg/CFR-2007-title45-vol1/pdf/CFR-2007-title45-vol1-chapA-subchapC.pdf',
+    },
     # pcidss4
-    'pci-dss': ['https://docs-prv.pcisecuritystandards.org/PCI%20DSS/Standard/PCI-DSS-v4_0.pdf'],
+    'pci-dss': {
+        'pcidss4': 'https://docs-prv.pcisecuritystandards.org/PCI%20DSS/Standard/PCI-DSS-v4_0.pdf',
+    },
 }
 
-
 profiles = oscap.global_ds().profiles
+
 # Parse from datastream all rules and all their references
 rule_references = defaultdict(set)
 for frames, elements in oscap.parse_xml(util.get_datastream()):
@@ -38,12 +51,13 @@ for frames, elements in oscap.parse_xml(util.get_datastream()):
     reference = reference.get('href')
     rule_references[rule].add(reference)
 
-for profile, references in profile_references.items():
-    for rule in profiles[profile].rules:
-        for reference in references:
-            if reference in rule_references[rule]:
-                results.report('pass', f'{profile}/{rule}')
+for ref_profile, nested in profile_references.items():
+    for ref_name, ref_url in nested.items():
+        for rule in profiles[ref_profile].rules:
+            result_name = f'{ref_profile}/{ref_name}/{rule}'
+            if ref_url in rule_references[rule]:
+                results.report('pass', result_name)
             else:
-                results.report('fail', f'{profile}/{rule}', f"missing {reference}")
+                results.report('fail', result_name, f"missing {ref_url}")
 
 results.report_and_exit()
