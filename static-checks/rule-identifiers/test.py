@@ -9,8 +9,8 @@ from lib import util, results, oscap
 profile_references = {
     # srg, disa, stigid@PRODUCT or controls file
     'stig': {
-        'stigid': 'https://public.cyber.mil/stigs/downloads/?_dl_facet_stigs=operating-systems%2Cunix-linux',
-        'os-srg': 'https://public.cyber.mil/stigs/downloads/?_dl_facet_stigs=operating-systems%2Cgeneral-purpose-os',
+        'stigid': 'https://www.cyber.mil/stigs/downloads/?_dl_facet_stigs=operating-systems%2Cunix-linux',
+        'os-srg': 'https://www.cyber.mil/stigs/downloads/?_dl_facet_stigs=operating-systems%2Cgeneral-purpose-os',
     },
     # ospp
     'ospp': {
