@@ -34,10 +34,6 @@
 # https://github.com/ComplianceAsCode/content/issues/11649
 /scanning/disa-alignment/.*/installed_OS_is_vendor_supported
     True
-# This sysctl setting breaks some services and according to STIG it can be skipped if there is a need
-# https://github.com/ComplianceAsCode/content/pull/12824
-/scanning/disa-alignment/.*/sysctl_user_max_user_namespaces
-    rhel >= 9
 
 # Rules checking if OS is FIPS certified
 /hardening/host-os/.+/sshd_use_approved_.+
@@ -48,7 +44,7 @@
 # Presumably not valid for CentOS, see also conf/remediation.py
 /hardening/.+/ospp/enable_fips_mode
 /hardening/.*/ospp/configure_crypto_policy
-    rhel.is_centos() and (rhel == 9 or rhel == 10)
+    rhel.is_centos()
 
 # Caused by SCE content being built by default, enabled
 # in https://github.com/ComplianceAsCode/content/pull/12488
