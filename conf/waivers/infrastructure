@@ -11,7 +11,6 @@
 /(hardening|scanning)/.+/ensure_gpgcheck_never_disabled
 # we don't control partitions on the host OS
 /hardening/host-os/.+/mount_option_(home|opt|srv|var|var_log|var_log_audit|tmp)_(noexec|nosuid|nodev|usrquota|grpquota)
-/hardening/host-os/.+/mount_option_boot_efi_nosuid
     True
 # Beaker and host-os seem to randomly fail any services enabled
 # TODO: probably worth further investigation, but likely not a content issue

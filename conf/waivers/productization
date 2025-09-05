@@ -4,68 +4,23 @@
 # https://github.com/ComplianceAsCode/content/issues/12561
 /scanning/disa-alignment/.*/logind_session_timeout
     rhel == 8
-# https://github.com/ComplianceAsCode/content/issues/13033
-/scanning/disa-alignment/(oscap|ansible)/file_permission_user_init_files_root
-    rhel == 8
-# https://github.com/ComplianceAsCode/content/issues/11804
-/scanning/disa-alignment/.*/harden_sshd_ciphers_openssh_conf_crypto_policy
-# https://github.com/ComplianceAsCode/content/issues/11692
-/scanning/disa-alignment/.*/accounts_password_pam_pwhistory_remember_system_auth
-# https://github.com/ComplianceAsCode/content/issues/11695
-/scanning/disa-alignment/.*/service_pcscd_enabled
 # https://github.com/ComplianceAsCode/content/issues/11698
 /scanning/disa-alignment/.*/no_shelllogin_for_systemaccounts
-# https://github.com/ComplianceAsCode/content/issues/11802
-/scanning/disa-alignment/.*/CCE-88173-0
-# https://github.com/ComplianceAsCode/content/issues/11703
-/scanning/disa-alignment/.*/file_permissions_library_dirs
 # https://github.com/ComplianceAsCode/content/issues/12573
 /scanning/disa-alignment/.*/sshd_set_keepalive
-# https://github.com/ComplianceAsCode/content/issues/11693
-/scanning/disa-alignment/(oscap|ansible)/accounts_password_pam_retry
 # https://github.com/ComplianceAsCode/content/issues/11802
 /scanning/disa-alignment/[^/]+/auditd_audispd_configure_sufficiently_large_partition
     rhel == 9
-# https://github.com/ComplianceAsCode/content/issues/13109
-/scanning/disa-alignment/.+/file_permissions_sshd_config
-/scanning/disa-alignment/.+/file_permissions_sshd_drop_in_config
-    rhel == 9
-# https://github.com/ComplianceAsCode/content/issues/13110
-/scanning/disa-alignment/anaconda/ensure_gpgcheck_globally_activated
-    rhel == 8
 # https://github.com/ComplianceAsCode/content/issues/9307 (DISA issue)
 /scanning/disa-alignment/.*/sysctl_kernel_yama_ptrace_scope
-# https://github.com/ComplianceAsCode/content/issues/10044 (DISA issue)
-/scanning/disa-alignment/.*/accounts_password_pam_pwhistory_remember_password_auth
 # https://github.com/ComplianceAsCode/content/issues/11197 (DISA issue)
 /scanning/disa-alignment/.*/display_login_attempts
-    rhel == 8 or rhel == 9
-# the feature used in this stigid is not ported to 9.0
-/scanning/disa-alignment/.*/CCE-90785-7
-    rhel == 9.0
-# https://github.com/ComplianceAsCode/content/issues/11778 (issue on DISA side)
-/scanning/disa-alignment/.*/file_permission_user_init_files_root
-    rhel == 9
-# https://github.com/ComplianceAsCode/content/issues/13006 (issues on both sides)
-/scanning/disa-alignment/.*/mount_option_boot_efi_nosuid
     rhel == 8 or rhel == 9
 # https://github.com/ComplianceAsCode/content/issues/13011
 /scanning/disa-alignment/.*/accounts_password_pam_pwquality_retry
     rhel == 9
-# https://github.com/ComplianceAsCode/content/issues/13021
-/scanning/disa-alignment/.*/directory_permissions_sshd_config_d
-    rhel == 9
-# https://github.com/ComplianceAsCode/content/issues/13160
-/scanning/disa-alignment/.+/rootfiles_configured
-    rhel == 8 or rhel == 9
 # https://github.com/ComplianceAsCode/content/issues/13236
 /scanning/disa-alignment/ansible/networkmanager_dns_mode
-    rhel == 9
-# https://github.com/ComplianceAsCode/content/issues/13272
-/scanning/disa-alignment/.*/audit_rules_.+
-    True
-# https://github.com/ComplianceAsCode/content/issues/13391
-/scanning/disa-alignment/.+/logind_session_timeout
     rhel == 9
 # https://github.com/ComplianceAsCode/content/issues/13676
 /scanning/disa-alignment/.*/coredump_disable_.+
@@ -104,11 +59,6 @@
 /static-checks/rule-identifiers/anssi_bp28_high/anssi/ldap_client_tls_cacertpath
 /static-checks/rule-identifiers/anssi_bp28_high/anssi/ldap_client_start_tls
     rhel == 8
-
-# https://github.com/ComplianceAsCode/content/issues/13128
-/hardening/ansible/.+/network_nmcli_permissions
-    rhel == 9
-
 # bz1825810 or maybe bz1929805
 # can be reproduced mostly reliably (95%) both via anaconda and oscap CLI,
 # but apparently we don't really care about old releases
@@ -131,10 +81,6 @@
 # https://github.com/ComplianceAsCode/content/issues/13175
 /hardening/anaconda/.+/enable_gpgcheck_for_all_repositories
     rhel == 8
-
-# https://github.com/ComplianceAsCode/content/issues/13100
-/hardening/.*/file_permission_user_init_files_root
-    True
 
 # kdump being forcibly enabled somewhere
 # https://github.com/ComplianceAsCode/content/issues/12832
@@ -167,13 +113,8 @@
 /hardening/kickstart/.+/service_avahi-daemon_disabled
 /hardening/kickstart/.+/socket_systemd-journal-remote_disabled
 /hardening/kickstart/.+/service_bluetooth_disabled
-/hardening/kickstart/.+/service_nftables_disabled
 /hardening/kickstart/.+/systemd_tmp_mount_enabled
     True
-
-# RHEL 9 and 10 are not FIPS certified yet
-/hardening/.+/aide_use_fips_hashes
-    rhel >= 9
 
 # https://github.com/ComplianceAsCode/content/issues/12942
 # https://issues.redhat.com/browse/RHEL-4722
@@ -181,21 +122,10 @@
 /hardening/anaconda/ospp/enable_fips_mode
 /hardening/anaconda/.+/configure_gnutls_tls_crypto_policy
 /hardening/anaconda/.+/harden_sshd_ciphers_openssh_conf_crypto_policy
-/hardening/anaconda/.+/harden_sshd_ciphers_opensshserver_conf_crypto_policy
-/hardening/anaconda/.+/harden_sshd_macs_openssh_conf_crypto_policy
-/hardening/anaconda/.+/harden_sshd_macs_opensshserver_conf_crypto_policy
     rhel == 8
-
-# OAA just failed without an error, as usual
-# https://issues.redhat.com/browse/OPENSCAP-3321
-# seems to be happening much more reliably with GUI
-/hardening/anaconda/with-gui/cis_workstation_l[12]
-    status == 'error'
 
 # https://github.com/ComplianceAsCode/content/issues/11565
 /hardening/image-builder/.*/audit_rules_privileged_commands
-# https://github.com/ComplianceAsCode/content/issues/11566
-/hardening/image-builder/.+/sebool_selinuxuser_execstack
 # https://github.com/ComplianceAsCode/content/issues/11567
 /hardening/image-builder/.*/enable_dracut_fips_module
 /hardening/image-builder/.*/enable_fips_mode
@@ -205,13 +135,6 @@
 /hardening/image-builder/ccn_[^/]+
     rhel == 9 and status == 'error'
 
-# rule accounts_password_pam_retry passes during initial scan but it is then
-# broken by the enable_authselect rule remediation (as on RHEL9 bootc container
-# image there is no default authselect profile selected); there is a documentation
-# informing users to select default authselect profile in a Containerfile
-# until https://issues.redhat.com/browse/RHEL-82079 is fixed (9.7+)
-/hardening/container/[^/]+/[^/]+/accounts_password_pam_retry
-    rhel == 9
 # https://issues.redhat.com/browse/RHEL-77158
 # (we unselect max_age in conf/remediations.py)
 /hardening/container/anaconda-ostree/.+/accounts_password_set_min_life_existing
@@ -219,10 +142,6 @@
 # https://github.com/ComplianceAsCode/content/issues/13214
 /hardening/container/(anaconda-ostree|bootc-image-builder|old-new)/.+/dir_perms_world_writable_sticky_bits
     True
-# https://github.com/ComplianceAsCode/content/issues/13296
-/scanning/disa-alignment/.+/audit_privileged_commands_.+
-    rhel == 9
-
 # File /boot/grub2/grub2.cfg is created with lenient permissions by
 # bootupd during the installation of a bootable container image.
 # https://github.com/coreos/bootupd/issues/952
@@ -237,11 +156,8 @@
 # processing negative numbers by textfilecontent54_probe which is fixed by
 # https://github.com/OpenSCAP/openscap/pull/2210
 # https://github.com/ComplianceAsCode/content/issues/13412
-/hardening/.+/configure_gnutls_tls_crypto_policy
 /hardening/.+/harden_sshd_ciphers_(openssh|opensshserver)_conf_crypto_policy
 /hardening/.+/harden_sshd_macs_(openssh|opensshserver)_conf_crypto_policy
-/per-rule/.+/harden_sshd_ciphers_(openssh|opensshserver)_conf_crypto_policy
-/per-rule/.+/harden_sshd_macs_(openssh|opensshserver)_conf_crypto_policy
     rhel == 8
 
 # https://github.com/ComplianceAsCode/content/issues/13690
@@ -254,19 +170,12 @@
 /per-rule/.+/file_permissions_unauthorized_world_writable/world_writable_tmp.fail
     True
 
-# https://github.com/ComplianceAsCode/content/issues/13737
-/hardening/kickstart/with-gui/stig_gui/dconf_gnome_login_banner_text
-/hardening/oscap/with-gui/stig_gui/dconf_gnome_login_banner_text
-/hardening/anaconda/with-gui/stig_gui/dconf_gnome_login_banner_text
-    True
-
 # https://github.com/ComplianceAsCode/content/issues/13743
 /hardening/host-os/ansible/cis/file_permission_user_init_files
 /hardening/host-os/ansible/cis_workstation_l2/file_permission_user_init_files
     rhel  == 10
 
 # https://github.com/ComplianceAsCode/content/issues/13844
-/hardening/.+/bsi/rpm_verify_permissions
 /hardening/.+/bsi/file_permissions_cron.*
 /hardening/container/.+/bsi/file_permissions_efi_grub2_cfg
     rhel == 9
