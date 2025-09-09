@@ -279,4 +279,10 @@
 /hardening/kickstart/with-gui/stig_gui
     rhel == 10 and status == 'error'
 
+# https://github.com/ComplianceAsCode/content/issues/13877
+/scanning/container-rules-applicability/fips_crypto_subpolicy
+    rhel == 8 or rhel == 9
+/scanning/container-rules-applicability/fips_custom_stig_sub_policy
+    rhel == 9
+
 # vim: syntax=python
