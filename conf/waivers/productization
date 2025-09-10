@@ -271,4 +271,12 @@
 /hardening/container/.+/bsi/file_permissions_efi_grub2_cfg
     rhel == 9
 
+# https://github.com/ComplianceAsCode/content/issues/13880
+/hardening/kickstart/ism_o
+/hardening/kickstart/stig
+/hardening/kickstart/uefi/ism_o
+/hardening/kickstart/uefi/stig
+/hardening/kickstart/with-gui/stig_gui
+    rhel == 10 and status == 'error'
+
 # vim: syntax=python
