@@ -106,7 +106,6 @@ def match_result_mark_waiver(regexes_matched_list, version, arch, status, name, 
 def load_and_process_results(file, regexes_matched_list):
     with gzip.open(file, 'rt') as f:
         for line in f:
-            line = line.strip()
             version, arch, status, name, note = line.split('\t')
 
             if version == 'rhel':  # skip the header
