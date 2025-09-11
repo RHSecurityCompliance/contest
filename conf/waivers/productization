@@ -285,4 +285,8 @@
 /scanning/container-rules-applicability/fips_custom_stig_sub_policy
     rhel == 9
 
+# Image builder issue. Image builder needs to add BSI to its allow list.
+/hardening/image-builder/bsi
+    rhel == 9 and status == 'error'
+
 # vim: syntax=python
