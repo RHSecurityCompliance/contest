@@ -132,10 +132,16 @@ This indicates a test that can share virtual machine snapshots with other
 tests, typically via a clause like
 
 ```python
+virt.Host.setup()
 g = virt.Guest(guest_tag)
-if not g.can_be_snapshotted():
+if not g.is_installed():
     g.install(...)
-    g.prepare_for_snapshot()
+
+g.prepare_for_snapshot()
+atexit.register(g.cleanup_snapshot)
+
+with g.snapshotted():
+    ...
 
 with g.snapshotted():
     ...

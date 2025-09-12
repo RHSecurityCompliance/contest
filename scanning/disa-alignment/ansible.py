@@ -1,6 +1,7 @@
 #!/usr/bin/python3
 
 import os
+import atexit
 import subprocess
 
 import shared
@@ -14,10 +15,12 @@ virt.Host.setup()
 guest_tag = virt.calculate_guest_tag(metadata.tags())
 g = virt.Guest(guest_tag)
 
-if not g.can_be_snapshotted():
+if not g.is_installed():
     ks = virt.Kickstart(partitions=partitions.partitions)
     g.install(kickstart=ks, kernel_args=['fips=1'])
-    g.prepare_for_snapshot()
+
+g.prepare_for_snapshot()
+atexit.register(g.cleanup_snapshot)
 
 # the VM guest ssh code doesn't use $HOME/.known_hosts, so Ansible blocks
 # on trying to accept its ssh key - tell it to ignore this

@@ -1,5 +1,7 @@
 #!/usr/bin/python3
 
+import atexit
+
 from lib import util, results, virt, oscap, metadata
 from conf import remediation, partitions
 
@@ -11,7 +13,7 @@ profile = util.get_test_name().rpartition('/')[2]
 guest_tag = virt.calculate_guest_tag(metadata.tags())
 g = virt.Guest(guest_tag)
 
-if not g.can_be_snapshotted():
+if not g.is_installed():
     ks = virt.Kickstart(partitions=partitions.partitions)
     if 'with-gui' in metadata.tags():
         ks.packages.append('@Server with GUI')
@@ -20,7 +22,9 @@ if not g.can_be_snapshotted():
         secure_boot=('uefi' in metadata.tags()),
         kernel_args=['fips=1'] if 'fips' in metadata.tags() else None,
     )
-    g.prepare_for_snapshot()
+
+g.prepare_for_snapshot()
+atexit.register(g.cleanup_snapshot)
 
 with g.snapshotted():
     # copy our datastream to the guest
