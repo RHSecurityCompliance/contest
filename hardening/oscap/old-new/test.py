@@ -1,5 +1,7 @@
 #!/usr/bin/python3
 
+import atexit
+
 from lib import util, results, virt, oscap, metadata
 from conf import remediation, partitions
 
@@ -11,13 +13,15 @@ profile = util.get_test_name().rpartition('/')[2]
 guest_tag = virt.calculate_guest_tag(metadata.tags())
 g = virt.Guest(guest_tag)
 
-if not g.can_be_snapshotted():
+if not g.is_installed():
     ks = virt.Kickstart(partitions=partitions.partitions)
     g.install(
         kickstart=ks,
         kernel_args=['fips=1'] if 'fips' in metadata.tags() else None,
     )
-    g.prepare_for_snapshot()
+
+g.prepare_for_snapshot()
+atexit.register(g.cleanup_snapshot)
 
 with g.snapshotted(), util.get_old_datastream() as old_xml:
     # copy old and new datastreams to the guest

@@ -1,5 +1,7 @@
 #!/usr/bin/python3
 
+import atexit
+
 import shared
 from lib import util, results, virt, oscap, versions, metadata
 from conf import partitions, remediation
@@ -10,10 +12,12 @@ virt.Host.setup()
 guest_tag = virt.calculate_guest_tag(metadata.tags())
 g = virt.Guest(guest_tag)
 
-if not g.can_be_snapshotted():
+if not g.is_installed():
     ks = virt.Kickstart(partitions=partitions.partitions)
     g.install(kickstart=ks, kernel_args=['fips=1'])
-    g.prepare_for_snapshot()
+
+g.prepare_for_snapshot()
+atexit.register(g.cleanup_snapshot)
 
 with g.snapshotted():
     oscap.unselect_rules(util.get_datastream(), 'remediation-ds.xml', remediation.excludes())

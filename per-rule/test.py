@@ -2,6 +2,7 @@
 
 import os
 import re
+import atexit
 import inspect
 import subprocess
 from pathlib import Path
@@ -169,6 +170,7 @@ with util.get_source_content() as content_dir:
         g.ssh('./setup.sh', check=True)
 
     g.prepare_for_snapshot()
+    atexit.register(g.cleanup_snapshot)
 
 guest_logs_template = [
     'initial-report.html', 'initial-results-arf.xml',

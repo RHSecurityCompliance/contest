@@ -37,16 +37,20 @@ instance to g.install().
 
 Example using snapshots:
 
+    import atexit
     import subprocess
-    import virt
+
+    from lib import virt
 
     virt.Host.setup()
     g = virt.Guest('gui')
 
     # reuse if it already exists from previous tests, reinstall if not
-    if not g.can_be_snapshotted():
+    if not g.is_installed():
         g.install()
-        g.prepare_for_snapshot()
+
+    g.prepare_for_snapshot()
+    atexit.register(g.cleanup_snapshot)
 
     with g.snapshotted():
         state = g.ssh('ls', '/root', stdout=subprocess.PIPE)
@@ -59,7 +63,7 @@ Example using snapshots:
 
 Example using plain one-time-use guest:
 
-    import virt
+    from lib import virt
 
     virt.Host.setup()
     g = virt.Guest()
@@ -353,7 +357,7 @@ class Guest:
     When instantiated, represents a guest (VM).
 
     Set a 'tag' (string) to a unique name you would like to share across tests
-    that use snapshots - the .can_be_snapshotted() function will return True
+    that use snapshots - the .is_installed() function will return True
     when it finds an already installed guest using the same tag.
     Tag-less guests can be used only for snapshotting within the same test
     and should not be shared across tests.
@@ -375,8 +379,8 @@ class Guest:
         self.snapshot_path = Path(f'{GUEST_IMG_DIR}/{name}-snap.qcow2')
         # if it exists, guest was successfully installed
         self.install_ready_path = Path(f'{GUEST_IMG_DIR}/{name}.install_ready')
-        # if exists, all snapshot preparation processes were successful
-        self.snapshot_ready_path = Path(f'{GUEST_IMG_DIR}/{name}.snapshot_ready')
+        # if True, all snapshot preparation processes were successful
+        self.snapshot_ready = False
 
     def install_basic(
         self, location=None, kickstart=None, secure_boot=False, virt_install_args=None,
@@ -580,6 +584,7 @@ class Guest:
         wait_for_ssh(self.ipaddr)
 
     def reset(self):
+        util.log("rebooting using 'virsh reset'")
         virsh('reset', self.name, check=True)
 
     def undefine(self, incl_storage=False):
@@ -596,21 +601,36 @@ class Guest:
         tag = self.install_ready_path.read_text()
         return tag == self.tag
 
-    def can_be_snapshotted(self):
-        if not self.snapshot_ready_path.exists():
-            return False
-        tag = self.snapshot_ready_path.read_text()
-        return tag == self.tag
+    def _destroy_snapshotted(self):
+        self.destroy()
+        self.snapshot_path.unlink(missing_ok=True)
+
+    def _restore_original_disk(self):
+        self._destroy_snapshotted()
+        self.disk_path, self.disk_format = get_domain_base_image_disk(self.name)
+        util.log(f"restoring {self.name} original base image disk: {self.disk_path}")
+        self.state_file_path.unlink(missing_ok=True)
+        self.snapshot_ready = False
 
     def prepare_for_snapshot(self):
-        # do guest first boot, let it settle and finish firstboot tasks,
-        # then shut it down + start again, to get the lowest possible page cache
-        # (resulting in smallest possible RAM image)
+        if not self.is_installed():
+            raise RuntimeError(f"guest {self.name} not installed or installed with different tag")
+
+        # if an external domain is used (not one we installed), make sure it uses its original
+        # base image disk and not a snapshot-style disk; this covers cases where domain is left
+        # running after a crashed test, or CONTEST_LEAVE_GUEST_RUNNING=1
+        if not self.disk_path:
+            self._restore_original_disk()
+
+        # do guest first boot, let it settle and finish firstboot tasks
         self.start()
-        ip = wait_for_ifaddr(self.name)
-        wait_for_ssh(ip)
+        if not self.ipaddr:
+            self.ipaddr = wait_for_ifaddr(self.name)
+        wait_for_ssh(self.ipaddr)
         util.log("sleeping for 30sec for firstboot to settle")
         time.sleep(30)
+        # then shut it down + start again, to get the lowest possible page cache
+        # (resulting in smallest possible RAM image)
         # - disable for now, the ~200M saved RAM is not worth the ~2 minutes
         #util.log(f"waiting for clean shutdown of {self.name}")
         #self.shutdown()  # clean shutdown
@@ -621,31 +641,16 @@ class Guest:
         #util.log("sleeping for 30sec for second boot to settle, for imaging")
         #time.sleep(30)  # fully finish booting (ssh starts early)
 
-        # save RAM image (domain state)
+        # save a running domain (RAM, but not disk state) to a state file
+        # so that it can be restored later
         virsh('save', self.name, self.state_file_path, check=True)
 
-        # if an external domain is used (not one we installed), read its
-        # original disk metadata now
-        if not self.disk_path:
-            self.disk_path, self.disk_format = get_state_image_disk(self.state_file_path)
+        # modify domain's built-in XML to point to a snapshot-style disk path
+        set_image_disk_in_state_file(self.state_file_path, self.snapshot_path, 'qcow2')
 
-        # modify its built-in XML to point to a snapshot-style disk path
-        set_state_image_disk(self.state_file_path, self.snapshot_path, 'qcow2')
-
-        self.snapshot_ready_path.write_text(self.tag)
+        self.snapshot_ready = True
 
     def _restore_snapshotted(self):
-        # reused guest from another test, install() or prepare_for_snapshot()
-        # were not run for this class instance
-        if not self.disk_path:
-            ret = virsh('dumpxml', self.name, '--inactive',
-                        stdout=PIPE, check=True, text=True)
-            _, _, _, driver, source = domain_xml_diskinfo(ret.stdout)
-            self.disk_format = driver.get('type')
-            self.disk_path = Path(source.get('file'))
-
-        # running domain left over from a crashed test,
-        # or by CONTEST_LEAVE_GUEST_RUNNING
         self._destroy_snapshotted()
 
         cmd = [
@@ -657,10 +662,12 @@ class Guest:
 
         virsh('restore', self.state_file_path, check=True)
 
-    def _destroy_snapshotted(self):
-        self.destroy()
-        if self.snapshot_path.exists():
-            self.snapshot_path.unlink()
+    def cleanup_snapshot(self):
+        if os.environ.get('CONTEST_LEAVE_GUEST_RUNNING') == '1':
+            self._log_leave_running_notice()
+            return
+
+        self._restore_original_disk()
 
     @staticmethod
     def _log_leave_running_notice():
@@ -676,19 +683,16 @@ class Guest:
         """
         Create a snapshot, restore the guest, ready it for communication.
         """
-        if not self.can_be_snapshotted():
-            raise RuntimeError(f"guest {self.name} not ready for snapshotting")
+        if not self.is_installed():
+            raise RuntimeError(f"guest {self.name} not installed or installed with different tag")
+        if not self.snapshot_ready:
+            raise RuntimeError(
+                f"guest {self.name} not prepared for snapshotting, "
+                "prepare_for_snapshot() needs to be used first",
+            )
         self._restore_snapshotted()
-        if not self.ipaddr:
-            self.ipaddr = wait_for_ifaddr(self.name)
-            wait_for_ssh(self.ipaddr)
-        try:
-            yield self
-        finally:
-            if os.environ.get('CONTEST_LEAVE_GUEST_RUNNING') == '1':
-                self._log_leave_running_notice()
-            else:
-                self._destroy_snapshotted()
+        wait_for_ssh(self.ipaddr)
+        yield self
 
     @contextlib.contextmanager
     def booted(self, *, safe_shutdown=False):
@@ -700,7 +704,8 @@ class Guest:
         the guest before taking a snapshot.
         """
         self.start()
-        self.ipaddr = wait_for_ifaddr(self.name)
+        if not self.ipaddr:
+            self.ipaddr = wait_for_ifaddr(self.name)
         wait_for_ssh(self.ipaddr)
         try:
             yield self
@@ -774,8 +779,7 @@ class Guest:
         # don't use .with_suffix() as it would destroy anything after first '.'
         public = Path(f'{private}.pub')
         for filepath in [private, public]:
-            if filepath.exists():
-                filepath.unlink()
+            filepath.unlink(missing_ok=True)
         util.ssh_keygen(private)
         self.ssh_pubkey = public.read_text().rstrip('\n')
 
@@ -806,12 +810,10 @@ class Guest:
         self.undefine(incl_storage=True)
         files = [
             self.ssh_keyfile_path, Path(f'{self.ssh_keyfile_path}.pub'),
-            self.snapshot_path, self.state_file_path,
-            self.install_ready_path, self.snapshot_ready_path,
+            self.snapshot_path, self.state_file_path, self.install_ready_path,
         ]
         for f in files:
-            if f.exists():
-                f.unlink()
+            f.unlink(missing_ok=True)
 
 
 #
@@ -1001,18 +1003,31 @@ def domain_xml_diskinfo(xmlstr):
     return (domain, devices, disk, driver, source)
 
 
-def get_state_image_disk(image):
-    """Get path/format of the first <disk> definition in a RAM image file."""
-    ret = virsh('save-image-dumpxml', image, stdout=PIPE, check=True, text=True)
+def get_image_disk_from_state_file(state_file):
+    """Get path/format of the first <disk> definition in a RAM image state file."""
+    ret = virsh('save-image-dumpxml', state_file, stdout=PIPE, check=True, text=True)
     _, _, _, driver, source = domain_xml_diskinfo(ret.stdout)
     image_format = driver.get('type')
     source_file = Path(source.get('file'))
     return (source_file, image_format)
 
 
-def set_state_image_disk(image, source_file, image_format):
-    """Set a disk path inside a saved guest RAM image to 'diskpath'."""
-    ret = virsh('save-image-dumpxml', image, stdout=PIPE, check=True, text=True)
+def get_domain_base_image_disk(domain):
+    ret = virsh('dumpxml', domain, '--inactive', stdout=PIPE, check=True, text=True)
+    _, _, disk, driver, _ = domain_xml_diskinfo(ret.stdout)
+    backing_store = disk.find('backingStore')
+    if backing_store:
+        base_image = backing_store.find('source').get('file')
+        base_image_format = backing_store.find('format').get('type')
+    else:
+        base_image = disk.find('source').get('file')
+        base_image_format = driver.get('type')
+    return (Path(base_image), base_image_format)
+
+
+def set_image_disk_in_state_file(state_file, source_file, image_format):
+    """Set a disk path/format inside a saved guest RAM image state file to 'source_file'."""
+    ret = virsh('save-image-dumpxml', state_file, stdout=PIPE, check=True, text=True)
     domain, _, disk, driver, source = domain_xml_diskinfo(ret.stdout)
     driver.set('type', image_format)
     source.set('file', str(source_file))
@@ -1024,7 +1039,7 @@ def set_state_image_disk(image, source_file, image_format):
     with tempfile.NamedTemporaryFile(mode='wb', suffix='.xml') as f:
         f.write(ET.tostring(domain))
         f.flush()
-        virsh('save-image-define', image, f.name, check=True)
+        virsh('save-image-define', state_file, f.name, check=True)
 
 
 def set_domain_memory(domain, amount, unit='MiB'):
