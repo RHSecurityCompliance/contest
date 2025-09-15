@@ -52,6 +52,10 @@ for frames, elements in oscap.parse_xml(util.get_datastream()):
     rule_references[rule].add(reference)
 
 for ref_profile, nested in profile_references.items():
+    if ref_profile not in profiles:
+        results.report('skip', ref_profile)
+        continue
+
     for ref_name, ref_url in nested.items():
         for rule in profiles[ref_profile].rules:
             result_name = f'{ref_profile}/{ref_name}/{rule}'
