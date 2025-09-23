@@ -77,8 +77,34 @@ class RpmPack:
         self.files.append(entry)
 
     def add_host_repos(self):
+        """
+        Add host repo files and gpg key files to the contest-pack RPM's %post scriptlet.
+
+        We don't add these files under %files because they would conflict with files from
+        distro packages deploying repo and gpg key files (centos-stream-repos/centos-gpg-keys
+        on CentOS Stream and subscription-manager/redhat-release on RHEL).
+        """
+        self.add_script('%post', util.dedent('''
+            rm -rf /etc/yum.repos.d/*
+            rm -rf /etc/pki/rpm-gpg/*
+        '''))
         for repofile in dnf.repo_files():
-            self.add_file(repofile, repofile)
+            repopath = Path(repofile)
+            repotext = repopath.read_text().rstrip('\n')
+            repo_contents = (
+                f'cat > "/etc/yum.repos.d/{repopath.name}" <<\'EOF\'\n'
+                + repotext
+                + '\nEOF'
+            )
+            self.add_script('%post', repo_contents)
+        for keyfile in dnf.repo_gpg_keys():
+            keytext = keyfile.read_text().rstrip('\n')
+            key_contents = (
+                f'cat > "/etc/pki/rpm-gpg/{keyfile.name}" <<\'EOF\'\n'
+                + keytext
+                + '\nEOF'
+            )
+            self.add_script('%post', key_contents)
 
     def add_script(self, script_type, content):
         """

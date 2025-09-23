@@ -79,6 +79,18 @@ def repo_files():
     yield from files
 
 
+def repo_gpg_keys():
+    """
+    Yield Paths of all GPG key files on the host under /etc/pki/rpm-gpg/.
+    """
+    rpm_gpg_dir = Path('/etc/pki/rpm-gpg')
+    if not rpm_gpg_dir.is_dir():
+        return
+    for keyfile in rpm_gpg_dir.iterdir():
+        if keyfile.is_file():
+            yield keyfile.absolute()
+
+
 def installable_url():
     """
     Return one baseurl usable for installing the currently-running system.

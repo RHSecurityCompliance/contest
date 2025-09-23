@@ -315,7 +315,6 @@ class Kickstart:
         self.appends.append(f'repo --name={name} --baseurl={baseurl}')
 
     def add_host_repos(self):
-        installed_repos = []
         for reponame, config in dnf.repo_configs():
             if 'metalink' in config:
                 metalink = config['metalink']
@@ -323,12 +322,6 @@ class Kickstart:
             else:
                 baseurl = config['baseurl']
                 self.appends.append(f'repo --name={reponame} --baseurl={baseurl}')
-            installed_repos.append(
-                f'cat > /etc/yum.repos.d/{reponame}.repo <<\'EOF\'\n' +
-                f'[{reponame}]\n' +
-                '\n'.join(f'{k}={v}' for k, v in config.items()) +
-                '\nEOF')
-        self.add_post('\n'.join(installed_repos))
 
     def add_oscap_addon(self, keyvals):
         """Append an OSCAP addon section, with key=value pairs from 'keyvals'."""
@@ -494,6 +487,7 @@ class Guest:
         # create a custom RPM to run guest setup scripts via RPM scriptlets
         # and install it during Anaconda installation
         pack = rpmpack or util.RpmPack()
+        pack.add_host_repos()
         pack.requires += self.GUEST_REQUIRES
         pack.add_sshd_late_start()
         with pack.build_as_repo() as repo:
