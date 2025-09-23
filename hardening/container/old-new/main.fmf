@@ -21,6 +21,7 @@ require+:
   - qemu-kvm
   - libvirt-client
   - virt-install
+  - nmap-ncat
   - rpm-build
   - createrepo
   # podman library dependencies
