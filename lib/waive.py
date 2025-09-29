@@ -207,6 +207,9 @@ def match_result(status, name, note):
         # cases we want `no_remediation` function to return False
         if not subresult:
             return False
+        # similarly, if we got an error status we are not processing a sub-result with rule
+        if status == 'error':
+            return False
         # extract the rule name from the test name
         # (e.g. '/hardening/kickstart/stig/configure_crypto_policy')
         rule = name.rpartition('/')[2]
