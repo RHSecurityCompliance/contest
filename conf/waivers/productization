@@ -298,4 +298,8 @@
 /hardening/image-builder/stig
     rhel == 8 and status == 'error'
 
+# https://github.com/ComplianceAsCode/content/issues/13982
+/per-rule/oscap/.+/grub2_password/invalid_username.fail
+    rhel == 9 or rhel == 10
+
 # vim: syntax=python
