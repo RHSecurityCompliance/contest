@@ -39,11 +39,6 @@
 # RHEL8 https://github.com/ComplianceAsCode/content/issues/12422
 /static-checks/rule-identifiers/ospp/ospp/.*
     rhel == 8
-# RHEL8 https://github.com/ComplianceAsCode/content/issues/12423
-# RHEL9 https://github.com/ComplianceAsCode/content/issues/12427
-# RHEL10 https://github.com/ComplianceAsCode/content/issues/12430
-/static-checks/rule-identifiers/ism_o/ism/.*
-    True
 
 # https://github.com/ComplianceAsCode/content/issues/13856
 /static-checks/rule-identifiers/stig/os-srg/package_sssd_installed
@@ -182,11 +177,17 @@
 
 # https://github.com/ComplianceAsCode/content/issues/13880
 /hardening/kickstart/ism_o
+/hardening/kickstart/ism_o_secret
+/hardening/kickstart/ism_o_top_secret
 /hardening/kickstart/stig
 /hardening/kickstart/uefi/ism_o
+/hardening/kickstart/uefi/ism_o_secret
+/hardening/kickstart/uefi/ism_o_top_secret
 /hardening/kickstart/uefi/stig
 /hardening/kickstart/with-gui/stig_gui
 /hardening/kickstart/with-gui/ism_o
+/hardening/kickstart/with-gui/ism_o_secret
+/hardening/kickstart/with-gui/ism_o_top_secret
     rhel == 10 and status == 'error'
 
 # https://github.com/ComplianceAsCode/content/issues/13877
@@ -195,9 +196,17 @@
 /scanning/container-rules-applicability/fips_custom_stig_sub_policy
     rhel == 9
 
-# Image builder issue. Image builder needs to add BSI to its allow list.
+# Image builder issue. Image builder needs to add BSI, ISM Official Secret
+# and ISM Official Top Secret to its allow list, tracked under
+# https://issues.redhat.com/browse/HMS-9407
+# https://issues.redhat.com/browse/HMS-9507
 /hardening/image-builder/bsi
     rhel == 9 and status == 'error'
+/hardening/image-builder/ism_o_secret
+/hardening/image-builder/uefi/ism_o_secret
+/hardening/image-builder/ism_o_top_secret
+/hardening/image-builder/uefi/ism_o_top_secret
+    rhel == 10 and status == 'error'
 
 # https://github.com/ComplianceAsCode/content/issues/13906
 /hardening/image-builder/cis

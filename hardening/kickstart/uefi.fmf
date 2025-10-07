@@ -47,6 +47,30 @@ adjust+:
 /ism_o:
     tag+:
       - fips
+    adjust+:
+      - when: distro >= rhel-10
+        tag+:
+          - subset-profile
+
+/ism_o_secret:
+    tag+:
+      - fips
+    adjust+:
+      - when: distro >= rhel-10
+        tag+:
+          - subset-profile
+        continue: true
+      - when: distro < rhel-10
+        enabled: false
+        because: ISM Official Secret is only present on RHEL-10+
+
+/ism_o_top_secret:
+    tag+:
+      - fips
+    adjust+:
+      - when: distro < rhel-10
+        enabled: false
+        because: ISM Official Top Secret is only present on RHEL-10+
 
 /ospp:
     tag+:
