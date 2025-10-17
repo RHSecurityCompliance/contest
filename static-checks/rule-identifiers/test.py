@@ -2,41 +2,46 @@
 
 from collections import defaultdict
 
-from lib import util, results, oscap
+from lib import util, results, oscap, versions
 
-# reference names taken from
-# https://github.com/ComplianceAsCode/content/blob/master/ssg/constants.py
-profile_references = {
-    # srg, disa, stigid@PRODUCT or controls file
-    'stig': {
-        'stigid': 'https://www.cyber.mil/stigs/downloads/?_dl_facet_stigs=operating-systems%2Cunix-linux',
-        'os-srg': 'https://www.cyber.mil/stigs/downloads/?_dl_facet_stigs=operating-systems%2Cgeneral-purpose-os',
-    },
-    # ospp
-    'ospp': {
-        'ospp': 'https://www.niap-ccevs.org/Profile/PP.cfm',
-    },
-    # cis@PRODUCT or controls file
-    'cis': {
-        'cis': 'https://www.cisecurity.org/benchmark/red_hat_linux/',
-    },
-    # anssi_bp28_high (controls file)
-    'anssi_bp28_high': {
-        'anssi': 'https://cyber.gouv.fr/sites/default/files/document/linux_configuration-en-v2.pdf',
-    },
-    # ism
-    'ism_o': {
-        'ism': 'https://www.cyber.gov.au/acsc/view-all-content/ism',
-    },
-    # hipaa
-    'hipaa': {
-        'hipaa': 'https://www.gpo.gov/fdsys/pkg/CFR-2007-title45-vol1/pdf/CFR-2007-title45-vol1-chapA-subchapC.pdf',
-    },
-    # pcidss4
-    'pci-dss': {
-        'pcidss4': 'https://docs-prv.pcisecuritystandards.org/PCI%20DSS/Standard/PCI-DSS-v4_0.pdf',
-    },
+reference_urls = {}
+for frames, elements in oscap.parse_xml(util.get_datastream()):
+    if len(frames) >= 2 and frames[-2:] == ['Benchmark', 'reference']:
+        name = elements[-1].text
+        href = elements[-1].get('href')
+        if name and href:
+            reference_urls[name] = href
+
+# Associations between profiles and reference names
+profile_reference_names = {
+    'bsi': ['bsi'],
+    'ccn_advanced': ['ccn'],
+    'stig': ['stigid', 'os-srg'],
+    'ospp': ['ospp'],
+    'cis': ['cis'],
+    'anssi_bp28_high': ['anssi'],
+    'hipaa': ['hipaa'],
+    'pci-dss': ['pcidss4'],
 }
+if versions.rhel <= 9:
+    profile_reference_names['ism_o'] = ['ism']
+else:
+    profile_reference_names['ism_o_top_secret'] = ['ism']
+
+# Resolve the per-profile references to URLs using the datastream-derived mapping
+profile_references = {}
+for profile, ref_names in profile_reference_names.items():
+    nested = {}
+    for ref_name in ref_names:
+        if ref_name in reference_urls:
+            nested[ref_name] = reference_urls[ref_name]
+        else:
+            results.report(
+                'error',
+                f'{profile}/{ref_name}',
+                'reference not found in datastream',
+            )
+    profile_references[profile] = nested
 
 profiles = oscap.global_ds().profiles
 
@@ -62,6 +67,6 @@ for ref_profile, nested in profile_references.items():
             if ref_url in rule_references[rule]:
                 results.report('pass', result_name)
             else:
-                results.report('fail', result_name, f"missing {ref_url}")
+                results.report('fail', result_name, f'missing {ref_url}')
 
 results.report_and_exit()
