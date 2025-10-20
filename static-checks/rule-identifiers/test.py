@@ -15,7 +15,6 @@ for frames, elements in oscap.parse_xml(util.get_datastream()):
 # Associations between profiles and reference names
 profile_reference_names = {
     'bsi': ['bsi'],
-    'ccn_advanced': ['ccn'],
     'stig': ['stigid', 'os-srg'],
     'ospp': ['ospp'],
     'cis': ['cis'],
@@ -23,6 +22,8 @@ profile_reference_names = {
     'hipaa': ['hipaa'],
     'pci-dss': ['pcidss4'],
 }
+if versions.rhel == 9:
+    profile_reference_names['ccn_advanced'] = ['ccn']
 if versions.rhel <= 9:
     profile_reference_names['ism_o'] = ['ism']
 else:
