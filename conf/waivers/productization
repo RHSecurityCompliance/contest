@@ -55,10 +55,6 @@
 /static-checks/rule-identifiers/anssi_bp28_high/anssi/ldap_client_start_tls
     rhel == 8
 
-# https://github.com/ComplianceAsCode/content/issues/14033
-/static-checks/rule-identifiers/ccn_advanced/ccn/.*
-    rhel == 9 and rhel.is_centos()
-
 # bz1825810 or maybe bz1929805
 # can be reproduced mostly reliably (95%) both via anaconda and oscap CLI,
 # but apparently we don't really care about old releases

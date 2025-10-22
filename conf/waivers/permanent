@@ -35,6 +35,11 @@
 /scanning/disa-alignment/.*/installed_OS_is_vendor_supported
     True
 
+# No CCN identifiers for CentOS products
+# https://github.com/ComplianceAsCode/content/issues/14033
+/static-checks/rule-identifiers/ccn_advanced/ccn/.*
+    rhel == 9 and rhel.is_centos()
+
 # Rules checking if OS is FIPS certified
 /hardening/host-os/.+/sshd_use_approved_.+
 /hardening/host-os/.+/package_dracut-fips_installed
