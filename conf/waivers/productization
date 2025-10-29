@@ -33,6 +33,10 @@
 /scanning/disa-alignment/.+/sysctl_net_ipv4_conf_default_rp_filter
     rhel == 9
 
+# https://github.com/ComplianceAsCode/content/issues/14055
+/scanning/audit-rules-syscalls-grouping/init_module,delete_module,query_module,finit_module
+    True
+
 # RHEL10 - No official RHEL10 STIG benchmark yet
 /static-checks/rule-identifiers/stig/stigid/.*
     rhel == 10
