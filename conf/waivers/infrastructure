@@ -12,10 +12,6 @@
 # we don't control partitions on the host OS
 /hardening/host-os/.+/mount_option_(home|opt|srv|var|var_log|var_log_audit|tmp)_(noexec|nosuid|nodev|usrquota|grpquota)
     True
-# Beaker and host-os seem to randomly fail any services enabled
-# TODO: probably worth further investigation, but likely not a content issue
-/hardening/host-os/oscap/[^/]+/service_.+_enabled
-    True
 
 # Remediations are unselected for CentOS, but they might pass outside Testing Farm
 /hardening/.+/ensure_redhat_gpgkey_installed
