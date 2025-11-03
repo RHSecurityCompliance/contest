@@ -156,12 +156,12 @@ class BackgroundHTTPServer:
             if res.returncode == 0:
                 res = util.subprocess_run(
                     ['firewall-cmd', '--get-zones'], stdout=subprocess.PIPE,
-                    text=True, check=True)
+                    stderr=subprocess.PIPE, text=True, check=True)
                 self.firewalld_zones = res.stdout.strip().split(' ')
                 for zone in self.firewalld_zones:
                     util.subprocess_run(
                         ['firewall-cmd', f'--zone={zone}', f'--add-port={port}/tcp'],
-                        stdout=subprocess.DEVNULL, check=True)
+                        stdout=subprocess.DEVNULL, stderr=subprocess.PIPE, check=True)
 
         self.thread = threading.Thread(target=server.serve_forever)
         self.thread.start()
@@ -188,7 +188,7 @@ class BackgroundHTTPServer:
         for zone in self.firewalld_zones:
             util.subprocess_run(
                 ['firewall-cmd', f'--zone={zone}', f'--remove-port={port}/tcp'],
-                stdout=subprocess.DEVNULL, check=True)
+                stdout=subprocess.DEVNULL, stderr=subprocess.PIPE, check=True)
 
     def __enter__(self):
         return self

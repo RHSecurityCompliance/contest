@@ -40,7 +40,9 @@ def _available_ssg_versions():
         'dnf', '-q', 'repoquery', '--available', '--arch', 'noarch',
         '--qf', '%{VERSION}-%{RELEASE}', 'scap-security-guide',
     ]
-    ret = util.subprocess_run(cmd, check=True, stdout=subprocess.PIPE, text=True)
+    ret = util.subprocess_run(
+        cmd, check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True,
+    )
     versions = ret.stdout.rstrip('\n').split('\n')
     # sort from newest to oldest
     return sorted(versions, key=functools.cmp_to_key(_compare_ssg_versions), reverse=True)

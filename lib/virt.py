@@ -236,7 +236,9 @@ class Host:
 
         ret = subprocess.run(['systemctl', 'is-active', '--quiet', 'libvirtd'])
         if ret.returncode != 0:
-            util.subprocess_run(['systemctl', 'start', 'libvirtd'], check=True)
+            util.subprocess_run(
+                ['systemctl', 'start', 'libvirtd'], check=True, stderr=subprocess.PIPE,
+            )
 
         cls.setup_network()
         cls.create_sshvm('/root/contest-sshvm')
@@ -543,7 +545,9 @@ class Guest:
             virt_install += ['--boot', 'firmware=efi,loader_secure=yes']
 
         executable = util.libdir / 'pseudotty'
-        util.subprocess_run(virt_install, executable=executable, check=True)
+        util.subprocess_run(
+            virt_install, executable=executable, check=True, stderr=subprocess.PIPE,
+        )
 
         # installed system doesn't need as much RAM, alleviate swap pressure
         if final_mem:
@@ -724,6 +728,8 @@ class Guest:
             '-o', 'StrictHostKeyChecking=no', '-o', 'UserKnownHostsFile=/dev/null',
             f'{GUEST_SSH_USER}@{self.ipaddr}', '--', *cmd,
         ]
+        if run_args.get('check') and run_args.get('stderr') is None:
+            run_args['stderr'] = subprocess.PIPE
         return func(ssh_cmdline, **run_args)
 
     def ssh(self, *cmd, **kwargs):
@@ -739,7 +745,7 @@ class Guest:
             '-o', 'StrictHostKeyChecking=no', '-o', 'UserKnownHostsFile=/dev/null',
             *args,
         ]
-        return util.subprocess_run(cmd, check=True)
+        return util.subprocess_run(cmd, check=True, stderr=subprocess.PIPE)
 
     def copy_from(self, remote_file, local_file='.'):
         self._do_scp(f'{GUEST_SSH_USER}@{self.ipaddr}:{remote_file}', local_file)
@@ -752,7 +758,9 @@ class Guest:
             f'ssh -q -i {self.ssh_keyfile_path}'
             ' -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null'
         )
-        return util.subprocess_run(['rsync', '-a', '-e', ssh, *args], check=True)
+        return util.subprocess_run(
+            ['rsync', '-a', '-e', ssh, *args], check=True, stderr=subprocess.PIPE,
+        )
 
     def rsync_from(self, remote_path, local_path='.', rsync_opts=()):
         if isinstance(remote_path, (tuple,list)):

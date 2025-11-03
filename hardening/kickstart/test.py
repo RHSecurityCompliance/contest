@@ -1,5 +1,7 @@
 #!/usr/bin/python3
 
+import subprocess
+
 from lib import util, results, virt, oscap, metadata
 from conf import remediation
 
@@ -22,7 +24,7 @@ cmd = [
     'fix', '--fix-type', 'kickstart',
     'remediation-ds.xml',
 ]
-_, lines = util.subprocess_stream(cmd, check=True)
+_, lines = util.subprocess_stream(cmd, check=True, stderr=subprocess.PIPE)
 ks = virt.translate_oscap_kickstart(lines, '/root/remediation-ds.xml')
 
 if 'with-gui' in metadata.tags():
@@ -49,6 +51,6 @@ with g.booted():
     g.copy_from('report.html')
     g.copy_from('scan-arf.xml')
 
-util.subprocess_run(['gzip', '-9', 'scan-arf.xml'], check=True)
+util.subprocess_run(['gzip', '-9', 'scan-arf.xml'], check=True, stderr=subprocess.PIPE)
 
 results.report_and_exit(logs=['report.html', 'scan-arf.xml.gz'])

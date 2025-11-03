@@ -1,5 +1,7 @@
 #!/usr/bin/python3
 
+import subprocess
+
 from lib import util, results
 
 
@@ -14,7 +16,9 @@ extra_debuginfos = [
     'openssl-libs',
 ]
 
-util.subprocess_run(['dnf', '-y', 'debuginfo-install', *extra_debuginfos], check=True)
+util.subprocess_run(
+    ['dnf', '-y', 'debuginfo-install', *extra_debuginfos], check=True, stderr=subprocess.PIPE,
+)
 
 oscap_cmd = [
     'valgrind', '--tool=helgrind', '--',

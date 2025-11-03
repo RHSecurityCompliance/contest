@@ -91,7 +91,9 @@ with g.booted():
             # and download its results
             g.copy_from('oscap.core')
             g.copy_from('oscap-bt.txt')
-            util.subprocess_run(['xz', '-e', '-9', 'oscap.core'], check=True)
+            util.subprocess_run(
+                ['xz', '-e', '-9', 'oscap.core'], check=True, stderr=subprocess.PIPE,
+            )
             results.report(
                 'fail', f'attempt:{attempt}', "oscap froze, gdb output available",
                 logs=['oscap.core.xz', 'oscap-bt.txt'],

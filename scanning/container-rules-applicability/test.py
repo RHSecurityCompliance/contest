@@ -65,6 +65,6 @@ for line in lines:
 if proc.returncode not in [0,2]:
     raise RuntimeError("oscap failed unexpectedly")
 
-util.subprocess_run(['gzip', '-9', 'scan-arf.xml'], check=True)
+util.subprocess_run(['gzip', '-9', 'scan-arf.xml'], check=True, stderr=subprocess.PIPE)
 
 results.report_and_exit(logs=['report.html', 'scan-arf.xml.gz'])

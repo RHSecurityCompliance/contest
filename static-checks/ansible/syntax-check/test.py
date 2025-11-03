@@ -14,7 +14,7 @@ cmd = [
     'oscap', 'xccdf', 'generate', 'fix', '--profile', '(all)',
     '--fix-type', 'ansible', '--output', 'playbook.yml', ds,
 ]
-ret = util.subprocess_run(cmd, check=True)
+ret = util.subprocess_run(cmd, check=True, stderr=subprocess.PIPE)
 
 # Check syntax of generated playbook
 cmd = ['ansible-playbook', '--syntax-check', 'playbook.yml']

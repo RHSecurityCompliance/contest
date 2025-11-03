@@ -1,6 +1,7 @@
 #!/usr/bin/python3
 
 import shutil
+import subprocess
 
 from pathlib import Path
 
@@ -78,7 +79,7 @@ else:
         'tar', '-cvJf', 'results-arf.tar.xz',
         'remediation-arf.xml', 'remediation2-arf.xml', 'scan-arf.xml',
     ]
-    util.subprocess_run(tar, check=True)
+    util.subprocess_run(tar, check=True, stderr=subprocess.PIPE)
 
     logs = [
         'report.html',

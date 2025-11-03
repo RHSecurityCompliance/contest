@@ -1,6 +1,7 @@
 #!/usr/bin/python3
 
 import re
+import subprocess
 
 from lib import util, results, versions
 
@@ -75,15 +76,17 @@ try:
         'oscap', 'xccdf', 'eval', '--progress', '--remediate', '--report', 'report.html',
         '--results-arf', 'remediation-arf.xml', 'remediation-ds.xml',
     ]
-    util.subprocess_run(cmd, check=True)
+    util.subprocess_run(cmd, check=True, stderr=subprocess.PIPE)
 
-    util.subprocess_run(['augenrules', '--load'], check=True)
+    util.subprocess_run(['augenrules', '--load'], check=True, stderr=subprocess.PIPE)
 
     with open('audit_rules.txt', 'w') as f:
-        util.subprocess_run(['auditctl', '-l'], stdout=f, text=True, check=True)
+        util.subprocess_run(
+            ['auditctl', '-l'], stdout=f, text=True, check=True, stderr=subprocess.PIPE,
+        )
 finally:
     util.restore('/etc/audit')
-    util.subprocess_run(['augenrules', '--load'], check=True)
+    util.subprocess_run(['augenrules', '--load'], check=True, stderr=subprocess.PIPE)
 
 for group in syscalls_groups:
     if verify_syscalls_grouped_in_audit_rules(group, 'audit_rules.txt'):

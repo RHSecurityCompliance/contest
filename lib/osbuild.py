@@ -46,7 +46,9 @@ class Host:
         for unit in ['osbuild-composer.socket', 'osbuild-local-worker.socket']:
             ret = subprocess.run(['systemctl', 'is-active', '--quiet', unit])
             if ret.returncode != 0:
-                util.subprocess_run(['systemctl', 'start', unit], check=True)
+                util.subprocess_run(
+                    ['systemctl', 'start', unit], check=True, stderr=subprocess.PIPE,
+                )
 
 
 class ComposerRepos:
@@ -93,10 +95,16 @@ class ComposerRepos:
         self.ETC_REPOS.mkdir(parents=True)
         for repofile in self.USR_REPOS.iterdir():
             (self.ETC_REPOS / repofile.name).write_text(repos)
-        util.subprocess_run(['systemctl', 'restart', 'osbuild-composer.service'], check=True)
+        util.subprocess_run(
+            ['systemctl', 'restart', 'osbuild-composer.service'],
+            check=True, stderr=subprocess.PIPE,
+        )
         yield
         shutil.rmtree(self.ETC_REPOS)
-        util.subprocess_run(['systemctl', 'restart', 'osbuild-composer.service'], check=True)
+        util.subprocess_run(
+            ['systemctl', 'restart', 'osbuild-composer.service'],
+            check=True, stderr=subprocess.PIPE,
+        )
 
 
 class Compose:
@@ -346,9 +354,9 @@ class Guest(virt.Guest):
                     self.create_basic(blueprint=blueprint, **kwargs)
 
 
-def composer_cli(*args, log=True, check=True, **kwargs):
+def composer_cli(*args, log=True, check=True, stderr=subprocess.PIPE, **kwargs):
     run = util.subprocess_run if log else subprocess.run
-    return run(['composer-cli', *args], check=check, **kwargs)
+    return run(['composer-cli', *args], check=check, stderr=stderr, **kwargs)
 
 
 def composer_cli_out(*args, **kwargs):

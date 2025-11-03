@@ -2,6 +2,7 @@ import os
 import sys
 import re
 import contextlib
+import subprocess
 
 from lib import util, results
 
@@ -23,7 +24,9 @@ def install_deps():
         for collection in ['community.general', 'ansible.posix']:
             util.subprocess_run(
                 ['ansible-galaxy', '-vvv', 'collection', 'install', collection],
-                check=True)
+                check=True,
+                stderr=subprocess.PIPE,
+            )
 
 
 def report_from_output(lines, to_file=None):

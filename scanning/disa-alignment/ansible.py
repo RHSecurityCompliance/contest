@@ -59,6 +59,6 @@ with g.snapshotted():
         # Compare ARFs and report results from output
         shared.compare_arfs('ssg-arf.xml', 'disa-arf.xml')
 
-util.subprocess_run(['gzip', '-9', 'ansible-playbook.log'], check=True)
+util.subprocess_run(['gzip', '-9', 'ansible-playbook.log'], check=True, stderr=subprocess.PIPE)
 
 results.report_and_exit(logs=['ssg-report.html', 'disa-report.html', 'ansible-playbook.log.gz'])
