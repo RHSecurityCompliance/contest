@@ -2,6 +2,7 @@ import os
 import re
 import time
 import shutil
+import subprocess
 
 from lib import util
 
@@ -20,7 +21,7 @@ def reboot():
         with os.fdopen(fd, 'w', closefd=False) as control:
             control.write('reconnect\n')
         # prevent the test runner from reconnecting before reboot
-        util.subprocess_run(['systemctl', 'stop', 'sshd'], check=True)
+        util.subprocess_run(['systemctl', 'stop', 'sshd'], check=True, stderr=subprocess.PIPE)
         util.subprocess_run(['reboot'])
     elif shutil.which('tmt-reboot'):
         util.subprocess_run(['tmt-reboot'])

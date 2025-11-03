@@ -20,5 +20,5 @@ ansible_cmd = [
 ]
 _, lines = util.subprocess_stream(ansible_cmd, stderr=subprocess.STDOUT, check=True)
 ansible.report_from_output(lines, to_file='ansible-playbook.log')
-util.subprocess_run(['gzip', '-9', 'ansible-playbook.log'], check=True)
+util.subprocess_run(['gzip', '-9', 'ansible-playbook.log'], check=True, stderr=subprocess.PIPE)
 results.report_and_exit(logs=['ansible-playbook.log.gz'])

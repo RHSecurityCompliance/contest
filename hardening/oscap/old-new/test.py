@@ -1,6 +1,7 @@
 #!/usr/bin/python3
 
 import atexit
+import subprocess
 
 from lib import util, results, virt, oscap, metadata
 from conf import remediation, partitions
@@ -74,7 +75,7 @@ tar = [
     'remediation-arf-new.xml',
     'remediation-arf-new2.xml',
 ]
-util.subprocess_run(tar, check=True)
+util.subprocess_run(tar, check=True, stderr=subprocess.PIPE)
 
 logs = [
     'report.html',

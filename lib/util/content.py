@@ -214,17 +214,19 @@ def build_content(path, extra_cmake_opts=None, force=False):
 
     # install dependencies from an upstream-bundled spec file
     cmd = ['dnf', '-y', 'builddep', '--spec', path / 'scap-security-guide.spec']
-    util.subprocess_run(cmd, check=True)
+    util.subprocess_run(cmd, check=True, stderr=subprocess.PIPE)
 
     if build_dir.exists():
         shutil.rmtree(build_dir)
     build_dir.mkdir()
 
     cli_opts = (f'-D{name}={val}' for name, val in cmake_opts.items())
-    util.subprocess_run(['cmake', '../', *cli_opts], cwd=build_dir, check=True)
+    util.subprocess_run(
+        ['cmake', '../', *cli_opts], cwd=build_dir, check=True, stderr=subprocess.PIPE,
+    )
 
     cpus = os.cpu_count() or 1
-    util.subprocess_run(['make', f'-j{cpus}'], cwd=build_dir, check=True)
+    util.subprocess_run(['make', f'-j{cpus}'], cwd=build_dir, check=True, stderr=subprocess.PIPE)
 
 
 @contextlib.contextmanager
@@ -244,16 +246,17 @@ def get_source_content():
                 # - unfortunately, we cannot move this to build_content()
                 #   because extracting + patching SRPM needs all builddeps
                 cmd = ['dnf', '-y', 'builddep', src_rpm]
-                util.subprocess_run(cmd, check=True, cwd=tmpdir)
+                util.subprocess_run(cmd, check=True, stderr=subprocess.PIPE, cwd=tmpdir)
                 # extract + patch SRPM
                 cmd = ['rpmbuild', '-rp', '--define', f'_topdir {tmpdir}', src_rpm]
-                util.subprocess_run(cmd, check=True)
+                util.subprocess_run(cmd, check=True, stderr=subprocess.PIPE)
                 # get path to the extracted content
                 # - parse name+version from the SRPM instead of glob(BUILD/*)
                 #   because of '-rhel6' content on RHEL-8
                 ret = util.subprocess_run(
                     ['rpm', '-q', '--qf', '%{NAME}-%{VERSION}', '-p', src_rpm],
-                    check=True, stdout=subprocess.PIPE, text=True, cwd=tmpdir,
+                    check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+                    text=True, cwd=tmpdir,
                 )
                 name_version = ret.stdout.strip()
                 # extracted sources directory varies across distro versions, thus

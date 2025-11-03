@@ -94,7 +94,9 @@ def check_allowed_modules(playbook, all_allowed_modules):
 
 def get_all_allowed_modules():
     proc = util.subprocess_run(
-        ['ansible-doc', '--json', '--list'], stdout=subprocess.PIPE, check=True,
+        ['ansible-doc', '--json', '--list'],
+        stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+        check=True,
     )
     return {re.sub(r'^.*\.', '', mod) for mod in json.loads(proc.stdout)}
 
@@ -110,9 +112,12 @@ with select_all_rules(util.get_datastream()) as ds_file:
                 '--output', playbook.name,
                 ds.name,
             ]
-            util.subprocess_run(oscap_cmd, check=True)
+            util.subprocess_run(oscap_cmd, check=True, stderr=subprocess.PIPE)
 
-            util.subprocess_run(['ansible-playbook', '--syntax-check', playbook.name], check=True)
+            util.subprocess_run(
+                ['ansible-playbook', '--syntax-check', playbook.name],
+                check=True, stderr=subprocess.PIPE,
+            )
 
             check_allowed_modules(playbook, get_all_allowed_modules())
 

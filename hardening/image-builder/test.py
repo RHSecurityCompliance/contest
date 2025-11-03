@@ -1,5 +1,7 @@
 #!/usr/bin/python3
 
+import subprocess
+
 from lib import results, oscap, osbuild, util, metadata
 from conf import remediation
 
@@ -22,7 +24,7 @@ cmd = [
     'fix', '--fix-type', 'blueprint',
     'remediation-ds.xml',
 ]
-_, lines = util.subprocess_stream(cmd, check=True)
+_, lines = util.subprocess_stream(cmd, check=True, stderr=subprocess.PIPE)
 blueprint = osbuild.translate_oscap_blueprint(lines, '/root/remediation-ds.xml')
 
 g.create(blueprint=blueprint, rpmpack=rpmpack, secure_boot=('uefi' in metadata.tags()))
@@ -42,6 +44,6 @@ with g.booted():
     g.copy_from('report.html')
     g.copy_from('scan-arf.xml')
 
-util.subprocess_run(['gzip', '-9', 'scan-arf.xml'], check=True)
+util.subprocess_run(['gzip', '-9', 'scan-arf.xml'], check=True, stderr=subprocess.PIPE)
 
 results.report_and_exit(logs=['report.html', 'scan-arf.xml.gz', g.osbuild_log])

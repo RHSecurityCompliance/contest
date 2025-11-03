@@ -1,5 +1,7 @@
 #!/usr/bin/python3
 
+import subprocess
+
 from lib import util, results, virt, oscap, metadata
 from conf import remediation
 
@@ -51,6 +53,6 @@ with g.booted():
     g.copy_from('report.html')
     g.copy_from('scan-arf.xml')
 
-util.subprocess_run(['gzip', '-9', 'scan-arf.xml'], check=True)
+util.subprocess_run(['gzip', '-9', 'scan-arf.xml'], check=True, stderr=subprocess.PIPE)
 
 results.report_and_exit(logs=['report.html', 'scan-arf.xml.gz'])

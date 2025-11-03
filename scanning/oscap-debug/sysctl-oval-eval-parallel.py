@@ -30,7 +30,9 @@ extra_debuginfos = [
     'libtool-ltdl',
     'openssl-libs',
 ]
-util.subprocess_run(['dnf', '-y', 'debuginfo-install', *extra_debuginfos], check=True)
+util.subprocess_run(
+    ['dnf', '-y', 'debuginfo-install', *extra_debuginfos], check=True, stderr=subprocess.PIPE,
+)
 
 with open('gdb.script', 'w') as f:
     f.write(util.dedent('''
@@ -73,7 +75,9 @@ while time.monotonic() - start_time < duration:
                     # something went wrong with gdb, let's try again
                     continue
                 else:
-                    util.subprocess_run(['xz', '-e', '-9', 'oscap.core'], check=True)
+                    util.subprocess_run(
+                        ['xz', '-e', '-9', 'oscap.core'], check=True, stderr=subprocess.PIPE,
+                    )
                     results.report(
                         'fail', f'attempt:{attempt}', "oscap froze, gdb output available",
                         logs=['oscap.core.xz', 'oscap-bt.txt'],

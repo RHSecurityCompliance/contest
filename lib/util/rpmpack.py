@@ -2,6 +2,7 @@ import textwrap
 import tempfile
 import contextlib
 import collections
+import subprocess
 from pathlib import Path
 
 from lib import util, dnf
@@ -203,7 +204,7 @@ class RpmPack:
                 'rpmbuild', '--define', f'_topdir {tmpdir.absolute()}',
                 '-ba', specfile.absolute(),
             ]
-            util.subprocess_run(cmd, check=True)
+            util.subprocess_run(cmd, check=True, stderr=subprocess.PIPE)
             # yield it to caller
             binrpm = tmpdir / 'RPMS' / self.ARCH / self.FILE
             if not binrpm.exists():
@@ -218,7 +219,7 @@ class RpmPack:
         """
         with self.build() as binrpm:
             repodir = binrpm.parent
-            util.subprocess_run(['createrepo', repodir], check=True)
+            util.subprocess_run(['createrepo', repodir], check=True, stderr=subprocess.PIPE)
             yield repodir
 
     def install(self):
@@ -226,10 +227,15 @@ class RpmPack:
         Build the binary RPM and call 'dnf install' on it.
         """
         with self.build() as binrpm:
-            util.subprocess_run(['dnf', 'install', '-y', binrpm], check=True)
+            util.subprocess_run(
+                ['dnf', 'install', '-y', binrpm], check=True, stderr=subprocess.PIPE,
+            )
 
     def uninstall(self):
         """
         Call 'dnf remove' on a previously-installed built RPM.
         """
-        util.subprocess_run(['dnf', 'remove', '--noautoremove', '-y', self.NAME], check=True)
+        util.subprocess_run(
+            ['dnf', 'remove', '--noautoremove', '-y', self.NAME],
+            check=True, stderr=subprocess.PIPE,
+        )

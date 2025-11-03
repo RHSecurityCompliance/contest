@@ -32,6 +32,7 @@ def podman(*args, log=True, check=True, **kwargs):
     return run(
         ['podman', *args],
         check=check, text=True,
+        stderr=subprocess.PIPE if check else None,
         **kwargs,
     )
 

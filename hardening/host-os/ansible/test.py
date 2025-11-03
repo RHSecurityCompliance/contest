@@ -54,7 +54,7 @@ else:
     pack = util.RpmPack()
     pack.uninstall()
 
-    util.subprocess_run(['gzip', '-9', 'scan-arf.xml'], check=True)
-    util.subprocess_run(['gzip', '-9', ansible_playbook_log], check=True)
+    util.subprocess_run(['gzip', '-9', 'scan-arf.xml'], check=True, stderr=subprocess.PIPE)
+    util.subprocess_run(['gzip', '-9', ansible_playbook_log], check=True, stderr=subprocess.PIPE)
 
     results.report_and_exit(logs=['report.html', 'scan-arf.xml.gz', f'{ansible_playbook_log}.gz'])

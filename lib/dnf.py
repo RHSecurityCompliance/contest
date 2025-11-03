@@ -14,7 +14,9 @@ _Repo = collections.namedtuple('Repo', ['name', 'baseurl', 'data', 'file'])
 
 def _get_repos_dnf():
     cmd = util.libdir / 'dnf_get_repos'
-    ret = util.subprocess_run(cmd, check=True, stdout=subprocess.PIPE, text=True)
+    ret = util.subprocess_run(
+        cmd, check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True,
+    )
     try:
         json_data = json.loads(ret.stdout)
     except json.JSONDecodeError as e:
@@ -118,7 +120,7 @@ def download_rpm(nvr, source=False):
         if source:
             cmd.append('--source')
         cmd.append(nvr)
-        util.subprocess_run(cmd, check=True)
+        util.subprocess_run(cmd, check=True, stderr=subprocess.PIPE)
         # unfortunately, these commands mix debug output into stdout, before the
         # printed out NVR of the downloaded package, so just glob it afterwards
         rpmfile = next(Path(tmpdir).glob('*.rpm'))
