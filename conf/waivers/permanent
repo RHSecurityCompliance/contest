@@ -17,6 +17,11 @@
 /hardening/.+/service_sssd_enabled
     True
 
+# The service systemd-journal-upload fails to start if a remote log destination
+# URL isn't configured in /etc/systemd/journal-upload.conf.
+/hardening/.+/service_systemd-journal-upload_enabled
+    True
+
 # ignore SSL certificate expirations in html-links - these are generally
 # harmless (expiration is not MITM) while being the biggest contributor
 # to false positives, so just ignore them, avoiding frequent random fails
