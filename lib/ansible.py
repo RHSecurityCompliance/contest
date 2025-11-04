@@ -4,7 +4,7 @@ import re
 import contextlib
 import subprocess
 
-from lib import util, results
+from lib import util, results, versions
 
 
 def install_deps():
@@ -13,15 +13,24 @@ def install_deps():
     """
     # On RHEL, rhc-worker-playbook package should be available and pre-installed
     # by test 'recommends' FMF metadata
-    proc = util.subprocess_run(['rpm', '--quiet', '-q', 'rhc-worker-playbook'])
-    if proc.returncode == 0:
+    if versions.rhel.is_true_rhel():
+        # double check it
+        util.subprocess_run(['rpm', '--quiet', '-q', 'rhc-worker-playbook'], check=True)
         # export per official instructions on
         # https://access.redhat.com/articles/remediation
         os.environ['ANSIBLE_COLLECTIONS_PATH'] = \
             '/usr/share/rhc-worker-playbook/ansible/collections/ansible_collections/'
+
     # Use ansible-galaxy when rhc-worker-playbook not available (Fedora, CentOS, etc.)
     else:
-        for collection in ['community.general', 'ansible.posix']:
+        # If CentOS Stream, use versions identical to rhc-worker-playbook,
+        if versions.rhel.is_centos():
+            collections = ['community.general:4.4.0', 'ansible.posix:1.3.0']
+        # otherwise default to latest versions
+        else:
+            collections = ['community.general', 'ansible.posix']
+
+        for collection in collections:
             util.subprocess_run(
                 ['ansible-galaxy', '-vvv', 'collection', 'install', collection],
                 check=True,
