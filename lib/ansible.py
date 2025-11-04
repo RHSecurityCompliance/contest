@@ -4,7 +4,13 @@ import re
 import contextlib
 import subprocess
 
-from lib import util, results
+from lib import util, results, versions
+
+# collections present in the rhc-worker-playbook package and their versions
+RHC_WORKER_PLAYBOOK_COLLECTIONS = {
+    "community.general": "4.4.0",
+    "ansible.posix": "1.3.0",
+}
 
 
 def install_deps():
@@ -21,7 +27,11 @@ def install_deps():
             '/usr/share/rhc-worker-playbook/ansible/collections/ansible_collections/'
     # Use ansible-galaxy when rhc-worker-playbook not available (Fedora, CentOS, etc.)
     else:
-        for collection in ['community.general', 'ansible.posix']:
+        is_centos = versions.rhel.is_centos()
+        for collection, version in RHC_WORKER_PLAYBOOK_COLLECTIONS.items():
+            if is_centos:
+                # install the specific version to match rhc-worker-playbook versions
+                collection = f"{collection}:{version}"
             util.subprocess_run(
                 ['ansible-galaxy', '-vvv', 'collection', 'install', collection],
                 check=True,
