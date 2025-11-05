@@ -1,21 +1,18 @@
 """
 Functions and helpers for result management when working with
  - TMT (https://github.com/teemtee/tmt)
- - Beaker (https://beaker-project.org/docs/server-api/index.html)
+ - ATEX (https://github.com/RHSecurityCompliance/atex)
 
 TMT has a 'result:custom' feature (in test's main.fmf), which allows us to
 supply completely custom results as a YAML file, and TMT will use it as-is
 to represent a result from the test itself, and any results "under" it,
 effectively allowing a test to report more than 1 result.
-
-Beaker uses the HTTP API, connecting to a local labcontroller.
 """
 
 import os
 import sys
 import shutil
 import collections
-import requests
 import json
 import yaml
 from pathlib import Path
@@ -47,21 +44,12 @@ def have_tmt_api():
     return bool(os.environ.get('TMT_TEST_DATA'))
 
 
-def have_beaker_api():
-    """Return True if we have access to Beaker results API."""
-    required_vars = [
-        'LAB_CONTROLLER', 'RECIPEID', 'TASKID',
-    ]
-    return all(os.environ.get(x) for x in required_vars)
-
-
 def _allowed_by_verbosity(status):
     env = os.environ.get('CONTEST_VERBOSE')
     if env:
         level = int(env)
     else:
-        # be non-verbose in Beaker by default
-        level = 0 if have_beaker_api() else 1
+        level = 1
 
     if level == 0:
         if status not in ['fail', 'error']:
@@ -187,49 +175,6 @@ def report_tmt(status, name=None, note=None, logs=None, *, add_output=True):
         yaml.dump([new_result], f)
 
 
-def report_beaker(status, name=None, note=None, logs=None):
-    report_plain(status, name, note, logs)
-
-    if not _allowed_by_verbosity(status) and name:
-        return
-
-    labctl = os.environ['LAB_CONTROLLER']
-    recipeid = os.environ['RECIPEID']
-    taskid = os.environ['TASKID']
-
-    if not name:
-        name = '/'
-
-    if status == 'pass':
-        beaker_status = 'Pass'
-    elif status == 'warn':
-        # 'Warn' causes tcms-results to treat it as a failure,
-        # in fact, anything non-'Pass' does
-        beaker_status = 'Pass'
-    elif status == 'info':
-        beaker_status = 'None'
-    else:
-        beaker_status = 'Fail'
-
-    url = f'http://{labctl}:8000/recipes/{recipeid}/tasks/{taskid}/results/'
-    payload = {
-        'path': f'{status}: {name}' + (f' ({note})' if note else ''),
-        'result': beaker_status,
-    }
-    r = requests.post(url, data=payload)
-    if r.status_code != 201:
-        util.log(f"reporting to {url} failed with {r.status_code}")
-        return
-
-    if logs:
-        for log in logs:
-            logpath = r.headers['Location'] + '/logs/' + Path(log).name
-            with open(log, 'rb') as f:
-                put = requests.put(logpath, data=f)
-                if put.status_code != 204:
-                    util.log(f"uploading log {logpath} failed with {put.status_code}")
-
-
 def report_plain(status, name=None, note=None, logs=None):
     if not name:
         name = '/'
@@ -268,8 +213,6 @@ def report(status, name=None, note=None, logs=None, *, add_output=True):
 
     if have_atex_api():
         report_atex(status, name, note, logs)
-    elif have_beaker_api():
-        report_beaker(status, name, note, logs)
     elif have_tmt_api():
         report_tmt(status, name, note, logs, add_output=add_output)
     else:
