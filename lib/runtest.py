@@ -18,9 +18,6 @@ from lib import util, metadata, results
 #   2) worst case - test reported some PASS results before timing out, and TMT
 #      takes this as all possible results and silently PASSes the test as if
 #      nothing happened
-#
-# this is not a problem for Beaker, which captures test output separately and
-# actually cares about the exit code of the test script
 def _setup_timeout_handling():
     duration = metadata.duration_seconds()
 

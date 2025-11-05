@@ -1,8 +1,8 @@
 # failures caused by infrastructure or infra-specific OS setup and hacks
 # (ie. restraintd or tmt running on Testing Farm machines)
 
-# we cannot influence how host-os was installed (ie. Beaker), and since FIPS
-# works only when the OS was installed with fips=1, this will likely fail
+# we cannot influence how host-os was installed, and since FIPS works
+# only when the OS was installed with fips=1, this will likely fail
 /hardening/host-os/.+/enable_fips_mode
     True
 
