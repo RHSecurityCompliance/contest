@@ -86,23 +86,42 @@ def subprocess_stream(cmd, *, check=False, skip_frames=0, stderr=None, **kwargs)
     proc = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=stderr, text=True, **kwargs)
 
     def generate_lines():
-        stderr_output = None
-        for line in proc.stdout:
-            yield line.rstrip('\n')
+        stdout_buffer = ''
+        stderr_buffer = ''
 
-        # if capturing stderr separately, try to read it now
+        streams = [proc.stdout]
         if use_verbose_errors and proc.stderr:
-            rlist, _, _ = select.select([proc.stderr], [], [], 0.001)
-            if rlist:
-                stderr_output = proc.stderr.read()
+            streams.append(proc.stderr)
+
+        # read from stdout and stderr as data becomes available
+        while streams:
+            rlist, _, _ = select.select(streams, [], [])
+
+            for stream in rlist:
+                chunk = stream.read(4096)
+                if not chunk:  # EOF on this stream
+                    streams.remove(stream)
+                    continue
+
+                if stream == proc.stdout:
+                    stdout_buffer += chunk
+                    while '\n' in stdout_buffer:
+                        line, stdout_buffer = stdout_buffer.split('\n', 1)
+                        yield line
+                elif stream == proc.stderr:
+                    stderr_buffer += chunk
+
+        # yield any remaining content in stdout buffer
+        if stdout_buffer:
+            yield stdout_buffer
 
         code = proc.wait()
         if code > 0 and check:
-            if use_verbose_errors and stderr_output is not None:
+            if use_verbose_errors and stderr_buffer:
                 raise VerboseCalledProcessError(
                     returncode=code,
                     cmd=cmd,
-                    stderr=stderr_output,
+                    stderr=stderr_buffer,
                 )
             else:
                 raise subprocess.CalledProcessError(cmd=cmd, returncode=code)
