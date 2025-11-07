@@ -221,4 +221,8 @@
 /per-rule/oscap/.+/grub2_password/invalid_username.fail
     rhel == 9 or rhel == 10
 
+# https://github.com/ComplianceAsCode/content/issues/14102
+/per-rule/oscap/.+/no_files_or_dirs_ungroupowned/unowned_file_tmp.fail
+    rhel == 10
+
 # vim: syntax=python
