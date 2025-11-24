@@ -23,6 +23,7 @@ NA_RULE_PATTERNS = [
     r"dconf_",
     r"fapolicy[d]?_",
     r"usbguard_",
+    r"enable_authselect",
 ]
 NA_RULES_REGEX = re.compile("|".join(NA_RULE_PATTERNS))
 
