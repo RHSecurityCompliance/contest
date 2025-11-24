@@ -1,6 +1,6 @@
 #!/usr/bin/python3
 """
-This is a standalone script which processes provided results.txt.gz files
+This is a standalone script which processes provided results.json.gz files
 and identifies invalid waivers. The waiver is invalid if it:
  - did not match any test results,
  - or only matched the 'pass' test results.
@@ -10,6 +10,7 @@ The identified invalid waivers are printed to the standard output.
 
 import re
 import sys
+import json
 import gzip
 import pathlib
 import argparse
@@ -106,11 +107,21 @@ def match_result_mark_waiver(regexes_matched_list, version, arch, status, name, 
 def load_and_process_results(file, regexes_matched_list):
     with gzip.open(file, 'rt') as f:
         for line in f:
-            line = line.rstrip('\n')
-            version, arch, status, name, note = line.split('\t')
+            json_line = json.loads(line)
+            platform, status, test, subtest, _files, note = json_line
 
-            if version == 'rhel':  # skip the header
-                continue
+            # extract RHEL arch+version from the platform string,
+            # ie. '9.0' or '9.0@x86_64'
+            if '@' in platform:
+                version = re.sub(r'@.*', '', platform)
+                arch = re.sub(r'.*@', '', platform)
+            else:
+                version = platform
+                arch = 'x86_64'
+
+            # assemble full waiver name
+            name = f'{test}/{subtest}' if subtest else test
+
             # do not consider 'pass' test results, even if waivers would match them
             # we still want to remove such waivers
             if status not in ['fail', 'error', 'warn']:
@@ -163,7 +174,7 @@ def get_invalid_waivers(result_file_list):
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(
         description=textwrap.dedent("""
-            Process results.txt.gz files and identify invalid waivers. The waiver is invalid
+            Process results.json.gz files and identify invalid waivers. The waiver is invalid
             if it did not match any test results or only matched the 'pass' test results.
 
             IMPORTANT: Test results for all RHEL versions need to be provided, otherwise
@@ -173,7 +184,7 @@ if __name__ == '__main__':
     )
     parser.add_argument(
         "result_file", nargs='+',
-        help="The results.txt.gz file with test results to process",
+        help="The results.json.gz file with test results to process",
     )
     args = parser.parse_args()
     get_invalid_waivers(args.result_file)
