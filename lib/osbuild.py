@@ -128,9 +128,9 @@ class Compose:
 
     @classmethod
     def _wait_for_finished(cls, blueprint_name, sleep=1):
-        entry = cls._get_status(lambda x: x.blueprint == blueprint_name)
-        if not entry:
-            raise FileNotFoundError(f"compose for {blueprint_name} not found in list")
+        util.log(f"waiting for compose entry for {blueprint_name} to appear")
+        while not (entry := cls._get_status(lambda x: x.blueprint == blueprint_name)):
+            time.sleep(sleep)
         util.log(f"waiting for compose {entry.id} to be built")
         new = entry
         while new.status not in cls.FINISHED_STATUSES:
