@@ -40,21 +40,6 @@
 /static-checks/rule-identifiers/ospp/ospp/.*
     rhel == 8
 
-# https://github.com/ComplianceAsCode/content/issues/13856
-/static-checks/rule-identifiers/stig/os-srg/package_sssd_installed
-/static-checks/rule-identifiers/stig/os-srg/service_sssd_enabled
-    rhel == 10
-
-# https://github.com/ComplianceAsCode/content/issues/13857
-/static-checks/rule-identifiers/anssi_bp28_high/anssi/service_chronyd_enabled
-    rhel == 8 or rhel == 10
-/static-checks/rule-identifiers/anssi_bp28_high/anssi/audit_rules_mac_modification_etc_selinux
-    rhel == 10
-/static-checks/rule-identifiers/anssi_bp28_high/anssi/no_nis_in_nsswitch
-/static-checks/rule-identifiers/anssi_bp28_high/anssi/ldap_client_tls_cacertpath
-/static-checks/rule-identifiers/anssi_bp28_high/anssi/ldap_client_start_tls
-    rhel == 8
-
 # bz1825810 or maybe bz1929805
 # can be reproduced mostly reliably (95%) both via anaconda and oscap CLI,
 # but apparently we don't really care about old releases
@@ -72,10 +57,6 @@
 # not sure what enables the service, but second remediation fixes the problem
 # and we cannot easily do double-remediation with OAA
 /hardening/anaconda/with-gui/[^/]+/service_rpcbind_disabled
-    rhel == 8
-
-# https://github.com/ComplianceAsCode/content/issues/13175
-/hardening/anaconda/.+/enable_gpgcheck_for_all_repositories
     rhel == 8
 
 # kdump being forcibly enabled somewhere
@@ -116,7 +97,6 @@
 # https://issues.redhat.com/browse/RHEL-4722
 /hardening/anaconda/ospp/configure_crypto_policy
 /hardening/anaconda/ospp/enable_fips_mode
-/hardening/anaconda/.+/configure_gnutls_tls_crypto_policy
 /hardening/anaconda/.+/harden_sshd_ciphers_openssh_conf_crypto_policy
     rhel == 8
 
@@ -135,17 +115,12 @@
 # (we unselect max_age in conf/remediations.py)
 /hardening/container/anaconda-ostree/.+/accounts_password_set_min_life_existing
 /hardening/container/anaconda-ostree/.+/accounts_password_set_warn_age_existing
-# https://github.com/ComplianceAsCode/content/issues/13214
-/hardening/container/(anaconda-ostree|bootc-image-builder|old-new)/.+/dir_perms_world_writable_sticky_bits
     True
 # File /boot/grub2/grub2.cfg is created with lenient permissions by
 # bootupd during the installation of a bootable container image.
 # https://github.com/coreos/bootupd/issues/952
 # https://issues.redhat.com/browse/OPENSCAP-5326
 /hardening/container/(anaconda-ostree|bootc-image-builder|old-new)/.+/file_permissions_grub2_cfg
-    True
-# https://issues.redhat.com/browse/OPENSCAP-6167
-/hardening/container/old-new/.+/account_password_selinux_faillock_dir
     True
 
 # These rules require OpenSCAP 1.3.12 or 1.4.2 to pass because they depend on
@@ -165,11 +140,6 @@
 /per-rule/.+/no_files_unowned_by_user/unowned_file_tmp.fail
 /per-rule/.+/file_permissions_unauthorized_world_writable/world_writable_tmp.fail
     True
-
-# https://github.com/ComplianceAsCode/content/issues/13743
-/hardening/host-os/ansible/cis/file_permission_user_init_files
-/hardening/host-os/ansible/cis_workstation_l2/file_permission_user_init_files
-    rhel  == 10
 
 # https://github.com/ComplianceAsCode/content/issues/13844
 /hardening/.+/bsi/file_permissions_cron.*
@@ -208,23 +178,5 @@
 /hardening/image-builder/ism_o_top_secret
 /hardening/image-builder/uefi/ism_o_top_secret
     rhel == 10 and status == 'error'
-
-# https://github.com/ComplianceAsCode/content/issues/13906
-/hardening/image-builder/cis
-/hardening/image-builder/cis_workstation_l2
-/hardening/image-builder/cui
-/hardening/image-builder/ospp
-/hardening/image-builder/stig
-    rhel == 8 and status == 'error'
-
-# https://github.com/ComplianceAsCode/content/issues/13982
-/per-rule/oscap/.+/grub2_password/invalid_username.fail
-    rhel == 9 or rhel == 10
-
-# https://github.com/ComplianceAsCode/content/issues/14102
-# https://github.com/ComplianceAsCode/content/issues/14122
-/per-rule/oscap/.+/no_files_or_dirs_ungroupowned/unowned_file_tmp.fail
-/per-rule/oscap/.+/no_files_or_dirs_unowned_by_user/unowned_file_tmp.fail
-    rhel == 10
 
 # vim: syntax=python

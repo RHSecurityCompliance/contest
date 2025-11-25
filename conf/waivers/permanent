@@ -25,8 +25,6 @@
 # ignore SSL certificate expirations in html-links - these are generally
 # harmless (expiration is not MITM) while being the biggest contributor
 # to false positives, so just ignore them, avoiding frequent random fails
-/static-checks/html-links/.+
-    "failed: certificate has expired" in note
 # Inaccessible until form is filled:
 /static-checks/html-links/https://docs-prv.pcisecuritystandards.org/PCI%20DSS/Standard/PCI-DSS-v4_0.pdf
     True
@@ -34,11 +32,6 @@
 # no STIG ID for CentOS products
 /static-checks/rule-identifiers/stig/stigid/.*
     rhel.is_centos()
-
-# DISA benchmark allows only released OS versions. Our content is fine with unreleased versions.
-# https://github.com/ComplianceAsCode/content/issues/11649
-/scanning/disa-alignment/.*/installed_OS_is_vendor_supported
-    True
 
 # No CCN identifiers for CentOS products
 # https://github.com/ComplianceAsCode/content/issues/14033
@@ -68,7 +61,6 @@
 # is not possible at bootable container build time because SSH host keys are
 # generated post-deployment. The warning has been introduced by
 # https://github.com/ComplianceAsCode/content/pull/12755.
-/hardening/container/.+/file_groupownership_sshd_private_key
 /hardening/container/.+/file_permissions_sshd_private_key
 # There is no mounted /tmp directory when hardening the system during osbuild image creation.
 # Therefore, the rule cannot be remediated.
