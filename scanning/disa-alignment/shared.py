@@ -7,7 +7,6 @@ from lib import results
 nsmap = {
     "xccdf": "http://checklists.nist.gov/xccdf/1.2",
 }
-STIG_REF = "https://public.cyber.mil/stigs/srg-stig-tools/"
 CCE = "https://ncp.nist.gov/cce"
 SSG_RULE_PREFIX = "xccdf_org.ssgproject.content_rule_"
 DISA_RULE_PREFIX = "xccdf_mil.disa.stig_rule_"
@@ -79,10 +78,20 @@ def disa_scan(host, ds, html, arf):
         raise RuntimeError(f"remediation oscap failed with {proc.returncode}")
 
 
+def get_stigref_uri(xccdf_benchmark):
+    for reference in xccdf_benchmark.findall(".//xccdf:reference", nsmap):
+        if reference.text == "stigref":
+            href = reference.get("href")
+            if href is not None:
+                return href
+    raise RuntimeError("STIG reference not found")
+
+
 def parse_ssg_results(ssg_path):
     ssg_results = {}
     root = ET.parse(ssg_path).getroot()
     xccdf_benchmark = root.find(".//xccdf:Benchmark", nsmap)
+    stigref_uri = get_stigref_uri(xccdf_benchmark)
     xccdf_results = root.find(".//xccdf:TestResult", nsmap)
     for rule_result in xccdf_results.findall("xccdf:rule-result", nsmap):
         full_rule_id = rule_result.get("idref")
@@ -94,7 +103,7 @@ def parse_ssg_results(ssg_path):
         title = rule.find("xccdf:title", nsmap).text
         cce_id = rule.find(f"xccdf:ident[@system='{CCE}']", nsmap).text
         stig_ids = []
-        xpath = f"xccdf:reference[@href='{STIG_REF}']"
+        xpath = f"xccdf:reference[@href='{stigref_uri}']"
         for stig_ref_el in rule.findall(xpath, nsmap):
             if stig_ref_el is not None:
                 stig_ids.append(stig_ref_el.text)
