@@ -81,7 +81,9 @@ def disa_scan(host, ds, html, arf):
 def get_stigref_uri(xccdf_benchmark):
     for reference in xccdf_benchmark.findall(".//xccdf:reference", nsmap):
         if reference.text == "stigref":
-            return reference.get("href")
+            href = reference.get("href")
+            if href is not None:
+                return href
     raise RuntimeError("STIG reference not found")
 
 
