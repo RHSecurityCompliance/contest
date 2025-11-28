@@ -91,6 +91,7 @@
 /hardening/kickstart/.+/socket_systemd-journal-remote_disabled
 /hardening/kickstart/.+/service_bluetooth_disabled
 /hardening/kickstart/.+/systemd_tmp_mount_enabled
+/hardening/kickstart/.+/service_cockpit_disabled
     True
 
 # https://github.com/ComplianceAsCode/content/issues/12942
