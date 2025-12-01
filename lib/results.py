@@ -32,11 +32,12 @@ class Counter(collections.defaultdict):
 
 
 global_counts = Counter()
+global_logs = []
 
 
 def have_atex_api():
     """Return True if we can report results via ATEX Minitmt natively."""
-    return bool(os.environ.get('ATEX_TEST_CONTROL'))
+    return ('ATEX_TEST_CONTROL' in os.environ)
 
 
 def have_tmt_api():
@@ -223,11 +224,48 @@ def report(status, name=None, note=None, logs=None, *, add_output=True):
     return status
 
 
+def add_log(*logs):
+    """
+    Add log file(s) to be associated with the main test result as reported
+    by the report_and_exit() function.
+
+    The log file(s) will be processed immediately:
+    - For ATEX: uploaded incrementally using report_atex() with partial=True
+    - For TMT: copied to the TMT data directory and stored in global_logs for later upload
+    - For plain: stored in global_logs for later upload
+
+    This allows logs to be added incrementally throughout the test,
+    and ensures they're available even if the test later fails with a traceback.
+
+    Multiple logs can be added by calling this function multiple times,
+    or by passing multiple arguments.
+    All accumulated logs will be included in the final report by report_and_exit()
+    except for ATEX which handles this itself.
+    """
+    if have_atex_api():
+        # partial results are overwritten by the final result so we report an error partial result
+        # with logs in case test crashes or fails with an exception, see
+        # https://github.com/RHSecurityCompliance/atex/blob/main/atex/executor/RESULTS.md#partial-results
+        report_atex(status='error', logs=logs, partial=True)
+    elif have_tmt_api():
+        test_data = Path(os.environ['TMT_TEST_DATA'])
+        for log in logs:
+            log = Path(log)
+            dstfile = test_data / log.name
+            shutil.copyfile(log, dstfile)
+            global_logs.append(str(dstfile.relative_to(test_data)))
+    else:
+        global_logs.extend(str(log) for log in logs)
+
+
 def report_and_exit(status=None, note=None, logs=None):
     """
     Report a result for the test itself and exit with 0 or 2, depending
     on whether there were any failures reported during execution of
     the test.
+
+    Any logs previously added via add_log() will be automatically included.
+    Additional logs can still be passed via the 'logs' parameter.
     """
     # figure out overall test status based on previously reported results
     if not status:
@@ -241,8 +279,11 @@ def report_and_exit(status=None, note=None, logs=None):
         else:
             status = 'pass'
 
-    # report and pass the status through the waiving logic
-    status = report(status=status, note=note, logs=logs)
+    # combine accumulated logs with any directly passed logs
+    all_logs = (global_logs + logs) if logs else global_logs
+
+    # report and pass the status through the waiving logic, use combined logs or None if empty
+    status = report(status=status, note=note, logs=(all_logs or None))
 
     # exit based on the new status
     if status == 'fail':

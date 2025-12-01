@@ -36,8 +36,12 @@ with g.snapshotted():
         *skip_tags_arg,
         playbook,
     ]
-    _, lines = util.subprocess_stream(ansible_cmd, stderr=subprocess.STDOUT, check=True)
+    proc, lines = util.subprocess_stream(ansible_cmd, stderr=subprocess.STDOUT)
     ansible.report_from_output(lines, to_file='ansible-playbook.log')
+    util.subprocess_run(['gzip', '-9', 'ansible-playbook.log'], check=True, stderr=subprocess.PIPE)
+    results.add_log('ansible-playbook.log.gz')
+    if proc.returncode != 0:
+        raise RuntimeError(f"ansible-playbook failed with {proc.returncode}")
     g.soft_reboot()
 
     with util.get_source_content() as content_dir:
@@ -59,6 +63,4 @@ with g.snapshotted():
         # Compare ARFs and report results from output
         shared.compare_arfs('ssg-arf.xml', 'disa-arf.xml')
 
-util.subprocess_run(['gzip', '-9', 'ansible-playbook.log'], check=True, stderr=subprocess.PIPE)
-
-results.report_and_exit(logs=['ssg-report.html', 'disa-report.html', 'ansible-playbook.log.gz'])
+results.report_and_exit(logs=['ssg-report.html', 'disa-report.html'])

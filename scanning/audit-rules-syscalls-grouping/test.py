@@ -77,6 +77,7 @@ try:
         '--results-arf', 'remediation-arf.xml', 'remediation-ds.xml',
     ]
     util.subprocess_run(cmd, check=True, stderr=subprocess.PIPE)
+    results.add_log('remediation-arf.xml', 'report.html')
 
     util.subprocess_run(['augenrules', '--load'], check=True, stderr=subprocess.PIPE)
 
@@ -84,6 +85,7 @@ try:
         util.subprocess_run(
             ['auditctl', '-l'], stdout=f, text=True, check=True, stderr=subprocess.PIPE,
         )
+    results.add_log('audit_rules.txt')
 finally:
     util.restore('/etc/audit')
     util.subprocess_run(['augenrules', '--load'], check=True, stderr=subprocess.PIPE)
@@ -94,4 +96,4 @@ for group in syscalls_groups:
     else:
         results.report('fail', syscalls_pretty_print(group))
 
-results.report_and_exit(logs=['report.html', 'remediation-arf.xml', 'audit_rules.txt'])
+results.report_and_exit()

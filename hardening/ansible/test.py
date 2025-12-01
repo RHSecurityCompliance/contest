@@ -45,8 +45,12 @@ with g.snapshotted():
         *skip_tags_arg,
         playbook,
     ]
-    _, lines = util.subprocess_stream(ansible_cmd, stderr=subprocess.STDOUT, check=True)
+    proc, lines = util.subprocess_stream(ansible_cmd, stderr=subprocess.STDOUT)
     ansible.report_from_output(lines, to_file='ansible-playbook.log')
+    util.subprocess_run(['gzip', '-9', 'ansible-playbook.log'], check=True, stderr=subprocess.PIPE)
+    results.add_log('ansible-playbook.log.gz')
+    if proc.returncode != 0:
+        raise RuntimeError(f"ansible-playbook failed with {proc.returncode}")
     g.soft_reboot()
 
     # scan the remediated system
@@ -63,6 +67,5 @@ with g.snapshotted():
     g.copy_from('scan-arf.xml')
 
 util.subprocess_run(['gzip', '-9', 'scan-arf.xml'], check=True, stderr=subprocess.PIPE)
-util.subprocess_run(['gzip', '-9', 'ansible-playbook.log'], check=True, stderr=subprocess.PIPE)
 
-results.report_and_exit(logs=['report.html', 'scan-arf.xml.gz', 'ansible-playbook.log.gz'])
+results.report_and_exit(logs=['report.html', 'scan-arf.xml.gz'])
