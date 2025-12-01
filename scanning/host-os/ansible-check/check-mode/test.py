@@ -18,7 +18,10 @@ ansible_cmd = [
     'ansible-playbook', '-v', '-c', 'local', '-i', 'localhost,', '--check',
     playbook,
 ]
-_, lines = util.subprocess_stream(ansible_cmd, stderr=subprocess.STDOUT, check=True)
+proc, lines = util.subprocess_stream(ansible_cmd, stderr=subprocess.STDOUT)
 ansible.report_from_output(lines, to_file='ansible-playbook.log')
 util.subprocess_run(['gzip', '-9', 'ansible-playbook.log'], check=True, stderr=subprocess.PIPE)
-results.report_and_exit(logs=['ansible-playbook.log.gz'])
+results.add_log('ansible-playbook.log.gz')
+if proc.returncode != 0:
+    raise RuntimeError(f"ansible-playbook failed with {proc.returncode}")
+results.report_and_exit()

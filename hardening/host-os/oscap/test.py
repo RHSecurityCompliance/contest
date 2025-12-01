@@ -81,8 +81,4 @@ else:
     ]
     util.subprocess_run(tar, check=True, stderr=subprocess.PIPE)
 
-    logs = [
-        'report.html',
-        'results-arf.tar.xz',
-    ]
-    results.report_and_exit(logs=logs)
+    results.report_and_exit(logs=['report.html', 'results-arf.tar.xz'])

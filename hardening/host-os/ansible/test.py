@@ -32,8 +32,12 @@ if util.get_reboot_count() == 0:
         *skip_tags_arg,
         playbook,
     ]
-    _, lines = util.subprocess_stream(cmd, stderr=subprocess.STDOUT, check=True)
+    proc, lines = util.subprocess_stream(cmd, stderr=subprocess.STDOUT)
     ansible.report_from_output(lines, to_file=ansible_playbook_log)
+    util.subprocess_run(['gzip', '-9', ansible_playbook_log], check=True, stderr=subprocess.PIPE)
+    results.add_log(f'{ansible_playbook_log}.gz')
+    if proc.returncode != 0:
+        raise RuntimeError(f"ansible-playbook failed with {proc.returncode}")
 
     util.reboot()
 
@@ -55,6 +59,5 @@ else:
     pack.uninstall()
 
     util.subprocess_run(['gzip', '-9', 'scan-arf.xml'], check=True, stderr=subprocess.PIPE)
-    util.subprocess_run(['gzip', '-9', ansible_playbook_log], check=True, stderr=subprocess.PIPE)
 
-    results.report_and_exit(logs=['report.html', 'scan-arf.xml.gz', f'{ansible_playbook_log}.gz'])
+    results.report_and_exit(logs=['report.html', 'scan-arf.xml.gz'])
