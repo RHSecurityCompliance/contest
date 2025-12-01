@@ -35,11 +35,6 @@
 /static-checks/rule-identifiers/stig/stigid/.*
     rhel.is_centos()
 
-# DISA benchmark allows only released OS versions. Our content is fine with unreleased versions.
-# https://github.com/ComplianceAsCode/content/issues/11649
-/scanning/disa-alignment/.*/installed_OS_is_vendor_supported
-    True
-
 # No CCN identifiers for CentOS products
 # https://github.com/ComplianceAsCode/content/issues/14033
 /static-checks/rule-identifiers/ccn_advanced/ccn/.*
@@ -68,7 +63,6 @@
 # is not possible at bootable container build time because SSH host keys are
 # generated post-deployment. The warning has been introduced by
 # https://github.com/ComplianceAsCode/content/pull/12755.
-/hardening/container/.+/file_groupownership_sshd_private_key
 /hardening/container/.+/file_permissions_sshd_private_key
 # There is no mounted /tmp directory when hardening the system during osbuild image creation.
 # Therefore, the rule cannot be remediated.
