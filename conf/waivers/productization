@@ -180,4 +180,8 @@
 /hardening/image-builder/uefi/ism_o_top_secret
     rhel == 10 and status == 'error'
 
+# https://github.com/ComplianceAsCode/content/issues/14210
+/per-rule/oscap/.+/service_systemd-journal-upload_enabled/service_disabled.fail
+    rhel == 10
+
 # vim: syntax=python
