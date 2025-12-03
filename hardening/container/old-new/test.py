@@ -2,7 +2,6 @@
 
 import os
 import shutil
-import subprocess
 from pathlib import Path
 
 from lib import results, oscap, versions, virt, podman, util
@@ -137,10 +136,6 @@ with podman.Registry(host_addr=virt.NETWORK_HOST) as registry:
         guest.copy_from('scan-arf.xml')
         guest.copy_from('/remediation-new-arf.xml')
 
-tar = [
-    'tar', '-cvJf', 'results-arf.tar.xz', 'scan-arf.xml', 'report.html',
-    'remediation-old-arf.xml', 'remediation-new-arf.xml',
-]
-util.subprocess_run(tar, check=True, stderr=subprocess.PIPE)
-
-results.report_and_exit(logs=['report.html', 'results-arf.tar.xz'])
+results.report_and_exit(logs=[
+    'report.html', 'scan-arf.xml', 'remediation-old-arf.xml', 'remediation-new-arf.xml',
+])

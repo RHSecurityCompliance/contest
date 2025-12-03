@@ -1,7 +1,6 @@
 #!/usr/bin/python3
 
 import atexit
-import subprocess
 
 from lib import util, results, virt, oscap, metadata
 from conf import remediation, partitions
@@ -67,18 +66,12 @@ with g.snapshotted(), util.get_old_datastream() as old_xml:
     g.copy_from('remediation-arf-new.xml')
     g.copy_from('remediation-arf-new2.xml')
 
-tar = [
-    'tar', '-cvJf', 'results-arf.tar.xz',
+logs = [
+    'report.html',
     'scan-arf.xml',
     'remediation-arf-old.xml',
     'remediation-arf-old2.xml',
     'remediation-arf-new.xml',
     'remediation-arf-new2.xml',
-]
-util.subprocess_run(tar, check=True, stderr=subprocess.PIPE)
-
-logs = [
-    'report.html',
-    'results-arf.tar.xz',
 ]
 results.report_and_exit(logs=logs)

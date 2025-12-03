@@ -89,10 +89,9 @@ while time.monotonic() - start_time < duration:
             check=True, stderr=subprocess.PIPE,
         )
 
-        util.subprocess_run(['xz', '-e', '-9', 'oscap.core'], check=True, stderr=subprocess.PIPE)
         results.report(
             'fail', f'attempt:{attempt}', "oscap froze, gdb output available",
-            logs=['oscap.core.xz', 'oscap-bt.txt'],
+            logs=['oscap.core', 'oscap-bt.txt'],
         )
         break
 
