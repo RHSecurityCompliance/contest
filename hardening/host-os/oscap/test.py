@@ -1,7 +1,6 @@
 #!/usr/bin/python3
 
 import shutil
-import subprocess
 
 from pathlib import Path
 
@@ -75,10 +74,6 @@ else:
     shutil.move(tmpdir / 'remediation-arf.xml', '.')
     shutil.move(tmpdir / 'remediation2-arf.xml', '.')
 
-    tar = [
-        'tar', '-cvJf', 'results-arf.tar.xz',
-        'remediation-arf.xml', 'remediation2-arf.xml', 'scan-arf.xml',
-    ]
-    util.subprocess_run(tar, check=True, stderr=subprocess.PIPE)
-
-    results.report_and_exit(logs=['report.html', 'results-arf.tar.xz'])
+    results.report_and_exit(logs=[
+        'report.html', 'remediation-arf.xml', 'remediation2-arf.xml', 'scan-arf.xml',
+    ])
