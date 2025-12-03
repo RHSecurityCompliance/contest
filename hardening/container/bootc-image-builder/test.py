@@ -2,7 +2,6 @@
 
 import os
 import shutil
-import subprocess
 from pathlib import Path
 
 from lib import results, oscap, versions, virt, podman, util
@@ -106,9 +105,4 @@ with guest.booted():
     guest.copy_from('remediation-arf.xml')
     guest.copy_from('scan-arf.xml')
 
-tar = [
-    'tar', '-cvJf', 'results-arf.tar.xz', 'remediation-arf.xml', 'scan-arf.xml',
-]
-util.subprocess_run(tar, check=True, stderr=subprocess.PIPE)
-
-results.report_and_exit(logs=['report.html', 'results-arf.tar.xz'])
+results.report_and_exit(logs=['report.html', 'remediation-arf.xml', 'scan-arf.xml'])
