@@ -42,6 +42,8 @@ with g.snapshotted():
         proc = g.ssh(' '.join(cmd))
         if proc.returncode not in [0,2]:
             raise RuntimeError(f"remediation oscap failed with {proc.returncode}")
+        g.copy_from(arf_results)
+        results.add_log(arf_results)
         g.soft_reboot()
 
     # copy the original DS to the guest
@@ -56,14 +58,6 @@ with g.snapshotted():
         raise RuntimeError(f"post-reboot oscap failed unexpectedly with {proc.returncode}")
 
     g.copy_from('report.html')
-    g.copy_from('remediation-arf.xml')
-    g.copy_from('remediation2-arf.xml')
     g.copy_from('scan-arf.xml')
 
-logs = [
-    'report.html',
-    'remediation-arf.xml',
-    'remediation2-arf.xml',
-    'scan-arf.xml',
-]
-results.report_and_exit(logs=logs)
+results.report_and_exit(logs=['report.html', 'scan-arf.xml'])
