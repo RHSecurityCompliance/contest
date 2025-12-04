@@ -42,6 +42,8 @@ with g.snapshotted(), util.get_old_datastream() as old_xml:
             proc = g.ssh(' '.join(cmd))
             if proc.returncode not in [0,2]:
                 raise RuntimeError(f"remediation oscap failed with {proc.returncode}")
+            g.copy_from(arf_output)
+            results.add_log(arf_output)
             g.soft_reboot()
 
     # remediate using old content,
@@ -61,17 +63,5 @@ with g.snapshotted(), util.get_old_datastream() as old_xml:
 
     g.copy_from('report.html')
     g.copy_from('scan-arf.xml')
-    g.copy_from('remediation-arf-old.xml')
-    g.copy_from('remediation-arf-old2.xml')
-    g.copy_from('remediation-arf-new.xml')
-    g.copy_from('remediation-arf-new2.xml')
 
-logs = [
-    'report.html',
-    'scan-arf.xml',
-    'remediation-arf-old.xml',
-    'remediation-arf-old2.xml',
-    'remediation-arf-new.xml',
-    'remediation-arf-new2.xml',
-]
-results.report_and_exit(logs=logs)
+results.report_and_exit(logs=['report.html', 'scan-arf.xml'])

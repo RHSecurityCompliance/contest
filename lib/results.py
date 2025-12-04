@@ -32,7 +32,9 @@ class Counter(collections.defaultdict):
 
 
 global_counts = Counter()
-global_logs = []
+
+# file for storing global logs across reboots (only for TMT and plain reporting)
+GLOBAL_LOGS_FILE = '_global_logs.json'
 
 
 def have_atex_api():
@@ -70,6 +72,46 @@ def _count_yaml_results(path):
         if 'result' in item:
             counter[item['result']] += 1
     return counter
+
+
+def _get_global_logs_path():
+    """Get the path of the global log storage file. Only for TMT and plain reporting."""
+    if have_tmt_api():
+        return Path(os.environ['TMT_TEST_DATA']) / GLOBAL_LOGS_FILE
+    else:
+        # plain mode: use current working directory
+        return Path(GLOBAL_LOGS_FILE)
+
+
+def _store_to_global_logs(new_logs):
+    """
+    Append logs to the global log storage file (survives reboots).
+    Only for TMT and plain reporting.
+    """
+    if have_atex_api():
+        return  # ATEX handles logs itself via partial results
+    logs_file = _get_global_logs_path()
+    # read existing logs
+    if logs_file.exists():
+        with open(logs_file) as f:
+            existing = json.load(f)
+    else:
+        existing = []
+    # append new logs and write back
+    existing.extend(new_logs)
+    with open(logs_file, 'w') as f:
+        json.dump(existing, f)
+
+
+def _read_from_global_logs():
+    """Read all logs from the global log storage file. Only for TMT and plain reporting."""
+    if have_atex_api():
+        return []  # ATEX handles logs itself via partial results
+    logs_file = _get_global_logs_path()
+    if logs_file.exists():
+        with open(logs_file) as f:
+            return json.load(f)
+    return []
 
 
 def report_atex(status, name=None, note=None, logs=None, *, partial=False):
@@ -160,7 +202,9 @@ def report_tmt(status, name=None, note=None, logs=None, *, add_output=True):
         for log in logs:
             log = Path(log)
             dstfile = dst / log.name
-            shutil.copyfile(log, dstfile)
+            # Only copy if not already present (add_log() may have already copied it)
+            if not dstfile.exists():
+                shutil.copyfile(log, dstfile)
             log_entries.append(str(dstfile.relative_to(test_data)))
     # add an empty log if none are present, to work around Testing Farm
     # and its Oculus result viewer expecting at least something
@@ -232,8 +276,9 @@ def add_log(*logs):
 
     The log file(s) will be processed immediately:
     - For ATEX: uploaded incrementally using report_atex() with partial=True
-    - For TMT: copied to the TMT data directory and stored in global_logs for later upload
-    - For plain: stored in global_logs for later upload
+    - For TMT: copied to the TMT data directory and stored in global log storage
+      file to survive reboots
+    - For plain: stored in global log storage file to survive reboots
 
     This allows logs to be added incrementally throughout the test,
     and ensures they're available even if the test later fails with a traceback.
@@ -250,13 +295,15 @@ def add_log(*logs):
         report_atex(status='error', logs=logs, partial=True)
     elif have_tmt_api():
         test_data = Path(os.environ['TMT_TEST_DATA'])
+        new_logs = []
         for log in logs:
             log = Path(log)
             dstfile = test_data / log.name
             shutil.copyfile(log, dstfile)
-            global_logs.append(str(dstfile.relative_to(test_data)))
+            new_logs.append(str(dstfile.relative_to(test_data)))
+        _store_to_global_logs(new_logs)
     else:
-        global_logs.extend(str(log) for log in logs)
+        _store_to_global_logs([str(log) for log in logs])
 
 
 def report_and_exit(status=None, note=None, logs=None):
@@ -280,8 +327,9 @@ def report_and_exit(status=None, note=None, logs=None):
         else:
             status = 'pass'
 
-    # combine accumulated logs with any directly passed logs
-    all_logs = (global_logs + logs) if logs else global_logs
+    # read logs from global log storage file and combine with directly passed logs
+    stored_logs = _read_from_global_logs()
+    all_logs = (stored_logs + logs) if logs else stored_logs
 
     # report and pass the status through the waiving logic, use combined logs or None if empty
     status = report(status=status, note=note, logs=(all_logs or None))
