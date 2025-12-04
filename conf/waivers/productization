@@ -184,4 +184,8 @@
 /per-rule/oscap/.+/service_systemd-journal-upload_enabled/service_disabled.fail
     rhel == 10
 
+# https://github.com/ComplianceAsCode/content/issues/14213
+/per-rule/oscap/.+/accounts_password_pam_unix_no_remember/remember_present_password_auth.fail
+    rhel == 8 or rhel == 9
+
 # vim: syntax=python
