@@ -46,14 +46,14 @@ def subprocess_run(cmd, *, check=False, skip_frames=0, stderr=None, **kwargs):
     use_verbose_errors = (stderr is subprocess.PIPE and check)
 
     try:
-        return subprocess.run(cmd, stderr=stderr, **kwargs)
+        return subprocess.run(cmd, check=check, stderr=stderr, **kwargs)
     except subprocess.CalledProcessError as e:
         if use_verbose_errors and e.stderr is not None:
             # re-raise as VerboseCalledProcessError with stderr details
             raise VerboseCalledProcessError(
                 returncode=e.returncode,
                 cmd=e.cmd,
-                stdout=e.output,
+                output=e.output,
                 stderr=e.stderr,
             ) from e
         else:
