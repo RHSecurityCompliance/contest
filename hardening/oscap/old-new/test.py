@@ -1,7 +1,6 @@
 #!/usr/bin/python3
 
 import atexit
-import subprocess
 
 from lib import util, results, virt, oscap, metadata
 from conf import remediation, partitions
@@ -43,6 +42,8 @@ with g.snapshotted(), util.get_old_datastream() as old_xml:
             proc = g.ssh(' '.join(cmd))
             if proc.returncode not in [0,2]:
                 raise RuntimeError(f"remediation oscap failed with {proc.returncode}")
+            g.copy_from(arf_output)
+            results.add_log(arf_output)
             g.soft_reboot()
 
     # remediate using old content,
@@ -62,23 +63,5 @@ with g.snapshotted(), util.get_old_datastream() as old_xml:
 
     g.copy_from('report.html')
     g.copy_from('scan-arf.xml')
-    g.copy_from('remediation-arf-old.xml')
-    g.copy_from('remediation-arf-old2.xml')
-    g.copy_from('remediation-arf-new.xml')
-    g.copy_from('remediation-arf-new2.xml')
 
-tar = [
-    'tar', '-cvJf', 'results-arf.tar.xz',
-    'scan-arf.xml',
-    'remediation-arf-old.xml',
-    'remediation-arf-old2.xml',
-    'remediation-arf-new.xml',
-    'remediation-arf-new2.xml',
-]
-util.subprocess_run(tar, check=True, stderr=subprocess.PIPE)
-
-logs = [
-    'report.html',
-    'results-arf.tar.xz',
-]
-results.report_and_exit(logs=logs)
+results.report_and_exit(logs=['report.html', 'scan-arf.xml'])

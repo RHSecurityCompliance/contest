@@ -1,7 +1,6 @@
 #!/usr/bin/python3
 
 import shutil
-import subprocess
 
 from pathlib import Path
 
@@ -26,6 +25,7 @@ def do_one_remediation(ds, profile, arf_results):
     proc = util.subprocess_run(cmd)
     if proc.returncode not in [0,2]:
         raise RuntimeError(f"remediation oscap failed with {proc.returncode}")
+    results.add_log(arf_results)
 
 
 if util.get_reboot_count() == 0:
@@ -41,7 +41,7 @@ if util.get_reboot_count() == 0:
 
     oscap.unselect_rules(util.get_datastream(), remediation_ds, remediation.excludes())
 
-    do_one_remediation(remediation_ds, profile, tmpdir / 'remediation-arf.xml')
+    do_one_remediation(remediation_ds, profile, 'remediation-arf.xml')
 
     util.reboot()
 
@@ -50,7 +50,7 @@ if util.get_reboot_count() == 0:
 elif util.get_reboot_count() == 1:
     util.log("second boot, doing second remediation")
 
-    do_one_remediation(remediation_ds, profile, tmpdir / 'remediation2-arf.xml')
+    do_one_remediation(remediation_ds, profile, 'remediation2-arf.xml')
 
     util.reboot()
 
@@ -72,13 +72,4 @@ else:
     pack = util.RpmPack()
     pack.uninstall()
 
-    shutil.move(tmpdir / 'remediation-arf.xml', '.')
-    shutil.move(tmpdir / 'remediation2-arf.xml', '.')
-
-    tar = [
-        'tar', '-cvJf', 'results-arf.tar.xz',
-        'remediation-arf.xml', 'remediation2-arf.xml', 'scan-arf.xml',
-    ]
-    util.subprocess_run(tar, check=True, stderr=subprocess.PIPE)
-
-    results.report_and_exit(logs=['report.html', 'results-arf.tar.xz'])
+    results.report_and_exit(logs=['report.html', 'scan-arf.xml'])
