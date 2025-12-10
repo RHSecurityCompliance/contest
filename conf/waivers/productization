@@ -188,4 +188,8 @@
 /per-rule/oscap/.+/accounts_password_pam_unix_no_remember/remember_present_password_auth.fail
     rhel == 8 or rhel == 9
 
+# https://github.com/ComplianceAsCode/content/issues/14226
+/per-rule/oscap/.+/mount_option_boot_efi_nosuid/vfat_(with|without)_nosuid.pass.fail
+    rhel == 8 or rhel == 9
+
 # vim: syntax=python
