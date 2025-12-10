@@ -132,6 +132,11 @@
 /hardening/.+/harden_sshd_macs_(openssh|opensshserver)_conf_crypto_policy
     rhel == 8
 
+# https://github.com/ComplianceAsCode/content/issues/14227
+# Probably due to a change in the syntax of rsyslog configuration files
+/hardening/.*/rsyslog_files_.*
+    rhel == 9 or rhel == 10
+
 # https://github.com/ComplianceAsCode/content/issues/13690
 /per-rule/.+/banner_etc_issue.+
     True
