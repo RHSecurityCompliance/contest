@@ -185,7 +185,7 @@
     rhel == 10
 
 # https://github.com/ComplianceAsCode/content/issues/14213
-/per-rule/oscap/.+/accounts_password_pam_unix_no_remember/remember_present_password_auth.fail
+/per-rule/oscap/.+/accounts_password_pam_unix_no_remember/remember_present_(password|system)_auth.fail
     rhel == 8 or rhel == 9
 
 # vim: syntax=python
