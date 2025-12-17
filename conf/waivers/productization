@@ -201,7 +201,7 @@
 # RHEL 10.2 doesn't contain the new post-quantum GPG key yet
 # https://issues.redhat.com/browse/RHELBLD-17165
 /hardening/.+/ensure_redhat_gpgkey_installed
-/per-rule/.+/ensure_redhat_gpgkey_installed
+/per-rule/.+/ensure_redhat_gpgkey_installed/.*
     rhel == 10.2
 
 # vim: syntax=python
