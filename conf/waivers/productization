@@ -198,4 +198,9 @@
 /per-rule/oscap/.+/accounts_password_pam_unix_no_remember/remember_present_(password|system)_auth.fail
     rhel == 8 or rhel == 9
 
+# RHEL 10.2 doesn't contain the new post-quantum GPG key yet
+/hardening/.+/ensure_redhat_gpgkey_installed
+/per-rule/.+/ensure_redhat_gpgkey_installed
+    rhel == 10.2
+
 # vim: syntax=python
