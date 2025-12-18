@@ -100,7 +100,7 @@ def installable_url():
     for _, url in repo_urls():
         url = url.rstrip('/')
         util.log(f"considering: {url}")
-        reply = requests.head(url + '/images/install.img', verify=False)
+        reply = requests.head(url + '/images/install.img', verify=False, allow_redirects=True)
         if reply.status_code == 200:
             return url
     raise RuntimeError("did not find any install-capable repo amongst host repos")
