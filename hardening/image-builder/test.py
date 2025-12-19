@@ -1,10 +1,24 @@
 #!/usr/bin/python3
 
+import shutil
 import subprocess
+from pathlib import Path
 
-from lib import results, oscap, osbuild, util, metadata
+from lib import results, oscap, osbuild, util, metadata, versions
 from conf import remediation
 
+
+# try to prevent the following error (usually happens on new RHEL versions in development):
+# ERROR: BlueprintsError: contest_blueprint: GetDistro - unknown distribution rhel-X.Y
+# which is caused by the absence of rhel-X.Y.json in /usr/share/osbuild-composer/repositories;
+# if /usr/share/osbuild-composer/repositories/rhel-X.Y.json does not exist, we try to create it
+# by copying rhel-X.json if it exists
+repos_dir = Path('/usr/share/osbuild-composer/repositories')
+rhel_xy_json = repos_dir / f'rhel-{versions.rhel.major}.{versions.rhel.minor}.json'
+rhel_x_json = repos_dir / f'rhel-{versions.rhel.major}.json'
+if not rhel_xy_json.exists() and rhel_x_json.exists():
+    util.log(f"{rhel_xy_json} does not exist, creating it by copying {rhel_x_json}")
+    shutil.copy(rhel_x_json, rhel_xy_json)
 
 osbuild.Host.setup()
 
