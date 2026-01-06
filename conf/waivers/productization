@@ -186,10 +186,6 @@
 /hardening/image-builder/uefi/ism_o_top_secret
     rhel == 10 and status == 'error'
 
-# https://github.com/ComplianceAsCode/content/issues/14210
-/per-rule/oscap/.+/service_systemd-journal-upload_enabled/service_disabled.fail
-    rhel == 10
-
 # https://github.com/ComplianceAsCode/content/issues/14213
 /per-rule/oscap/.+/accounts_password_pam_unix_no_remember/remember_present_(password|system)_auth.fail
     rhel == 8 or rhel == 9
