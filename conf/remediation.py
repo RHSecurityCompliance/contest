@@ -43,4 +43,11 @@ def excludes():
                 'enable_fips_mode',
             ]
 
+    # problem described at https://issues.redhat.com/browse/RHEL-126844
+    # upstream PR at https://github.com/ansible/ansible/issues/86157
+    if versions.rhel == 10.2 and '/ansible/' in test_name:
+        rules += [
+            'ensure_redhat_gpgkey_installed',
+        ]
+
     return rules
