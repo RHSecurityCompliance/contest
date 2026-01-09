@@ -196,4 +196,9 @@
 /per-rule/.+/ensure_redhat_gpgkey_installed/.*
     rhel == 10.2
 
+# playbooks get aborted by problems with authselect
+# https://github.com/ComplianceAsCode/content/issues/14287
+/hardening/(host-os/ansible|ansible)/(cis|)cis_workstation_l2)
+    rhel == 8 and status = 'error'
+
 # vim: syntax=python
