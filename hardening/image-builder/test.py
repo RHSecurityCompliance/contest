@@ -58,6 +58,4 @@ with g.booted():
     g.copy_from('report.html')
     g.copy_from('scan-arf.xml')
 
-util.subprocess_run(['gzip', '-9', 'scan-arf.xml'], check=True, stderr=subprocess.PIPE)
-
-results.report_and_exit(logs=['report.html', 'scan-arf.xml.gz', g.osbuild_log])
+results.report_and_exit(logs=['report.html', 'scan-arf.xml', g.osbuild_log])
