@@ -214,4 +214,15 @@
 /hardening/(oscap|host-os/oscap)/cis.*/no_empty_passwords
     rhel == 8
 
+# test scenarios for some rules which were I believe recently added to rhel8 datastream fail
+# https://github.com/ComplianceAsCode/content/issues/14289
+/per-rule/.+/accounts_password_pam_unix_enabled/correct.pass
+/per-rule/.+/package_kea_removed/package-installed.fail
+/per-rule/.+/package_policycoreutils_installed/package-installed-removed.fail
+/per-rule/.+/package_policycoreutils_installed/package-removed.fail
+/per-rule/.+/accounts_passwords_pam_faillock_unlock_time_with_zero/correct.pass
+/per-rule/.+/accounts_passwords_pam_faillock_unlock_time_with_zero/high.pass
+/per-rule/.+/accounts_passwords_pam_faillock_unlock_time_with_zero/zero.pass
+    rhel == 8
+
 # vim: syntax=python
