@@ -35,6 +35,7 @@ ignore = [
     "PLW2901",  # redefined-loop-name
     "RUF010",   # explicit-f-string-type-conversion
     "RUF012",   # mutable-class-default
+    "RUF067",   # non-empty-init-module
     "RUF100",   # unused-noqa
 
     # rules from preview
