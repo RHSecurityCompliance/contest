@@ -203,15 +203,15 @@
 
 # after updating CIS to lvl 4, many rules started failing
 # https://github.com/ComplianceAsCode/content/issues/14288
-/hardening/(oscap|host-os/oscap)/cis.*/account_password_pam_faillock_password_auth
-/hardening/(oscap|host-os/oscap)/cis.*/account_password_pam_faillock_system_auth
-/hardening/(oscap|host-os/oscap)/cis.*/accounts_password_pam_pwhistory_remember_password_auth
+/hardening/(oscap|host-os/oscap|image-builder|anaconda)/cis.*/account_password_pam_faillock_password_auth
+/hardening/(oscap|host-os/oscap|image-builder|anaconda)/cis.*/account_password_pam_faillock_system_auth
+/hardening/(oscap|host-os/oscap|image-builder|anaconda)/cis.*/accounts_password_pam_pwhistory_remember_password_auth
 /hardening/(oscap|host-os/oscap)/cis.*/accounts_password_pam_pwhistory_remember_system_auth
-/hardening/(oscap|host-os/oscap)/cis.*/accounts_password_pam_pwhistory_use_authtok
-/hardening/(oscap|host-os/oscap)/cis.*/accounts_passwords_pam_faillock_deny
-/hardening/(oscap|host-os/oscap)/cis.*/accounts_passwords_pam_faillock_deny_root
-/hardening/(oscap|host-os/oscap)/cis.*/accounts_passwords_pam_faillock_unlock_time_with_zero
-/hardening/(oscap|host-os/oscap)/cis.*/no_empty_passwords
+/hardening/(oscap|host-os/oscap|image-builder|anaconda)/cis.*/accounts_password_pam_pwhistory_use_authtok
+/hardening/(oscap|host-os/oscap|image-builder|anaconda)/cis.*/accounts_passwords_pam_faillock_deny
+/hardening/(oscap|host-os/oscap|image-builder|anaconda)/cis.*/accounts_passwords_pam_faillock_deny_root
+/hardening/(oscap|host-os/oscap|image-builder|anaconda)/cis.*/accounts_passwords_pam_faillock_unlock_time_with_zero
+/hardening/(oscap|host-os/oscap|image-builder|anaconda)/cis.*/no_empty_passwords
     rhel == 8
 
 # test scenarios for some rules which were I believe recently added to rhel8 datastream fail
