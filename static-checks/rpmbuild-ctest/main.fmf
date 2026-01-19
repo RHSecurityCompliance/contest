@@ -17,7 +17,6 @@ recommend+:
   - yum-utils
   - yum-builddep
   - ansible-core
-  - rhc-worker-playbook
   - bats
 adjust+:
   - when: arch == aarch64 and distro == rhel-9.0
@@ -26,3 +25,7 @@ adjust+:
   - when: newa_batch is defined and arch == s390x or newa_batch is defined and arch == ppc64le
     enabled: false
     because: srpm repo is not available, see https://issues.redhat.com/browse/TFT-2972
+  - when: distro == rhel
+    require+:
+      - rhc-worker-playbook
+    because: rhc-worker-playbook works reliably only in RHEL

@@ -18,9 +18,6 @@ require+:
   - rpm-build
   - createrepo
   - ansible-core
-recommend+:
-  # needed for the ini_file ansible plugin, and more
-  - rhc-worker-playbook
 extra-hardware: |
     keyvalue = HVM=1
     hostrequire = memory>=6000
@@ -30,6 +27,10 @@ adjust+:
   - when: arch != x86_64
     enabled: false
     because: we want to run virtualization on x86_64 only
+  - when: distro == rhel
+    require+:
+      - rhc-worker-playbook
+    because: rhc-worker-playbook works reliably only in RHEL
 
 /anssi_bp28_high:
 

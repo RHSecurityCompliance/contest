@@ -10,13 +10,14 @@ duration: 1h
 require+:
   - openscap-scanner
   - ansible-core
-recommend+:
-  # needed for the ini_file ansible plugin, and more
-  - rhc-worker-playbook
 adjust+:
   - when: arch != x86_64
     enabled: false
     because: Ansible playbooks are same on all architectures
+  - when: distro == rhel
+    require+:
+      - rhc-worker-playbook
+    because: rhc-worker-playbook works reliably only in RHEL
 
 /anssi_bp28_high:
 

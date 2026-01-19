@@ -17,19 +17,16 @@ def install_deps():
     """
     Download and install any external dependencies required for Ansible to run.
     """
-    # On RHEL, rhc-worker-playbook package should be available and pre-installed
-    # by test 'recommends' FMF metadata
-    proc = util.subprocess_run(['rpm', '--quiet', '-q', 'rhc-worker-playbook'])
-    if proc.returncode == 0:
+    # On RHEL, rhc-worker-playbook package should be available
+    if versions.rhel.is_true_rhel():
         # export per official instructions on
         # https://access.redhat.com/articles/remediation
         os.environ['ANSIBLE_COLLECTIONS_PATH'] = \
             '/usr/share/rhc-worker-playbook/ansible/collections/ansible_collections/'
     # Use ansible-galaxy when rhc-worker-playbook not available (Fedora, CentOS, etc.)
     else:
-        is_centos = versions.rhel.is_centos()
         for collection, version in RHC_WORKER_PLAYBOOK_COLLECTIONS.items():
-            if is_centos:
+            if versions.rhel.is_centos():
                 # install the specific version to match rhc-worker-playbook versions
                 collection = f"{collection}:{version}"
             util.subprocess_run(
