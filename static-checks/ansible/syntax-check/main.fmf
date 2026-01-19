@@ -11,11 +11,13 @@ require+:
   - openscap-scanner
   - ansible-core
 recommend+:
-  # needed for the ini_file ansible plugin, and more
-  - rhc-worker-playbook
-  # individual rule playbooks
+  # individual rule playbooks (built only during downstream RPM testing)
   - scap-security-guide-rule-playbooks
 adjust+:
   - when: arch != x86_64
     enabled: false
     because: Ansible playbooks are same on all architectures
+  - when: distro == rhel
+    require+:
+      - rhc-worker-playbook
+    because: rhc-worker-playbook works reliably only in RHEL

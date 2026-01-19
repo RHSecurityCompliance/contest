@@ -3,9 +3,11 @@ test: $CONTEST_PYTHON -m lib.runtest ./ansible.py
 result: custom
 environment+:
     PYTHONPATH: ../..
+duration: 1h
 require+:
   - ansible-core
-recommend+:
-  # needed for the ini_file ansible plugin, and more
-  - rhc-worker-playbook
-duration: 1h
+adjust+:
+  - when: distro == rhel
+    require+:
+      - rhc-worker-playbook
+    because: rhc-worker-playbook works reliably only in RHEL
