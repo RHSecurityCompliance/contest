@@ -73,7 +73,8 @@ def _count_yaml_results(path):
 
 
 def report_atex(status, name=None, note=None, logs=None, *, partial=False):
-    report_plain(status, name, note, logs)
+    if not partial:
+        report_plain(status, name, note, logs)
 
     result = {
         'status': status,
