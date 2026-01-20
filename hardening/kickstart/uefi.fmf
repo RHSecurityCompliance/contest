@@ -21,6 +21,12 @@ adjust+:
     tag+:
       - subset-profile
 
+/bsi:
+    adjust+:
+      - when: distro != rhel-9 and distro != centos-stream-9
+        enabled: false
+        because: BSI profile is currently only on RHEL-9
+
 /cis:
 
 /cis_server_l1:
@@ -37,7 +43,8 @@ adjust+:
     tag+:
       - fips
     adjust+:
-      - enabled: false
+      - when: distro >= rhel-10 or distro >= centos-stream-10
+        enabled: false
         because: there is no CUI profile on RHEL-10+
 
 /e8:
@@ -48,7 +55,7 @@ adjust+:
     tag+:
       - fips
     adjust+:
-      - when: distro >= rhel-10
+      - when: distro >= rhel-10 or distro >= centos-stream-10
         tag+:
           - subset-profile
 
@@ -56,11 +63,11 @@ adjust+:
     tag+:
       - fips
     adjust+:
-      - when: distro >= rhel-10
+      - when: distro >= rhel-10 or distro >= centos-stream-10
         tag+:
           - subset-profile
         continue: true
-      - when: distro < rhel-10
+      - when: distro < rhel-10 or distro < centos-stream-10
         enabled: false
         because: ISM Official Secret is only present on RHEL-10+
 
@@ -68,7 +75,7 @@ adjust+:
     tag+:
       - fips
     adjust+:
-      - when: distro < rhel-10
+      - when: distro < rhel-10 or distro < centos-stream-10
         enabled: false
         because: ISM Official Top Secret is only present on RHEL-10+
 
@@ -76,7 +83,8 @@ adjust+:
     tag+:
       - fips
     adjust+:
-      - enabled: false
+      - when: distro >= rhel-10
+        enabled: false
         because: there is no OSPP profile on RHEL-10+
 
 /pci-dss:
@@ -88,26 +96,26 @@ adjust+:
 /stig_gui:
     adjust+:
       - enabled: false
-        because: only supported with GUI installations
+        because: not supported without GUI, use stig instead
 
 /ccn_advanced:
     adjust+:
-      - when: distro == rhel-10
+      - when: distro != rhel-9 and distro != centos-stream-9
         enabled: false
-        because: CCN profiles are not present on RHEL-10
+        because: CCN profiles are only on RHEL-9
 
 /ccn_intermediate:
     tag+:
       - subset-profile
     adjust+:
-      - when: distro == rhel-10
+      - when: distro != rhel-9 and distro != centos-stream-9
         enabled: false
-        because: CCN profiles are not present on RHEL-10
+        because: CCN profiles are only on RHEL-9
 
 /ccn_basic:
     tag+:
       - subset-profile
     adjust+:
-      - when: distro == rhel-10
+      - when: distro != rhel-9 and distro != centos-stream-9
         enabled: false
-        because: CCN profiles are not present on RHEL-10
+        because: CCN profiles are only on RHEL-9
