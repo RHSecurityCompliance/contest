@@ -20,6 +20,9 @@ def reboot():
         fd = int(os.environ['ATEX_TEST_CONTROL'])
         with os.fdopen(fd, 'w', closefd=False) as control:
             control.write('reconnect\n')
+        # TODO: temporarily work around race which might cause the above
+        #       to not be sent out before we reboot
+        time.sleep(1)
         # prevent the test runner from reconnecting before reboot
         util.subprocess_run(['systemctl', 'stop', 'sshd'], check=True, stderr=subprocess.PIPE)
         util.subprocess_run(['reboot'])
