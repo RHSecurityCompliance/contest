@@ -9,10 +9,6 @@ description: |-
     successfully fixes the non-compliance, as verified by a scan.
 environment+:
     PYTHONPATH: ../../..
-adjust+:
-  - when: distro == rhel-10
-    enabled: false
-    because: TODO - no old scap-security-guide release yet
 
 /anssi_bp28_high:
 
