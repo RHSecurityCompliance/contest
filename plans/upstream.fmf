@@ -5,6 +5,7 @@ discover:
       - tag:-needs-param
       - tag:-always-fails
       - tag:-broken
+      - tag:-subset-profile
     test:
       # only host-os (no virt support) hardening
       - /hardening/host-os
