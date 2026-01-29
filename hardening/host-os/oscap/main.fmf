@@ -25,9 +25,9 @@ tag:
 
 /bsi:
     adjust+:
-      - when: distro != rhel-9 and distro != centos-stream-9
+      - when: distro == rhel-8 or distro == centos-stream-8
         enabled: false
-        because: BSI profile is currently only on RHEL-9
+        because: The BSI profile is currently not on RHEL-8
 
 /cis:
 
