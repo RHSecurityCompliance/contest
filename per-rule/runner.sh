@@ -84,11 +84,19 @@ if [[ -f $variables_file ]]; then
             # - name: Some title
             #   vars:
             #     var_something: '100'
-            # use awk instead of sed because key/values may contain quotes
-            # and awk allows us to work around that by passing variables via CLI options
-            awk -i inplace -v key="$key" -v value="$value" \
-                "{ print gensub(\"^([[:space:]]+)\"key\":.*\", \"\\\1\"key\": '\"value\"'\", 1) }" \
-                "$playbook"
+            # NOTE that the value may have any number of any special characters
+            # like \n or & or ' or " or whatever
+            # - sed would easily mangle it because it can't take a verbatim value
+            # - awk also mangles & (gensub) or even \n (substr+print)
+            # - bash printf can print anything except 0x00 (which is fine)
+            while IFS= read -r line; do
+                if [[ $line =~ ^([[:space:]]+)$key: ]]; then
+                    printf '%s%s: %s\n' "${BASH_REMATCH[1]}" "$key" "$value"
+                else
+                    printf '%s\n' "$line"
+                fi
+            done < "$playbook" > "$playbook.tmp"
+            mv -vf "$playbook.tmp" "$playbook"
         fi
     done < "$variables_file"
 fi
