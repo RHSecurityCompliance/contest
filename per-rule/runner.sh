@@ -89,11 +89,18 @@ if [[ -f $variables_file ]]; then
             # - sed would easily mangle it because it can't take a verbatim value
             # - awk also mangles & (gensub) or even \n (substr+print)
             # - bash printf can print anything except 0x00 (which is fine)
-            while IFS= read -r line; do
-                if [[ $line =~ ^([[:space:]]+)$key: ]]; then
-                    printf '%s%s: %s\n' "${BASH_REMATCH[1]}" "$key" "$value"
+            while IFS= read -r playbook_line; do
+                if [[ $playbook_line =~ ^([[:space:]]+)$key: ]]; then
+                    # vars:
+                    #     var_something: |-1
+                    #      100
+                    printf '%s%s: |-1\n' "${BASH_REMATCH[1]}" "$key"
+                    while IFS= read -r value_line; do
+                        # prefix each value line with the original indent + 1 space
+                        printf '%s %s\n' "${BASH_REMATCH[1]}" "$value_line"
+                    done <<<"$value"
                 else
-                    printf '%s\n' "$line"
+                    printf '%s\n' "$playbook_line"
                 fi
             done < "$playbook" > "$playbook.tmp"
             mv -vf "$playbook.tmp" "$playbook"
