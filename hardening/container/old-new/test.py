@@ -13,6 +13,17 @@ virt.Host.setup()
 profile = util.get_test_name().rpartition('/')[2]
 oscap_repo = os.environ.get('CONTEST_OSCAP_REPOFILE')
 
+# prepare old/new datastreams used for remediation
+with util.get_old_datastream() as old_xml:
+    oscap.unselect_rules(old_xml, 'remediation-old-ds.xml', remediation.excludes())
+oscap.unselect_rules(util.get_datastream(), 'remediation-new-ds.xml', remediation.excludes())
+
+# check whether the profile is in both old and new
+if profile not in oscap.Datastream('remediation-old-ds.xml').profiles:
+    results.report_and_exit('skip', "profile missing the old DS")
+if profile not in oscap.Datastream('remediation-new-ds.xml').profiles:
+    results.report_and_exit('skip', "profile missing the new DS")
+
 # note that the .wipe() is necessary here, as we are not calling any .install()
 # function that would normally perform it
 guest = virt.Guest()
@@ -36,11 +47,6 @@ if oscap_repo:
 pack.add_sshd_late_start()
 with pack.build() as pack_binrpm:
     shutil.copy(pack_binrpm, 'contest-pack.rpm')
-
-# prepare old/new datastreams used for remediation
-with util.get_old_datastream() as old_ds:
-    oscap.unselect_rules(old_ds, 'remediation-old-ds.xml', remediation.excludes())
-oscap.unselect_rules(util.get_datastream(), 'remediation-new-ds.xml', remediation.excludes())
 
 
 # prepare a Container file for making a hardened image using the data stream
