@@ -28,7 +28,8 @@ discover:
       # detect impact of waivers on RHEL early after an upstream-related change
       - /hardening/host-os
       # Image Mode testing
-      - /hardening/container
+      - /hardening/container/anaconda-ostree/[^/]+$
+      - /hardening/container/bootc-image-builder/[^/]+$
       # run /per-rule as oscap only - this almost halves the runtime (for now)
       - /per-rule/oscap/[0-9]+$
       # the rest is cheap to run
