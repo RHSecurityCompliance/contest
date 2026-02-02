@@ -10,6 +10,17 @@ virt.Host.setup()
 
 profile = util.get_test_name().rpartition('/')[2]
 
+# unselect unwanted rules
+with util.get_old_datastream() as old_xml:
+    oscap.unselect_rules(old_xml, 'remediation-old.xml', remediation.excludes())
+oscap.unselect_rules(util.get_datastream(), 'remediation-new.xml', remediation.excludes())
+
+# check whether the profile is in both old and new
+if profile not in oscap.Datastream('remediation-old.xml').profiles:
+    results.report_and_exit('skip', "profile missing the old DS")
+if profile not in oscap.Datastream('remediation-new.xml').profiles:
+    results.report_and_exit('skip', "profile missing the new DS")
+
 guest_tag = virt.calculate_guest_tag(metadata.tags())
 g = virt.Guest(guest_tag)
 
@@ -22,17 +33,6 @@ if not g.is_installed():
 
 g.prepare_for_snapshot()
 atexit.register(g.cleanup_snapshot)
-
-# unselect unwanted rules
-with util.get_old_datastream() as old_xml:
-    oscap.unselect_rules(old_xml, 'remediation-old.xml', remediation.excludes())
-oscap.unselect_rules(util.get_datastream(), 'remediation-new.xml', remediation.excludes())
-
-# check whether the profile is in both old and new
-if profile not in oscap.Datastream('remediation-old.xml').profiles:
-    results.report_and_exit('skip', "profile missing the old DS")
-if profile not in oscap.Datastream('remediation-new.xml').profiles:
-    results.report_and_exit('skip', "profile missing the new DS")
 
 with g.snapshotted():
     # copy old and new datastreams to the guest
