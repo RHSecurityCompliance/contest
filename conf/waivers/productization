@@ -112,10 +112,10 @@
 /hardening/image-builder/.*/enable_dracut_fips_module
 /hardening/image-builder/.*/enable_fips_mode
     True
-# OpenSCAP unsupported profile: xccdf_org.ssgproject.content_profile_ccn_advanced
-# https://issues.redhat.com/browse/RHEL-25574
-/hardening/image-builder/ccn_[^/]+
-    rhel == 9 and status == 'error'
+# missing OSBuild support for BSI
+# https://issues.redhat.com/browse/HMS-10132
+/hardening/image-builder(/uefi)?/bsi
+    rhel == 10 and status == 'error'
 
 # https://issues.redhat.com/browse/RHEL-77158
 # (we unselect max_age in conf/remediations.py)
