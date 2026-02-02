@@ -419,7 +419,7 @@ class Guest:
                 # to RAM, leading to notably higher memory requirements during
                 # installation
                 '--name', self.name, '--vcpus', str(cpus), '--memory', str(INSTALL_TIME_RAM),
-                '--disk', f'path={disk_path},size=20,format={disk_format},cache=unsafe',
+                '--disk', f'path={disk_path},size=20,format={disk_format},io=native,cache=none',
                 '--network', 'network=default', '--location', location,
                 '--graphics', 'none', '--console', 'pty', '--rng', '/dev/urandom',
                 # this has nothing to do with rhel8, it just tells v-i to use virtio
@@ -530,7 +530,7 @@ class Guest:
         virt_install = [
             'pseudotty', 'virt-install',
             '--name', self.name, '--vcpus', str(cpus), '--memory', str(INSTALL_TIME_RAM),
-            '--disk', f'path={disk_path},format={disk_format},cache=unsafe',
+            '--disk', f'path={disk_path},format={disk_format},io=native,cache=none',
             '--network', 'network=default',
             '--graphics', 'none', '--console', 'pty', '--rng', '/dev/urandom',
             '--noreboot', '--import',
