@@ -139,10 +139,6 @@
 /hardening/.*/rsyslog_files_.*
     rhel == 9 or rhel == 10
 
-# https://github.com/ComplianceAsCode/content/issues/13690
-/per-rule/.+/banner_etc_issue.+
-    True
-
 # https://github.com/ComplianceAsCode/content/issues/13778
 /per-rule/.+/file_permissions_ungroupowned/unowned_file_tmp.fail
 /per-rule/.+/no_files_unowned_by_user/unowned_file_tmp.fail
