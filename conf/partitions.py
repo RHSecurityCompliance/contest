@@ -8,7 +8,7 @@ It's a list of tuples of
 """
 
 partitions = [
-    ('/boot', 700),
+    ('/boot', 3000),
     ('/', 1000),
     ('/home', 100),
     ('/var', 5000),
