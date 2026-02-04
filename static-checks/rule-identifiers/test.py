@@ -15,7 +15,7 @@ for frames, elements in oscap.parse_xml(util.get_datastream()):
 # Associations between profiles and reference names
 profile_reference_names = {
     'bsi': ['bsi'],
-    'stig': ['stigid', 'os-srg'],
+    'stig': ['stigid', 'os-srg', 'stigref'],
     'ospp': ['ospp'],
     'cis': ['cis'],
     'anssi_bp28_high': ['anssi'],
