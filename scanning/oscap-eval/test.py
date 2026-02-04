@@ -14,7 +14,8 @@ problems_seen = set()
 
 proc, lines = util.subprocess_stream(
     ['oscap', 'xccdf', 'eval', '--profile', '(all)', '--progress', util.get_datastream()],
-    stderr=subprocess.STDOUT)
+    stderr=subprocess.STDOUT,
+)
 
 for line in lines:
     sys.stdout.write(f'{line}\n')

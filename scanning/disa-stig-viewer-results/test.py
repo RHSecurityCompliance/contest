@@ -8,7 +8,8 @@ from lib import util, results
 proc = util.subprocess_run(
     ['oscap', 'xccdf', 'eval', '--profile', 'stig', '--progress',
      '--stig-viewer', 'stig_results.xml', util.get_datastream()],
-    stderr=subprocess.STDOUT)
+    stderr=subprocess.STDOUT,
+)
 if proc.returncode not in [0,2]:
     raise RuntimeError("oscap failed unexpectedly")
 results.add_log('stig_results.xml')
