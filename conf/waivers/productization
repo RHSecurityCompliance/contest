@@ -40,10 +40,20 @@
 
 # RHEL10 - No official RHEL10 STIG benchmark yet
 /static-checks/rule-identifiers/stig/stigid/.*
+/static-checks/rule-identifiers/stig/stigref/.*
+/scanning/disa-stig-viewer-results
     rhel == 10
 # RHEL8 https://github.com/ComplianceAsCode/content/issues/12422
 /static-checks/rule-identifiers/ospp/ospp/.*
     rhel == 8
+# https://github.com/ComplianceAsCode/content/issues/14359
+/static-checks/rule-identifiers/stig/stigref/enable_authselect
+    rhel == 8 or rhel == 9
+/static-checks/rule-identifiers/stig/stigref/configure_kerberos_crypto_policy
+/static-checks/rule-identifiers/stig/stigref/file_permissions_etc_audit_auditd
+/static-checks/rule-identifiers/stig/stigref/file_sshd_50_redhat_exists
+/static-checks/rule-identifiers/stig/stigref/sshd_include_crypto_policy
+    rhel == 9
 
 # bz1825810 or maybe bz1929805
 # can be reproduced mostly reliably (95%) both via anaconda and oscap CLI,
