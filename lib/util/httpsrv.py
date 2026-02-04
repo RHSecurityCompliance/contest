@@ -152,16 +152,19 @@ class BackgroundHTTPServer:
         # allow the target port on the firewall
         if shutil.which('firewall-cmd'):
             res = util.subprocess_run(
-                ['firewall-cmd', '--state'], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+                ['firewall-cmd', '--state'], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL,
+            )
             if res.returncode == 0:
                 res = util.subprocess_run(
                     ['firewall-cmd', '--get-zones'], stdout=subprocess.PIPE,
-                    stderr=subprocess.PIPE, text=True, check=True)
+                    stderr=subprocess.PIPE, text=True, check=True,
+                )
                 self.firewalld_zones = res.stdout.strip().split(' ')
                 for zone in self.firewalld_zones:
                     util.subprocess_run(
                         ['firewall-cmd', f'--zone={zone}', f'--add-port={port}/tcp'],
-                        stdout=subprocess.DEVNULL, stderr=subprocess.PIPE, check=True)
+                        stdout=subprocess.DEVNULL, stderr=subprocess.PIPE, check=True,
+                    )
 
         self.thread = threading.Thread(target=server.serve_forever)
         self.thread.start()
@@ -188,7 +191,8 @@ class BackgroundHTTPServer:
         for zone in self.firewalld_zones:
             util.subprocess_run(
                 ['firewall-cmd', f'--zone={zone}', f'--remove-port={port}/tcp'],
-                stdout=subprocess.DEVNULL, stderr=subprocess.PIPE, check=True)
+                stdout=subprocess.DEVNULL, stderr=subprocess.PIPE, check=True,
+            )
 
     def __enter__(self):
         return self

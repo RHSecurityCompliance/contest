@@ -98,8 +98,7 @@ def parse_ssg_results(ssg_path):
         result = rule_result.find("xccdf:result", nsmap).text
         if result == "notselected":
             continue
-        rule = xccdf_benchmark.find(
-            f".//xccdf:Rule[@id='{full_rule_id}']", nsmap)
+        rule = xccdf_benchmark.find(f".//xccdf:Rule[@id='{full_rule_id}']", nsmap)
         title = rule.find("xccdf:title", nsmap).text
         cce_id = rule.find(f"xccdf:ident[@system='{CCE}']", nsmap).text
         stig_ids = []
@@ -145,7 +144,8 @@ def compare_results(ssg_results, disa_results):
             ssg_rule_result.final_result = ComparisonResult.MISSING
         for stig_id in ssg_rule_result.stig_ids:
             comparison_result = compare_result_with_stig_id(
-                ssg_rule_result.result, stig_id, disa_results)
+                ssg_rule_result.result, stig_id, disa_results,
+            )
             disa_result = disa_results.get(stig_id, "not found")
             ssg_rule_result.stig_ids_results[stig_id] = disa_result
             if comparison_result == ComparisonResult.SAME:
@@ -172,7 +172,8 @@ def get_disa_result_to_str(stig_ids_results):
 def print_ssg_results(ssg_results):
     print(
         "Alignment CCE         Rule ID               Result                "
-        "Stig ID:DISA Result")
+        "Stig ID:DISA Result",
+    )
     for ssg_result in ssg_results.values():
         disa = get_disa_result_to_str(ssg_result.stig_ids_results)
         print(
@@ -180,7 +181,8 @@ def print_ssg_results(ssg_results):
             f"{ssg_result.cce_id} "
             f"{ssg_result.rule_id:<55} "
             f"{ssg_result.result:<20} "
-            f"{disa}")
+            f"{disa}",
+        )
 
 
 def report_misalignments(ssg_results):

@@ -47,6 +47,18 @@ jobs:
         run: python3 -m pip install ruff
       - name: Run ruff check
         run: ruff check
+  flake8-picky-parentheses:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install flake8-picky-parentheses
+        run: python3 -m pip install flake8 flake8-picky-parentheses
+      - name: Run flake8 check
+        run: |
+          python3 -m flake8 \
+            --isolated \
+            --require-plugins flake8-picky-parentheses \
+            --select PAR1
   tmt:
     runs-on: ubuntu-latest
     steps:
