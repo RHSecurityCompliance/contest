@@ -19,13 +19,21 @@ def reboot():
     if 'ATEX_TEST_CONTROL' in os.environ:
         fd = int(os.environ['ATEX_TEST_CONTROL'])
         with os.fdopen(fd, 'w', closefd=False) as control:
-            control.write('reconnect\n')
-        # TODO: temporarily work around race which might cause the above
-        #       to not be sent out before we reboot
-        time.sleep(1)
-        # prevent the test runner from reconnecting before reboot
-        util.subprocess_run(['systemctl', 'stop', 'sshd'], check=True, stderr=subprocess.PIPE)
-        util.subprocess_run(['reboot'])
+            util.log("doing disconnect + reboot")
+            control.write('disconnect\n')
+            control.flush()
+            # wait for the test control to actually break
+            while True:
+                try:
+                    control.write('noop\n')
+                    control.flush()
+                except BrokenPipeError:
+                    break
+                time.sleep(0.1)
+        # do reboot without util.log() output as the ssh stdio might be broken
+        # from the above - the DEVNULL also ensures 'reboot' can safely write
+        # to its outputs without getting EPIPE
+        subprocess.run(['reboot'], stdout=subprocess.DEVNULL, stderr=subprocess.STDOUT)
     elif shutil.which('tmt-reboot'):
         util.subprocess_run(['tmt-reboot'])
     elif shutil.which('rstrnt-reboot'):
