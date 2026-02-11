@@ -1,4 +1,3 @@
-result: custom
 environment+:
     PYTHONPATH: ../..
 # these are tools to be manually modified and executed,

@@ -1,6 +1,5 @@
 summary: Verify that HTML links from datastream are accessible.
 test: $CONTEST_PYTHON -m lib.runtest ./test.py
-result: custom
 environment+:
     PYTHONPATH: ../..
 duration: 5m

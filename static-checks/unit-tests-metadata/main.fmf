@@ -1,6 +1,5 @@
 summary: Check Automatus unit tests for metadata sanity
 test: $CONTEST_PYTHON -m lib.runtest ./test.py
-result: custom
 environment+:
     PYTHONPATH: ../..
 duration: 10m

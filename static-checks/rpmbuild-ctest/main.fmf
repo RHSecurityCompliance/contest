@@ -1,6 +1,5 @@
 summary: Builds from source and runs ctest
 test: $CONTEST_PYTHON -m lib.runtest ./test.py
-result: custom
 environment+:
     PYTHONPATH: ../..
 duration: 2h

@@ -1,6 +1,5 @@
 summary: Check content with NIST SCAP Content Validation Tool.
 test: $CONTEST_PYTHON -m lib.runtest ./test.py
-result: custom
 environment+:
     PYTHONPATH: ../..
 duration: 15m

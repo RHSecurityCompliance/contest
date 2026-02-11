@@ -1,6 +1,5 @@
 summary: Check that no rule has been removed between old/new datastreams
 test: $CONTEST_PYTHON -m lib.runtest ./test.py
-result: custom
 environment+:
     PYTHONPATH: ../..
 duration: 10m

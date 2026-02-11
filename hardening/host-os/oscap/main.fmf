@@ -1,6 +1,5 @@
 summary: Runs oscap remediation directly on the target system
 test: $CONTEST_PYTHON -m lib.runtest ./test.py
-result: custom
 environment+:
     PYTHONPATH: ../../..
 duration: 1h

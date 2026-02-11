@@ -1,50 +1,12 @@
 import os
 import sys
 import runpy
-import signal
 import traceback
 import tempfile
 import urllib3
 from pathlib import Path
 
-from lib import util, metadata, results
-
-
-# handle test duration on our own, don't rely on TMT -
-# this is because when TMT triggers a timeout, we fall into one of two cases:
-#   1) "best" case - error that test didn't provide results.yaml (yet);
-#      note that this error result has no output.txt, so you can't actually see
-#      what the test timed out on
-#   2) worst case - test reported some PASS results before timing out, and TMT
-#      takes this as all possible results and silently PASSes the test as if
-#      nothing happened
-def _setup_timeout_handling():
-    duration = metadata.duration_seconds()
-
-    # leave 50 seconds for our alarm timeout code
-    # (the large-ish value is to allow for time drift between our timekeeping
-    #  and tmt's timeout logic, for long-running tests)
-    duration -= 50
-
-    def _alarm_timed_out(signum, frame):  # noqa: ARG001
-        # sys.exit does run all cleanups (context manager, atexit, etc.),
-        # but do not rely on them finishing within 10 seconds - instead,
-        # emit the error result now + let TMT kill the test if cleanups
-        # take too long
-        # - the sys.exit() here also skips the exception catch-all in
-        #   the wider runtest.py body because SystemExit is not a subclass
-        #   of Exception
-        results.report_and_exit(
-            'error',
-            note="timed out: test probably froze on something, investigate logs",
-        )
-
-    signal.signal(signal.SIGALRM, _alarm_timed_out)
-    signal.alarm(duration)
-
-
-if util.running_in_tmt():
-    _setup_timeout_handling()
+from lib import results
 
 # disable annoying warnings when using requests with verify=False,
 # we know we're disabling TLS verification, yes, it's a bad idea in production,

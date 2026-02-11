@@ -3,7 +3,6 @@ description: |-
     Verify that all playbooks provided by the scap-security-guide package
     can run in check mode.
 test: $CONTEST_PYTHON -m lib.runtest ./test.py
-result: custom
 environment+:
     PYTHONPATH: ../../../..
 duration: 1h

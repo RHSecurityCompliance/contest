@@ -4,7 +4,6 @@ description: |-
     content include modules from the ansible-core RPM and modules from
     posix and community collections (on RHEL-8+ packaged in rhc-worker-playbook).
 test: $CONTEST_PYTHON -m lib.runtest ./test.py
-result: custom
 environment+:
     PYTHONPATH: ../../..
 duration: 15m
