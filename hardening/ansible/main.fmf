@@ -1,6 +1,5 @@
 summary: Runs ansible remediation and scan inside VMs
 test: $CONTEST_PYTHON -m lib.runtest ./test.py
-result: custom
 environment+:
     PYTHONPATH: ../..
 duration: 1h

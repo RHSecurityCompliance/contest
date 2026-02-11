@@ -7,7 +7,6 @@ description: |
     of audit rules which leads to improved performance.
     Also see https://bugzilla.redhat.com/show_bug.cgi?id=1876483.
 test: $CONTEST_PYTHON -m lib.runtest ./test.py
-result: custom
 environment+:
     PYTHONPATH: ../..
 duration: 15m

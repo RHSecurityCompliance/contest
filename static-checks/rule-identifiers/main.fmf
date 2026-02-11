@@ -1,6 +1,5 @@
 summary: Search for policy references in rules
 test: $CONTEST_PYTHON -m lib.runtest ./test.py
-result: custom
 environment+:
     PYTHONPATH: ../..
 duration: 10m

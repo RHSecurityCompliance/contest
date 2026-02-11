@@ -3,15 +3,23 @@ Functions and helpers for result management when working with
  - TMT (https://github.com/teemtee/tmt)
  - ATEX (https://github.com/RHSecurityCompliance/atex)
 
-TMT has a 'result:custom' feature (in test's main.fmf), which allows us to
-supply completely custom results as a YAML file, and TMT will use it as-is
-to represent a result from the test itself, and any results "under" it,
-effectively allowing a test to report more than 1 result.
+TMT uses the standard reporting behavior (result:respect), where
+the overall test outcome is determined by the exit code. Sub-results
+are reported as flat entries in tmt-report-results.yaml (the same file
+that the tmt-report-result script writes to), and TMT converts them into
+subresults under the main test result.
+Log files for the main result are submitted via the tmt-file-submit
+command, which copies them to the TMT data directory and registers them
+to be included in the main result's log list.
+See:
+https://tmt.readthedocs.io/en/stable/spec/results.html
+https://tmt.readthedocs.io/en/stable/spec/tests.html#spec-tests-result
 """
 
 import os
 import sys
 import shutil
+import subprocess
 import collections
 import json
 import yaml
@@ -32,9 +40,6 @@ class Counter(collections.defaultdict):
 
 
 global_counts = Counter()
-
-# file for storing global logs across reboots (only for TMT and plain reporting)
-GLOBAL_LOGS_FILE = '_global_logs.json'
 
 
 def have_atex_api():
@@ -63,55 +68,30 @@ def _allowed_by_verbosity(status):
     return True
 
 
-# read test pass/fail/error/etc. counts from an existing results file
-def _count_yaml_results(path):
-    counter = Counter()
-    with open(path) as f:
-        previous = yaml.safe_load(f)
-    for item in previous:
-        if 'result' in item:
-            counter[item['result']] += 1
-    return counter
-
-
-def _get_global_logs_path():
-    """Get the path of the global log storage file. Only for TMT and plain reporting."""
-    if have_tmt_api():
-        return Path(os.environ['TMT_TEST_DATA']) / GLOBAL_LOGS_FILE
-    else:
-        # plain mode: use current working directory
-        return Path(GLOBAL_LOGS_FILE)
-
-
-def _store_to_global_logs(new_logs):
+def _write_tmt_subresult(subresult):
     """
-    Append logs to the global log storage file (survives reboots).
-    Only for TMT and plain reporting.
+    Append a single subresult entry to tmt-report-results.yaml.
+    TMT converts the entry into a subresult under the main test result.
     """
-    if have_atex_api():
-        return  # ATEX handles logs itself via partial results
-    logs_file = _get_global_logs_path()
-    # read existing logs
-    if logs_file.exists():
-        with open(logs_file) as f:
-            existing = json.load(f)
-    else:
-        existing = []
-    # append new logs and write back
-    existing.extend(new_logs)
-    with open(logs_file, 'w') as f:
-        json.dump(existing, f)
+    test_data = Path(os.environ['TMT_TEST_DATA'])
+    # file that TMT reads for subresult entries (same as tmt-report-result writes to)
+    results_path = test_data / 'tmt-report-results.yaml'
+    with open(results_path, 'a') as f:
+        yaml.dump([subresult], f)
 
 
-def _read_from_global_logs():
-    """Read all logs from the global log storage file. Only for TMT and plain reporting."""
-    if have_atex_api():
-        return []  # ATEX handles logs itself via partial results
-    logs_file = _get_global_logs_path()
-    if logs_file.exists():
-        with open(logs_file) as f:
-            return json.load(f)
-    return []
+def _tmt_file_submit(filepath):
+    """
+    Submit a file as a log for the main test result using tmt-file-submit.
+
+    The script copies the file to TMT_TEST_DATA and registers it in
+    TMT_TEST_SUBMITTED_FILES. TMT's internal executor then extends
+    the main result's log list with the registered entries.
+    """
+    subprocess.run(
+        ['tmt-file-submit', '-l', str(filepath)],
+        stdout=subprocess.DEVNULL,
+    )
 
 
 def report_atex(status, name=None, note=None, logs=None, *, partial=False):
@@ -161,64 +141,57 @@ def report_atex(status, name=None, note=None, logs=None, *, partial=False):
         control.write(b'duration restore\n')
 
 
-def report_tmt(status, name=None, note=None, logs=None, *, add_output=True):
+def report_tmt(status, name=None, note=None, logs=None):
     test_data = Path(os.environ['TMT_TEST_DATA'])
-    results_path = Path(test_data / 'results.yaml')
-
-    # try to find and re-read previous results.yaml, in case this test
-    # has been rerun in-place by TMT, like ie. after a reboot
-    if global_counts.total() == 0 and results_path.exists():
-        previous = _count_yaml_results(results_path)
-        global_counts.update(previous)
 
     report_plain(status, name, note, logs)
 
-    if not _allowed_by_verbosity(status) and name:
-        return
+    if name:
+        # -- reporting a subresult --
+        if not _allowed_by_verbosity(status):
+            return
 
-    if not name:
-        name = '/'  # https://github.com/teemtee/tmt/issues/1855
+        subresult = {
+            'name': f'/{name}',
+            'result': status,
+        }
+        if note:
+            subresult['note'] = [note]
+
+        log_entries = []
+
+        # put logs into a name-based subdir tree inside the data dir,
+        # so that multiple results can have the same log names
+        dst = test_data / name
+        if logs:
+            dst.mkdir(parents=True, exist_ok=True)
+            for log in logs:
+                log = Path(log)
+                dstfile = dst / log.name
+                # only copy if not already present (add_log() may have already copied it)
+                if not dstfile.exists():
+                    shutil.copyfile(log, dstfile)
+                log_entries.append(str(dstfile.relative_to(test_data)))
+        # add an empty log if none are present, to work around Testing Farm
+        # and its Oculus result viewer expecting at least something
+        elif os.environ.get('TESTING_FARM_REQUEST_ID'):
+            dst.mkdir(parents=True, exist_ok=True)
+            dummy = dst / 'dummy.txt'
+            dummy.touch()
+            log_entries.append(str(dummy.relative_to(test_data)))
+
+        if log_entries:
+            subresult['log'] = log_entries
+
+        _write_tmt_subresult(subresult)
     else:
-        name = f'/{name}'
-
-    new_result = {
-        'name': name,
-        'result': status,
-    }
-    if note:
-        new_result['note'] = [note]
-
-    log_entries = []
-
-    if add_output and name == '/':
-        log_entries.append('../output.txt')
-
-    # put logs into a name-based subdir tree inside the data dir,
-    # so that multiple results can have the same log names
-    dst = test_data / name[1:]
-    # copy logs to tmt test data dir
-    if logs:
-        dst.mkdir(parents=True, exist_ok=True)
-        for log in logs:
-            log = Path(log)
-            dstfile = dst / log.name
-            # Only copy if not already present (add_log() may have already copied it)
-            if not dstfile.exists():
-                shutil.copyfile(log, dstfile)
-            log_entries.append(str(dstfile.relative_to(test_data)))
-    # add an empty log if none are present, to work around Testing Farm
-    # and its Oculus result viewer expecting at least something
-    elif os.environ.get('TESTING_FARM_REQUEST_ID'):
-        dst.mkdir(parents=True, exist_ok=True)
-        dummy = (dst / 'dummy.txt')
-        dummy.touch()
-        log_entries.append(str(dummy.relative_to(test_data)))
-
-    if log_entries:
-        new_result['log'] = log_entries
-
-    with open(results_path, 'a') as f:
-        yaml.dump([new_result], f)
+        # -- main test result --
+        # TMT handles the main result via exit code; submit any directly-passed
+        # logs via tmt-file-submit so TMT includes them in the main result
+        # (logs added earlier via add_log() were already submitted)
+        if logs:
+            for log in logs:
+                _tmt_file_submit(log)
 
 
 def report_plain(status, name=None, note=None, logs=None):
@@ -229,7 +202,7 @@ def report_plain(status, name=None, note=None, logs=None):
     util.log(f'{status.upper()} {name}{note}{logs}')
 
 
-def report(status, name=None, note=None, logs=None, *, add_output=True):
+def report(status, name=None, note=None, logs=None):
     """
     Report a test result.
 
@@ -239,10 +212,6 @@ def report(status, name=None, note=None, logs=None, *, add_output=True):
 
     'logs' is a list of file paths (relative to CWD) to be copied
     or uploaded, and associated with the new result.
-
-    'add_output' specifies whether to add the test's own std* console
-    output, as captured by TMT, to the list of logs whenever 'name'
-    is empty.
 
     Returns the final 'status', potentially modified by the waiving logic.
     """
@@ -260,7 +229,7 @@ def report(status, name=None, note=None, logs=None, *, add_output=True):
     if have_atex_api():
         report_atex(status, name, note, logs)
     elif have_tmt_api():
-        report_tmt(status, name, note, logs, add_output=add_output)
+        report_tmt(status, name, note, logs)
     else:
         report_plain(status, name, note, logs)
 
@@ -271,22 +240,17 @@ def report(status, name=None, note=None, logs=None, *, add_output=True):
 
 def add_log(*logs):
     """
-    Add log file(s) to be associated with the main test result as reported
-    by the report_and_exit() function.
+    Add log file(s) to be associated with the main test result.
 
     The log file(s) will be processed immediately:
     - For ATEX: uploaded incrementally using report_atex() with partial=True
-    - For TMT: copied to the TMT data directory and stored in global log storage
-      file to survive reboots
-    - For plain: stored in global log storage file to survive reboots
+    - For TMT: submitted via tmt-file-submit so they appear on the main result
 
     This allows logs to be added incrementally throughout the test,
     and ensures they're available even if the test later fails with a traceback.
 
     Multiple logs can be added by calling this function multiple times,
     or by passing multiple arguments.
-    All accumulated logs will be included in the final report by report_and_exit()
-    except for ATEX which handles this itself.
     """
     if have_atex_api():
         # partial results are overwritten by the final result so we report an error partial result
@@ -294,16 +258,8 @@ def add_log(*logs):
         # https://github.com/RHSecurityCompliance/atex/blob/main/atex/executor/RESULTS.md#partial-results
         report_atex(status='error', logs=logs, partial=True)
     elif have_tmt_api():
-        test_data = Path(os.environ['TMT_TEST_DATA'])
-        new_logs = []
         for log in logs:
-            log = Path(log)
-            dstfile = test_data / log.name
-            shutil.copyfile(log, dstfile)
-            new_logs.append(str(dstfile.relative_to(test_data)))
-        _store_to_global_logs(new_logs)
-    else:
-        _store_to_global_logs([str(log) for log in logs])
+            _tmt_file_submit(log)
 
 
 def report_and_exit(status=None, note=None, logs=None):
@@ -312,8 +268,7 @@ def report_and_exit(status=None, note=None, logs=None):
     on whether there were any failures reported during execution of
     the test.
 
-    Any logs previously added via add_log() will be automatically included.
-    Additional logs can still be passed via the 'logs' parameter.
+    Additional logs can be passed via the 'logs' parameter.
     """
     # figure out overall test status based on previously reported results
     if not status:
@@ -327,12 +282,8 @@ def report_and_exit(status=None, note=None, logs=None):
         else:
             status = 'pass'
 
-    # read logs from global log storage file and combine with directly passed logs
-    stored_logs = _read_from_global_logs()
-    all_logs = (stored_logs + logs) if logs else stored_logs
-
-    # report and pass the status through the waiving logic, use combined logs or None if empty
-    status = report(status=status, note=note, logs=(all_logs or None))
+    # report and pass the status through the waiving logic
+    status = report(status=status, note=note, logs=logs)
 
     # exit based on the new status
     if status == 'fail':

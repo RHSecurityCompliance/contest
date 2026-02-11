@@ -1,6 +1,5 @@
 summary: Remediates VM via oscap-generated kickstart, scans via oscap
 test: $CONTEST_PYTHON -m lib.runtest ./test.py
-result: custom
 environment+:
     PYTHONPATH: ../..
 duration: 1h

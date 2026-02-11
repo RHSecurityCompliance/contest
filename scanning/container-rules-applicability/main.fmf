@@ -1,6 +1,5 @@
 summary: Check rules applicability when scanning containers.
 test: $CONTEST_PYTHON -m lib.runtest ./test.py
-result: custom
 environment+:
     PYTHONPATH: ../..
 duration: 30m

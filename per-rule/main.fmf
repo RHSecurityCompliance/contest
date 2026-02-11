@@ -8,7 +8,6 @@ description: |-
     The RULE variable (with space-separated one or more rule names) can be used
     to override this and run tests for only specific rule(s).
 test: $CONTEST_PYTHON -m lib.runtest ./test.py
-result: custom
 environment+:
     PYTHONPATH: ..
 duration: 2h
