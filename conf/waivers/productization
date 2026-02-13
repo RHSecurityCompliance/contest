@@ -206,6 +206,11 @@
 /per-rule/.+/ensure_redhat_gpgkey_installed/.*
     rhel == 10.2
 
+# https://github.com/ComplianceAsCode/content/issues/14388
+# Remediation outputs /etc/systemd/logind.conf.d does not exist
+/hardening/.+/logind_session_timeout
+    rhel == 9 or rhel == 10
+
 # test scenarios for some rules which were I believe recently added to rhel8 datastream fail
 # https://github.com/ComplianceAsCode/content/issues/14289
 /per-rule/.+/accounts_password_pam_unix_enabled/correct.pass
