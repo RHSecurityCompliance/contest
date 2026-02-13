@@ -36,6 +36,7 @@ ignore = [
     "RUF010",   # explicit-f-string-type-conversion
     "RUF012",   # mutable-class-default
     "RUF067",   # non-empty-init-module
+    "RUF069",   # float-equality-comparison
     "RUF100",   # unused-noqa
 
     # rules from preview
