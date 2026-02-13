@@ -1,0 +1,117 @@
+summary: Limited no-virt-HW CaC/content upstream testing as parallel plans
+discover:
+    how: fmf
+    filter:
+      - tag:-needs-param
+      - tag:-always-fails
+      - tag:-broken
+      - tag:-subset-profile
+environment:
+    CONTEST_VERBOSE: "0"
+
+# don't be afraid to include ALL possible profiles supported by any RHEL
+# down below - TMT context (adjust rules) still apply, and empty plans
+# (if test is not relevant) are silently SKIPPED for any given RHEL or
+# CentOS Stream combination
+
+/oscap/anssi_bp28_high:
+    discover+: {test: /hardening/host-os/oscap/anssi_bp28_high$}
+/oscap/anssi_bp28_enhanced:
+    discover+: {test: /hardening/host-os/oscap/anssi_bp28_enhanced$}
+/oscap/anssi_bp28_intermediary:
+    discover+: {test: /hardening/host-os/oscap/anssi_bp28_intermediary$}
+/oscap/anssi_bp28_minimal:
+    discover+: {test: /hardening/host-os/oscap/anssi_bp28_minimal$}
+/oscap/bsi:
+    discover+: {test: /hardening/host-os/oscap/bsi$}
+/oscap/cis:
+    discover+: {test: /hardening/host-os/oscap/cis$}
+/oscap/cis_server_l1:
+    discover+: {test: /hardening/host-os/oscap/cis_server_l1$}
+/oscap/cis_workstation_l2:
+    discover+: {test: /hardening/host-os/oscap/cis_workstation_l2$}
+/oscap/cis_workstation_l1:
+    discover+: {test: /hardening/host-os/oscap/cis_workstation_l1$}
+/oscap/cui:
+    discover+: {test: /hardening/host-os/oscap/cui$}
+/oscap/e8:
+    discover+: {test: /hardening/host-os/oscap/e8$}
+/oscap/hipaa:
+    discover+: {test: /hardening/host-os/oscap/hipaa$}
+/oscap/ism_o:
+    discover+: {test: /hardening/host-os/oscap/ism_o$}
+/oscap/ism_o_secret:
+    discover+: {test: /hardening/host-os/oscap/ism_o_secret$}
+/oscap/ism_o_top_secret:
+    discover+: {test: /hardening/host-os/oscap/ism_o_top_secret$}
+/oscap/ospp:
+    discover+: {test: /hardening/host-os/oscap/ospp$}
+/oscap/pci-dss:
+    discover+: {test: /hardening/host-os/oscap/pci-dss$}
+/oscap/stig:
+    discover+: {test: /hardening/host-os/oscap/stig$}
+/oscap/stig_gui:
+    discover+: {test: /hardening/host-os/oscap/stig_gui$}
+/oscap/ccn_advanced:
+    discover+: {test: /hardening/host-os/oscap/ccn_advanced$}
+/oscap/ccn_intermediate:
+    discover+: {test: /hardening/host-os/oscap/ccn_intermediate$}
+/oscap/ccn_basic:
+    discover+: {test: /hardening/host-os/oscap/ccn_basic$}
+
+/ansible/anssi_bp28_high:
+    discover+: {test: /hardening/host-os/ansible/anssi_bp28_high$}
+/ansible/anssi_bp28_enhanced:
+    discover+: {test: /hardening/host-os/ansible/anssi_bp28_enhanced$}
+/ansible/anssi_bp28_intermediary:
+    discover+: {test: /hardening/host-os/ansible/anssi_bp28_intermediary$}
+/ansible/anssi_bp28_minimal:
+    discover+: {test: /hardening/host-os/ansible/anssi_bp28_minimal$}
+/ansible/bsi:
+    discover+: {test: /hardening/host-os/ansible/bsi$}
+/ansible/cis:
+    discover+: {test: /hardening/host-os/ansible/cis$}
+/ansible/cis_server_l1:
+    discover+: {test: /hardening/host-os/ansible/cis_server_l1$}
+/ansible/cis_workstation_l2:
+    discover+: {test: /hardening/host-os/ansible/cis_workstation_l2$}
+/ansible/cis_workstation_l1:
+    discover+: {test: /hardening/host-os/ansible/cis_workstation_l1$}
+/ansible/cui:
+    discover+: {test: /hardening/host-os/ansible/cui$}
+/ansible/e8:
+    discover+: {test: /hardening/host-os/ansible/e8$}
+/ansible/hipaa:
+    discover+: {test: /hardening/host-os/ansible/hipaa$}
+/ansible/ism_o:
+    discover+: {test: /hardening/host-os/ansible/ism_o$}
+/ansible/ism_o_secret:
+    discover+: {test: /hardening/host-os/ansible/ism_o_secret$}
+/ansible/ism_o_top_secret:
+    discover+: {test: /hardening/host-os/ansible/ism_o_top_secret$}
+/ansible/ospp:
+    discover+: {test: /hardening/host-os/ansible/ospp$}
+/ansible/pci-dss:
+    discover+: {test: /hardening/host-os/ansible/pci-dss$}
+/ansible/stig:
+    discover+: {test: /hardening/host-os/ansible/stig$}
+/ansible/stig_gui:
+    discover+: {test: /hardening/host-os/ansible/stig_gui$}
+/ansible/ccn_advanced:
+    discover+: {test: /hardening/host-os/ansible/ccn_advanced$}
+/ansible/ccn_intermediate:
+    discover+: {test: /hardening/host-os/ansible/ccn_intermediate$}
+/ansible/ccn_basic:
+    discover+: {test: /hardening/host-os/ansible/ccn_basic$}
+
+/static-checks:
+    discover+:
+        test:
+          - /static-checks
+        exclude:
+          # frequently fails on transient issues, run it only in stabilization
+          - /static-checks/html-links
+          # occasionally fails, is not useful on a daily/weekly basis
+          - /static-checks/nist-validation
+
+# vim: syntax=yaml
