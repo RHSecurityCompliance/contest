@@ -43,6 +43,11 @@
 /scanning/disa-alignment/.+/package_tftp-server_removed
     rhel == 9
 
+# https://github.com/ComplianceAsCode/content/issues/14390
+# The rule is failing on DISA content
+/scanning/disa-alignment/(oscap|ansible)/mount_option_nodev_nonroot_local_partitions
+    rhel == 8
+
 # RHEL10 - No official RHEL10 STIG benchmark yet
 /static-checks/rule-identifiers/stig/stigid/.*
 /static-checks/rule-identifiers/stig/stigref/.*
