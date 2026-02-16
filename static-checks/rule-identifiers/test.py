@@ -73,13 +73,14 @@ for ref_profile, nested in profile_references.items():
 
     for ref_name, ref_url in nested.items():
         for rule in profiles[ref_profile].rules:
+            result_name = f'{ref_profile}/{ref_name}/{rule}'
             # Skip rules from 'needed_rules' controls - they don't have actual requirement IDs
             if (ref_profile == 'stig'
                 and rule in rule_stigid_text
                 and rule_stigid_text[rule] == 'needed_rules'):
+                results.report('skip', result_name, 'rule tagged with needed_rules identifier')
                 continue
 
-            result_name = f'{ref_profile}/{ref_name}/{rule}'
             if ref_url in rule_references[rule]:
                 results.report('pass', result_name)
             else:
