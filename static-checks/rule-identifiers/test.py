@@ -48,14 +48,23 @@ profiles = oscap.global_ds().profiles
 
 # Parse from datastream all rules and all their references
 rule_references = defaultdict(set)
+# Collect stigid text values
+rule_stigid_text = {}
+
 for frames, elements in oscap.parse_xml(util.get_datastream()):
     if len(frames) < 3 or frames[-3:] != ['Group', 'Rule', 'reference']:
         continue
 
     rule, reference = elements[-2:]
-    rule = rule.get('id').removeprefix('xccdf_org.ssgproject.content_rule_')
-    reference = reference.get('href')
-    rule_references[rule].add(reference)
+    rule_id = rule.get('id').removeprefix('xccdf_org.ssgproject.content_rule_')
+    ref_href = reference.get('href')
+    ref_text = reference.text
+
+    rule_references[rule_id].add(ref_href)
+
+    # Store the control ID
+    if ref_text and 'stigs/downloads' in ref_href:
+        rule_stigid_text[rule_id] = ref_text
 
 for ref_profile, nested in profile_references.items():
     if ref_profile not in profiles:
@@ -65,6 +74,13 @@ for ref_profile, nested in profile_references.items():
     for ref_name, ref_url in nested.items():
         for rule in profiles[ref_profile].rules:
             result_name = f'{ref_profile}/{ref_name}/{rule}'
+            # Skip rules from 'needed_rules' controls - they don't have actual requirement IDs
+            if (ref_profile == 'stig'
+                and rule in rule_stigid_text
+                and rule_stigid_text[rule] == 'needed_rules'):
+                results.report('skip', result_name, 'rule tagged with needed_rules identifier')
+                continue
+
             if ref_url in rule_references[rule]:
                 results.report('pass', result_name)
             else:
