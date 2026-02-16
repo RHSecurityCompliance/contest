@@ -74,7 +74,9 @@ for ref_profile, nested in profile_references.items():
     for ref_name, ref_url in nested.items():
         for rule in profiles[ref_profile].rules:
             # Skip rules from 'needed_rules' controls - they don't have actual requirement IDs
-            if rule in rule_stigid_text and rule_stigid_text[rule] == 'needed_rules':
+            if (ref_profile == 'stig'
+                and rule in rule_stigid_text
+                and rule_stigid_text[rule] == 'needed_rules'):
                 continue
 
             result_name = f'{ref_profile}/{ref_name}/{rule}'
