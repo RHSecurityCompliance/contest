@@ -3,8 +3,6 @@ discover:
     how: fmf
     filter:
       - tag:-needs-param
-      - tag:-always-fails
-      - tag:-broken
     test:
       # just some basic smoke testing that should never fail
       - /scanning/oscap-eval
@@ -15,6 +13,8 @@ discover:
       - /static-checks/html-links
       # nothing to compare with because only latest SSG is available there
       - /static-checks/removed-rules
+      # not useful in automated runs that are not manually reviewed
+      - /static-checks/diff
 adjust:
   - when: newa_batch is defined
     report:

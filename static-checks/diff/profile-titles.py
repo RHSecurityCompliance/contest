@@ -14,7 +14,7 @@ with util.get_old_datastream() as old_xml:
         old_title = old.profiles[profile].title
         new_title = new.profiles[profile].title
         if old_title != new_title:
-            results.report('fail', f'{profile}/-{old_title}')
-            results.report('fail', f'{profile}/+{new_title}')
+            results.report('info', f'{profile}/-{old_title}')
+            results.report('info', f'{profile}/+{new_title}')
 
 results.report_and_exit()

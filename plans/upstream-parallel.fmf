@@ -3,7 +3,6 @@ discover:
     how: fmf
     filter:
       - tag:-needs-param
-      - tag:-always-fails
       - tag:-broken
       - tag:-subset-profile
 environment:
@@ -111,6 +110,8 @@ environment:
         exclude:
           # frequently fails on transient issues, run it only in stabilization
           - /static-checks/html-links
+          # not useful in automated runs that are not manually reviewed
+          - /static-checks/diff
           # occasionally fails, is not useful on a daily/weekly basis
           - /static-checks/nist-validation
 

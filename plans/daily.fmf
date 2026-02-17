@@ -3,7 +3,6 @@ discover:
     how: fmf
     filter:
       - tag:-needs-param
-      - tag:-always-fails
       - tag:-broken
       - tag:-subset-profile
     test:
@@ -40,5 +39,7 @@ discover:
       - /static-checks/html-links
       # occasionally fails, is not useful on a daily/weekly basis
       - /static-checks/nist-validation
+      # not useful in automated runs that are not manually reviewed
+      - /static-checks/diff
 
 # vim: syntax=yaml

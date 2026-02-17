@@ -24,6 +24,6 @@ with util.get_old_datastream() as old_xml:
             added_removed.append(('+', name, value))
 
         for sign, name, value in sorted(added_removed, key=lambda x: x[1]):
-            results.report('fail', f'{profile}/{sign}{name}={value}')
+            results.report('info', f'{profile}/{sign}{name}={value}')
 
 results.report_and_exit()
