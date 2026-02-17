@@ -11,8 +11,8 @@ with util.get_old_datastream() as old_xml:
     new_profiles = set(new.profiles)
 
     for profile in sorted(old_profiles - new_profiles):
-        results.report('fail', f'-{profile}')
+        results.report('info', f'-{profile}')
     for profile in sorted(new_profiles - old_profiles):
-        results.report('fail', f'+{profile}')
+        results.report('info', f'+{profile}')
 
 results.report_and_exit()

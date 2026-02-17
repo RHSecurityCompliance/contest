@@ -1,8 +1,6 @@
 environment+:
     PYTHONPATH: ../..
 duration: 10m
-tag:
-  - always-fails
 adjust+:
   - when: arch != x86_64
     enabled: false
@@ -23,9 +21,3 @@ adjust+:
 /profile-variables:
     summary: Diff datastreams, output profile variable refine differences
     test: $CONTEST_PYTHON -m lib.runtest ./profile-variables.py
-
-/audit-sample-rules:
-    summary: Diff audit.rules between Content and installed auditd samples
-    test: $CONTEST_PYTHON -m lib.runtest ./audit-sample-rules.py
-    require+:
-      - audit

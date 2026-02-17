@@ -14,8 +14,8 @@ with util.get_old_datastream() as old_xml:
         old_rules = set(old.profiles[profile].rules)
         new_rules = set(new.profiles[profile].rules)
         for rule in sorted(old_rules - new_rules):
-            results.report('fail', f'{profile}/-{rule}')
+            results.report('info', f'{profile}/-{rule}')
         for rule in sorted(new_rules - old_rules):
-            results.report('fail', f'{profile}/+{rule}')
+            results.report('info', f'{profile}/+{rule}')
 
 results.report_and_exit()

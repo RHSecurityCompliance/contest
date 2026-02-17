@@ -1,0 +1,11 @@
+summary: Diff audit.rules between Content and installed auditd samples
+test: $CONTEST_PYTHON -m lib.runtest ./test.py
+environment+:
+    PYTHONPATH: ../..
+duration: 10m
+require+:
+  - audit
+adjust+:
+  - when: arch != x86_64
+    enabled: false
+    because: datastream is same on all architectures

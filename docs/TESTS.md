@@ -82,16 +82,6 @@ This indicates a test that is used as a "tool" in automation-assisted use
 cases. It should not run automatically in regular "all tests" runs, as it
 requires the user to give it input via environment variables (parameters).
 
-## `always-fails`
-
-This is a test that uses the `fail` status to indicate some unwanted findings,
-expecting the user to review the list manually. These `fail`s should not be
-waived automatically as they are specific to the configuration the user
-requested.
-
-A test like this is another form of a "tool" and should not be run regularly
-in use cases that expect `pass` to be the norm and `fail` to be a regression.
-
 ## `broken`
 
 This is a perfectly valid working test, but the functionality it tests is
