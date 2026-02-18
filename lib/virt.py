@@ -124,6 +124,7 @@ INSTALL_FAILURES = [
     br"Kernel panic - not syncing",
     br"The installer will now terminate",
     br"Failed to start .*the anaconda installation program",
+    br"Press any key to enter the Boot Manager Menu.",
 ]
 
 PIPE = subprocess.PIPE
@@ -434,7 +435,7 @@ class Guest:
                 *(virt_install_args if virt_install_args else []),
             ]
             if secure_boot:
-                virt_install += ['--boot', 'firmware=efi,loader_secure=yes']
+                virt_install += ['--boot', 'firmware=efi,loader_secure=no']
 
             util.log(f"calling {virt_install}")
             executable = util.libdir / 'pseudotty'
