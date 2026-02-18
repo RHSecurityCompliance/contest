@@ -426,7 +426,8 @@ class Guest:
                 '--initrd-inject', ksfile, '--os-variant', 'rhel8-unknown',
                 '--extra-args', (
                     f'console=ttyS0 inst.ks=file:/{ksfile.name} '
-                    'inst.notmux inst.noninteractive inst.noverifyssl inst.sshd'
+                    'inst.notmux inst.noninteractive inst.noverifyssl inst.sshd '
+                    'inst.loglevel=debug systemd.journald.forward_to_console=1'
                     + (' '+' '.join(kernel_args) if kernel_args else '')
                 ),
                 '--noreboot',
