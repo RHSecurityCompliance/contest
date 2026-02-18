@@ -2,7 +2,7 @@ summary: Compare SSG and DISA STIG benchmark scan results after Anaconda install
 test: $CONTEST_PYTHON -m lib.runtest ./anaconda.py
 environment+:
     PYTHONPATH: ../..
-duration: 1h
+duration: 30m
 adjust+:
   - when: distro >= rhel-10
     enabled: false

@@ -2,7 +2,7 @@ summary: Runs ImageBuilder remediation and scan inside VMs
 test: $CONTEST_PYTHON -m lib.runtest ./test.py
 environment+:
     PYTHONPATH: ../..
-duration: 1h
+duration: 30m
 require+:
   - openscap-scanner
   # virt library dependencies
