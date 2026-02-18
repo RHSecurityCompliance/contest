@@ -34,6 +34,10 @@ adjust+:
   - when: distro == rhel-9.0
     enabled: false
     because: xmlstarlet not available on 9.0
+# /per-rule tests often fail and need re-run, which is then slow
+# (each test takes a long time), so prioritize /per-rule above others
+# so it can re-run in the background
+extra-priority: 1
 
 /oscap:
     environment+:

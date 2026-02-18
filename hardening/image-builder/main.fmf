@@ -30,6 +30,10 @@ adjust+:
   - when: distro ~< rhel-8.10 or distro ~< rhel-9.4
     enabled: false
     because: there is no OSBuild or Image Builder on old RHEL8/9 contain old OSBuild
+# the OSBuild composer frequently fails on race conditions and needs reruns,
+# slowing down the test run if this happens late, so prioritize it early on,
+# so the re-run can happen in the background
+extra-priority: 1
 
 /anssi_bp28_high:
 
