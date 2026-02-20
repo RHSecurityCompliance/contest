@@ -91,10 +91,16 @@ if [[ -f $variables_file ]]; then
             # - bash printf can print anything except 0x00 (which is fine)
             while IFS= read -r playbook_line; do
                 if [[ $playbook_line =~ ^([[:space:]]+)$key: ]]; then
+                    # if the value ends with \n, preserve any trailing newlines,
+                    # otherwise strip the \n we add via printf below
+                    [[ ${value: -1} == $'\n' ]] && newlines='|+1' || newlines='|-1'
                     # vars:
-                    #     var_something: |1
+                    #     var_simple_value: |-1        ---> '100'
                     #      100
-                    printf '%s%s: |1\n' "${BASH_REMATCH[1]}" "$key"
+                    #     var_multiline_value: |+1     ---> '1 2\n3 4\n'
+                    #      1 2
+                    #      3 4
+                    printf '%s%s: %s\n' "${BASH_REMATCH[1]}" "$key" "$newlines"
                     while IFS= read -r value_line; do
                         # prefix each value line with the original indent + 1 space
                         printf '%s %s\n' "${BASH_REMATCH[1]}" "$value_line"
