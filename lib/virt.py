@@ -411,7 +411,6 @@ class Guest:
 
         disk_extension = 'qcow2' if disk_format == 'qcow2' else 'img'
         disk_path = Path(f'{GUEST_IMG_DIR}/{self.name}.{disk_extension}')
-        cpus = os.cpu_count() or 1
 
         with kickstart.to_tmpfile() as ksfile:
             virt_install = [
@@ -419,7 +418,7 @@ class Guest:
                 # installing from HTTP URL leads to Anaconda downloading stage2
                 # to RAM, leading to notably higher memory requirements during
                 # installation
-                '--name', self.name, '--vcpus', str(cpus), '--memory', str(INSTALL_TIME_RAM),
+                '--name', self.name, '--vcpus', '1', '--memory', str(INSTALL_TIME_RAM),
                 '--disk', f'path={disk_path},size=20,format={disk_format},io=native,cache=none',
                 '--network', 'network=default', '--location', location,
                 '--graphics', 'none', '--console', 'pty', '--rng', '/dev/urandom',
@@ -527,11 +526,9 @@ class Guest:
 
         util.log(f"importing {disk_path} as {disk_format}")
 
-        cpus = os.cpu_count() or 1
-
         virt_install = [
             'pseudotty', 'virt-install',
-            '--name', self.name, '--vcpus', str(cpus), '--memory', str(INSTALL_TIME_RAM),
+            '--name', self.name, '--vcpus', '1', '--memory', str(INSTALL_TIME_RAM),
             '--disk', f'path={disk_path},format={disk_format},io=native,cache=none',
             '--network', 'network=default',
             '--graphics', 'none', '--console', 'pty', '--rng', '/dev/urandom',
