@@ -1,12 +1,11 @@
 #!/usr/bin/python3
 
 import re
-import requests
+import subprocess
 
 from lib import util, results
 
 
-headers = {'User-Agent': 'Mozilla/5.0 (X11; Linux x86_64;)'}
 url_regex = re.compile(r'href=[\'"]?(http[^\'" ]+)', re.IGNORECASE)
 
 with open(util.get_datastream()) as ds:
@@ -14,11 +13,19 @@ with open(util.get_datastream()) as ds:
     urls = set(url_regex.findall(ds_content))
 
 for url in urls:
-    try:
-        r = requests.get(url, timeout=10, headers=headers)
-        r.raise_for_status()
-    except requests.exceptions.RequestException as err:
-        results.report('fail', url, err)
+    # log the URL in case we hit an anti-bot detection that spams the client
+    # with GBs of data, causing a test timeout and the URL to never otherwise
+    # be reported (because the result doesn't get reported)
+    util.log(f"trying url: {url}")
+
+    proc = subprocess.run(
+        ["curl", "--retry", "10", "-sSfL", url],
+        stdout=subprocess.DEVNULL,
+        stderr=subprocess.PIPE,
+        text=True,
+    )
+    if proc.returncode != 0:
+        results.report('fail', url, proc.stderr.rstrip('\n'))
     else:
         results.report('pass', url)
 

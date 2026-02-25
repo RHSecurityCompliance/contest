@@ -29,7 +29,15 @@
     "failed: certificate has expired" in note
 # Inaccessible until form is filled:
 /static-checks/html-links/https://docs-prv.pcisecuritystandards.org/PCI%20DSS/Standard/PCI-DSS-v4_0.pdf
-    True
+/static-checks/html-links/https://fossies.org/linux/Linux-PAM-docs/doc/sag/Linux-PAM_SAG.pdf
+/static-checks/html-links/https://www.iso.org/contents/data/standard/05/45/54534.html
+    "URL returned error: 403" in note
+# likely has bot detection
+/static-checks/html-links/https://www.cyber.mil/stigs/downloads/.*
+    "Connection reset by peer" in note
+# also bot detection?
+/static-checks/html-links/https://www.cyber.gov.au/acsc/view-all-content/ism
+    bool(re.search("HTTP/2 stream [0-9]+ was not closed cleanly: INTERNAL_ERROR", note))
 
 # no STIG ID for CentOS products
 /static-checks/rule-identifiers/stig/stigid/.*
