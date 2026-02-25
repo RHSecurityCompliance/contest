@@ -29,6 +29,9 @@
     "failed: certificate has expired" in note
 # Inaccessible until form is filled:
 /static-checks/html-links/https://docs-prv.pcisecuritystandards.org/PCI%20DSS/Standard/PCI-DSS-v4_0.pdf
+/static-checks/html-links/https://fossies.org/linux/Linux-PAM-docs/doc/sag/Linux-PAM_SAG.pdf
+/static-checks/html-links/https://www.iso.org/contents/data/standard/05/45/54534.html
+/static-checks/html-links/https://www.cyber.mil/stigs/cci/
     True
 
 # no STIG ID for CentOS products
