@@ -91,6 +91,7 @@ The expression has these globals available:
 - `rhel` - an object capable of RHEL version comparison, see
   [versions.rhel](../lib/versions.py)
 - `env` - environment variable retrieval function, same as `os.environ.get()`
+- `re` - the Python `re` module for matching regular expressions
 - `no_remediation` - function which takes remediation (fix) type(s) as an argument,
   returns `bool` whether the rule extracted from the test `name` (see `match_result()`
   function in [lib/waive.py](../lib/waive.py)) has no remediation(s) of the given remediation

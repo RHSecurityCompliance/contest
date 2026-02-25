@@ -225,6 +225,7 @@ def match_result(status, name, note):
         'rhel': versions.rhel,
         # environmental
         'env': os.environ.get,
+        're': re,
         'no_remediation': _rule_has_no_remediation,
         'fix': oscap.FixType,
         # special
