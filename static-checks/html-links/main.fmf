@@ -2,9 +2,9 @@ summary: Verify that HTML links from datastream are accessible.
 test: $CONTEST_PYTHON -m lib.runtest ./test.py
 environment+:
     PYTHONPATH: ../..
-duration: 5m
-recommend+:
-  - python3-requests
+duration: 15m
+require+:
+  - curl
 adjust+:
   - enabled: false
     when: arch != x86_64
