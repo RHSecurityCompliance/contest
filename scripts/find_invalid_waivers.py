@@ -78,7 +78,8 @@ def match_result_mark_waiver(regexes_matched_list, version, arch, status, name, 
         'arch': arch,
         'rhel': _FakeRhel(version),
         # environmental
-        'env': '',
+        'env': lambda _key, default=None: default,  # like dict.get()
+        're': re,
         'no_remediation': lambda *_args, **_kwargs: False,
         'fix': oscap.FixType,
         # special
