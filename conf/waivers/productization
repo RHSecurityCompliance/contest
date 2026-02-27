@@ -120,6 +120,7 @@
 # https://github.com/ComplianceAsCode/content/issues/12942
 # https://issues.redhat.com/browse/RHEL-4722
 /hardening/anaconda/ospp/configure_crypto_policy
+/hardening/anaconda/stig/configure_crypto_policy
 /hardening/anaconda/ospp/enable_fips_mode
 /hardening/anaconda/.+/harden_sshd_ciphers_openssh_conf_crypto_policy
     rhel == 8
