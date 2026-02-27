@@ -77,8 +77,7 @@ def repo_files():
     Yield Paths of all enabled repository files (yum.repos.d) on the host.
     """
     # deduplicate paths
-    files = {repo.file for repo in _get_repos()}
-    yield from files
+    yield from {repo.file for repo in _get_repos()}
 
 
 def repo_gpg_keys():
@@ -123,8 +122,7 @@ def download_rpm(nvr, source=False):
         util.subprocess_run(cmd, check=True, stderr=subprocess.PIPE)
         # unfortunately, these commands mix debug output into stdout, before the
         # printed out NVR of the downloaded package, so just glob it afterwards
-        rpmfile = next(Path(tmpdir).glob('*.rpm'))
-        yield rpmfile
+        yield next(Path(tmpdir).glob('*.rpm'))
 
 
 @contextlib.contextmanager
