@@ -237,6 +237,7 @@
 # https://github.com/coreos/bootupd/issues/952
 # https://issues.redhat.com/browse/OPENSCAP-5326
 /hardening/container/(anaconda-ostree|bootc-image-builder|old-new)/.+/file_permissions_grub2_cfg
+/hardening/container/(anaconda-ostree|bootc-image-builder|old-new)/.+/file_permissions_efi_grub2_cfg
     rhel == 10.0
 
 # vim: syntax=python
