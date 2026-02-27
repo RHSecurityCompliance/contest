@@ -231,4 +231,12 @@
 /per-rule/.+/accounts_passwords_pam_faillock_unlock_time_with_zero/zero.pass
     rhel == 8
 
+# File /boot/grub2/grub2.cfg is created with lenient permissions by
+# bootupd during the installation of a bootable container image.
+# Tests still fail on RHEL 10.0
+# https://github.com/coreos/bootupd/issues/952
+# https://issues.redhat.com/browse/OPENSCAP-5326
+/hardening/container/(anaconda-ostree|bootc-image-builder|old-new)/.+/file_permissions_grub2_cfg
+    rhel == 10.0
+
 # vim: syntax=python
