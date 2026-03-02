@@ -19,4 +19,11 @@
 /hardening/.+/enable_gpgcheck_for_all_repositories
     rhel.is_centos()
 
+# Testing farm RHEL 10.2 systems on s390x don't configure server pool in /etc/chrony.conf.
+# Consequently, remediations in these rules can't add the server pool settings.
+# See: https://issues.redhat.com/browse/TFT-4206
+/hardening/host-os/.+/chrony_set_nts
+/hardening/host-os/.+/chronyd_or_ntpd_set_maxpoll
+    rhel == 10.2 and arch == 's390x'
+
 # vim: syntax=python

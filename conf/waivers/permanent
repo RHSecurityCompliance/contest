@@ -104,4 +104,9 @@
 /hardening/container/.+
     Match(no_remediation(fix.bash | fix.bootc), note="no bash nor bootc remediation")
 
+# Service rngd sometimes fails to start because of time out
+# see https://issues.redhat.com/browse/RHEL-19983
+/hardening/host-os/.+/service_rngd_enabled
+    rhel == 8
+
 # vim: syntax=python
