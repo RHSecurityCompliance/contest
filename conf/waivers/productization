@@ -209,12 +209,6 @@
 /per-rule/oscap/.+/accounts_password_pam_unix_no_remember/remember_present_(password|system)_auth.fail
     rhel == 8 or rhel == 9
 
-# RHEL 10.2 doesn't contain the new post-quantum GPG key yet
-# https://issues.redhat.com/browse/RHELBLD-17165
-/hardening/.+/ensure_redhat_gpgkey_installed
-/per-rule/.+/ensure_redhat_gpgkey_installed/.*
-    rhel == 10.2
-
 # https://github.com/ComplianceAsCode/content/issues/14388
 # Remediation outputs /etc/systemd/logind.conf.d does not exist
 /hardening/.+/logind_session_timeout
