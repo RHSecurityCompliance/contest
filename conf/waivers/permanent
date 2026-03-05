@@ -109,4 +109,9 @@
 /hardening/host-os/.+/service_rngd_enabled
     rhel == 8
 
+# DISA says that the rule checking for libreswan cryptopolicy should be not applicable when libreswan not installed
+# we decide to show "pass" instead
+/scanning/disa-alignment/.+/configure_libreswan_crypto_policy
+    rhel == 8
+
 # vim: syntax=python
