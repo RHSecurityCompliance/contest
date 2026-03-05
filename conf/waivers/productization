@@ -74,8 +74,8 @@
 /hardening/[^/]+/with-gui/[^/]+/sysctl_net_ipv4_ip_forward
 # https://github.com/ComplianceAsCode/content/issues/13129
 /hardening/ansible/with-gui/stig_gui/sysctl_net_ipv4_conf_all_forwarding
-/hardening/ansible/with-gui/(cis_workstation_L1|cis_workstation_l2)/sysctl_net_ipv4_conf_all_forwarding
-/hardening/ansible/with-gui/(cis_workstation_L1|cis_workstation_l2)/sysctl_net_ipv4_conf_default_forwarding
+/hardening/ansible/with-gui/(cis_workstation_l1|cis_workstation_l2)/sysctl_net_ipv4_conf_all_forwarding
+/hardening/ansible/with-gui/(cis_workstation_l1|cis_workstation_l2)/sysctl_net_ipv4_conf_default_forwarding
     rhel == 8
 
 # https://github.com/ComplianceAsCode/content/issues/10901
