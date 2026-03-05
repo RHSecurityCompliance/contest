@@ -81,7 +81,10 @@
 # https://github.com/ComplianceAsCode/content/issues/10901
 # not sure what enables the service, but second remediation fixes the problem
 # and we cannot easily do double-remediation with OAA
+# moreover, the service_disabled requires that service is masked
+# and we currently do not do this for kickstart / anaconda, we just disable
 /hardening/anaconda/with-gui/[^/]+/service_rpcbind_disabled
+/hardening/anaconda/with-gui/cis_workstation_l2/service_cockpit_disabled
     rhel == 8
 /hardening/(anaconda|kickstart)/with-gui/cis_workstation_l(1|2)/service_dnsmasq_disabled
     True
