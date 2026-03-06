@@ -1,23 +1,10 @@
 # waivers for content issues found during productization (stabilization) testing
 # approximately sorted by test categories and history
 
-# https://github.com/ComplianceAsCode/content/issues/12561
-/scanning/disa-alignment/.*/logind_session_timeout
-    rhel == 8
 # https://github.com/ComplianceAsCode/content/issues/11698
 /scanning/disa-alignment/.*/no_shelllogin_for_systemaccounts
-# https://github.com/ComplianceAsCode/content/issues/12573
-/scanning/disa-alignment/.*/sshd_set_keepalive
 # https://github.com/ComplianceAsCode/content/issues/11802
 /scanning/disa-alignment/[^/]+/auditd_audispd_configure_sufficiently_large_partition
-    rhel == 9
-# https://github.com/ComplianceAsCode/content/issues/9307 (DISA issue)
-/scanning/disa-alignment/.*/sysctl_kernel_yama_ptrace_scope
-# https://github.com/ComplianceAsCode/content/issues/11197 (DISA issue)
-/scanning/disa-alignment/.*/display_login_attempts
-    rhel == 8 or rhel == 9
-# https://github.com/ComplianceAsCode/content/issues/13011
-/scanning/disa-alignment/.*/accounts_password_pam_pwquality_retry
     rhel == 9
 # https://github.com/ComplianceAsCode/content/issues/13236
 /scanning/disa-alignment/ansible/networkmanager_dns_mode
@@ -25,14 +12,6 @@
 # https://github.com/ComplianceAsCode/content/issues/13676
 /scanning/disa-alignment/.*/coredump_disable_.+
     True
-# https://github.com/ComplianceAsCode/content/issues/13799
-/scanning/disa-alignment/.+/sysctl_kernel_core_pattern
-    rhel == 8 or rhel == 9
-
-# https://github.com/ComplianceAsCode/content/issues/13828
-/scanning/disa-alignment/.+/sysctl_net_ipv4_conf_default_rp_filter
-    rhel == 9
-
 # https://github.com/ComplianceAsCode/content/issues/14229
 # maybe it's related to the syntax change in rsyslog configuration files
 /scanning/disa-alignment/[^/]+/rsyslog_remote_access_monitoring
@@ -47,12 +26,6 @@
 # The rule is failing on DISA content
 /scanning/disa-alignment/(oscap|ansible)/mount_option_nodev_nonroot_local_partitions
     rhel == 8
-
-# https://github.com/ComplianceAsCode/content/issues/14453
-# The rules are failing on DISA content
-/scanning/disa-alignment/.+/configure_libreswan_crypto_policy
-/scanning/disa-alignment/.+/logind_session_timeout
-    rhel == 9
 
 # RHEL10 - No official RHEL10 STIG benchmark yet
 /static-checks/rule-identifiers/stig/stigid/.*
@@ -130,7 +103,6 @@
 /hardening/anaconda/ospp/configure_crypto_policy
 /hardening/anaconda/stig/configure_crypto_policy
 /hardening/anaconda/ospp/enable_fips_mode
-/hardening/anaconda/.+/harden_sshd_ciphers_openssh_conf_crypto_policy
     rhel == 8
 
 # https://github.com/ComplianceAsCode/content/issues/11565
@@ -153,49 +125,11 @@
 /hardening/container/(anaconda-ostree|bootc-image-builder|old-new)/.+/file_permissions_boot_grub2
     rhel == 10
 
-# These rules require OpenSCAP 1.3.12 or 1.4.2 to pass because they depend on
-# processing negative numbers by textfilecontent54_probe which is fixed by
-# https://github.com/OpenSCAP/openscap/pull/2210
-# https://github.com/ComplianceAsCode/content/issues/13412
-/hardening/.+/harden_sshd_ciphers_(openssh|opensshserver)_conf_crypto_policy
-/hardening/.+/harden_sshd_macs_(openssh|opensshserver)_conf_crypto_policy
-    rhel == 8
-
-# https://github.com/ComplianceAsCode/content/issues/14227
-# Probably due to a change in the syntax of rsyslog configuration files
-/hardening/.*/rsyslog_files_.*
-    rhel == 9 or rhel == 10
-
 # https://github.com/ComplianceAsCode/content/issues/13778
 /per-rule/.+/file_permissions_ungroupowned/unowned_file_tmp.fail
 /per-rule/.+/no_files_unowned_by_user/unowned_file_tmp.fail
 /per-rule/.+/file_permissions_unauthorized_world_writable/world_writable_tmp.fail
     True
-
-# https://github.com/ComplianceAsCode/content/issues/13844
-/hardening/container/.+/bsi/file_permissions_cron.*
-    rhel == 9
-
-# https://github.com/ComplianceAsCode/content/issues/13880
-/hardening/kickstart/ism_o
-/hardening/kickstart/ism_o_secret
-/hardening/kickstart/ism_o_top_secret
-/hardening/kickstart/stig
-/hardening/kickstart/uefi/ism_o
-/hardening/kickstart/uefi/ism_o_secret
-/hardening/kickstart/uefi/ism_o_top_secret
-/hardening/kickstart/uefi/stig
-/hardening/kickstart/with-gui/stig_gui
-/hardening/kickstart/with-gui/ism_o
-/hardening/kickstart/with-gui/ism_o_secret
-/hardening/kickstart/with-gui/ism_o_top_secret
-    rhel == 10 and status == 'error'
-
-# https://github.com/ComplianceAsCode/content/issues/13877
-/scanning/container-rules-applicability/fips_crypto_subpolicy
-    True
-/scanning/container-rules-applicability/fips_custom_stig_sub_policy
-    rhel == 9
 
 # Image builder issue. Image builder needs to add BSI, ISM Official Secret
 # and ISM Official Top Secret to its allow list, tracked under
@@ -209,29 +143,10 @@
 /hardening/image-builder/uefi/ism_o_top_secret
     rhel == 10 and status == 'error'
 
-# https://github.com/ComplianceAsCode/content/issues/14373
-/hardening/(container/)?(anaconda|image-builder|bootc-image-builder|anaconda-ostree)/(ospp|cui)/sysctl_kernel_core_pattern_empty_string
-    rhel == 9
-
-# https://github.com/ComplianceAsCode/content/issues/14213
-/per-rule/oscap/.+/accounts_password_pam_unix_no_remember/remember_present_(password|system)_auth.fail
-    rhel == 8 or rhel == 9
-
 # https://github.com/ComplianceAsCode/content/issues/14388
 # Remediation outputs /etc/systemd/logind.conf.d does not exist
 /hardening/.+/logind_session_timeout
     rhel == 9 or rhel == 10
-
-# test scenarios for some rules which were I believe recently added to rhel8 datastream fail
-# https://github.com/ComplianceAsCode/content/issues/14289
-/per-rule/.+/accounts_password_pam_unix_enabled/correct.pass
-/per-rule/.+/package_kea_removed/package-installed.fail
-/per-rule/.+/package_policycoreutils_installed/package-installed-removed.fail
-/per-rule/.+/package_policycoreutils_installed/package-removed.fail
-/per-rule/.+/accounts_passwords_pam_faillock_unlock_time_with_zero/correct.pass
-/per-rule/.+/accounts_passwords_pam_faillock_unlock_time_with_zero/high.pass
-/per-rule/.+/accounts_passwords_pam_faillock_unlock_time_with_zero/zero.pass
-    rhel == 8
 
 # File /boot/grub2/grub2.cfg is created with lenient permissions by
 # bootupd during the installation of a bootable container image.
