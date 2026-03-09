@@ -38,6 +38,13 @@
 /static-checks/rule-identifiers/stig/stigid/.*
     rhel.is_centos()
 
+# DISA benchmark allows only released OS versions. Our content is fine with unreleased versions.
+# See for context: https://github.com/ComplianceAsCode/content/issues/11649
+# The waiver should be here even though the linked issue is closed
+# because we intentionally keep the content misaligned with DISA in this rule.
+/scanning/disa-alignment/.*/installed_OS_is_vendor_supported
+    True
+
 # No CCN identifiers for CentOS products
 # https://github.com/ComplianceAsCode/content/issues/14033
 /static-checks/rule-identifiers/ccn_advanced/ccn/.*
