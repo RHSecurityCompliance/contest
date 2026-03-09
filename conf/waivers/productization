@@ -102,6 +102,7 @@
 # https://issues.redhat.com/browse/RHEL-4722
 /hardening/anaconda/ospp/configure_crypto_policy
 /hardening/anaconda/stig/configure_crypto_policy
+/hardening/anaconda/with-gui/stig_gui/configure_crypto_policy
 /hardening/anaconda/ospp/enable_fips_mode
     rhel == 8
 
