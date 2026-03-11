@@ -166,4 +166,9 @@
 /hardening/host-os/(oscap|ansible)/stig/chronyd_or_ntpd_set_maxpoll
     rhel == 9 and arch == 'ppc64le'
 
+# https://github.com/ComplianceAsCode/content/issues/14546
+/hardening/image-builder/(uefi/)?cis(_workstation_l2)?/ensure_redhat_gpgkey_installed
+/hardening/kickstart/cis(_workstation_l2)?/ensure_redhat_gpgkey_installed
+    rhel == 10
+
 # vim: syntax=python
