@@ -148,6 +148,10 @@
 /hardening/image-builder/uefi/ism_o_top_secret
     rhel == 10 and status == 'error'
 
+# https://github.com/ComplianceAsCode/content/issues/14551
+/hardening/image-builder/stig
+    rhel == 8 and status = 'error'
+
 # https://github.com/ComplianceAsCode/content/issues/14388
 # Remediation outputs /etc/systemd/logind.conf.d does not exist
 /hardening/.+/logind_session_timeout
