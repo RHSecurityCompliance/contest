@@ -154,6 +154,9 @@ def report_tmt(status, name=None, note=None, logs=None):
         subresult = {
             'name': f'/{name}',
             'result': status,
+            # include dummy start and end time to satisfy Testing Farm Oculus result viewer
+            'start-time': '1970-01-01T00:00:00.00000+00:00',
+            'end-time': '1970-01-01T00:05:00.00000+00:00',
         }
         if note:
             subresult['note'] = [note]
