@@ -150,7 +150,7 @@
 
 # https://github.com/ComplianceAsCode/content/issues/14551
 /hardening/image-builder/stig
-    rhel == 8 and status = 'error'
+    rhel == 8 and status == 'error'
 
 # https://github.com/ComplianceAsCode/content/issues/14388
 # Remediation outputs /etc/systemd/logind.conf.d does not exist
