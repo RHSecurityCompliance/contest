@@ -175,4 +175,37 @@
 /hardening/kickstart/cis(_workstation_l2)?/ensure_redhat_gpgkey_installed
     rhel == 10
 
+# https://github.com/ComplianceAsCode/content/issues/14558
+/scanning/boot-errors/(e8|ism_o|ism_o_secret|ism_o_top_secret)/.*kdump.service.*
+/scanning/boot-errors/(e8|ism_o|ism_o_secret|ism_o_top_secret)/.*Failed to start Crash recovery kernel arming.*
+    True
+# https://github.com/ComplianceAsCode/content/issues/14559
+/scanning/boot-errors/(stig|ism_o|ism_o_secret|ism_o_top_secret)/.*sssd.service.*
+    rhel == 10
+/scanning/boot-errors/(stig|anssi_bp28_intermediary|anssi_bp28_enhanced|anssi_bp28_high)/.*sssd.service.*
+/scanning/boot-errors/(stig|anssi_bp28_intermediary|anssi_bp28_enhanced|anssi_bp28_high)/.*Failed to start System Security Services Daemon.*
+/scanning/boot-errors/(stig|anssi_bp28_intermediary|anssi_bp28_enhanced|anssi_bp28_high)/sssd.*No domain is enabled.*
+    rhel == 9
+# https://github.com/ComplianceAsCode/content/issues/14560
+/scanning/boot-errors/(cis|cis_workstation_l2|pci-dss|stig|hipaa)/auditd.*Email option is specified but /usr/lib/sendmail doesn't seem executable.*
+    rhel == 10
+/scanning/boot-errors/(cis|cis_workstation_l2|pci-dss)/auditd.*Email option is specified but /usr/lib/sendmail doesn't seem executable.*
+    rhel == 9
+# https://github.com/ComplianceAsCode/content/issues/14561
+/scanning/boot-errors/hipaa/auditd.*Error - plugin \(/etc/audit/plugins.d//syslog.conf\) is active but no path given
+/scanning/boot-errors/hipaa/auditd.*Skipping syslog.conf plugin due to errors
+    rhel == 9
+# https://github.com/ComplianceAsCode/content/issues/14562
+/scanning/boot-errors/cis[^/]*/.*systemd-journal-upload.*
+    rhel == 10
+# https://github.com/ComplianceAsCode/content/issues/14563
+/scanning/boot-errors/stig/chronyd.*(Could not connect|certificate verification|TLS handshake|no selectable sources|timed out).*
+    True
+# https://github.com/ComplianceAsCode/content/issues/14564
+/scanning/boot-errors/(ism_o|ism_o_secret|ism_o_top_secret)/.*errors: trying to load module /usr/lib64/rsyslog/lmnsd_gtls.so.*
+    True
+# https://github.com/ComplianceAsCode/content/issues/14565
+/scanning/boot-errors/hipaa/.*kauditd hold queue overflow.*
+    True
+
 # vim: syntax=python
