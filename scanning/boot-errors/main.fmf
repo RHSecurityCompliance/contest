@@ -1,0 +1,145 @@
+summary: Runs oscap remediation inside VMs and checks for boot errors
+description: |
+    This test should ideally be run together with the /hardening/oscap test.
+test: $CONTEST_PYTHON -m lib.runtest ./test.py
+environment+:
+    PYTHONPATH: ../..
+duration: 30m
+require+:
+  # virt library dependencies
+  - libvirt-daemon
+  - libvirt-daemon-driver-qemu
+  - libvirt-daemon-driver-storage-core
+  - libvirt-daemon-driver-network
+  - firewalld
+  - qemu-kvm
+  - libvirt-client
+  - virt-install
+  - nmap-ncat
+  - rpm-build
+  - createrepo
+extra-hardware: |
+    keyvalue = HVM=1
+    hostrequire = memory>=6000
+tag+:
+  - snapshottable
+adjust+:
+  - when: arch != x86_64
+    enabled: false
+    because: we want to run virtualization on x86_64 only
+  - when: distro < rhel-9
+    enabled: false
+    because: systemd v239 (RHEL 8) doesn't support json output in 'systemctl list-units'
+
+/anssi_bp28_high:
+
+/anssi_bp28_enhanced:
+    tag+:
+      - subset-profile
+
+/anssi_bp28_intermediary:
+    tag+:
+      - subset-profile
+
+/anssi_bp28_minimal:
+    tag+:
+      - subset-profile
+
+/bsi:
+    adjust+:
+      - when: distro == rhel-8 or distro == centos-stream-8
+        enabled: false
+        because: The BSI profile is currently not on RHEL-8
+
+/cis:
+
+/cis_server_l1:
+    tag+:
+      - subset-profile
+
+/cis_workstation_l2:
+
+/cis_workstation_l1:
+    tag+:
+      - subset-profile
+
+/cui:
+    tag+:
+      - fips
+    adjust+:
+      - when: distro >= rhel-10 or distro >= centos-stream-10
+        enabled: false
+        because: there is no CUI profile on RHEL-10+
+
+/e8:
+
+/hipaa:
+
+/ism_o:
+    tag+:
+      - fips
+    adjust+:
+      - when: distro >= rhel-10 or distro >= centos-stream-10
+        tag+:
+          - subset-profile
+
+/ism_o_secret:
+    tag+:
+      - fips
+    adjust+:
+      - when: distro >= rhel-10 or distro >= centos-stream-10
+        tag+:
+          - subset-profile
+        continue: true
+      - when: distro < rhel-10 or distro < centos-stream-10
+        enabled: false
+        because: ISM Official Secret is only present on RHEL-10+
+
+/ism_o_top_secret:
+    tag+:
+      - fips
+    adjust+:
+      - when: distro < rhel-10 or distro < centos-stream-10
+        enabled: false
+        because: ISM Official Top Secret is only present on RHEL-10+
+
+/ospp:
+    tag+:
+      - fips
+    adjust+:
+      - when: distro >= rhel-10
+        enabled: false
+        because: there is no OSPP profile on RHEL-10+
+
+/pci-dss:
+
+/stig:
+    tag+:
+      - fips
+
+/stig_gui:
+    adjust+:
+      - enabled: false
+        because: not supported without GUI, use stig instead
+
+/ccn_advanced:
+    adjust+:
+      - when: distro != rhel-9 and distro != centos-stream-9
+        enabled: false
+        because: CCN profiles are only on RHEL-9
+
+/ccn_intermediate:
+    tag+:
+      - subset-profile
+    adjust+:
+      - when: distro != rhel-9 and distro != centos-stream-9
+        enabled: false
+        because: CCN profiles are only on RHEL-9
+
+/ccn_basic:
+    tag+:
+      - subset-profile
+    adjust+:
+      - when: distro != rhel-9 and distro != centos-stream-9
+        enabled: false
+        because: CCN profiles are only on RHEL-9

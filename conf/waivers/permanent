@@ -116,4 +116,8 @@
 /scanning/disa-alignment/.+/configure_libreswan_crypto_policy
     rhel == 8
 
+# rsyslogd remote host and certificate need to be configured manually
+/scanning/boot-errors/.+/rsyslogd.+(certificate.*is not set|key.*is not set|cannot resolve hostname).*
+    True
+
 # vim: syntax=python
