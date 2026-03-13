@@ -208,4 +208,8 @@
 /scanning/boot-errors/hipaa/.*kauditd hold queue overflow.*
     True
 
+# https://github.com/ComplianceAsCode/content/issues/14570
+/hardening/host-os/oscap/.+/rsyslog_files_permissions
+    rhel.is_centos() and rhel in [9, 10]
+
 # vim: syntax=python
