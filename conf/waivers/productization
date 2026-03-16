@@ -209,6 +209,10 @@
 # https://github.com/ComplianceAsCode/content/issues/14565
 /scanning/boot-errors/hipaa/.*kauditd hold queue overflow.*
     True
+# https://github.com/ComplianceAsCode/content/issues/14582
+/scanning/boot-errors/stig/systemd-tmpfiles: Failed to copy files to.*
+/scanning/boot-errors/ccn_advanced/systemd-tmpfiles: rm_rf.
+    rhel == 9
 
 # https://github.com/ComplianceAsCode/content/issues/14570
 /hardening/host-os/oscap/.+/rsyslog_files_permissions
@@ -217,5 +221,6 @@
 # https://github.com/ComplianceAsCode/content/issues/14580
 /static-checks/audit-sample-rules/audit_ospp_general
     rhel == 9
+
 
 # vim: syntax=python
