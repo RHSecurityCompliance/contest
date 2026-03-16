@@ -186,6 +186,7 @@
 /scanning/boot-errors/(stig|anssi_bp28_intermediary|anssi_bp28_enhanced|anssi_bp28_high)/.*sssd.service.*
 /scanning/boot-errors/(stig|anssi_bp28_intermediary|anssi_bp28_enhanced|anssi_bp28_high)/.*Failed to start System Security Services Daemon.*
 /scanning/boot-errors/(stig|anssi_bp28_intermediary|anssi_bp28_enhanced|anssi_bp28_high)/sssd.*No domain is enabled.*
+/scanning/boot-errors/(stig|anssi_bp28_high)/sssd: SSSD couldn't load the configuration database.*
     rhel == 9
 # https://github.com/ComplianceAsCode/content/issues/14560
 /scanning/boot-errors/(cis|cis_workstation_l2|pci-dss|stig|hipaa)/auditd.*Email option is specified but /usr/lib/sendmail doesn't seem executable.*
