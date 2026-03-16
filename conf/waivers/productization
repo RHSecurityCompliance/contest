@@ -162,9 +162,10 @@
 # Tests still fail on RHEL 10.0
 # https://github.com/coreos/bootupd/issues/952
 # https://issues.redhat.com/browse/OPENSCAP-5326
+# https://github.com/ComplianceAsCode/content/issues/14581
 /hardening/container/(anaconda-ostree|bootc-image-builder|old-new)/.+/file_permissions_grub2_cfg
 /hardening/container/(anaconda-ostree|bootc-image-builder|old-new)/.+/file_permissions_efi_grub2_cfg
-    rhel == 10.0
+    rhel == 10.0 or rhel == 9
 
 # https://github.com/ComplianceAsCode/content/issues/14541
 /hardening/host-os/(oscap|ansible)/stig/chronyd_or_ntpd_set_maxpoll
