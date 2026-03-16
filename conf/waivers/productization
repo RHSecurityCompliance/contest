@@ -172,7 +172,7 @@
 
 # https://github.com/ComplianceAsCode/content/issues/14546
 /hardening/image-builder/(uefi/)?cis(_workstation_l2)?/ensure_redhat_gpgkey_installed
-/hardening/kickstart/cis(_workstation_l2)?/ensure_redhat_gpgkey_installed
+/hardening/kickstart/(uefi/)?cis(_workstation_l2)?/ensure_redhat_gpgkey_installed
     rhel == 10
 
 # https://github.com/ComplianceAsCode/content/issues/14558
