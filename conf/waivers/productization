@@ -220,7 +220,6 @@
 
 # https://github.com/ComplianceAsCode/content/issues/14580
 /static-checks/audit-sample-rules/audit_ospp_general
-    rhel == 9
-
+    rhel in [8, 9]
 
 # vim: syntax=python
