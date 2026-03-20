@@ -125,6 +125,8 @@ INSTALL_FAILURES = [
     br"The installer will now terminate",
     br"Failed to start .*the anaconda installation program",
     br"Press any key to enter the Boot Manager Menu.",
+    br"failed to fetch stage2 from ",
+    br"Could not boot.",
 ]
 
 PIPE = subprocess.PIPE
