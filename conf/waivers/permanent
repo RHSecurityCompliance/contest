@@ -22,6 +22,15 @@
 /hardening/.+/service_systemd-journal-upload_enabled
     True
 
+# https://github.com/ComplianceAsCode/content/issues/10901
+# not sure what enables the service, but second remediation fixes the problem
+# and we cannot easily do double-remediation with OAA
+# moreover, the service_disabled requires that service is masked
+# and we currently do not do this for kickstart / anaconda, we just disable
+/hardening/anaconda/with-gui/[^/]+/service_rpcbind_disabled
+/hardening/anaconda/with-gui/cis_workstation_l2/service_cockpit_disabled
+    rhel == 8
+
 # Inaccessible until form is filled:
 /static-checks/html-links/https://docs-prv.pcisecuritystandards.org/PCI%20DSS/Standard/PCI-DSS-v4_0.pdf
 /static-checks/html-links/https://fossies.org/linux/Linux-PAM-docs/doc/sag/Linux-PAM_SAG.pdf
@@ -37,6 +46,10 @@
 # no STIG ID for CentOS products
 /static-checks/rule-identifiers/stig/stigid/.*
     rhel.is_centos()
+
+# RHEL8 won't add ospp references - https://github.com/ComplianceAsCode/content/issues/12422
+/static-checks/rule-identifiers/ospp/ospp/.*
+    rhel == 8
 
 # DISA benchmark allows only released OS versions. Our content is fine with unreleased versions.
 # See for context: https://github.com/ComplianceAsCode/content/issues/11649
