@@ -193,6 +193,7 @@
     True
 # https://github.com/ComplianceAsCode/content/issues/14565
 /scanning/boot-errors/hipaa/.*kauditd hold queue overflow.*
+/scanning/boot-errors/hipaa/auditd: Error receiving audit netlink packet (No buffer space available)
     True
 # https://github.com/ComplianceAsCode/content/issues/14582
 /scanning/boot-errors/stig/systemd-tmpfiles: Failed to copy files to.*
