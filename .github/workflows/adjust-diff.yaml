@@ -1,0 +1,244 @@
+name: FMF Adjust Diff
+
+on:
+  pull_request:
+    paths:
+      - '**/*.fmf'
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+  checks: write
+  pull-requests: write
+
+jobs:
+  discover:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout PR
+        uses: actions/checkout@v6
+        with:
+          path: pr
+
+      - name: Checkout base
+        uses: actions/checkout@v6
+        with:
+          ref: ${{ github.event.pull_request.base.sha }}
+          path: base
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: '>=3.12'
+
+      - name: Install atex
+        run: python3 -m pip install atex
+
+      - name: Run atex fmf discover
+        run: |
+          set -u
+          mkdir -p "$RUNNER_TEMP"/{base,pr}/{aarch64,ppc64le,s390x,x86_64}
+
+          # For each arch, run all distros in parallel, then wait
+          for arch in aarch64 ppc64le s390x x86_64; do
+            for distro in rhel-{8,9,10}.{0..15} centos-stream-{8,9,10}; do
+              (
+                atex fmf --root ./base \
+                  -c "distro=${distro}" -c "arch=${arch}" discover \
+                  > "$RUNNER_TEMP/base/${arch}/${distro}.txt" 2>/dev/null \
+                  || touch "$RUNNER_TEMP/had_errors"
+                atex fmf --root ./pr \
+                  -c "distro=${distro}" -c "arch=${arch}" discover \
+                  > "$RUNNER_TEMP/pr/${arch}/${distro}.txt" 2>/dev/null \
+                  || touch "$RUNNER_TEMP/had_errors"
+              ) &
+            done
+            wait
+          done
+
+          # Show diffs only for combos that actually differ
+          for arch in aarch64 ppc64le s390x x86_64; do
+            for distro in rhel-{8,9,10}.{0..15} centos-stream-{8,9,10}; do
+              if ! diff -q "$RUNNER_TEMP/base/${arch}/${distro}.txt" \
+                           "$RUNNER_TEMP/pr/${arch}/${distro}.txt" >/dev/null 2>&1; then
+                echo "::group::${arch} / ${distro}"
+                diff -u "$RUNNER_TEMP/base/${arch}/${distro}.txt" \
+                        "$RUNNER_TEMP/pr/${arch}/${distro}.txt" || true
+                echo "::endgroup::"
+              fi
+            done
+          done
+
+          if [[ -f "$RUNNER_TEMP/had_errors" ]]; then
+            echo "::warning::Some atex invocations failed — check the step log for details"
+          fi
+
+      - name: Generate diff summary
+        if: '!cancelled()'
+        run: |
+          python3 << 'PYEOF'
+          import os
+          import re
+          from collections import defaultdict
+          from pathlib import Path
+
+          tmp = Path(os.environ["RUNNER_TEMP"])
+          arches = ["aarch64", "ppc64le", "s390x", "x86_64"]
+
+          DISTRO_RE = r"^(rhel-\d+\.\d+|centos-stream-\d+)$"
+          SORT_KEY = lambda name: (
+              (1, int(name.rsplit("-", 1)[1]), 0)
+              if name.startswith("centos-stream-")
+              else (0, *map(int, name.split("-", 1)[1].split(".")))
+          )
+
+          def read_tests(path):
+              if not path.exists():
+                  return set()
+              return {s for l in path.read_text().splitlines() if (s := l.strip())}
+
+          # ── collect per-test changes across all arch/distro combos ───
+          # test_name -> {"added": [(arch, distro), ...], "removed": [...]}
+          test_changes = defaultdict(lambda: {"added": [], "removed": []})
+
+          for arch in arches:
+              base_dir = tmp / "base" / arch
+              pr_dir = tmp / "pr" / arch
+
+              distros = sorted(
+                  {
+                      p.stem
+                      for d in [base_dir, pr_dir] if d.exists()
+                      for p in d.glob("*.txt")
+                      if re.match(DISTRO_RE, p.stem)
+                  },
+                  key=SORT_KEY,
+              )
+
+              for d in distros:
+                  base = read_tests(base_dir / f"{d}.txt")
+                  pr   = read_tests(pr_dir   / f"{d}.txt")
+                  for test in pr - base:
+                      test_changes[test]["added"].append((arch, d))
+                  for test in base - pr:
+                      test_changes[test]["removed"].append((arch, d))
+
+          # ── sort the combo lists by (distro, arch) ───────────────────
+          combo_key = lambda pair: (SORT_KEY(pair[1]), pair[0])
+          for info in test_changes.values():
+              info["added"].sort(key=combo_key)
+              info["removed"].sort(key=combo_key)
+
+          # ── build markdown ───────────────────────────────────────────
+          out = ["FMF Adjust Diff", ""]
+
+          if not test_changes:
+              out.append("> **No changes in test applicability.**")
+          else:
+              total_combos = sum(
+                  len(v["added"]) + len(v["removed"])
+                  for v in test_changes.values()
+              )
+              out.append(
+                  f"**{len(test_changes)}** tests have changes in applicability "
+                  f"across **{total_combos}** arch/distro combinations."
+              )
+              out.append("")
+
+              for test_name in sorted(test_changes):
+                  info = test_changes[test_name]
+                  added = info["added"]
+                  removed = info["removed"]
+
+                  tags = []
+                  if added:
+                      tags.append(f"+{len(added)} newly discovered")
+                  if removed:
+                      tags.append(f"\u2212{len(removed)} no longer discovered")
+
+                  out.append("<details>")
+                  out.append(
+                      f"<summary><code>{test_name}</code>"
+                      f" — {', '.join(tags)}</summary>"
+                  )
+                  out.append("")
+
+                  for section, label in [
+                      (added, "Newly discovered"),
+                      (removed, "No longer discovered"),
+                  ]:
+                      if not section:
+                          continue
+                      out.append(f"**{label}:**")
+                      out.append("")
+                      out.append("| Arch | Distro |")
+                      out.append("|------|--------|")
+                      for arch, distro in section:
+                          out.append(f"| `{arch}` | `{distro}` |")
+                      out.append("")
+
+                  out.append("</details>")
+                  out.append("")
+
+          md = "\n".join(out) + "\n"
+
+          with open(os.environ["GITHUB_STEP_SUMMARY"], "a") as f:
+              f.write(md)
+          with open(tmp / "summary.md", "w") as f:
+              f.write(md)
+          with open(tmp / "comment.md", "w") as f:
+              f.write(f"<!-- fmf-discover-bot -->\n{md}")
+
+          if test_changes:
+              (tmp / "has_changes").touch()
+          PYEOF
+
+      - name: Post summary to check run
+        if: '!cancelled()'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          check_api_path=$(gh api "repos/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}/jobs" \
+            --jq '([.jobs[] | select(.status == "in_progress")][0].check_run_url // "")
+                  | ltrimstr("https://api.github.com/")') || true
+
+          if [[ -n "${check_api_path}" && -f "$RUNNER_TEMP/summary.md" ]]; then
+            jq -n --rawfile summary "$RUNNER_TEMP/summary.md" \
+              '{output: {title: "FMF Adjust Diff", summary: $summary}}' \
+              | gh api "${check_api_path}" --method PATCH --input - || true
+          fi
+
+      - name: Post or update PR comment
+        if: '!cancelled()'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+        run: |
+          # Find any existing comment from a previous run
+          comment_id=$(gh api "repos/${GITHUB_REPOSITORY}/issues/${PR_NUMBER}/comments" \
+            --paginate --jq '.[] | select(.body | startswith("<!-- fmf-discover-bot -->")) | .id' \
+            | head -1) || true
+
+          if [[ ! -f "$RUNNER_TEMP/has_changes" ]]; then
+            # No changes — update stale comment if one exists, otherwise do nothing
+            if [[ -n "$comment_id" ]]; then
+              resolved='<!-- fmf-discover-bot -->\nFMF Adjust Diff\n\n> **All previously reported changes have been resolved.**'
+              jq -n --arg body "$(echo -e "$resolved")" '{body: $body}' \
+                | gh api "repos/${GITHUB_REPOSITORY}/issues/comments/${comment_id}" \
+                    --method PATCH --input - || true
+            fi
+            exit 0
+          fi
+
+          if [[ -n "$comment_id" ]]; then
+            jq -n --rawfile body "$RUNNER_TEMP/comment.md" '{body: $body}' \
+              | gh api "repos/${GITHUB_REPOSITORY}/issues/comments/${comment_id}" \
+                  --method PATCH --input - || true
+          else
+            jq -n --rawfile body "$RUNNER_TEMP/comment.md" '{body: $body}' \
+              | gh api "repos/${GITHUB_REPOSITORY}/issues/${PR_NUMBER}/comments" \
+                  --method POST --input - || true
+          fi
