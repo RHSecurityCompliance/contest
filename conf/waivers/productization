@@ -182,9 +182,6 @@
 /scanning/boot-errors/hipaa/auditd.*Error - plugin \(/etc/audit/plugins.d//syslog.conf\) is active but no path given
 /scanning/boot-errors/hipaa/auditd.*Skipping syslog.conf plugin due to errors
     rhel == 9
-# https://github.com/ComplianceAsCode/content/issues/14562
-/scanning/boot-errors/cis[^/]*/.*systemd-journal-upload.*
-    rhel == 10
 # https://github.com/ComplianceAsCode/content/issues/14563
 /scanning/boot-errors/stig/chronyd.*(Could not connect|certificate verification|TLS handshake|no selectable sources|timed out).*
     True

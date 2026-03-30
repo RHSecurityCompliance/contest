@@ -17,9 +17,11 @@
 /hardening/.+/service_sssd_enabled
     True
 
+# https://github.com/ComplianceAsCode/content/issues/14562
 # The service systemd-journal-upload fails to start if a remote log destination
 # URL isn't configured in /etc/systemd/journal-upload.conf.
 /hardening/.+/service_systemd-journal-upload_enabled
+/scanning/boot-errors/.+/.*systemd-journal-upload.*
     True
 
 # https://github.com/ComplianceAsCode/content/issues/10901
