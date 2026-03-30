@@ -18,7 +18,7 @@ recommend+:
   - ansible-core
   - bats
 adjust+:
-  - when: arch == aarch64 and distro == rhel-9.0
+  - when: arch == aarch64 and distro == rhel-9.0, rhel-9.2
     enabled: false
     because: rhc-worker-playbook or community.general collection not available there
   - when: newa_batch is defined and arch == s390x or newa_batch is defined and arch == ppc64le
