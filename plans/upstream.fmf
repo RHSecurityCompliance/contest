@@ -15,7 +15,5 @@ discover:
       - /static-checks/html-links
       # not useful in automated runs that are not manually reviewed
       - /static-checks/diff
-      # occasionally fails, is not useful on a daily/weekly basis
-      - /static-checks/nist-validation
 
 # vim: syntax=yaml
