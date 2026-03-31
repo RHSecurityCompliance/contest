@@ -104,9 +104,9 @@ def report_atex(status, name=None, note=None, logs=None, *, partial=False):
     # for subresults
     if name:
         result['name'] = name
-    # not standard ATEX, Contest-specific
-    if note:
-        result['note'] = note
+    # always set note, even for None
+    # (None -> JSON null -> clears add_log() set note)
+    result['note'] = note
     # output of the test itself
     if not name:
         result['testout'] = 'output.txt'
@@ -256,10 +256,16 @@ def add_log(*logs):
     or by passing multiple arguments.
     """
     if have_atex_api():
-        # partial results are overwritten by the final result so we report an error partial result
-        # with logs in case test crashes or fails with an exception, see
-        # https://github.com/RHSecurityCompliance/atex/blob/main/atex/executor/RESULTS.md#partial-results
-        report_atex(status='error', logs=logs, partial=True)
+        # partial results are overwritten by the final result so we report
+        # an error partial result with logs in case test crashes or fails
+        # with an exception, see
+        # https://github.com/RHSecurityCompliance/atex/blob/main/atex/executor/fmf/RESULTS.md#partial-results
+        report_atex(
+            status='error',
+            logs=logs,
+            note="no final result provided",
+            partial=True,
+        )
     elif have_tmt_api():
         for log in logs:
             _tmt_file_submit(log)
