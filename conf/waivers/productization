@@ -150,7 +150,7 @@
 
 # https://github.com/ComplianceAsCode/content/issues/14541
 /hardening/host-os/(oscap|ansible)/stig/chronyd_or_ntpd_set_maxpoll
-    rhel == 9 and arch == 'ppc64le'
+    rhel == 9 and arch in ('ppc64le', 's390x')
 
 # https://github.com/ComplianceAsCode/content/issues/14546
 /hardening/image-builder/(uefi/)?cis(_workstation_l2)?/ensure_redhat_gpgkey_installed

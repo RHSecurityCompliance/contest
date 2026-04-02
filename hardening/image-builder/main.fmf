@@ -119,6 +119,9 @@ extra-priority: 1
       - when: distro != rhel-9 and distro != centos-stream-9
         enabled: false
         because: CCN profiles are only on RHEL-9
+      - when: distro ~< rhel-9.6
+        enabled: false
+        because: too old osbuild-composer to have the profile added
 
 /ccn_intermediate:
     tag+:
@@ -127,6 +130,9 @@ extra-priority: 1
       - when: distro != rhel-9 and distro != centos-stream-9
         enabled: false
         because: CCN profiles are only on RHEL-9
+      - when: distro ~< rhel-9.6
+        enabled: false
+        because: too old osbuild-composer to have the profile added
 
 /ccn_basic:
     tag+:
@@ -135,3 +141,6 @@ extra-priority: 1
       - when: distro != rhel-9 and distro != centos-stream-9
         enabled: false
         because: CCN profiles are only on RHEL-9
+      - when: distro ~< rhel-9.6
+        enabled: false
+        because: too old osbuild-composer to have the profile added
