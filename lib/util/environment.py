@@ -16,6 +16,7 @@ def reboot():
     """Reboot the system using whatever means appropriate."""
     # flush buffers to disk, just in case reboot doesn't do it
     os.sync()
+
     if 'ATEX_TEST_CONTROL' in os.environ:
         fd = int(os.environ['ATEX_TEST_CONTROL'])
         with os.fdopen(fd, 'w', closefd=False) as control:
@@ -30,16 +31,24 @@ def reboot():
                 except BrokenPipeError:
                     break
                 time.sleep(0.1)
-        # do reboot without util.log() output as the ssh stdio might be broken
-        # from the above - the DEVNULL also ensures 'reboot' can safely write
-        # to its outputs without getting EPIPE
+        # do these without util.log() output as the ssh stdio might be broken
+        # from the above - the DEVNULL also ensures the commands can safely write
+        # to their outputs without getting EPIPE
+        # - shut down sshd so the test executor doesn't reconnect before reboot
+        subprocess.run(
+            ['systemctl', 'stop', 'sshd'],
+            stdout=subprocess.DEVNULL, stderr=subprocess.STDOUT,
+        )
+        # - actually reboot the OS
         subprocess.run(['reboot'], stdout=subprocess.DEVNULL, stderr=subprocess.STDOUT)
+
     elif shutil.which('tmt-reboot'):
         util.subprocess_run(['tmt-reboot'])
     elif shutil.which('rstrnt-reboot'):
         util.subprocess_run(['rstrnt-reboot'])
     else:
         util.subprocess_run(['reboot'])
+
     while True:
         time.sleep(1000000)
 
