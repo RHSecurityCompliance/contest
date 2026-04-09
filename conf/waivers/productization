@@ -134,10 +134,6 @@
 /hardening/image-builder/uefi/ism_o_top_secret
     rhel == 10 and status == 'error'
 
-# https://github.com/ComplianceAsCode/content/issues/14551
-/hardening/image-builder/stig
-    rhel == 8 and status == 'error'
-
 # File /boot/grub2/grub2.cfg is created with lenient permissions by
 # bootupd during the installation of a bootable container image.
 # Tests still fail on RHEL 10.0

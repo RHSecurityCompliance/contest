@@ -38,6 +38,11 @@ from pathlib import Path
 
 from lib import util, dnf, virt
 
+# composer-cli compose start --size: disk image size in MiB.
+# 30 GiB should be enough for all profiles, e.g. STIG which uses 10 GiB
+# /var/log/audit partition because of DISA requirements.
+QCOW2_IMAGE_SIZE_MIB = 30 * 1024
+
 
 class Host:
     @staticmethod
@@ -150,7 +155,10 @@ class Compose:
                 composer_cli('compose', 'cancel', entry.id)
             composer_cli('compose', 'delete', entry.id)
         # start and wait
-        composer_cli('compose', 'start', blueprint_name, 'qcow2')
+        composer_cli(
+            'compose', 'start', blueprint_name, 'qcow2',
+            '--size', str(QCOW2_IMAGE_SIZE_MIB),
+        )
         entry = cls._wait_for_finished(blueprint_name)
         # check & yield
         if entry.status != 'FINISHED':
@@ -378,6 +386,38 @@ def translate_oscap_blueprint(lines, datastream):
         f'name = "{Blueprint.NAME}"',
         bp_text, count=1, flags=re.M,
     )
+
+    # Partitioning mode defaults to auto-lvm which uses lvm because we use
+    # filesystem customizations in blueprints; root LV then stays near the
+    # 1 GiB / + 2 GiB /usr hard-coded minimum size with free space left in the VG.
+    # Switch to raw layout which grows the / partition to fill the disk, see
+    # https://osbuild.org/docs/user-guide/partitioning/
+    # https://osbuild.org/docs/user-guide/blueprint-reference/#partitioning-mode
+    bp_new = re.sub(
+        r'^partitioning_mode\s*=\s*"[^"]*"\s*$',
+        'partitioning_mode = "raw"',
+        bp_text,
+        count=1,
+        flags=re.M,
+    )
+    if bp_new != bp_text:
+        bp_text = bp_new
+    elif not re.search(r'^partitioning_mode\s*=\s*"raw"\s*$', bp_text, flags=re.M):
+        bp_text, inserted = re.subn(
+            r'^(\[customizations\]\s*\n)',
+            r'\1partitioning_mode = "raw"\n',
+            bp_text,
+            count=1,
+            flags=re.M,
+        )
+        if not inserted:
+            bp_text = re.sub(
+                r'^(version = .*\n)',
+                r'\1\n[customizations]\npartitioning_mode = "raw"\n',
+                bp_text,
+                count=1,
+                flags=re.M,
+            )
 
     blueprint = Blueprint(template=bp_text)
 
