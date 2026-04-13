@@ -2,6 +2,7 @@
 
 import os
 import shutil
+from pathlib import Path
 
 from lib import results, oscap, versions, virt, podman, util, metadata
 from conf import remediation
@@ -25,6 +26,11 @@ major = versions.rhel.major
 minor = versions.rhel.minor
 if versions.rhel.is_true_rhel():
     src_image = f'images.paas.redhat.com/testingfarm/rhel-bootc:{major}.{minor}'
+    # copy a Testing Farm image cleanup script to CWD (if available),
+    # because podman COPY cannot access files outside the build context
+    cleanup_sh = Path(__file__).resolve().parent.parent / 'bootc_tf_img_cleanup.sh'
+    if cleanup_sh.exists():
+        shutil.copy(cleanup_sh, 'bootc_tf_img_cleanup.sh')
 else:
     src_image = f'quay.io/centos-bootc/centos-bootc:stream{major}'
 
@@ -40,8 +46,13 @@ with pack.build() as pack_binrpm:
 
 # prepare a Container file for making a hardened image
 cfile = podman.Containerfile()
+cfile += f'FROM {src_image}'
+if Path('bootc_tf_img_cleanup.sh').exists():
+    cfile += util.dedent('''
+        COPY bootc_tf_img_cleanup.sh /root/bootc_tf_img_cleanup.sh
+        RUN chmod +x /root/bootc_tf_img_cleanup.sh && /root/bootc_tf_img_cleanup.sh
+    ''')
 cfile += util.dedent(fr'''
-    FROM {src_image}
     # install testing-specific RpmPack
     COPY contest-pack.rpm /root/.
     RUN dnf -y install /root/contest-pack.rpm && rm -f /root/contest-pack.rpm
