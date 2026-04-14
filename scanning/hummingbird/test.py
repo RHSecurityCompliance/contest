@@ -1,0 +1,42 @@
+#!/usr/bin/python3
+
+import subprocess
+
+from lib import results, oscap, podman, util
+
+IMAGE = 'openjdk'
+profile = util.get_test_name().rpartition('/')[2]
+# Some profiles are expected to be applicable only to the FIPS variant of the
+# container image. Some profiles are expected to be applicable only on default
+# variants of container images.
+if profile in ('stig',):
+    variant = 'latest-fips'
+else:
+    variant = 'latest'
+image_id = f'quay.io/hummingbird-hatchling/{IMAGE}:{variant}'
+podman.podman('pull', image_id)
+
+with util.get_source_content() as content_dir:
+    # Hummingbird is a separate product in ComplianceAsCode/content
+    util.build_content(
+        content_dir,
+        {
+            'SSG_PRODUCT_HUMMINGBIRD:BOOL': 'ON',
+        },
+    )
+    ds_path = content_dir / util.CONTENT_BUILD_DIR / 'ssg-hummingbird-ds.xml'
+    if not ds_path.exists():
+        raise RuntimeError(f"Datastream not found: {ds_path}")
+
+    proc, lines = util.subprocess_stream(
+        [
+            'oscap-podman', image_id, 'xccdf', 'eval', '--profile', profile, '--progress',
+            '--report', 'report.html', '--results-arf', 'scan-arf.xml', ds_path,
+        ],
+        stderr=subprocess.STDOUT,
+    )
+    oscap.report_from_verbose(lines)
+    if proc.returncode not in [0, 2]:
+        raise RuntimeError("oscap failed unexpectedly")
+
+results.report_and_exit(logs=['report.html', 'scan-arf.xml'])
