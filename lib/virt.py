@@ -382,7 +382,7 @@ class Guest:
 
     def install_basic(
         self, location=None, kickstart=None, secure_boot=False, virt_install_args=None,
-        kernel_args=None, final_mem=None, disk_format='raw',
+        kernel_args=None, final_mem=None, disk_format='qcow2',
     ):
         """
         Install a new guest, to a shut down state.
@@ -400,6 +400,9 @@ class Guest:
 
         Specify 'final_mem' in MBs to shrink the guest RAM after installation,
         useful for small snapshots if you don't need too much memory.
+
+        'disk_format' specifies the VM disk image format (default: 'qcow2').
+        Use 'raw' for pre-allocated disks or 'qcow2' for thin-provisioned disks.
         """
         util.log(f"installing guest {self.name}")
 
@@ -414,6 +417,16 @@ class Guest:
         disk_extension = 'qcow2' if disk_format == 'qcow2' else 'img'
         disk_path = Path(f'{GUEST_IMG_DIR}/{self.name}.{disk_extension}')
 
+        # pre-create disk image with qemu-img to allow for preallocation=metadata
+        # which provides better performance for qcow2 images
+        util.log(f"pre-creating disk image {disk_path}")
+        qemu_img_cmd = ['qemu-img', 'create', '-f', disk_format]
+        if disk_format == 'qcow2':
+            qemu_img_cmd += ['-o', 'preallocation=metadata']
+        # 100 GB gives kickstarts plenty of space for partitions
+        qemu_img_cmd += [str(disk_path), '100G']
+        subprocess.run(qemu_img_cmd, check=True, stderr=subprocess.PIPE)
+
         with kickstart.to_tmpfile() as ksfile:
             virt_install = [
                 'pseudotty', 'virt-install',
@@ -421,7 +434,8 @@ class Guest:
                 # to RAM, leading to notably higher memory requirements during
                 # installation
                 '--name', self.name, '--vcpus', '1', '--memory', str(INSTALL_TIME_RAM),
-                '--disk', f'path={disk_path},size=20,format={disk_format},io=native,cache=none',
+                # Use pre-created disk
+                '--disk', f'path={disk_path},format={disk_format},io=native,cache=none',
                 '--network', 'network=default', '--location', location,
                 '--graphics', 'none', '--console', 'pty', '--rng', '/dev/urandom',
                 # this has nothing to do with rhel8, it just tells v-i to use virtio
@@ -456,6 +470,7 @@ class Guest:
             except Exception as e:
                 self.destroy()
                 self.undefine()
+                disk_path.unlink(missing_ok=True)
                 raise e from None
 
         # installed system doesn't need as much RAM, alleviate swap pressure
@@ -512,7 +527,7 @@ class Guest:
                 self.install_basic(kickstart=kickstart, **kwargs)
 
     def import_image(
-        self, disk_path, disk_format='raw', *, secure_boot=False, virt_install_args=None,
+        self, disk_path, disk_format='qcow2', *, secure_boot=False, virt_install_args=None,
         final_mem=None,
     ):
         """
@@ -906,14 +921,6 @@ def translate_ssg_kickstart(ks_file):
             # which fill in the booted-from device automatically
             elif re.match(r'^network ', line):
                 line = re.sub(r' --device[= ][^ ]+', '', line)
-
-            # STIG uses 10 GB audit because of DISA requiring large partitions,
-            # checked by 'auditd_audispd_configure_sufficiently_large_partition'
-            # (see https://github.com/ComplianceAsCode/content/pull/7141)
-            # - reducing this to 512 makes the rest of the partitions align
-            #   perfectly at 20448 MB, same as other kickstarts
-            elif re.match(r'^logvol /var/log/audit .*--size=10240', line):
-                line = re.sub(r'--size=[^ ]+', '--size=512', line)
 
             ks_text += f'{line}\n'
 
