@@ -37,22 +37,6 @@
 /scanning/disa-stig-viewer-results
     rhel == 10
 
-# bz1825810 or maybe bz1929805
-# can be reproduced mostly reliably (95%) both via anaconda and oscap CLI,
-# but apparently we don't really care about old releases
-#
-# also re-discovered on RHEL-8 via
-#   https://github.com/ComplianceAsCode/content/issues/10937
-# and afterwards on other profiles (anssi_bp28_high), but still
-# only on GUI
-/hardening/[^/]+/with-gui/[^/]+/sysctl_net_ipv4_ip_forward
-# https://github.com/ComplianceAsCode/content/issues/13129
-/hardening/ansible/with-gui/stig_gui/sysctl_net_ipv4_conf_all_forwarding
-# https://github.com/ComplianceAsCode/content/issues/14532
-/hardening/(ansible|anaconda|oscap)/with-gui/(cis_workstation_l1|cis_workstation_l2)/sysctl_net_ipv4_conf_all_forwarding
-/hardening/(ansible|anaconda|oscap)/with-gui/(cis_workstation_l1|cis_workstation_l2)/sysctl_net_ipv4_conf_default_forwarding
-    rhel == 8
-
 # kdump being forcibly enabled somewhere
 # https://github.com/ComplianceAsCode/content/issues/12832
 /hardening/kickstart(/with-gui|/uefi)?/(hipaa|stig|stig_gui|ism_o_top_secret|e8)/service_kdump_disabled

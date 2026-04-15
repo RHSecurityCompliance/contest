@@ -24,6 +24,28 @@
 /scanning/boot-errors/.+/.*systemd-journal-upload.*
     True
 
+# bz1825810 or maybe bz1929805
+# can be reproduced mostly reliably (95%) both via anaconda and oscap CLI,
+# but apparently we don't really care about old releases
+#
+# also re-discovered on RHEL-8 via
+#   https://github.com/ComplianceAsCode/content/issues/10937
+# and afterwards on other profiles (anssi_bp28_high), but still
+# only on GUI
+/hardening/[^/]+/with-gui/[^/]+/sysctl_net_ipv4_ip_forward
+# https://github.com/ComplianceAsCode/content/issues/13129
+/hardening/ansible/with-gui/stig_gui/sysctl_net_ipv4_conf_all_forwarding
+# https://github.com/ComplianceAsCode/content/issues/14532
+# https://github.com/ComplianceAsCode/content/issues/9316
+# On RHEL 8 systems with GUI, the graphical-server-environment group includes libvirt.
+# Libvirt sets /proc/sys/net/ipv4/ip_forward to 1 during boot, which also sets
+# /proc/sys/net/ipv4/conf/all/forwarding to 1. Libvirt requires forwarding enabled
+# for VM networking (communication between bridges and virtual interfaces) to work properly.
+# Therefore, these rules will fail after remediation and reboot on GUI systems with libvirt.
+/hardening/(ansible|anaconda|oscap)/with-gui/(cis_workstation_l1|cis_workstation_l2)/sysctl_net_ipv4_conf_all_forwarding
+/hardening/(ansible|anaconda|oscap)/with-gui/(cis_workstation_l1|cis_workstation_l2)/sysctl_net_ipv4_conf_default_forwarding
+    rhel == 8
+
 # https://github.com/ComplianceAsCode/content/issues/10901
 # not sure what enables the service, but second remediation fixes the problem
 # and we cannot easily do double-remediation with OAA
