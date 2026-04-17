@@ -34,12 +34,12 @@ function debug { [[ $debug_arg == debug ]]; }
 # Retries on unexpected exit codes (errors, segfaults, crashes, etc.)
 # Only exit codes 0 and 2 are considered successful
 function oscap_scan_retry {
-    local max_attempts=$1
+    local max_attempts=$1 attempt rc output
     shift
-    local attempt rc output
 
     for ((attempt=1; attempt<=max_attempts; attempt++)); do
-        output=$(oscap "$@"); rc=$?
+        rc=0
+        output=$(oscap "$@") || rc=$?
 
         # exit codes 0 and 2 are expected (success and rule failure)
         if [[ $rc == 0 || $rc == 2 ]]; then
@@ -47,6 +47,7 @@ function oscap_scan_retry {
         fi
 
         # log the failure
+        echo "$output" >&2
         echo "oscap attempt $attempt/$max_attempts failed with exit code $rc" >&2
     done
 
