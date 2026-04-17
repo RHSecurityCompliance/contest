@@ -424,7 +424,7 @@ class Guest:
         if disk_format == 'qcow2':
             qemu_img_cmd += ['-o', 'preallocation=metadata']
         # 100 GB gives kickstarts plenty of space for partitions
-        qemu_img_cmd += [str(disk_path), '100G']
+        qemu_img_cmd += [disk_path, '100G']
         subprocess.run(qemu_img_cmd, check=True, stderr=subprocess.PIPE)
 
         with kickstart.to_tmpfile() as ksfile:
@@ -469,7 +469,7 @@ class Guest:
                     raise RuntimeError("virt-install failed")
             except Exception as e:
                 self.destroy()
-                self.undefine()
+                self.undefine(incl_storage=True)
                 disk_path.unlink(missing_ok=True)
                 raise e from None
 
