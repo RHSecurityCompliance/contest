@@ -425,7 +425,7 @@ class Guest:
             qemu_img_cmd += ['-o', 'preallocation=metadata']
         # 100 GB gives kickstarts plenty of space for partitions
         qemu_img_cmd += [disk_path, '100G']
-        subprocess.run(qemu_img_cmd, check=True, stderr=subprocess.PIPE)
+        util.subprocess_run(qemu_img_cmd, check=True, stderr=subprocess.PIPE)
 
         with kickstart.to_tmpfile() as ksfile:
             virt_install = [
@@ -452,9 +452,8 @@ class Guest:
             if secure_boot:
                 virt_install += ['--boot', 'firmware=efi,loader_secure=no']
 
-            util.log(f"calling {virt_install}")
             executable = util.libdir / 'pseudotty'
-            proc = subprocess.Popen(virt_install, stdout=PIPE, executable=executable)
+            proc = util.subprocess_Popen(virt_install, stdout=PIPE, executable=executable)
             fail_exprs = [re.compile(x) for x in INSTALL_FAILURES]
 
             try:
