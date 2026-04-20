@@ -51,6 +51,11 @@ function oscap_scan_retry {
         echo "oscap attempt $attempt/$max_attempts failed with exit code $rc" >&2
     done
 
+    # if all retries failed, exit with error
+    if [[ $rc != 0 && $rc != 2 ]]; then
+        exit_err "oscap exited unexpectedly with $rc after $max_attempts attempts"
+    fi
+
     echo "$output"
     return $rc
 }
@@ -149,15 +154,11 @@ rule_full=xccdf_org.ssgproject.content_rule_$rule
 
 # do a scan prior to running the test script
 if debug; then
-    rc=0
     out=$(
         oscap_scan_retry 5 xccdf eval --profile '(all)' --rule "$rule_full" --progress \
         --report initial-report.html --results-arf initial-results-arf.xml \
         "$datastream"
-    ) || rc=$?
-    if [[ $rc != 0 && $rc != 2 ]]; then
-        exit_err "oscap exited unexpectedly with $rc"
-    fi
+    )
 fi
 
 # run test script
@@ -188,14 +189,10 @@ fi
 
 # just do an oscap scan, expect it to pass
 if [[ $test_type == pass ]]; then
-    rc=0
     out=$(
         oscap_scan_retry 5 xccdf eval --profile '(all)' --rule "$rule_full" \
         --progress "${oscap_reports[@]}" "$datastream"
-    ) || rc=$?
-    if [[ $rc != 0 && $rc != 2 ]]; then
-        exit_err "oscap exited unexpectedly with $rc"
-    fi
+    )
 
     IFS=: read -r oscap_rule oscap_status <<<"$out"
     if [[ $oscap_rule != $rule_full ]]; then
@@ -211,15 +208,10 @@ if [[ $test_type == pass ]]; then
 elif [[ $test_type == fail ]]; then
     # just do an oscap scan, expect it to fail
     if [[ $remediation == none ]]; then
-        rc=0
         out=$(
             oscap_scan_retry 5 xccdf eval --profile '(all)' --rule "$rule_full" \
             --progress "${oscap_reports[@]}" "$datastream"
-        ) || rc=$?
-
-        if [[ $rc != 0 && $rc != 2 ]]; then
-            exit_err "oscap exited unexpectedly with $rc"
-        fi
+        )
 
         IFS=: read -r oscap_rule oscap_status <<<"$out"
         if [[ $oscap_rule != $rule_full ]]; then
@@ -286,15 +278,10 @@ elif [[ $test_type == fail ]]; then
             exit_err "ansible-playbook exited unexpectedly with $rc"
         fi
 
-        rc=0
         out=$(
             oscap_scan_retry 5 xccdf eval --profile '(all)' --rule "$rule_full" \
             --progress "${oscap_reports[@]}" "$datastream"
-        ) || rc=$?
-
-        if [[ $rc != 0 && $rc != 2 ]]; then
-            exit_err "oscap exited unexpectedly with $rc"
-        fi
+        )
 
         IFS=: read -r oscap_rule oscap_status <<<"$out"
         if [[ $oscap_rule != $rule_full ]]; then
