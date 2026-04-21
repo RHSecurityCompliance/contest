@@ -57,7 +57,6 @@ function oscap_scan_retry {
     fi
 
     echo "$output"
-    return $rc
 }
 
 datastream=$thin_ds_dir/$rule.xml
