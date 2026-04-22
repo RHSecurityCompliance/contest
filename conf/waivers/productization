@@ -161,9 +161,6 @@
 # https://github.com/ComplianceAsCode/content/issues/14563
 /scanning/boot-errors/stig/chronyd.*(Could not connect|certificate verification|TLS handshake|no selectable sources|timed out).*
     True
-# https://github.com/ComplianceAsCode/content/issues/14564
-/scanning/boot-errors/(ism_o|ism_o_secret|ism_o_top_secret)/.*errors: trying to load module /usr/lib64/rsyslog/lmnsd_gtls.so.*
-    True
 # https://github.com/ComplianceAsCode/content/issues/14565
 /scanning/boot-errors/hipaa/.*kauditd hold queue overflow.*
 /scanning/boot-errors/hipaa/auditd: Error receiving audit netlink packet (No buffer space available)
