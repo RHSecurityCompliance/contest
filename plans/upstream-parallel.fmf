@@ -103,14 +103,66 @@ environment:
 /ansible/ccn_basic:
     discover+: {test: /hardening/host-os/ansible/ccn_basic$}
 
-/static-checks:
-    discover+:
-        test:
-          - /static-checks
-        exclude:
-          # frequently fails on transient issues, run it only in stabilization
-          - /static-checks/html-links
-          # not useful in automated runs that are not manually reviewed
-          - /static-checks/diff
+/other:
+    /static-checks:
+        discover+:
+            test:
+              - /static-checks
+            exclude:
+              # frequently fails on transient issues, run it only in stabilization
+              - /static-checks/html-links
+              # not useful in automated runs that are not manually reviewed
+              - /static-checks/diff
+    /scanning:
+        discover+:
+            test:
+              # others are too time-consuming or fail due to external factors
+              - /scanning/audit-rules-syscalls-grouping
+              - /scanning/container-rules-applicability
+    /ansible-check-mode:
+        /anssi_bp28_high:
+            discover+: {test: /scanning/host-os/ansible-check/check-mode/anssi_bp28_high$}
+        /anssi_bp28_enhanced:
+            discover+: {test: /scanning/host-os/ansible-check/check-mode/anssi_bp28_enhanced$}
+        /anssi_bp28_intermediary:
+            discover+: {test: /scanning/host-os/ansible-check/check-mode/anssi_bp28_intermediary$}
+        /anssi_bp28_minimal:
+            discover+: {test: /scanning/host-os/ansible-check/check-mode/anssi_bp28_minimal$}
+        /bsi:
+            discover+: {test: /scanning/host-os/ansible-check/check-mode/bsi$}
+        /cis:
+            discover+: {test: /scanning/host-os/ansible-check/check-mode/cis$}
+        /cis_server_l1:
+            discover+: {test: /scanning/host-os/ansible-check/check-mode/cis_server_l1$}
+        /cis_workstation_l2:
+            discover+: {test: /scanning/host-os/ansible-check/check-mode/cis_workstation_l2$}
+        /cis_workstation_l1:
+            discover+: {test: /scanning/host-os/ansible-check/check-mode/cis_workstation_l1$}
+        /cui:
+            discover+: {test: /scanning/host-os/ansible-check/check-mode/cui$}
+        /e8:
+            discover+: {test: /scanning/host-os/ansible-check/check-mode/e8$}
+        /hipaa:
+            discover+: {test: /scanning/host-os/ansible-check/check-mode/hipaa$}
+        /ism_o:
+            discover+: {test: /scanning/host-os/ansible-check/check-mode/ism_o$}
+        /ism_o_secret:
+            discover+: {test: /scanning/host-os/ansible-check/check-mode/ism_o_secret$}
+        /ism_o_top_secret:
+            discover+: {test: /scanning/host-os/ansible-check/check-mode/ism_o_top_secret$}
+        /ospp:
+            discover+: {test: /scanning/host-os/ansible-check/check-mode/ospp$}
+        /pci-dss:
+            discover+: {test: /scanning/host-os/ansible-check/check-mode/pci-dss$}
+        /stig:
+            discover+: {test: /scanning/host-os/ansible-check/check-mode/stig$}
+        /stig_gui:
+            discover+: {test: /scanning/host-os/ansible-check/check-mode/stig_gui$}
+        /ccn_advanced:
+            discover+: {test: /scanning/host-os/ansible-check/check-mode/ccn_advanced$}
+        /ccn_intermediate:
+            discover+: {test: /scanning/host-os/ansible-check/check-mode/ccn_intermediate$}
+        /ccn_basic:
+            discover+: {test: /scanning/host-os/ansible-check/check-mode/ccn_basic$}
 
 # vim: syntax=yaml
