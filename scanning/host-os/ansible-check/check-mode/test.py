@@ -23,7 +23,7 @@ ansible_cmd = [
 ]
 proc, lines = util.subprocess_stream(ansible_cmd, stderr=subprocess.STDOUT)
 ansible.report_from_output(lines, to_file='ansible-playbook.log')
-results.add_log('ansible-playbook.log')
-if proc.returncode != 0:
-    raise RuntimeError(f"ansible-playbook failed with {proc.returncode}")
-results.report_and_exit()
+results.report_and_exit(
+    'pass' if proc.returncode == 0 else 'fail',
+    logs=['ansible-playbook.log'],
+)
