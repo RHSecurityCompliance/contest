@@ -36,13 +36,17 @@ def install_deps():
             )
 
 
-def report_from_output(lines, to_file=None):
+def report_from_output(lines, to_file=None, failure='error'):
     """
     Process 'ansible-playbook' output, hide useless info, and report important
     info.
 
     If 'to_file' was specified as a file path, redirect ansible-playbook
     outputs to it, instead of leaving them on the console.
+
+    The 'failure' argument dictates what status to use for failing playbook
+    results. The default 'error' is sensible for uses where the playbook is not
+    the test itself. If it is, set it to 'fail'.
 
     Return True whether there was at least one 'failed' module check.
     This can be used by the caller to differentiate between ansible-playbook
@@ -79,7 +83,7 @@ def report_from_output(lines, to_file=None):
             if m:
                 status, _, _, data = m.groups()
                 if status in ['failed', 'fatal']:
-                    results.report('error', f'playbook: {task}', data)
+                    results.report(failure, f'playbook: {task}', data)
                     failed = True
                 continue
 

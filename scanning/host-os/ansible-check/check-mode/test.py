@@ -22,7 +22,7 @@ ansible_cmd = [
     *skip_tags_arg, playbook,
 ]
 proc, lines = util.subprocess_stream(ansible_cmd, stderr=subprocess.STDOUT)
-ansible.report_from_output(lines, to_file='ansible-playbook.log')
+ansible.report_from_output(lines, to_file='ansible-playbook.log', failure='fail')
 results.report_and_exit(
     'pass' if proc.returncode == 0 else 'fail',
     logs=['ansible-playbook.log'],
