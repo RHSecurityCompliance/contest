@@ -13,7 +13,7 @@ if profile in ('stig',):
     variant = 'latest-fips'
 else:
     variant = 'latest'
-image_id = f'quay.io/hummingbird-hatchling/{IMAGE}:{variant}'
+image_id = f'quay.io/hummingbird/{IMAGE}:{variant}'
 podman.podman('pull', image_id)
 
 with util.get_source_content() as content_dir:
