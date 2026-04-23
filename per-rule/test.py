@@ -142,12 +142,12 @@ with util.get_source_content() as content_dir:
             EOF
         '''))
     else:
-        # OPENSCAP-6756: Fixes "Ansible requires the locale encoding to be UTF-8; Detected None."
-        # has to be in the %post as it is a sibling process to the installer, not a child
+        # Set the locale to fix the error:
+        #   Ansible requires the locale encoding to be UTF-8; Detected None.
+        # The locale has to be set in the %post as it is running in a separate sibling process to the installer, not in its child process.
         ks.add_post(util.dedent('''
             export LC_ALL=en_US.UTF-8
-            ansible-galaxy collection install community.general
-            ansible-galaxy collection install ansible.posix
+            ansible-galaxy collection install community.general ansible.posix
         '''))
 
     # install the VM
