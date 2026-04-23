@@ -142,7 +142,10 @@ with util.get_source_content() as content_dir:
             EOF
         '''))
     else:
+        # OPENSCAP-6756: Fixes "Ansible requires the locale encoding to be UTF-8; Detected None."
+        # has to be in the %post as it is a sibling process to the installer, not a child
         ks.add_post(util.dedent('''
+            export LC_ALL=en_US.UTF-8
             ansible-galaxy collection install community.general
             ansible-galaxy collection install ansible.posix
         '''))
