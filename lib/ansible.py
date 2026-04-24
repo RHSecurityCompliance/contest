@@ -26,11 +26,19 @@ def install_deps():
     # Use ansible-galaxy when rhc-worker-playbook not available (Fedora, CentOS, etc.)
     else:
         for collection, version in RHC_WORKER_PLAYBOOK_COLLECTIONS.items():
+            # For CentOS Stream 10+, use ansible.posix 1.4.0 and newer,
+            # as it ships with Python 3.12 and it doesn't contain the distutils package,
+            # on which the ansible.posix 1.3.0 depends.
             if versions.rhel.is_centos():
-                # install the specific version to match rhc-worker-playbook versions
-                collection = f"{collection}:{version}"
+                if versions.rhel.major >= 10 and collection == 'ansible.posix':
+                    version = '1.4.0'
+
             util.subprocess_run(
-                ['ansible-galaxy', '-vvv', 'collection', 'install', collection],
+                ['ansible-galaxy',
+                '-vvv',
+                'collection', 'install',
+                f"{collection}:{version}",
+                '--force'],
                 check=True,
                 stderr=subprocess.PIPE,
             )
