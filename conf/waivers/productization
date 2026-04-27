@@ -179,7 +179,7 @@
     rhel in [8, 9]
 
 # https://github.com/ComplianceAsCode/content/issues/14668
-/scanning/disa-alignment/oscap/sshd_include_crypto_policy
+/scanning/disa-alignment/(ansible|oscap)/sshd_include_crypto_policy
     rhel == 9
 
 # https://github.com/ComplianceAsCode/content/issues/14669
