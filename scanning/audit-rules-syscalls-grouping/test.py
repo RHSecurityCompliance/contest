@@ -76,7 +76,9 @@ try:
         'oscap', 'xccdf', 'eval', '--progress', '--remediate', '--report', 'report.html',
         '--results-arf', 'remediation-arf.xml', 'remediation-ds.xml',
     ]
-    util.subprocess_run(cmd, check=True, stderr=subprocess.PIPE)
+    proc = util.subprocess_run(cmd, stderr=subprocess.PIPE)
+    if proc.returncode not in [0,2]:
+        raise RuntimeError("oscap failed unexpectedly")
     results.add_log('remediation-arf.xml', 'report.html')
 
     util.subprocess_run(['augenrules', '--load'], check=True, stderr=subprocess.PIPE)

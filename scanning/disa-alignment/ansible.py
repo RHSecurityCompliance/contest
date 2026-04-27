@@ -40,7 +40,7 @@ with g.snapshotted():
     ansible.report_from_output(lines, to_file='ansible-playbook.log')
     results.add_log('ansible-playbook.log')
     if proc.returncode != 0:
-        raise RuntimeError(f"ansible-playbook failed with {proc.returncode}")
+        results.report_and_exit('fail', note=f"ansible-playbook failed with {proc.returncode}")
     g.soft_reboot()
 
     with util.get_source_content() as content_dir:

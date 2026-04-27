@@ -36,7 +36,7 @@ if util.get_reboot_count() == 0:
     ansible.report_from_output(lines, to_file=ansible_playbook_log)
     results.add_log(ansible_playbook_log)
     if proc.returncode != 0:
-        raise RuntimeError(f"ansible-playbook failed with {proc.returncode}")
+        results.report_and_exit('fail', note=f"ansible-playbook failed with {proc.returncode}")
 
     util.reboot()
 
