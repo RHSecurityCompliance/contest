@@ -213,7 +213,12 @@ def match_result(status, name, note):
         # extract the rule name from the test name
         # (e.g. '/hardening/kickstart/stig/configure_crypto_policy')
         rule = name.rpartition('/')[2]
-        return not oscap.global_ds().has_remediation(rule, remediation_type)
+        ds = oscap.global_ds()
+        # there can be non-rule sub-result names (e.g. 'playbook: Ensure aide is installed ...')
+        # so just return False if the extracted rule name is not in the datastream
+        if rule not in ds.rules:
+            return False
+        return not ds.has_remediation(rule, remediation_type)
 
     objs = {
         # result related
