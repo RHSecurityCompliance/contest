@@ -499,14 +499,16 @@ class Guest:
             kickstart = Kickstart()
 
         kickstart.packages.append('openscap-scanner')
-        kickstart.add_host_repos()
+        if versions.rhel.is_true_rhel():
+            kickstart.add_host_repos()
         self.generate_ssh_keypair()
         kickstart.add_authorized_key(self.ssh_pubkey)
 
         # create a custom RPM to run guest setup scripts via RPM scriptlets
         # and install it during Anaconda installation
         pack = rpmpack or util.RpmPack()
-        pack.add_host_repos()
+        if versions.rhel.is_true_rhel():
+            pack.add_host_repos()
         pack.requires += self.GUEST_REQUIRES
         pack.add_sshd_late_start()
         with pack.build_as_repo() as repo:
