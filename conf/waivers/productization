@@ -132,11 +132,6 @@
 /hardening/host-os/(oscap|ansible)/stig/chronyd_or_ntpd_set_maxpoll
     rhel == 9 and arch in ('ppc64le', 's390x')
 
-# https://github.com/ComplianceAsCode/content/issues/14546
-/hardening/image-builder/(uefi/)?cis(_workstation_l2)?/ensure_redhat_gpgkey_installed
-/hardening/kickstart/(uefi/)?cis(_workstation_l2)?/ensure_redhat_gpgkey_installed
-    rhel == 10
-
 # https://github.com/ComplianceAsCode/content/issues/14558
 /scanning/boot-errors/(e8|ism_o|ism_o_secret|ism_o_top_secret)/.*kdump.service.*
 /scanning/boot-errors/(e8|ism_o|ism_o_secret|ism_o_top_secret)/.*Failed to start Crash recovery kernel arming.*
