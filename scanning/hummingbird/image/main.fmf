@@ -1,10 +1,10 @@
-summary: Scan hummingbird containers
+summary: Scan hummingbird containers using openscap image
 description: |
   Build Hummingbird product content and scan Hummingbird container images
-  using oscap-podman.
+  using the "quay.io/hummingbird/openscap" container image.
 test: $CONTEST_PYTHON -m lib.runtest ./test.py
 environment+:
-    PYTHONPATH: ../..
+    PYTHONPATH: ../../..
 duration: 30m
 require+:
   - openscap-utils
@@ -17,6 +17,12 @@ adjust+:
     enabled: false
     because: sufficient to run only on RHEL 10
 
-/stig:
-
 /cis:
+
+/fips/cis:
+    tag+:
+      - fips
+
+/fips/stig:
+    tag+:
+      - fips
