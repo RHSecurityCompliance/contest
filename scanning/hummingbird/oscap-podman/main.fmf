@@ -1,0 +1,28 @@
+summary: Scan hummingbird containers using oscap-podman
+description: |
+  Build Hummingbird product content and scan Hummingbird container images
+  using oscap-podman.
+test: $CONTEST_PYTHON -m lib.runtest ./test.py
+environment+:
+    PYTHONPATH: ../../..
+duration: 30m
+require+:
+  - openscap-utils
+  - podman
+adjust+:
+  - when: arch != x86_64
+    enabled: false
+    because: sufficient to check only on x86_64
+  - when: distro < rhel-10
+    enabled: false
+    because: sufficient to run only on RHEL 10
+
+/cis:
+
+/fips/cis:
+    tag+:
+      - fips
+
+/fips/stig:
+    tag+:
+      - fips
