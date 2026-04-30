@@ -17,6 +17,12 @@ adjust+:
     enabled: false
     because: sufficient to run only on RHEL 10
 
-/stig:
-
 /cis:
+
+/fips/cis:
+    tag+:
+      - fips
+
+/fips/stig:
+    tag+:
+      - fips

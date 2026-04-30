@@ -2,18 +2,15 @@
 
 import subprocess
 
-from lib import results, oscap, podman, util
+from lib import results, metadata, oscap, podman, util
 
 IMAGE = 'openjdk'
 profile = util.get_test_name().rpartition('/')[2]
-# Some profiles are expected to be applicable only to the FIPS variant of the
-# container image. Some profiles are expected to be applicable only on default
-# variants of container images.
-if profile in ('stig',):
-    variant = 'latest-fips'
+if 'fips' in metadata.tags():
+    image_variant = 'latest-fips'
 else:
-    variant = 'latest'
-image_id = f'quay.io/hummingbird/{IMAGE}:{variant}'
+    image_variant = 'latest'
+image_id = f'quay.io/hummingbird/{IMAGE}:{image_variant}'
 podman.podman('pull', image_id)
 
 with util.get_source_content() as content_dir:
