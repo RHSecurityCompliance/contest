@@ -6,10 +6,16 @@ import subprocess
 
 from lib import util, results, versions
 
-# collections present in the rhc-worker-playbook package and their versions
-RHC_WORKER_PLAYBOOK_COLLECTIONS = {
-    "community.general": "4.4.0",
-    "ansible.posix": "1.3.0",
+# Versions pinned to match what rhc-worker-playbook bundles on RHEL, so that
+# CentOS/Fedora test results stay close to what customers run.
+#
+# RHEL 8/9 (rhc-worker-playbook 0.1.x):
+#   https://gitlab.com/redhat/centos-stream/rpms/rhc-worker-playbook/-/blob/c9s/rhc-worker-playbook.spec
+# RHEL 10  (rhc-worker-playbook 0.2.x):
+#   https://github.com/RedHatInsights/rhc-worker-playbook/blob/main/ansible/meson.build
+ANSIBLE_GALAXY_COLLECTIONS = {
+    10: ['ansible.posix:1.5.4', 'community.general:9.2.0'],
+    'default': ['ansible.posix:1.3.0', 'community.general:4.4.0'],
 }
 
 
@@ -17,31 +23,23 @@ def install_deps():
     """
     Download and install any external dependencies required for Ansible to run.
     """
-    # On RHEL, rhc-worker-playbook package should be available
     if versions.rhel.is_true_rhel():
-        # export per official instructions on
+        # On RHEL, use collections bundled in rhc-worker-playbook
         # https://access.redhat.com/articles/remediation
         os.environ['ANSIBLE_COLLECTIONS_PATH'] = \
             '/usr/share/rhc-worker-playbook/ansible/collections/ansible_collections/'
-    # Use ansible-galaxy when rhc-worker-playbook not available (Fedora, CentOS, etc.)
     else:
-        for collection, version in RHC_WORKER_PLAYBOOK_COLLECTIONS.items():
-            # For CentOS Stream 10+, use ansible.posix 1.4.0 and newer,
-            # as it ships with Python 3.12 and it doesn't contain the distutils package,
-            # on which the ansible.posix 1.3.0 depends.
-            if versions.rhel.is_centos():
-                if versions.rhel.major >= 10 and collection == 'ansible.posix':
-                    version = '1.4.0'
-
-            util.subprocess_run(
-                ['ansible-galaxy',
-                '-vvv',
-                'collection', 'install',
-                f"{collection}:{version}",
-                '--force'],
-                check=True,
-                stderr=subprocess.PIPE,
-            )
+        # On Fedora, CentOS, etc., fetch from Galaxy pinned to RHEL versions
+        # Default to RHEL 8/9 collections if no specific version is available
+        collections = ANSIBLE_GALAXY_COLLECTIONS.get(
+            versions.rhel.major, ANSIBLE_GALAXY_COLLECTIONS['default'],
+        )
+        util.subprocess_run(
+            ['ansible-galaxy', '-vvv', 'collection', 'install', '--force',
+             *collections],
+            check=True,
+            stderr=subprocess.PIPE,
+        )
 
 
 def report_from_output(lines, to_file=None, failure='fail'):
