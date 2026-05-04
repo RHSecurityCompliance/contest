@@ -6,10 +6,18 @@ import subprocess
 
 from lib import util, results, versions
 
-# collections present in the rhc-worker-playbook package and their versions
-RHC_WORKER_PLAYBOOK_COLLECTIONS = {
-    "community.general": "4.4.0",
-    "ansible.posix": "1.3.0",
+# Versions pinned to match what rhc-worker-playbook bundles on RHEL for the
+# given RHEL version, so that CentOS/Fedora test environments are as close
+# as possible to RHEL.
+# RHEL 8/9 (rhc-worker-playbook 0.1.x):
+#   https://gitlab.com/redhat/centos-stream/rpms/rhc-worker-playbook/-/blob/c9s/rhc-worker-playbook.spec
+# RHEL 10  (rhc-worker-playbook 0.2.x):
+#   https://github.com/RedHatInsights/rhc-worker-playbook/blob/main/ansible/meson.build
+ANSIBLE_GALAXY_COLLECTIONS = {
+    8: ['ansible.posix:1.3.0', 'community.general:4.4.0'],
+    9: ['ansible.posix:1.3.0', 'community.general:4.4.0'],
+    10: ['ansible.posix:1.5.4', 'community.general:9.2.0'],
+    'default': ['ansible.posix', 'community.general'],
 }
 
 
@@ -17,23 +25,22 @@ def install_deps():
     """
     Download and install any external dependencies required for Ansible to run.
     """
-    # On RHEL, rhc-worker-playbook package should be available
     if versions.rhel.is_true_rhel():
-        # export per official instructions on
+        # On RHEL, use collections bundled in rhc-worker-playbook
         # https://access.redhat.com/articles/remediation
         os.environ['ANSIBLE_COLLECTIONS_PATH'] = \
             '/usr/share/rhc-worker-playbook/ansible/collections/ansible_collections/'
-    # Use ansible-galaxy when rhc-worker-playbook not available (Fedora, CentOS, etc.)
     else:
-        for collection, version in RHC_WORKER_PLAYBOOK_COLLECTIONS.items():
-            if versions.rhel.is_centos():
-                # install the specific version to match rhc-worker-playbook versions
-                collection = f"{collection}:{version}"
-            util.subprocess_run(
-                ['ansible-galaxy', '-vvv', 'collection', 'install', collection],
-                check=True,
-                stderr=subprocess.PIPE,
-            )
+        collections = ANSIBLE_GALAXY_COLLECTIONS.get(
+            versions.rhel.major, ANSIBLE_GALAXY_COLLECTIONS['default'],
+        )
+        util.subprocess_run(
+            (
+                'ansible-galaxy', '-vvv', 'collection', 'install', '--force', *collections,
+            ),
+            check=True,
+            stderr=subprocess.PIPE,
+        )
 
 
 def report_from_output(lines, to_file=None, failure='fail'):
