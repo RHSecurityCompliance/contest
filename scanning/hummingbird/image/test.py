@@ -51,5 +51,4 @@ with util.get_source_content() as content_dir:
     if proc.returncode not in [0, 2]:
         raise RuntimeError("oscap failed unexpectedly")
 
-results.add_log('report.html', 'scan-arf.xml')
-results.report_and_exit()
+results.report_and_exit(logs=['report.html', 'scan-arf.xml'])
