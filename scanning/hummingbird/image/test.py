@@ -4,8 +4,12 @@ import shutil
 import subprocess
 import tempfile
 
-from lib import results, metadata, oscap, podman, util
 from pathlib import Path
+
+from lib import results, metadata, oscap, podman, util
+
+SCANNER_IMAGE = 'quay.io/hummingbird/openscap:latest'
+podman.podman('pull', SCANNER_IMAGE)
 
 IMAGE = 'openjdk'
 profile = util.get_test_name().rpartition('/')[2]
@@ -31,12 +35,16 @@ with util.get_source_content() as content_dir:
         shutil.copy(ds_path, tempdir)
         proc, lines = util.subprocess_stream(
             [
-                'podman', 'run', '--rm', '--cap-add', 'SYS_CHROOT', '--mount',
-                f'type=image,source={image_id},destination=/target', '-e',
-                'OSCAP_PROBE_ROOT=/target', '-v', f'{tempdir}:/ssg:z,U',
-                'quay.io/hummingbird/openscap:latest', 'xccdf', 'eval',
-                '--progress', '--profile', profile, '--results-arf',
-                '/ssg/scan-arf.xml', '--report', '/ssg/report.html',
+                'podman', 'run', '--rm',
+                '--cap-add', 'SYS_CHROOT',
+                '--mount', f'type=image,source={image_id},destination=/target',
+                '-e', 'OSCAP_PROBE_ROOT=/target',
+                '-v', f'{tempdir}:/ssg:z,U',
+                SCANNER_IMAGE,
+                'xccdf', 'eval', '--progress',
+                '--profile', profile,
+                '--results-arf', '/ssg/scan-arf.xml',
+                '--report', '/ssg/report.html',
                 '/ssg/ssg-hummingbird-ds.xml',
             ],
             stderr=subprocess.STDOUT,
@@ -44,7 +52,9 @@ with util.get_source_content() as content_dir:
         oscap.report_from_verbose(lines)
         if proc.returncode not in [0, 2]:
             raise RuntimeError("oscap failed unexpectedly")
-        shutil.copy(tempdir + '/scan-arf.xml', Path.cwd())
-        shutil.copy(tempdir + '/report.html', Path.cwd())
+        artifacts = ['report.html', 'scan-arf.xml']
+        tempdir_path = Path(tempdir)
+        for artifact in artifacts:
+            shutil.copy(tempdir_path / artifact, Path.cwd())
 
-results.report_and_exit(logs=['report.html', 'scan-arf.xml'])
+results.report_and_exit(logs=artifacts)
