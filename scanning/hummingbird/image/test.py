@@ -2,7 +2,6 @@
 
 import shutil
 import subprocess
-import tempfile
 
 from pathlib import Path
 
@@ -31,30 +30,26 @@ with util.get_source_content() as content_dir:
     ds_path = content_dir / util.CONTENT_BUILD_DIR / 'ssg-hummingbird-ds.xml'
     if not ds_path.exists():
         raise RuntimeError(f"Datastream not found: {ds_path}")
-    with tempfile.TemporaryDirectory() as tempdir:
-        shutil.copy(ds_path, tempdir)
-        proc, lines = util.subprocess_stream(
-            [
-                'podman', 'run', '--rm',
-                '--cap-add', 'SYS_CHROOT',
-                '--mount', f'type=image,source={image_id},destination=/target',
-                '-e', 'OSCAP_PROBE_ROOT=/target',
-                '-v', f'{tempdir}:/ssg:z,U',
-                SCANNER_IMAGE,
-                'xccdf', 'eval', '--progress',
-                '--profile', profile,
-                '--results-arf', '/ssg/scan-arf.xml',
-                '--report', '/ssg/report.html',
-                '/ssg/ssg-hummingbird-ds.xml',
-            ],
-            stderr=subprocess.STDOUT,
-        )
-        oscap.report_from_verbose(lines)
-        if proc.returncode not in [0, 2]:
-            raise RuntimeError("oscap failed unexpectedly")
-        artifacts = ['report.html', 'scan-arf.xml']
-        tempdir_path = Path(tempdir)
-        for artifact in artifacts:
-            shutil.copy(tempdir_path / artifact, Path.cwd())
+    shutil.copy(ds_path, Path.cwd())
+    proc, lines = util.subprocess_stream(
+        [
+            'podman', 'run', '--rm',
+            '--cap-add', 'SYS_CHROOT',
+            '--mount', f'type=image,source={image_id},destination=/target',
+            '-e', 'OSCAP_PROBE_ROOT=/target',
+            '-v', f'{Path.cwd()}:/ssg:z,U',
+            SCANNER_IMAGE,
+            'xccdf', 'eval', '--progress',
+            '--profile', profile,
+            '--results-arf', '/ssg/scan-arf.xml',
+            '--report', '/ssg/report.html',
+            '/ssg/ssg-hummingbird-ds.xml',
+        ],
+        stderr=subprocess.STDOUT,
+    )
+    oscap.report_from_verbose(lines)
+    if proc.returncode not in [0, 2]:
+        raise RuntimeError("oscap failed unexpectedly")
 
-results.report_and_exit(logs=artifacts)
+results.add_log('report.html', 'scan-arf.xml')
+results.report_and_exit()
