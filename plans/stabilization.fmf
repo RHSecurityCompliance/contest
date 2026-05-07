@@ -5,5 +5,8 @@ discover:
     filter:
       - tag:-needs-param
       - tag:-broken
+    exclude:
+      # we want to run this test only manually when needed
+      - /static-checks/audit-sample-rules
 
 # vim: syntax=yaml

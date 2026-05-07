@@ -15,5 +15,7 @@ discover:
       - /static-checks/html-links
       # not useful in automated runs that are not manually reviewed
       - /static-checks/diff
+      # we want to run this test only manually when needed
+      - /static-checks/audit-sample-rules
 
 # vim: syntax=yaml
