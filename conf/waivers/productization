@@ -146,10 +146,6 @@
 /hardening/host-os/oscap/.+/rsyslog_files_permissions
     rhel.is_centos() and rhel in [9, 10]
 
-# https://github.com/ComplianceAsCode/content/issues/14580
-/static-checks/audit-sample-rules/audit_ospp_general
-    rhel in [8, 9]
-
 # https://github.com/ComplianceAsCode/content/issues/14669
 /scanning/boot-errors/stig
 /hardening/oscap/stig
