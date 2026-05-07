@@ -159,10 +159,6 @@
 /static-checks/audit-sample-rules/audit_ospp_general
     rhel in [8, 9]
 
-# https://github.com/ComplianceAsCode/content/issues/14668
-/scanning/disa-alignment/(ansible|oscap)/sshd_include_crypto_policy
-    rhel == 9
-
 # https://github.com/ComplianceAsCode/content/issues/14669
 /scanning/boot-errors/stig
 /hardening/oscap/stig
