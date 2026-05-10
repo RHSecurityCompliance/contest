@@ -142,11 +142,6 @@
 # https://github.com/ComplianceAsCode/content/issues/14563
 /scanning/boot-errors/stig/chronyd.*(Could not connect|certificate verification|TLS handshake|no selectable sources|timed out).*
     True
-# https://github.com/ComplianceAsCode/content/issues/14565
-/scanning/boot-errors/hipaa/.*kauditd hold queue overflow.*
-/scanning/boot-errors/hipaa/auditd: Error receiving audit netlink packet (No buffer space available)
-    True
-
 # https://github.com/ComplianceAsCode/content/issues/14570
 /hardening/host-os/oscap/.+/rsyslog_files_permissions
     rhel.is_centos() and rhel in [9, 10]
