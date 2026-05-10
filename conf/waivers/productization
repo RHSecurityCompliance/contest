@@ -139,10 +139,6 @@
     rhel == 10
 /scanning/boot-errors/(cis|cis_workstation_l2|pci-dss)/auditd.*Email option is specified but /usr/lib/sendmail doesn't seem executable.*
     rhel == 9
-# https://github.com/ComplianceAsCode/content/issues/14561
-/scanning/boot-errors/hipaa/auditd.*Error - plugin \(/etc/audit/plugins.d//syslog.conf\) is active but no path given
-/scanning/boot-errors/hipaa/auditd.*Skipping syslog.conf plugin due to errors
-    rhel == 9
 # https://github.com/ComplianceAsCode/content/issues/14563
 /scanning/boot-errors/stig/chronyd.*(Could not connect|certificate verification|TLS handshake|no selectable sources|timed out).*
     True
