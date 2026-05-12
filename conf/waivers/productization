@@ -113,10 +113,6 @@
 /hardening/image-builder/uefi/ism_o_top_secret
     rhel == 10 and status == 'error'
 
-# https://github.com/ComplianceAsCode/content/issues/14541
-/hardening/host-os/(oscap|ansible)/stig/chronyd_or_ntpd_set_maxpoll
-    rhel == 9 and arch in ('ppc64le', 's390x')
-
 # https://github.com/ComplianceAsCode/content/issues/14558
 /scanning/boot-errors/(e8|ism_o|ism_o_secret|ism_o_top_secret)/.*kdump.service.*
 /scanning/boot-errors/(e8|ism_o|ism_o_secret|ism_o_top_secret)/.*Failed to start Crash recovery kernel arming.*
