@@ -148,6 +148,11 @@
 /scanning/disa-alignment/.+/configure_libreswan_crypto_policy
     rhel == 8
 
+# https://github.com/ComplianceAsCode/content/issues/14389
+# DISA content evaluates this as not applicable once package is removed
+/scanning/disa-alignment/.+/package_tftp-server_removed
+    rhel == 9
+
 # rsyslogd remote host and certificate need to be configured manually
 /scanning/boot-errors/.+/rsyslogd.+(certificate.*is not set|key.*is not set|cannot resolve hostname).*
     True
