@@ -11,6 +11,7 @@ import textwrap
 import tempfile
 import requests
 import subprocess
+import urllib3
 from pathlib import Path
 
 from lib import util
@@ -87,7 +88,10 @@ class Registry:
 
     @staticmethod
     def _download_image():
-        result = requests.get(REGISTRY_IMAGE, stream=True)
+        session = requests.Session()
+        retries = urllib3.util.Retry(total=10, backoff_factor=0.1)
+        session.mount('https://', requests.adapters.HTTPAdapter(max_retries=retries))
+        result = session.get(REGISTRY_IMAGE, stream=True)
         result.raise_for_status()
         gz_file = gzip.GzipFile(fileobj=result.raw)
         with tempfile.NamedTemporaryFile(suffix='.tar', delete=False) as tmpf:
