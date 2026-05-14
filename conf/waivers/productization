@@ -127,6 +127,9 @@
 # https://github.com/ComplianceAsCode/content/issues/14563
 /scanning/boot-errors/stig/chronyd.*(Could not connect|certificate verification|TLS handshake|no selectable sources|timed out).*
     True
+# https://github.com/ComplianceAsCode/content/issues/14570
+/hardening/host-os/oscap/.+/rsyslog_files_permissions
+    rhel.is_centos() and rhel in [9, 10]
 
 # https://github.com/ComplianceAsCode/content/issues/14669
 /scanning/boot-errors/stig
