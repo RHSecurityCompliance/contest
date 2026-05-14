@@ -95,12 +95,6 @@
 /hardening/container/(anaconda-ostree|bootc-image-builder|old-new)/.+/file_permissions_boot_grub2
     rhel == 10
 
-# https://github.com/ComplianceAsCode/content/issues/13778
-/per-rule/.+/file_permissions_ungroupowned/unowned_file_tmp.fail
-/per-rule/.+/no_files_unowned_by_user/unowned_file_tmp.fail
-/per-rule/.+/file_permissions_unauthorized_world_writable/world_writable_tmp.fail
-    True
-
 # Image builder issue. Image builder needs to add BSI, ISM Official Secret
 # and ISM Official Top Secret to its allow list, tracked under
 # https://issues.redhat.com/browse/HMS-9407
