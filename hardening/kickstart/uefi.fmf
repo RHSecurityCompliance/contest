@@ -1,7 +1,7 @@
 tag+:
   - uefi
 adjust+:
-  - when: distro < rhel-10
+  - when: distro < rhel-10 or distro < centos-stream-10
     enabled: false
     because: >
         we don't have capacity to test this everywhere, but RHEL-10 is UEFI
@@ -83,6 +83,7 @@ adjust+:
     tag+:
       - fips
     adjust+:
+      # keep enabled on centos-stream-10+ for upstream testing
       - when: distro >= rhel-10
         enabled: false
         because: there is no OSPP profile on RHEL-10+
