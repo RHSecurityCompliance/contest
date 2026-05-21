@@ -25,7 +25,7 @@ adjust+:
   - when: arch != x86_64
     enabled: false
     because: we want to run virtualization on x86_64 only
-  - when: distro < rhel-10
+  - when: distro < rhel-10 or distro < centos-stream-10
     enabled: false
     because: on RHEL <= 9 oscap-anaconda-addon is used instead
 
@@ -105,6 +105,7 @@ adjust+:
     tag+:
       - fips
     adjust+:
+      # keep enabled on centos-stream-10+ for upstream testing
       - when: distro >= rhel-10
         enabled: false
         because: there is no OSPP profile on RHEL-10+
