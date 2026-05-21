@@ -9,9 +9,6 @@
 # https://github.com/ComplianceAsCode/content/issues/13236
 /scanning/disa-alignment/ansible/networkmanager_dns_mode
     rhel == 9
-# https://github.com/ComplianceAsCode/content/issues/13676
-/scanning/disa-alignment/.*/coredump_disable_.+
-    True
 # https://github.com/ComplianceAsCode/content/issues/14229
 # maybe it's related to the syntax change in rsyslog configuration files
 /scanning/disa-alignment/[^/]+/rsyslog_remote_access_monitoring
