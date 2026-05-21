@@ -154,11 +154,6 @@
 /scanning/boot-errors/.+/rsyslogd.+(certificate.*is not set|key.*is not set|cannot resolve hostname).*
     True
 
-# These rules fail in the default Hummingbird container images,
-# hardening needs to be done on the Hummingbird project side.
-/scanning/hummingbird/.+/accounts_umask_etc_(bashrc|profile)
-    True
-
 # File /boot/grub2/grub2.cfg is created with lenient permissions by
 # bootupd during the installation of a bootable container image.
 # Tests still fail on RHEL 10.0
