@@ -104,10 +104,6 @@
 /hardening/image-builder/uefi/ism_o_top_secret
     rhel == 10 and status == 'error'
 
-# https://github.com/ComplianceAsCode/content/issues/14558
-/scanning/boot-errors/(e8|ism_o|ism_o_secret|ism_o_top_secret)/.*kdump.service.*
-/scanning/boot-errors/(e8|ism_o|ism_o_secret|ism_o_top_secret)/.*Failed to start Crash recovery kernel arming.*
-    True
 # https://github.com/ComplianceAsCode/content/issues/14559
 /scanning/boot-errors/(stig|ism_o|ism_o_secret|ism_o_top_secret)/.*sssd.service.*
     rhel == 10
