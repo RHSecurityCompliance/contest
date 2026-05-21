@@ -119,8 +119,20 @@ if [[ -f $variables_file ]]; then
             # - sed would easily mangle it because it can't take a verbatim value
             # - awk also mangles & (gensub) or even \n (substr+print)
             # - bash printf can print anything except 0x00 (which is fine)
+            skip_indent=
             while IFS= read -r playbook_line; do
+                # the original value may span multiple lines (multiline string),
+                # so skip follow-up lines with indent > the initial key: line,
+                # plus fully empty lines
+                #   vars:
+                #     var_something: Foo   # with > or | or without it completely
+                #       Bar
+                if [[ $skip_indent && ( $playbook_line == $skip_indent[[:space:]]* || -z $playbook_line ) ]]; then
+                    continue
+                fi
+                skip_indent=
                 if [[ $playbook_line =~ ^([[:space:]]+)$key: ]]; then
+                    skip_indent=${BASH_REMATCH[1]}
                     # if the value ends with \n, preserve any trailing newlines,
                     # otherwise strip the \n we add via printf below
                     [[ ${value: -1} == $'\n' ]] && newlines='|+1' || newlines='|-1'
