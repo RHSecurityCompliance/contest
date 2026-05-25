@@ -48,6 +48,7 @@
 # RHEL-9: https://bugzilla.redhat.com/show_bug.cgi?id=1999587
 # https://issues.redhat.com/browse/RHEL-45706
 /hardening/anaconda/with-gui/[^/]+/service_avahi-daemon_disabled
+/hardening/anaconda/with-gui/[^/]+/service_dnsmasq_disabled
 /hardening/anaconda(/with-gui)?/cis[^/]*/socket_systemd-journal-remote_disabled
 # https://github.com/ComplianceAsCode/content/issues/11498
 /hardening/anaconda/with-gui/[^/]+/service_bluetooth_disabled
@@ -62,6 +63,7 @@
 /hardening/kickstart/.+/service_bluetooth_disabled
 /hardening/kickstart/.+/systemd_tmp_mount_enabled
 /hardening/kickstart/.+/service_cockpit_disabled
+/hardening/kickstart/.+/service_dnsmasq_disabled
     True
 
 # https://github.com/ComplianceAsCode/content/issues/12942
