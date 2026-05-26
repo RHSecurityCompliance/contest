@@ -28,6 +28,7 @@ ignore = [
     "PLR0911",  # too-many-return-statements
     "PLR0912",  # too-many-branches
     "PLR0913",  # too-many-arguments
+    "PLW0717",  # too-many-statements-in-try-clause
     "PLR2004",  # magic-value-comparison
     "PLR5501",  # collapsible-else-if
     "PLW0603",  # global-statement

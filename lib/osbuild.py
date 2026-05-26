@@ -105,12 +105,14 @@ class ComposerRepos:
             ['systemctl', 'restart', 'osbuild-composer.service'],
             check=True, stderr=subprocess.PIPE,
         )
-        yield
-        shutil.rmtree(self.ETC_REPOS)
-        util.subprocess_run(
-            ['systemctl', 'restart', 'osbuild-composer.service'],
-            check=True, stderr=subprocess.PIPE,
-        )
+        try:
+            yield
+        finally:
+            shutil.rmtree(self.ETC_REPOS)
+            util.subprocess_run(
+                ['systemctl', 'restart', 'osbuild-composer.service'],
+                check=True, stderr=subprocess.PIPE,
+            )
 
 
 class Compose:
@@ -165,9 +167,11 @@ class Compose:
         if entry.status != 'FINISHED':
             composer_cli('compose', 'log', entry.id)
             raise RuntimeError(f"failed to build: {entry}")
-        yield entry.id
-        # clean up
-        composer_cli('compose', 'delete', entry.id)
+        try:
+            yield entry.id
+        finally:
+            # clean up
+            composer_cli('compose', 'delete', entry.id)
 
 
 # this is using a different approach to class Kickstart or class RpmPack
@@ -245,8 +249,10 @@ class Blueprint:
             composer_cli('blueprints', 'delete', self.NAME)
         with self.to_tmpfile() as f:
             composer_cli('blueprints', 'push', f)
-        yield self.NAME
-        composer_cli('blueprints', 'delete', self.NAME)
+        try:
+            yield self.NAME
+        finally:
+            composer_cli('blueprints', 'delete', self.NAME)
 
 
 class Guest(virt.Guest):
