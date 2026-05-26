@@ -41,5 +41,7 @@ def backed_up(path):
             # do destructive stuff to it
     """
     backup(path)
-    yield
-    restore(path)
+    try:
+        yield
+    finally:
+        restore(path)
