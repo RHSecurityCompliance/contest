@@ -23,6 +23,10 @@
 /scanning/disa-alignment/.+/logind_session_timeout
     rhel == 9
 
+# https://github.com/ComplianceAsCode/content/issues/14745
+/scanning/disa-alignment/[^/]+/crypto_policy_not_overridden
+    rhel == 9
+
 # RHEL10 - No official RHEL10 STIG benchmark yet
 /static-checks/rule-identifiers/stig/stigid/.*
 /static-checks/rule-identifiers/stig/stigref/.*
