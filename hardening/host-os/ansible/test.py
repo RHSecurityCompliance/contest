@@ -34,7 +34,6 @@ if util.get_reboot_count() == 0:
     ]
     proc, lines = util.subprocess_stream(cmd, stderr=subprocess.STDOUT)
     ansible.report_from_output(lines, to_file=ansible_playbook_log)
-    results.add_log(ansible_playbook_log)
     if proc.returncode != 0:
         results.report_and_exit('fail', note=f"ansible-playbook failed with {proc.returncode}")
 
@@ -50,7 +49,7 @@ else:
         util.get_datastream(),
     ]
     proc, lines = util.subprocess_stream(cmd)
-    oscap.report_from_verbose(lines)
+    oscap.report_from_verbose(lines, to_file='oscap.log')
     if proc.returncode not in [0,2]:
         raise RuntimeError(f"post-reboot oscap failed unexpectedly with {proc.returncode}")
 

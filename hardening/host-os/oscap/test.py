@@ -65,7 +65,7 @@ else:
         util.get_datastream(),
     ]
     proc, lines = util.subprocess_stream(cmd)
-    oscap.report_from_verbose(lines)
+    oscap.report_from_verbose(lines, to_file='oscap.log')
     if proc.returncode not in [0,2]:
         raise RuntimeError(f"post-reboot oscap failed unexpectedly with {proc.returncode}")
 
