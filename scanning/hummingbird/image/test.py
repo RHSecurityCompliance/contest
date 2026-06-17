@@ -47,7 +47,7 @@ with util.get_source_content() as content_dir:
         ],
         stderr=subprocess.STDOUT,
     )
-    oscap.report_from_verbose(lines)
+    oscap.report_from_verbose(lines, to_file='oscap.log')
     if proc.returncode not in [0, 2]:
         raise RuntimeError("oscap failed unexpectedly")
 

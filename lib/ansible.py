@@ -1,7 +1,5 @@
 import os
-import sys
 import re
-import contextlib
 import subprocess
 
 from lib import util, results, versions
@@ -43,13 +41,17 @@ def install_deps():
         )
 
 
-def report_from_output(lines, to_file=None, failure='fail'):
+def report_from_output(lines, to_file='ansible-playbook.log', failure='fail'):
     """
     Process 'ansible-playbook' output, hide useless info, and report important
     info.
 
-    If 'to_file' was specified as a file path, redirect ansible-playbook
-    outputs to it, instead of leaving them on the console.
+    All ansible-playbook output is written to 'to_file' (and streamed to ATEX
+    when available). The log file is pre-registered via register_log() so it
+    is preserved even if the test errors out (similar to ATEX crash-safety).
+    Callers should not pass 'to_file' to results.add_log() or
+    results.report_and_exit(logs=...) as it is already registered with
+    the main test result.
 
     The 'failure' argument dictates what status to use for failing playbook
     results. The default 'fail' is sensible for uses where the playbook is
@@ -62,19 +64,16 @@ def report_from_output(lines, to_file=None, failure='fail'):
     """
     failed = False
     task = '<unknown task>'
+    log_path = results.register_log(to_file)
 
-    with contextlib.ExitStack() as stack:
-        if to_file:
-            out_file = stack.enter_context(open(to_file, 'w'))
-        else:
-            out_file = sys.stdout
-
+    with open(log_path, 'w') as out_file:
         for line in lines:
             # shorten facts
             m = re.match(r'(ok: \[.+\] =>) {"ansible_facts": ', line)
             if m:
                 line = f'{m.group(1)} (Redacted by Contest)'
 
+            results.atex_upload_log_data(to_file, f'{line}\n')
             out_file.write(f'{line}\n')
             out_file.flush()
 

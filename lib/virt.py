@@ -78,7 +78,6 @@ Example using plain one-time-use guest:
 """
 
 import os
-import sys
 import re
 import time
 import subprocess
@@ -91,7 +90,7 @@ import xml.etree.ElementTree as ET
 from datetime import datetime, timedelta
 from pathlib import Path
 
-from lib import util, versions, dnf
+from lib import util, versions, dnf, results
 
 GUEST_NAME = 'contest'
 GUEST_LOGIN_PASS = 'contest'
@@ -456,16 +455,21 @@ class Guest:
             proc = util.subprocess_Popen(virt_install, stdout=PIPE, executable=executable)
             fail_exprs = [re.compile(x) for x in INSTALL_FAILURES]
 
+            log_path = results.register_log('virt-install.log')
             try:
-                for line in proc.stdout:
-                    sys.stdout.buffer.write(line)
-                    sys.stdout.buffer.flush()
-                    if any(x.search(line) for x in fail_exprs):
-                        proc.terminate()
-                        proc.wait()
-                        raise RuntimeError(f"installation failed: {util.make_printable(line)}")
-                if proc.wait() > 0:
-                    raise RuntimeError("virt-install failed")
+                with open(log_path, 'wb') as virt_log:
+                    for line in proc.stdout:
+                        results.atex_upload_log_data('virt-install.log', line)
+                        virt_log.write(line)
+                        virt_log.flush()
+                        if any(x.search(line) for x in fail_exprs):
+                            proc.terminate()
+                            proc.wait()
+                            raise RuntimeError(
+                                f"installation failed: {util.make_printable(line)}",
+                            )
+                    if proc.wait() > 0:
+                        raise RuntimeError("virt-install failed")
             except Exception as e:
                 self.destroy()
                 self.undefine(incl_storage=True)

@@ -47,7 +47,6 @@ with g.snapshotted():
     ]
     proc, lines = util.subprocess_stream(ansible_cmd, stderr=subprocess.STDOUT)
     ansible.report_from_output(lines, to_file='ansible-playbook.log')
-    results.add_log('ansible-playbook.log')
     if proc.returncode != 0:
         results.report_and_exit('fail', note=f"ansible-playbook failed with {proc.returncode}")
     g.soft_reboot()
@@ -58,7 +57,7 @@ with g.snapshotted():
         f'oscap xccdf eval --profile {profile} --progress --report report.html'
         f' --results-arf scan-arf.xml scan-ds.xml',
     )
-    oscap.report_from_verbose(lines)
+    oscap.report_from_verbose(lines, to_file='oscap.log')
     if proc.returncode not in [0,2]:
         raise RuntimeError(f"post-reboot oscap failed unexpectedly with {proc.returncode}")
 
