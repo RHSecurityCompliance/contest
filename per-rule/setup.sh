@@ -2,6 +2,8 @@
 
 set -e
 
+dnf install -y openscap-engine-sce
+
 thin_ds_dir=thin_ds
 playbooks_dir=playbooks
 tests_dir=tests
