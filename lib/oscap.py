@@ -14,6 +14,15 @@ FixType = enum.Flag(
     ['bash', 'ansible', 'anaconda', 'kickstart', 'blueprint', 'bootc'],
 )
 
+_FIX_SYSTEM_MAP = {
+    'urn:xccdf:fix:script:sh': FixType.bash,
+    'urn:xccdf:fix:script:ansible': FixType.ansible,
+    'urn:redhat:anaconda:pre': FixType.anaconda,
+    'urn:xccdf:fix:script:kickstart': FixType.kickstart,
+    'urn:redhat:osbuild:blueprint': FixType.blueprint,
+    'urn:xccdf:fix:script:bootc': FixType.bootc,
+}
+
 
 def parse_xml(path):
     """
@@ -133,20 +142,10 @@ class Datastream:
 
             # fixes / remediations
             elif frames[-2:] == ['Rule', 'fix']:
-                system = elements[-1].get('system')
-                for_rule = elements[-1].get('id')
-                if system == 'urn:xccdf:fix:script:sh':
-                    self.rules[for_rule].fixes |= FixType.bash
-                elif system == 'urn:xccdf:fix:script:ansible':
-                    self.rules[for_rule].fixes |= FixType.ansible
-                elif system == 'urn:redhat:anaconda:pre':
-                    self.rules[for_rule].fixes |= FixType.anaconda
-                elif system == 'urn:xccdf:fix:script:kickstart':
-                    self.rules[for_rule].fixes |= FixType.kickstart
-                elif system == 'urn:redhat:osbuild:blueprint':
-                    self.rules[for_rule].fixes |= FixType.blueprint
-                elif system == 'urn:xccdf:fix:script:bootc':
-                    self.rules[for_rule].fixes |= FixType.bootc
+                fix_type = _FIX_SYSTEM_MAP.get(elements[-1].get('system'))
+                if fix_type:
+                    for_rule = elements[-1].get('id')
+                    self.rules[for_rule].fixes |= fix_type
 
         # "convert" to regular dict, make external logic get KeyError
         # on bad profile or rule name
