@@ -30,11 +30,12 @@ remediation_excludes = set(remediation.excludes())
 
 
 def format_test(test):
+    rule_name = f'{test.rule}_sce' if test.check == 'sce' else test.rule
     pass_fail = 'pass' if test.is_pass else 'fail'
-    return f'{test.rule}/{test.test}.{pass_fail}'
+    return f'{rule_name}/{test.test}.{pass_fail}'
 
 
-def unit_tests_from_rules(built_tests_dir, rules):
+def unit_tests_from_rules(built_tests_dir, rules, ds):
     for rule in sorted(rules):
         rule_dir = built_tests_dir / rule
         # rule without tests
@@ -62,6 +63,8 @@ def unit_tests_from_rules(built_tests_dir, rules):
                 if full.rule in remediation_excludes:
                     continue
             yield full
+            if rule in ds.rules and ds.rules[rule].has_sce:
+                yield full._replace(check='sce')
 
 
 with util.get_source_content() as content_dir:
@@ -101,7 +104,7 @@ with util.get_source_content() as content_dir:
 
     util.log(f"will be testing {len(our_rules)} rules")
 
-    tests = unit_tests_from_rules(built_tests, our_rules)
+    tests = unit_tests_from_rules(built_tests, our_rules, ds)
     # if remediating via ansible, filter out any tests without playbooks
     if fix_type == 'ansible':
         tests = (t for t in tests if (playbooks_dir / f'{t.rule}.yml').exists())
@@ -194,6 +197,13 @@ for test in tests:
     if test.remediation == 'ansible' and fix_type != 'ansible':
         continue
 
+    # SCE-only rule with no OVAL check - skip the non-SCE test
+    if test.check != 'sce' and test.rule in ds.rules:
+        rule_info = ds.rules[test.rule]
+        if rule_info.has_sce and not rule_info.has_oval:
+            results.report('skip', format_test(test), 'rule has no OVAL check')
+            continue
+
     # if unspecified by test, default to test type from fmf metadata
     if test.remediation == 'bash':
         remediation_type = 'oscap'
@@ -205,7 +215,8 @@ for test in tests:
     # try a first run, if it passes, report it without extra overhead
     with g.snapshotted():
         proc = g.ssh(
-            './runner.sh', test.rule, test.test, pass_fail, remediation_type, 'nodebug',
+            './runner.sh', test.rule, test.test, pass_fail,
+            remediation_type, 'nodebug', test.check or 'oval',
             stdout=subprocess.PIPE, text=True,
         )
         if proc.returncode == 0:
@@ -220,7 +231,8 @@ for test in tests:
     #   may still pass
     with g.snapshotted():
         proc = g.ssh(
-            './runner.sh', test.rule, test.test, pass_fail, remediation_type, 'debug',
+            './runner.sh', test.rule, test.test, pass_fail,
+            remediation_type, 'debug', test.check or 'oval',
             stdout=subprocess.PIPE, text=True,
         )
 
