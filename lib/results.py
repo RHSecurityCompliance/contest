@@ -338,8 +338,8 @@ def add_log(*logs):
     Add log file(s) to be associated with the main test result.
 
     The log file(s) will be processed immediately:
-    - For ATEX: uploaded via atex_upload_log_data() in 64 KiB chunks,
-      skipping files that were already streamed (to avoid appending duplicates)
+    - For ATEX: uploaded as a partial result, skipping files that were
+      already streamed via atex_upload_log_data() (to avoid duplicates)
     - For TMT: submitted via tmt-file-submit so they appear on the main result
       (no-op if the file was already pre-registered via register_log())
 
@@ -358,9 +358,14 @@ def add_log(*logs):
             log = Path(log)
             if log.name in _streamed_atex_logs:
                 continue
-            with open(log, 'rb') as f:
-                while chunk := f.read(65536):
-                    atex_upload_log_data(log, chunk)
+            _streamed_atex_logs.add(log.name)
+            result = {
+                'status': 'error',
+                'note': "no final result provided",
+                'partial': True,
+                'files': [{'name': log.name, 'length': log.stat().st_size}],
+            }
+            _atex_send(result, logs=[log])
     elif have_tmt_api():
         for log in logs:
             _tmt_file_submit(log)
