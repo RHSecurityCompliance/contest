@@ -14,6 +14,8 @@ FixType = enum.Flag(
     ['bash', 'ansible', 'anaconda', 'kickstart', 'blueprint', 'bootc'],
 )
 
+_OVAL_SYSTEM = 'http://oval.mitre.org/XMLSchema/oval-definitions-5'
+
 _FIX_SYSTEM_MAP = {
     'urn:xccdf:fix:script:sh': FixType.bash,
     'urn:xccdf:fix:script:ansible': FixType.ansible,
@@ -93,7 +95,7 @@ class Datastream:
             return types.SimpleNamespace(title=None, rules=set(), values=set())
 
         def make_rule():
-            return types.SimpleNamespace(fixes=FixType(0))
+            return types.SimpleNamespace(fixes=FixType(0), has_sce=False, has_oval=False)
 
         self.profiles.default_factory = make_profile
         self.rules.default_factory = make_rule
@@ -140,12 +142,23 @@ class Datastream:
                 rule_id = rule_id.removeprefix('xccdf_org.ssgproject.content_rule_')
                 self.rules[rule_id]  # let defaultdict fill in the values
 
-            # fixes / remediations
-            elif frames[-2:] == ['Rule', 'fix']:
-                fix_type = _FIX_SYSTEM_MAP.get(elements[-1].get('system'))
-                if fix_type:
-                    for_rule = elements[-1].get('id')
-                    self.rules[for_rule].fixes |= fix_type
+            # fixes / remediations and check engines
+            elif frames[-2] == 'Rule':
+                system = elements[-1].get('system')
+                if frames[-1] == 'fix':
+                    fix_type = _FIX_SYSTEM_MAP.get(system)
+                    if fix_type:
+                        for_rule = elements[-1].get('id')
+                        self.rules[for_rule].fixes |= fix_type
+                elif frames[-1] == 'check':
+                    rule_id = elements[-2].get('id')
+                    rule_id = rule_id.removeprefix(
+                        'xccdf_org.ssgproject.content_rule_',
+                    )
+                    if system == 'http://open-scap.org/page/SCE':
+                        self.rules[rule_id].has_sce = True
+                    elif system == _OVAL_SYSTEM:
+                        self.rules[rule_id].has_oval = True
 
         # "convert" to regular dict, make external logic get KeyError
         # on bad profile or rule name
