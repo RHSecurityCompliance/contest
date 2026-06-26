@@ -136,7 +136,7 @@ with util.get_source_content() as content_dir:
 
     # prepare a kickstart for the VM
     ks = virt.Kickstart()
-    ks.packages += ['rsync', 'xmlstarlet', 'ansible-core']
+    ks.packages += ['rsync', 'xmlstarlet', 'ansible-core', 'openscap-engine-sce']
     # if RHEL, use rhc-worker-playbook, else install from galaxy
     if versions.rhel.is_true_rhel():
         ks.packages.append('rhc-worker-playbook')
