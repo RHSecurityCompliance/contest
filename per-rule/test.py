@@ -34,7 +34,7 @@ def format_test(test):
     return f'{test.rule}/{test.test}.{pass_fail}'
 
 
-def unit_tests_from_rules(built_tests_dir, rules):
+def unit_tests_from_rules(built_tests_dir, rules, ds):
     for rule in sorted(rules):
         rule_dir = built_tests_dir / rule
         # rule without tests
@@ -61,7 +61,10 @@ def unit_tests_from_rules(built_tests_dir, rules):
             if not full.is_pass and full.remediation != 'none':
                 if full.rule in remediation_excludes:
                     continue
-            yield full
+            if ds.rules[rule].has_sce:
+                yield full._replace(check='sce')
+            if ds.rules[rule].has_oval:
+                yield full._replace(check='oval')
 
 
 with util.get_source_content() as content_dir:
@@ -101,7 +104,7 @@ with util.get_source_content() as content_dir:
 
     util.log(f"will be testing {len(our_rules)} rules")
 
-    tests = unit_tests_from_rules(built_tests, our_rules)
+    tests = unit_tests_from_rules(built_tests, our_rules, ds)
     # if remediating via ansible, filter out any tests without playbooks
     if fix_type == 'ansible':
         tests = (t for t in tests if (playbooks_dir / f'{t.rule}.yml').exists())
@@ -205,7 +208,8 @@ for test in tests:
     # try a first run, if it passes, report it without extra overhead
     with g.snapshotted():
         proc = g.ssh(
-            './runner.sh', test.rule, test.test, pass_fail, remediation_type, 'nodebug',
+            './runner.sh', test.rule, test.test, pass_fail,
+            remediation_type, 'nodebug', test.check,
             stdout=subprocess.PIPE, text=True,
         )
         if proc.returncode == 0:
@@ -220,7 +224,8 @@ for test in tests:
     #   may still pass
     with g.snapshotted():
         proc = g.ssh(
-            './runner.sh', test.rule, test.test, pass_fail, remediation_type, 'debug',
+            './runner.sh', test.rule, test.test, pass_fail,
+            remediation_type, 'debug', test.check,
             stdout=subprocess.PIPE, text=True,
         )
 
