@@ -31,7 +31,10 @@ remediation_excludes = set(remediation.excludes())
 
 def format_test(test):
     pass_fail = 'pass' if test.is_pass else 'fail'
-    return f'{test.rule}/{test.test}.{pass_fail}'
+    if test.check == 'sce':
+        return f'sce/{test.rule}/{test.test}.{pass_fail}'
+    else:
+        return f'{test.rule}/{test.test}.{pass_fail}'
 
 
 def unit_tests_from_rules(built_tests_dir, rules, ds):
