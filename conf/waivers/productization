@@ -27,12 +27,6 @@
 /scanning/disa-alignment/[^/]+/crypto_policy_not_overridden
     rhel == 9
 
-# RHEL10 - No official RHEL10 STIG benchmark yet
-/static-checks/rule-identifiers/stig/stigid/.*
-/static-checks/rule-identifiers/stig/stigref/.*
-/scanning/disa-stig-viewer-results
-    rhel == 10
-
 # kdump being forcibly enabled somewhere
 # https://github.com/ComplianceAsCode/content/issues/12832
 /hardening/kickstart/.+/service_kdump_disabled
