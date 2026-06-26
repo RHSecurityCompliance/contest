@@ -26,6 +26,11 @@ test_name=$2        # some_test_name
 test_type=$3        # pass or fail
 remediation=$4      # oscap or ansible or none
 debug_arg=$5        # debug or nodebug
+check=$6            # oval or sce
+
+if [[ "$check" == "sce" ]]; then
+    export OSCAP_PREFERRED_ENGINE=SCE
+fi
 
 function debug { [[ $debug_arg == debug ]]; }
 
