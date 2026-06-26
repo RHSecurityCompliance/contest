@@ -84,7 +84,7 @@ class Datastream:
             return types.SimpleNamespace(title=None, rules=set(), values=set())
 
         def make_rule():
-            return types.SimpleNamespace(fixes=FixType(0))
+            return types.SimpleNamespace(fixes=FixType(0), has_sce=False, has_oval=False)
 
         self.profiles.default_factory = make_profile
         self.rules.default_factory = make_rule
@@ -147,6 +147,16 @@ class Datastream:
                     self.rules[for_rule].fixes |= FixType.blueprint
                 elif system == 'urn:xccdf:fix:script:bootc':
                     self.rules[for_rule].fixes |= FixType.bootc
+
+            # checks (OVAL OR sce)
+            elif frames[-2:] == ['Rule', 'check']:
+                system = elements[-1].get('system')
+                for_rule = elements[-2].get('id')
+                for_rule = for_rule.removeprefix('xccdf_org.ssgproject.content_rule_')
+                if system == 'http://open-scap.org/page/SCE':
+                    self.rules[for_rule].has_sce = True
+                if system == 'http://oval.mitre.org/XMLSchema/oval-definitions-5':
+                    self.rules[for_rule].has_oval = True
 
         # "convert" to regular dict, make external logic get KeyError
         # on bad profile or rule name
