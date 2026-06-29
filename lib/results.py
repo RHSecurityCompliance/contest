@@ -29,6 +29,11 @@ from lib import util, waive
 
 _valid_statuses = ['pass', 'fail', 'warn', 'error', 'info', 'skip']
 
+# log names already uploaded to ATEX via atex_upload_log_data(), so that
+# add_log() and report_atex() can avoid re-uploading (appending duplicates)
+# for the same name
+_streamed_atex_logs = set()
+
 
 # TODO: replace by collections.Counter on python 3.10+
 class Counter(collections.defaultdict):
@@ -43,7 +48,7 @@ global_counts = Counter()
 
 
 def have_atex_api():
-    """Return True if we can report results via ATEX Minitmt natively."""
+    """Return True if we can report results via ATEX natively."""
     return ('ATEX_TEST_CONTROL' in os.environ)
 
 
@@ -80,18 +85,63 @@ def _write_tmt_subresult(subresult):
         yaml.dump([subresult], f)
 
 
+_submitted_tmt_logs = set()
+
+
 def _tmt_file_submit(filepath):
     """
     Submit a file as a log for the main test result using tmt-file-submit.
 
-    The script copies the file to TMT_TEST_DATA and registers it in
+    The script copies the file into TMT_TEST_DATA and registers it in
     TMT_TEST_SUBMITTED_FILES. TMT's internal executor then extends
     the main result's log list with the registered entries.
     """
+    name = Path(filepath).name
+    if name in _submitted_tmt_logs:
+        return
     subprocess.run(
         ['tmt-file-submit', '-l', str(filepath)],
         stdout=subprocess.DEVNULL,
     )
+    _submitted_tmt_logs.add(name)
+
+
+_atex_file = None
+
+
+def _get_atex_file():
+    global _atex_file
+    if _atex_file is None:
+        fd = int(os.environ['ATEX_TEST_CONTROL'])
+        _atex_file = os.fdopen(fd, 'wb', closefd=False)
+    return _atex_file
+
+
+def _atex_send(result_dict, data=b'', *, logs=None):
+    """
+    Send a result JSON + optional file data over the ATEX control fd.
+
+    Pass inline 'data' (used by atex_upload_log_data) or 'logs' (used by
+    report_atex) to stream file contents from disk without loading them
+    entirely into memory.
+
+    For protocol specification, see
+    https://github.com/RHSecurityCompliance/atex/blob/main/atex/executor/fmf/TEST_CONTROL.md
+    https://github.com/RHSecurityCompliance/atex/blob/main/atex/executor/fmf/RESULTS.md
+    """
+    control = _get_atex_file()
+    json_data = json.dumps(result_dict).encode()
+    control.write(b'duration save\n')
+    control.write(f'result {len(json_data)}\n'.encode())
+    control.write(json_data)
+    if logs:
+        for log in logs:
+            with open(log, 'rb') as lf:
+                shutil.copyfileobj(lf, control)
+    elif data:
+        control.write(data)
+    control.write(b'duration restore\n')
+    control.flush()
 
 
 def report_atex(status, name=None, note=None, logs=None, *, partial=False):
@@ -114,31 +164,20 @@ def report_atex(status, name=None, note=None, logs=None, *, partial=False):
     if partial:
         result['partial'] = True
 
-    # for protocol specification, see
-    # https://github.com/RHSecurityCompliance/atex/blob/main/atex/minitmt/TEST_CONTROL.md
-    # https://github.com/RHSecurityCompliance/atex/blob/main/atex/minitmt/RESULTS.md
-    fd = int(os.environ['ATEX_TEST_CONTROL'])
-    with os.fdopen(fd, 'wb', closefd=False) as control:
-        if logs:
-            files = []
-            for log in logs:
-                log = Path(log)
-                files.append({
-                    'name': log.name,
-                    'length': log.stat().st_size,
-                })
-            result['files'] = files
-        # send the JSON result, followed by any log data
-        # (pause duration in case logs are being uploaded over slow link)
-        json_data = json.dumps(result).encode()
-        control.write(b'duration save\n')
-        control.write(f'result {len(json_data)}\n'.encode())
-        control.write(json_data)
-        if logs:
-            for log in logs:
-                with open(log, 'rb') as f:
-                    shutil.copyfileobj(f, control)
-        control.write(b'duration restore\n')
+    if logs:
+        # skip files already streamed incrementally via atex_upload_log_data()
+        logs_to_send = [
+            Path(log) for log in logs
+            if Path(log).name not in _streamed_atex_logs
+        ]
+        if logs_to_send:
+            result['files'] = [
+                {'name': log.name, 'length': log.stat().st_size}
+                for log in logs_to_send
+            ]
+        logs = logs_to_send or None
+
+    _atex_send(result, logs=logs)
 
 
 def report_tmt(status, name=None, note=None, logs=None):
@@ -241,13 +280,68 @@ def report(status, name=None, note=None, logs=None):
     return status
 
 
+def atex_upload_log_data(name, data):
+    """
+    Append raw data to a named log file for the main test result.
+
+    Uses ATEX partial result file appending - specifying the same
+    filename in multiple partial=True calls appends to the file.
+    Outside ATEX, this is a no-op.
+
+    'name' can be a string or Path; only the basename is used.
+    'data' is appended as-is (bytes or str, encoded to UTF-8 if str).
+    The caller is responsible for including any line terminators.
+    """
+    if not have_atex_api():
+        return
+    name = Path(name).name
+    if isinstance(data, str):
+        data = data.encode()
+    _streamed_atex_logs.add(name)
+    # status='error' is intentional: partial results are overwritten by the
+    # final result, but survive test crashes until then (see add_log()).
+    result = {
+        'status': 'error',
+        'note': "no final result provided",
+        'partial': True,
+        'files': [{'name': name, 'length': len(data)}],
+    }
+    _atex_send(result, data)
+
+
+def register_log(filepath):
+    """
+    Pre-register a log file and return the path to write it to.
+
+    For TMT: returns a path inside TMT_TEST_DATA and registers the name
+    in TMT_TEST_SUBMITTED_FILES, so the file survives temporary directory
+    cleanup and is available for collection even after a crash.
+    For ATEX / plain: returns the original filepath (ATEX streaming
+    provides its own crash-safety).
+
+    Call this before opening the log file, then open the returned path.
+    """
+    filepath = Path(filepath)
+    if have_tmt_api():
+        test_data = Path(os.environ['TMT_TEST_DATA'])
+        submitted_files = os.environ.get('TMT_TEST_SUBMITTED_FILES')
+        if submitted_files:
+            with open(submitted_files, 'a') as f:
+                f.write(f'{filepath.name}\n')
+        _submitted_tmt_logs.add(filepath.name)
+        return test_data / filepath.name
+    return filepath
+
+
 def add_log(*logs):
     """
     Add log file(s) to be associated with the main test result.
 
     The log file(s) will be processed immediately:
-    - For ATEX: uploaded incrementally using report_atex() with partial=True
+    - For ATEX: uploaded as a partial result, skipping files that were
+      already streamed via atex_upload_log_data() (to avoid duplicates)
     - For TMT: submitted via tmt-file-submit so they appear on the main result
+      (no-op if the file was already pre-registered via register_log())
 
     This allows logs to be added incrementally throughout the test,
     and ensures they're available even if the test later fails with a traceback.
@@ -260,12 +354,18 @@ def add_log(*logs):
         # an error partial result with logs in case test crashes or fails
         # with an exception, see
         # https://github.com/RHSecurityCompliance/atex/blob/main/atex/executor/fmf/RESULTS.md#partial-results
-        report_atex(
-            status='error',
-            logs=logs,
-            note="no final result provided",
-            partial=True,
-        )
+        for log in logs:
+            log = Path(log)
+            if log.name in _streamed_atex_logs:
+                continue
+            _streamed_atex_logs.add(log.name)
+            result = {
+                'status': 'error',
+                'note': "no final result provided",
+                'partial': True,
+                'files': [{'name': log.name, 'length': log.stat().st_size}],
+            }
+            _atex_send(result, logs=[log])
     elif have_tmt_api():
         for log in logs:
             _tmt_file_submit(log)

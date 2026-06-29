@@ -1,4 +1,3 @@
-import sys
 import re
 import enum
 import contextlib
@@ -208,24 +207,16 @@ def rule_from_verbose(line):
         return None
 
 
-def rules_from_verbose(lines):
-    """
-    Yield (rulename, status) from oscap info verbose output lines.
-    """
-    for line in lines:
-        # oscap xccdf eval --progress rule name and status
-        match = rule_from_verbose(line)
-        if match:
-            yield match
-        else:
-            # print out unrelated lines
-            sys.stdout.write(f'{line}\n')
-            sys.stdout.flush()
-
-
-def report_from_verbose(lines):
+def report_from_verbose(lines, to_file='oscap.log'):
     """
     Report results from oscap output.
+
+    All oscap output lines are written to 'to_file' (and streamed to ATEX
+    when available) instead of being printed to stdout. The log file is
+    pre-registered via register_log() so it is preserved even if the test
+    errors out (similar to ATEX crash-safety). Callers should not pass
+    'to_file' to results.add_log() or results.report_and_exit(logs=...)
+    as it is already registered with the main test result.
 
     Note that this expects 'oscap xccdf eval' to be run:
       - with --progress
@@ -234,22 +225,32 @@ def report_from_verbose(lines):
     """
     total = 0
     total_nonresults = 0
+    log_path = results.register_log(to_file)
 
-    for rule, status in rules_from_verbose(lines):
-        total += 1
-        note = None
+    with open(log_path, 'w') as out_file:
+        for line in lines:
+            results.atex_upload_log_data(to_file, f'{line}\n')
+            out_file.write(f'{line}\n')
+            out_file.flush()
 
-        if status in ['pass', 'error', 'fail']:
-            pass
-        elif status in ['notapplicable', 'notchecked', 'notselected', 'informational']:
-            total_nonresults += 1
-            note = status
-            status = 'skip'
-        else:
-            note = status
-            status = 'error'
+            match = rule_from_verbose(line)
+            if not match:
+                continue
+            rule, status = match
+            total += 1
+            note = None
 
-        results.report(status, rule, note)
+            if status in ['pass', 'error', 'fail']:
+                pass
+            elif status in ['notapplicable', 'notchecked', 'notselected', 'informational']:
+                total_nonresults += 1
+                note = status
+                status = 'skip'
+            else:
+                note = status
+                status = 'error'
+
+            results.report(status, rule, note)
 
     if total == 0:
         raise RuntimeError("oscap returned no results")
