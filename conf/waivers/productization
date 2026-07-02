@@ -140,4 +140,8 @@
 /per-rule/.+/sce/sysctl_.+/two_sysctls_on_same_file.pass
     True
 
+# https://github.com/ComplianceAsCode/content/issues/14852
+/per-rule/ansible/.+/sce/grub2_nousb_argument/wrong_value_entries.fail
+    rhel in [9, 10]
+
 # vim: syntax=python
