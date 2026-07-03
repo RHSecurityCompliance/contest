@@ -138,8 +138,8 @@
 # https://github.com/ComplianceAsCode/content/issues/14847
 /per-rule/.+/sce/sysctl_.+/wrong_runtime.fail
 /per-rule/.+/sce/sysctl_.+/two_sysctls_on_same_file.pass
+/per-rule/.+/sce/sysctl_kernel_unprivileged_bpf_disabled_accept_default/system_default.pass
     True
-
 # https://github.com/ComplianceAsCode/content/issues/14852
 /per-rule/ansible/.+/sce/grub2_nousb_argument/wrong_value_entries.fail
     rhel in [9, 10]
