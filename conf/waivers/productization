@@ -119,4 +119,29 @@
 /per-rule/oscap/.+/accounts_password_all_shadowed_sha512/sha512_password.pass
     rhel == 10
 
+# following block of per-rule waivers relates to introduction of SCE testing
+# it covers initial finding after first daily productization
+# https://github.com/ComplianceAsCode/content/issues/14842
+/per-rule/oscap/.+/sce/dir_perms_world_writable_system_owned/wrong_setting.fail
+    rhel == 9
+# https://github.com/ComplianceAsCode/content/issues/14843
+/per-rule/oscap/.+/sce/no_files_or_dirs_ungroupowned/unowned_dir.fail
+    rhel in [8, 10]
+# https://github.com/ComplianceAsCode/content/issues/14844
+/per-rule/oscap/.+/sce/no_files_or_dirs_unowned_by_user/unowned_dir.fail
+    rhel in [8, 10]
+# https://github.com/ComplianceAsCode/content/issues/14845
+/per-rule/.+/sce/service_pcscd_enabled/.+
+    rhel in [9, 10]
+/per-rule/.+/sce/service_systemd-journald_enabled/.+
+    True
+# https://github.com/ComplianceAsCode/content/issues/14847
+/per-rule/.+/sce/sysctl_.+/wrong_runtime.fail
+/per-rule/.+/sce/sysctl_.+/two_sysctls_on_same_file.pass
+/per-rule/.+/sce/sysctl_kernel_unprivileged_bpf_disabled_accept_default/system_default.pass
+    True
+# https://github.com/ComplianceAsCode/content/issues/14852
+/per-rule/ansible/.+/sce/grub2_nousb_argument/wrong_value_entries.fail
+    rhel in [9, 10]
+
 # vim: syntax=python
