@@ -104,6 +104,9 @@
 /hardening/image-builder/uefi/ism_o_top_secret
     rhel == 10 and status == 'error'
 
+# https://github.com/ComplianceAsCode/content/issues/14900
+/scanning/boot-errors/stig/.*rsyslogd.*
+    rhel == 10
 # https://github.com/ComplianceAsCode/content/issues/14559
 /scanning/boot-errors/(stig|ism_o|ism_o_secret|ism_o_top_secret)/.*sssd.service.*
     rhel == 10
