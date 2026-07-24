@@ -122,4 +122,17 @@
 /per-rule/oscap/.+/accounts_password_all_shadowed_sha512/sha512_password.pass
     rhel == 10
 
+# https://github.com/ComplianceAsCode/content/issues/14929
+/per-rule/.+/grub2_.+/arg_not_in_etcdefaultgrub.fail
+/per-rule/.+/grub2_.+/arg_not_in_entries.fail
+/per-rule/.+/grub2_.+/arg_not_in_etcdefaultgrub_recovery_disabled.fail
+/per-rule/.+/grub2_.+/arg_not_in_grubenv_and_not_referenced.pass
+/per-rule/.+/grub2_.+/correct_recovery_disabled.pass
+/per-rule/.+/grub2_.+/correct_value_noupdate.fail
+/per-rule/.+/grub2_.+/correct_value_remediated.pass
+/per-rule/.+/grub2_.+/wrong_value_entries.fail
+/per-rule/.+/grub2_.+/wrong_value_etcdefault.fail
+/per-rule/.+/grub2_.+/wrong_value_etcdefaultgrub_recovery_disabled.fail
+    rhel == 8
+
 # vim: syntax=python
