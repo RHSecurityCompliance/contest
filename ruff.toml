@@ -19,39 +19,40 @@ select = [
     "RUF",  # Ruff-specific rules
 ]
 ignore = [
-    "Q001",     # bad-quotes-multiline-string
-    "PTH123",   # builtin-open
-    "SIM108",   # if-else-block-instead-of-if-exp
-    "SIM102",   # collapsible-if
-    "SIM117",   # multiple-with-statements
-    "SIM401",   # if-else-block-instead-of-dict-get
-    "PLR0911",  # too-many-return-statements
-    "PLR0912",  # too-many-branches
-    "PLR0913",  # too-many-arguments
-    "PLR0915",  # too many statements in a function
-    "PLW0717",  # too-many-statements-in-try-clause
-    "PLR2004",  # magic-value-comparison
-    "PLR5501",  # collapsible-else-if
-    "PLW0603",  # global-statement
-    "PLW1510",  # subprocess-run-without-check
-    "PLW2901",  # redefined-loop-name
-    "RUF010",   # explicit-f-string-type-conversion
-    "RUF012",   # mutable-class-default
-    "RUF067",   # non-empty-init-module
-    "RUF069",   # float-equality-comparison
-    "RUF100",   # unused-noqa
+    "bad-quotes-multiline-string",
+    "builtin-open",
+    "if-else-block-instead-of-if-exp",
+    "collapsible-if",
+    "multiple-with-statements",
+    "if-else-block-instead-of-dict-get",
+    "too-many-return-statements",
+    "too-many-branches",
+    "too-many-arguments",
+    "too-many-statements",
+    "too-many-statements-in-try-clause",
+    "magic-value-comparison",
+    "collapsible-else-if",
+    "global-statement",
+    "subprocess-run-without-check",
+    "redefined-loop-name",
+    "explicit-f-string-type-conversion",
+    "mutable-class-default",
+    "non-empty-init-module",
+    "float-equality-comparison",
+    "unused-noqa",
+    "noqa-comments",
 
     # rules from preview
-    "E115",     # no-indented-block-comment
-    "E226",     # missing-whitespace-around-arithmetic-operator
-    "E231",     # missing-whitespace
-    "E265",     # no-space-after-block-comment
-    "E266",     # multiple-leading-hashes-for-block-comment
-    "PLR0904",  # too-many-public-methods
-    "PLR0917",  # too-many-positional-arguments
-    "PLR6201",  # literal-membership
-    "PLW1514",  # unspecified-encoding
-    "PLW1641",  # eq-without-hash
+    "no-indented-block-comment",
+    "missing-whitespace-around-arithmetic-operator",
+    "missing-whitespace",
+    "no-space-after-block-comment",
+    "multiple-leading-hashes-for-block-comment",
+    "too-many-public-methods",
+    "too-many-positional-arguments",
+    "literal-membership",
+    "unspecified-encoding",
+    "eq-without-hash",
 ]
 
 [format]
