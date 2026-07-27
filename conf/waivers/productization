@@ -42,6 +42,10 @@
 /hardening/.+/ism_o/rpm_verify_permissions
     rhel == 9
 
+# https://github.com/ComplianceAsCode/content/issues/14933
+/hardening/host-os/ansible/bsi/rpm_verify_ownership
+    rhel == 10 and arch == "ppc64le"
+
 # RHEL-8: https://bugzilla.redhat.com/show_bug.cgi?id=1834716
 # RHEL-9: https://bugzilla.redhat.com/show_bug.cgi?id=1999587
 # https://issues.redhat.com/browse/RHEL-45706
