@@ -67,7 +67,7 @@ environment. They don't modify the host OS (beyond installing extra RPMs),
 they don't install virtual machines.
 
 These are things like `grep`-ing for specific strings (not) present in the built
-content, syntax-checking Ansible playbooks, or verifying HTTP URLs.
+content, syntax-checking or linting Ansible playbooks, or verifying HTTP URLs.
 
 # Test tags
 
