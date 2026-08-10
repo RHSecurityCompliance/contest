@@ -123,11 +123,4 @@
 /per-rule/oscap/.+/accounts_password_all_shadowed_sha512/sha512_password.pass
     rhel == 10
 
-# https://github.com/ComplianceAsCode/content/issues/14934
-/hardening/host-os/(ansible|oscap)/(ospp|cui)/zipl_audit_argument
-/hardening/host-os/(ansible|oscap)/(ospp|cui)/zipl_audit_backlog_limit_argument
-/hardening/host-os/(ansible|oscap)/(ospp|cui)/zipl_page_poison_argument
-/hardening/host-os/(ansible|oscap)/(ospp|cui)/zipl_slub_debug_argument
-    rhel == 8
-
 # vim: syntax=python
