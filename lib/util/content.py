@@ -136,12 +136,14 @@ def get_playbook(profile, force_ssg=False, content_dir=None):
     return playbook
 
 
-def iter_playbooks(force_ssg=False, content_dir=None):
+def iter_playbooks(force_ssg=False, content_dir=None, per_rule=False):
     for file in find_playbooks(force_ssg, content_dir).iterdir():
         if file.suffix == '.yml':
             yield file
-    per_rule_dir = find_per_rule_playbooks(force_ssg, content_dir)
-    if per_rule_dir.exists():
+    if per_rule:
+        per_rule_dir = find_per_rule_playbooks(force_ssg, content_dir)
+        if not per_rule_dir.exists():
+            raise RuntimeError(f"could not find per-rule playbooks in {content_dir}")
         yield from per_rule_dir.iterdir()
 
 
