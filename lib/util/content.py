@@ -140,9 +140,26 @@ def iter_playbooks(force_ssg=False, content_dir=None):
     for file in find_playbooks(force_ssg, content_dir).iterdir():
         if file.suffix == '.yml':
             yield file
-    per_rule_dir = find_per_rule_playbooks(force_ssg, content_dir)
-    if per_rule_dir.exists():
-        yield from per_rule_dir.iterdir()
+
+
+def iter_per_rule_playbooks():
+    # from source (always build to make sure they are available)
+    if user_content := get_user_content(build=False):
+        build_content(
+            user_content,
+            {'SSG_ANSIBLE_PLAYBOOKS_PER_RULE_ENABLED:BOOL': 'ON'},
+        )
+        playbooks_dir = find_per_rule_playbooks(content_dir=user_content)
+        if not playbooks_dir.exists() or not next(playbooks_dir.iterdir(), None):
+            raise RuntimeError(f"per-rule playbook dir doesn't exist or empty: {playbooks_dir}")
+        for playbook in playbooks_dir.iterdir():
+            yield playbook
+    # shipped via RPM (skip if ssg rule-playbooks RPM doesn't exist)
+    else:
+        playbooks_dir = find_per_rule_playbooks(force_ssg=True)
+        if playbooks_dir.exists():
+            for playbook in playbooks_dir.iterdir():
+                yield playbook
 
 
 def get_kickstart(profile, content_dir=None):

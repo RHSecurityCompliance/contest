@@ -9,7 +9,7 @@ description: |-
 test: $CONTEST_PYTHON -m lib.runtest ./test.py
 environment+:
     PYTHONPATH: ../../..
-duration: 30m
+duration: 2h
 require+:
   - openscap-scanner
   - ansible-core

@@ -49,4 +49,8 @@ lint_playbook('playbook.yml', '(all) profile generated')
 for playbook in util.iter_playbooks():
     lint_playbook(playbook, playbook.name)
 
+# lint per-rule playbooks
+for playbook in util.iter_per_rule_playbooks():
+    lint_playbook(playbook, playbook.name)
+
 results.report_and_exit()
