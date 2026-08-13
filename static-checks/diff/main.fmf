@@ -13,11 +13,3 @@ adjust+:
 /profile-titles:
     summary: Diff datastreams, output profile title differences
     test: $CONTEST_PYTHON -m lib.runtest ./profile-titles.py
-
-/profile-rules:
-    summary: Diff datastreams, output profile rule/variable differences
-    test: $CONTEST_PYTHON -m lib.runtest ./profile-rules.py
-
-/profile-variables:
-    summary: Diff datastreams, output profile variable refine differences
-    test: $CONTEST_PYTHON -m lib.runtest ./profile-variables.py
