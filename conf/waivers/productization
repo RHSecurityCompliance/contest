@@ -116,4 +116,9 @@
 /hardening/host-os/oscap/.+/rsyslog_files_permissions
     rhel.is_centos() and rhel in [9, 10]
 
+# https://github.com/ComplianceAsCode/content/issues/14992
+/hardening/host-os/ansible/.+/mount_option_.+
+/hardening/container/.+/mount_option_.+
+    True
+
 # vim: syntax=python
