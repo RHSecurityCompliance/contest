@@ -118,6 +118,7 @@
 
 # https://github.com/ComplianceAsCode/content/issues/14992
 /hardening/host-os/ansible/.+/mount_option_.+
+/hardening/host-os/ansible/.+/systemd_tmp_mount_enabled
 /hardening/container/.+/mount_option_.+
     True
 
