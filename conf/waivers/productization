@@ -122,4 +122,8 @@
 /hardening/container/.+/mount_option_.+
     True
 
+# https://github.com/ComplianceAsCode/content/issues/15006
+/hardening/host-os/ansible/stig/file_permissions_audit_configuration_stig
+    rhel.is_centos() and rhel in [8, 9]
+
 # vim: syntax=python
