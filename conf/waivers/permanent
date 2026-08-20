@@ -63,9 +63,6 @@
 /static-checks/html-links/https://www.ccn-cert.cni.es/pdf/guias/series-ccn-stic/guias-de-acceso-publico-ccn-stic/6768-ccn-stic-610a22-perfilado-de-seguridad-red-hat-enterprise-linux-9-0/file.html
     "URL returned error: 403" in note
 # likely has bot detection
-/static-checks/html-links/https://www.cyber.mil/stigs/downloads/.*
-    "Connection reset by peer" in note
-# also bot detection?
 /static-checks/html-links/https://www.cyber.gov.au/acsc/view-all-content/ism
     bool(re.search("HTTP/2 stream [0-9]+ was not closed cleanly: INTERNAL_ERROR", note))
 
@@ -153,15 +150,5 @@
 # rsyslogd remote host and certificate need to be configured manually
 /scanning/boot-errors/.+/rsyslogd.+(certificate.*is not set|key.*is not set|cannot resolve hostname).*
     True
-
-# File /boot/grub2/grub2.cfg is created with lenient permissions by
-# bootupd during the installation of a bootable container image.
-# Tests still fail on RHEL 10.0
-# https://github.com/coreos/bootupd/issues/952
-# https://issues.redhat.com/browse/OPENSCAP-5326
-# https://github.com/ComplianceAsCode/content/issues/14581
-/hardening/container/(anaconda-ostree|bootc-image-builder|old-new)/.+/file_permissions_grub2_cfg
-/hardening/container/(anaconda-ostree|bootc-image-builder|old-new)/.+/file_permissions_efi_grub2_cfg
-    rhel == 10.0 or rhel <= 9.7
 
 # vim: syntax=python

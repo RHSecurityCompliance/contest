@@ -88,9 +88,6 @@
 /hardening/container/anaconda-ostree/.+/accounts_password_set_min_life_existing
 /hardening/container/anaconda-ostree/.+/accounts_password_set_warn_age_existing
     True
-# https://github.com/ComplianceAsCode/content/issues/14254
-/hardening/container/(anaconda-ostree|bootc-image-builder|old-new)/.+/file_permissions_boot_grub2
-    rhel == 10
 
 # Image builder issue. Image builder needs to add BSI, ISM Official Secret
 # and ISM Official Top Secret to its allow list, tracked under
@@ -104,22 +101,12 @@
 /hardening/image-builder/uefi/ism_o_top_secret
     rhel == 10 and status == 'error'
 
-# https://github.com/ComplianceAsCode/content/issues/14559
-/scanning/boot-errors/(stig|ism_o|ism_o_secret|ism_o_top_secret)/.*sssd.service.*
-    rhel == 10
-/scanning/boot-errors/(stig|anssi_bp28_intermediary|anssi_bp28_enhanced|anssi_bp28_high)/.*sssd.service.*
-/scanning/boot-errors/(stig|anssi_bp28_intermediary|anssi_bp28_enhanced|anssi_bp28_high)/.*Failed to start System Security Services Daemon.*
-/scanning/boot-errors/(stig|anssi_bp28_intermediary|anssi_bp28_enhanced|anssi_bp28_high)/sssd.*No domain is enabled.*
-/scanning/boot-errors/(stig|anssi_bp28_high)/sssd: SSSD couldn't load the configuration database.*
-    rhel == 9
 # https://github.com/ComplianceAsCode/content/issues/14570
 /hardening/host-os/oscap/.+/rsyslog_files_permissions
     rhel.is_centos() and rhel in [9, 10]
 
-# https://github.com/ComplianceAsCode/content/issues/14992
-/hardening/host-os/ansible/.+/mount_option_.+
-/hardening/host-os/ansible/.+/systemd_tmp_mount_enabled
-/hardening/container/.+/mount_option_.+
+# https://github.com/ComplianceAsCode/content/issues/15002
+/hardening/host-os/ansible/.+/mount_option_tmp_noexec
     True
 
 # https://github.com/ComplianceAsCode/content/issues/15006
