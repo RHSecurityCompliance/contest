@@ -88,9 +88,6 @@
 /hardening/container/anaconda-ostree/.+/accounts_password_set_min_life_existing
 /hardening/container/anaconda-ostree/.+/accounts_password_set_warn_age_existing
     True
-# https://github.com/ComplianceAsCode/content/issues/14254
-/hardening/container/(anaconda-ostree|bootc-image-builder|old-new)/.+/file_permissions_boot_grub2
-    rhel == 10
 
 # Image builder issue. Image builder needs to add BSI, ISM Official Secret
 # and ISM Official Top Secret to its allow list, tracked under
@@ -104,10 +101,8 @@
 /hardening/image-builder/uefi/ism_o_top_secret
     rhel == 10 and status == 'error'
 
-# https://github.com/ComplianceAsCode/content/issues/14992
-/hardening/host-os/ansible/.+/mount_option_.+
-/hardening/host-os/ansible/.+/systemd_tmp_mount_enabled
-/hardening/container/.+/mount_option_.+
+# https://github.com/ComplianceAsCode/content/issues/15002
+/hardening/host-os/ansible/.+/mount_option_tmp_noexec
     True
 
 # https://github.com/ComplianceAsCode/content/issues/15006
