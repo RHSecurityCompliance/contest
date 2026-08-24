@@ -76,13 +76,13 @@ def find_datastreams(force_ssg, content_dir=None):
 
 
 def get_datastream(force_ssg=False, content_dir=None):
-    if rhel.is_true_rhel():
-        name = f'ssg-rhel{rhel.major}-ds.xml'
-    elif rhel.is_centos():
+    if rhel.is_centos():
         if rhel == 8:
             name = f'ssg-centos{rhel.major}-ds.xml'
         else:
             name = f'ssg-cs{rhel.major}-ds.xml'
+    else:
+        name = f'ssg-rhel{rhel.major}-ds.xml'
     datastream = find_datastreams(force_ssg, content_dir) / name
     if not datastream.exists():
         raise RuntimeError(f"could not find datastream as {datastream}")
