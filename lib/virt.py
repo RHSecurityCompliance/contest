@@ -323,6 +323,9 @@ class Kickstart:
             if 'metalink' in config:
                 metalink = config['metalink']
                 self.appends.append(f'repo --name={reponame} --metalink={metalink}')
+            elif 'mirrorlist' in config:
+                mirrorlist = config['mirrorlist']
+                self.appends.append(f'repo --name={reponame} --mirrorlist={mirrorlist}')
             else:
                 baseurl = config['baseurl']
                 self.appends.append(f'repo --name={reponame} --baseurl={baseurl}')
