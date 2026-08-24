@@ -79,7 +79,7 @@ class ComposerRepos:
                 'name': reponame,
                 'check_gpg': False,
             }
-            for key in ['baseurl', 'metalink']:
+            for key in ['baseurl', 'metalink', 'mirrorlist']:
                 if key in config:
                     new[key] = config[key]
             self.repos.append(new)
