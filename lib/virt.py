@@ -444,6 +444,9 @@ class Guest:
                 '--initrd-inject', ksfile, '--os-variant', 'rhel8-unknown',
                 '--extra-args', (
                     f'console=ttyS0 inst.ks=file:/{ksfile.name} '
+                    # explicitly add inst.repo= because the automatic addition
+                    # is based on random OS name strings, and is unreliable
+                    f'inst.repo={location} '
                     'inst.notmux inst.noninteractive inst.noverifyssl inst.sshd '
                     'inst.loglevel=debug systemd.journald.forward_to_console=1'
                     + (' '+' '.join(kernel_args) if kernel_args else '')
