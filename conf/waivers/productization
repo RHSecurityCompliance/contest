@@ -126,4 +126,16 @@
 /hardening/host-os/ansible/stig/file_permissions_audit_configuration_stig
     rhel.is_centos() and rhel in [8, 9]
 
+# https://github.com/ComplianceAsCode/content/issues/15051
+/scanning/disa-alignment/(anaconda|ansible)/file_permissions_etc_audit_auditd_stig
+    rhel in [8, 9]
+
+# https://github.com/ComplianceAsCode/content/issues/15052
+/scanning/disa-alignment/[^/]+/audit_rules_sudoers_d
+# https://github.com/ComplianceAsCode/content/issues/15053
+/scanning/disa-alignment/[^/]+/audit_rules_login_events_faillock
+# https://github.com/ComplianceAsCode/content/issues/15054
+/scanning/disa-alignment/[^/]+/audit_rules_login_events_lastlog
+    rhel == 9
+
 # vim: syntax=python
