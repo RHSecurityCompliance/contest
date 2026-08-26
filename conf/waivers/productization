@@ -48,6 +48,7 @@
 /hardening/anaconda/with-gui/[^/]+/service_avahi-daemon_disabled
 /hardening/anaconda/with-gui/[^/]+/service_dnsmasq_disabled
 /hardening/anaconda(/with-gui)?/cis[^/]*/socket_systemd-journal-remote_disabled
+/hardening/anaconda/cui/socket_systemd-journal-remote_disabled
 # https://github.com/ComplianceAsCode/content/issues/11498
 /hardening/anaconda/with-gui/[^/]+/service_bluetooth_disabled
 # related to, but probably not caused by:
@@ -100,6 +101,13 @@
 /hardening/image-builder/ism_o_top_secret
 /hardening/image-builder/uefi/ism_o_top_secret
     rhel == 10 and status == 'error'
+
+# Image builder needs to add the CUI profile to its allow list; osbuild-composer
+# rejects it with "unsupported profile xccdf_org.ssgproject.content_profile_cui"
+# https://redhat.atlassian.net/browse/HMS-11244
+/hardening/image-builder/cui
+/hardening/image-builder/uefi/cui
+    status == 'error'
 
 # https://github.com/ComplianceAsCode/content/issues/15002
 /hardening/host-os/ansible/.+/mount_option_tmp_noexec
