@@ -437,7 +437,7 @@ class Guest:
                 # installation
                 '--name', self.name, '--vcpus', '1', '--memory', str(INSTALL_TIME_RAM),
                 # Use pre-created disk
-                '--disk', f'path={disk_path},format={disk_format},io=native,cache=none',
+                '--disk', f'path={disk_path},format={disk_format},io=threads,cache=none',
                 '--network', 'network=default', '--location', location,
                 '--graphics', 'none', '--console', 'pty', '--rng', '/dev/urandom',
                 # this has nothing to do with rhel8, it just tells v-i to use virtio
