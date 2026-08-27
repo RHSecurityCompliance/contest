@@ -138,4 +138,12 @@
 /scanning/disa-alignment/[^/]+/audit_rules_login_events_lastlog
     rhel == 9
 
+# https://github.com/ComplianceAsCode/content/issues/15065
+# The hummingbird container images ship /home/build group-owned by GID 65532,
+# which differs from the account's primary group (GID 0) and is not even
+# defined in /etc/group. This is a defect in the hummingbird image; the rule
+# flags it correctly.
+/scanning/hummingbird/oscap-podman/.+/file_groupownership_home_directories
+    True
+
 # vim: syntax=python
