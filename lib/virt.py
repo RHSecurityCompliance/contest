@@ -126,6 +126,7 @@ INSTALL_FAILURES = [
     br"Press any key to enter the Boot Manager Menu.",
     br"failed to fetch stage2 from ",
     br"Could not boot.",
+    br"error: Disconnected from qemu:///system due to end of file",
 ]
 
 PIPE = subprocess.PIPE
