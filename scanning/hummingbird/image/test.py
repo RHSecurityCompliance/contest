@@ -7,6 +7,8 @@ from pathlib import Path
 
 from lib import results, metadata, oscap, podman, util
 
+podman.Host.setup()
+
 SCANNER_IMAGE = 'quay.io/hummingbird/openscap:latest'
 podman.podman('pull', SCANNER_IMAGE)
 

@@ -17,6 +17,30 @@ from pathlib import Path
 from lib import util
 
 REGISTRY_IMAGE = 'https://github.com/RHSecurityCompliance/contest-data/raw/refs/heads/main/data/docker-registry.tar.gz'
+# podman bridge subnet, just beyond the libvirt 192.168.120.0/22 range
+# - podman defaults to 10.88.x.x which tends to conflict a lot
+NETWORK_SUBNET = '192.168.124.0/24'
+
+
+class Host:
+    """
+    Utilities for host system preparation.
+    """
+    @staticmethod
+    def _key_exists(f, key):
+        f.seek(0)
+        return any(line.lstrip().startswith((f'{key} ', f'{key}=')) for line in f)
+
+    @classmethod
+    def setup_network(cls):
+        with open('/etc/containers/containers.conf', 'a+') as f:
+            if not cls._key_exists(f, 'default_subnet'):
+                util.log(f"setting default_subnet = {NETWORK_SUBNET}")
+                f.write(f'\n[network]\ndefault_subnet = "{NETWORK_SUBNET}"\n')
+
+    @classmethod
+    def setup(cls):
+        cls.setup_network()
 
 
 def podman(*args, log=True, check=True, **kwargs):

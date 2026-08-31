@@ -5,6 +5,8 @@ import subprocess
 
 from lib import results, oscap, versions, podman, util
 
+podman.Host.setup()
+
 # following regexes are used to filter rules which are not expected to be evaluated in containers
 NA_RULE_PATTERNS = [
     r"kernel_",

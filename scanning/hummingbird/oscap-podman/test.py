@@ -4,6 +4,8 @@ import subprocess
 
 from lib import results, metadata, oscap, podman, util
 
+podman.Host.setup()
+
 IMAGE = 'openjdk'
 profile = util.get_test_name().rpartition('/')[2]
 if 'fips' in metadata.tags():
