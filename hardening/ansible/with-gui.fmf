@@ -48,11 +48,8 @@ tag+:
     tag+:
       - fips
     adjust+:
-      - when: distro == rhel-8 or distro == centos-stream-8
-        enabled: false
-        because: >
-            not supported on RHEL-8 according to RHEL documentation,
-            the "Profiles not compatible with Server with GUI" table
+      - enabled: false
+        because: CUI profile is not supported with GUI
 
 /e8:
 
