@@ -18,6 +18,7 @@ require+:
   - createrepo
   # podman library dependencies
   - podman
+  - fuse-overlayfs
 extra-hardware: |
     keyvalue = HVM=1
     hostrequire = memory>=6000
