@@ -232,10 +232,51 @@ class Host:
         dest.write_text(script)
         dest.chmod(0o755)
 
+    @staticmethod
+    def _set_libvirt_options(conf, settings):
+        """
+        Append missing key=value pairs to a libvirt config file.
+        """
+        def _key_exists(f, key):
+            f.seek(0)
+            return any(line.lstrip().startswith((f'{key} ', f'{key}=')) for line in f)
+
+        with open(conf, 'a+') as f:
+            for key, value in settings.items():
+                if not _key_exists(f, key):
+                    util.log(f"setting {key} = {value} in {conf}")
+                    f.write(f'\n{key} = {value}\n')
+
+    @classmethod
+    def setup_qemu_conf(cls):
+        cls._set_libvirt_options('/etc/libvirt/qemu.conf', {
+            # disable core dumps - raising RLIMIT_CORE back to unlimited
+            # requires CAP_SYS_RESOURCE in the init user namespace
+            'max_core': 0,
+            # don't use xattrs to remember original disk image owner
+            'remember_owner': 0,
+            # don't create a private mount namespace for qemu,
+            # avoids "/dev/urandom File exists" on RHEL-8
+            'namespaces': '[]',
+            # don't impose cgroup resource limits on qemu
+            'cgroup_controllers': '[]',
+        })
+
+    @classmethod
+    def setup_libvirtd_conf(cls):
+        for conf in ['/etc/libvirt/libvirtd.conf', '/etc/libvirt/virtqemud.conf']:
+            cls._set_libvirt_options(conf, {
+                # disable keepalive timeouts that may fire on a busy host
+                'keepalive_interval': -1,
+            })
+
     @classmethod
     def setup(cls):
         if not cls.check_virt_capability():
             raise RuntimeError("host has no HVM virtualization support")
+
+        cls.setup_qemu_conf()
+        cls.setup_libvirtd_conf()
 
         ret = subprocess.run(['systemctl', 'is-active', '--quiet', 'libvirtd'])
         if ret.returncode != 0:
