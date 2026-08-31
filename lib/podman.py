@@ -39,8 +39,24 @@ class Host:
                 f.write(f'\n[network]\ndefault_subnet = "{NETWORK_SUBNET}"\n')
 
     @classmethod
+    def setup_storage(cls):
+        """
+        Use fuse-overlayfs for container storage, allowing the overlay
+        driver to work on top of an overlayfs rootfs (where native
+        overlay cannot be used as an upper layer).
+        """
+        with open('/etc/containers/storage.conf', 'a+') as f:
+            if not cls._key_exists(f, 'mount_program'):
+                util.log("setting mount_program = fuse-overlayfs")
+                f.write(
+                    '\n[storage.options.overlay]\n'
+                    'mount_program = "/usr/bin/fuse-overlayfs"\n',
+                )
+
+    @classmethod
     def setup(cls):
         cls.setup_network()
+        cls.setup_storage()
 
 
 def podman(*args, log=True, check=True, **kwargs):

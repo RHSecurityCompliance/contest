@@ -6,6 +6,7 @@ duration: 30m
 require+:
   - openscap-utils
   - podman
+  - fuse-overlayfs
 adjust+:
   - when: arch != x86_64
     enabled: false
