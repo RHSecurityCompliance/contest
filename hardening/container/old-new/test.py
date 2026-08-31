@@ -9,6 +9,7 @@ from conf import remediation
 
 # prepare the host
 virt.Host.setup()
+podman.Host.setup()
 
 profile = util.get_test_name().rpartition('/')[2]
 oscap_repo = os.environ.get('CONTEST_OSCAP_REPOFILE')
