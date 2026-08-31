@@ -241,15 +241,18 @@ class Host:
             f.seek(0)
             return any(line.lstrip().startswith((f'{key} ', f'{key}=')) for line in f)
 
+        changed = False
         with open(conf, 'a+') as f:
             for key, value in settings.items():
                 if not _key_exists(f, key):
+                    changed = True
                     util.log(f"setting {key} = {value} in {conf}")
                     f.write(f'\n{key} = {value}\n')
+        return changed
 
     @classmethod
     def setup_qemu_conf(cls):
-        cls._set_libvirt_options('/etc/libvirt/qemu.conf', {
+        return cls._set_libvirt_options('/etc/libvirt/qemu.conf', {
             # disable core dumps - raising RLIMIT_CORE back to unlimited
             # requires CAP_SYS_RESOURCE in the init user namespace
             'max_core': 0,
@@ -264,25 +267,43 @@ class Host:
 
     @classmethod
     def setup_libvirtd_conf(cls):
-        for conf in ['/etc/libvirt/libvirtd.conf', '/etc/libvirt/virtqemud.conf']:
-            cls._set_libvirt_options(conf, {
-                # disable keepalive timeouts that may fire on a busy host
-                'keepalive_interval': -1,
-            })
+        opts = {
+            # disable keepalive timeouts that may fire on a busy host
+            'keepalive_interval': -1,
+        }
+        if versions.rhel == 8:
+            return cls._set_libvirt_options('/etc/libvirt/libvirtd.conf', opts)
+        else:
+            return cls._set_libvirt_options('/etc/libvirt/virtqemud.conf', opts)
 
     @classmethod
     def setup(cls):
         if not cls.check_virt_capability():
             raise RuntimeError("host has no HVM virtualization support")
 
-        cls.setup_qemu_conf()
-        cls.setup_libvirtd_conf()
+        conf_changed = False
+        conf_changed = cls.setup_qemu_conf() or conf_changed
+        conf_changed = cls.setup_libvirtd_conf() or conf_changed
 
-        ret = subprocess.run(['systemctl', 'is-active', '--quiet', 'libvirtd'])
-        if ret.returncode != 0:
-            util.subprocess_run(
-                ['systemctl', 'start', 'libvirtd'], check=True, stderr=subprocess.PIPE,
-            )
+        if versions.rhel == 8:
+            # monolothic daemon, always restart it if config changed,
+            # or start if it wasn't running (no-op if it was already)
+            action = 'restart' if conf_changed else 'start'
+            util.subprocess_run(['systemctl', action, '--quiet', 'libvirtd'], check=True)
+
+        else:
+            # modular libvirtd daemons - always start sockets, restart service
+            # if already running (config applies next time it's socket-started)
+            for daemon in ['virtqemud', 'virtnetworkd', 'virtstoraged', 'virtlogd']:
+                util.subprocess_run(
+                    ['systemctl', 'start', '--quiet', f'{daemon}.socket'],
+                    check=True,
+                )
+            if conf_changed:
+                util.subprocess_run(
+                    ['systemctl', 'try-restart', '--quiet', 'virtqemud.service'],
+                    check=True,
+                )
 
         cls.setup_network()
         cls.create_sshvm('/root/contest-sshvm')
