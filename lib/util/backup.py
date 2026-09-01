@@ -17,8 +17,8 @@ def backup(path):
     if path_backup.exists():
         raise RuntimeError(f"previous backup found: {path_backup}")
     # store the original files in the backup + copy them for our use
-    # - this is to preserve original inode numbers after restore
-    path.rename(path_backup)
+    # - this is to preserve original inode numbers after restore (ideally)
+    shutil.move(path, path_backup)
     shutil.copytree(path_backup, path, symlinks=True)
 
 
@@ -29,7 +29,7 @@ def restore(path):
     if not path_backup.exists():
         raise RuntimeError(f"no backup found: {path_backup}")
     shutil.rmtree(path)
-    path_backup.rename(path)
+    shutil.move(path_backup, path)
 
 
 @contextlib.contextmanager
