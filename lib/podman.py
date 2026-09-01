@@ -66,10 +66,11 @@ class Host:
 
     @classmethod
     def setup_storage(cls):
-        cls._config_set(
-            '/etc/containers/storage.conf',
-            '[storage.options.overlay]', 'mount_program', '"/usr/bin/fuse-overlayfs"',
-        )
+        if Path('/run/.containerenv').exists():  # only if running in container
+            cls._config_set(
+                '/etc/containers/storage.conf',
+                '[storage.options.overlay]', 'mount_program', '"/usr/bin/fuse-overlayfs"',
+            )
 
     @classmethod
     def setup(cls):
