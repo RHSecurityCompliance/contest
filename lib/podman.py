@@ -27,31 +27,49 @@ class Host:
     Utilities for host system preparation.
     """
     @staticmethod
-    def _key_exists(f, key):
-        f.seek(0)
-        return any(line.lstrip().startswith((f'{key} ', f'{key}=')) for line in f)
+    def _config_set(conf, section, option, value):
+        conf = Path(conf)
+        lines = conf.read_text().splitlines() if conf.exists() else []
+
+        def declares(line, *prefixes):
+            return line.lstrip().startswith(prefixes)
+
+        try:
+            # find [section] if it exists
+            start = next(
+                (idx for idx, line in enumerate(lines) if declares(line, section)),
+            )
+        except StopIteration:
+            # doesn't exist, create section + option
+            lines += [section, f'{option} = {value}']
+        else:
+            # existing section found, look for the option
+            for line in lines[start+1:]:
+                # option already set, abort
+                if declares(line, f'{option} ', f'{option}='):
+                    return
+                # next section found
+                if declares(line, '['):
+                    break
+            # section exists, but no option set (or we hit EOF), so insert it
+            # right after the existing section header
+            lines.insert(start+1, f'{option} = {value}')
+
+        conf.write_text('\n'.join(lines) + '\n')
 
     @classmethod
     def setup_network(cls):
-        with open('/etc/containers/containers.conf', 'a+') as f:
-            if not cls._key_exists(f, 'default_subnet'):
-                util.log(f"setting default_subnet = {NETWORK_SUBNET}")
-                f.write(f'\n[network]\ndefault_subnet = "{NETWORK_SUBNET}"\n')
+        cls._config_set(
+            '/etc/containers/containers.conf',
+            '[network]', 'default_subnet', f'"{NETWORK_SUBNET}"',
+        )
 
     @classmethod
     def setup_storage(cls):
-        """
-        Use fuse-overlayfs for container storage, allowing the overlay
-        driver to work on top of an overlayfs rootfs (where native
-        overlay cannot be used as an upper layer).
-        """
-        with open('/etc/containers/storage.conf', 'a+') as f:
-            if not cls._key_exists(f, 'mount_program'):
-                util.log("setting mount_program = fuse-overlayfs")
-                f.write(
-                    '\n[storage.options.overlay]\n'
-                    'mount_program = "/usr/bin/fuse-overlayfs"\n',
-                )
+        cls._config_set(
+            '/etc/containers/storage.conf',
+            '[storage.options.overlay]', 'mount_program', '"/usr/bin/fuse-overlayfs"',
+        )
 
     @classmethod
     def setup(cls):
