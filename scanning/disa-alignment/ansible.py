@@ -5,7 +5,7 @@ import atexit
 import subprocess
 
 import shared
-from lib import util, results, virt, versions, ansible, metadata
+from lib import util, results, virt, ansible, metadata
 from conf import partitions, remediation
 
 
@@ -49,11 +49,8 @@ with g.snapshotted():
         g.copy_from('ssg-arf.xml')
 
         # There is always one (the latest) DISA benchmark in content src
-        references = content_dir / 'shared' / 'references'
-        disa_ds = next(
-            references.glob(f'disa-stig-rhel{versions.rhel.major}-*-xccdf-scap.xml'),
-        )
-        g.copy_to(disa_ds, 'disa-ds.xml')
+        shared.prepare_disa_datastream(content_dir, 'disa-ds.xml')
+        g.copy_to('disa-ds.xml')
         shared.disa_scan(g, 'disa-ds.xml', html='disa-report.html', arf='disa-arf.xml')
         g.copy_from('disa-report.html')
         g.copy_from('disa-arf.xml')
