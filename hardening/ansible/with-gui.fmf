@@ -45,8 +45,6 @@ tag+:
       - subset-profile
 
 /cui:
-    tag+:
-      - fips
     adjust+:
       - enabled: false
         because: CUI profile is not supported with GUI

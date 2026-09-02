@@ -40,8 +40,6 @@ adjust+:
       - subset-profile
 
 /cui:
-    tag+:
-      - fips
 
 /e8:
 
