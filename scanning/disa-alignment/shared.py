@@ -1,6 +1,5 @@
 import collections
 import enum
-import re
 import shutil
 import xml.etree.ElementTree as ET
 from pathlib import Path
@@ -95,18 +94,23 @@ def prepare_disa_datastream(content_dir, dest):
     src = next(references.glob(f'disa-stig-rhel{versions.rhel.major}-*-xccdf-scap.xml'))
     dest = Path(dest)
     if versions.rhel.is_centos():
-        text = src.read_text()
+        tree = ET.parse(src)
+        root = tree.getroot()
         dropped = 0
-        for pattern in (
-            r'[ \t]*<xccdf:platform idref="cpe:/o:redhat:enterprise_linux:[^"]+"\s*/>\n?',
-            r'[ \t]*<xccdf:platform '
-            r'idref="#xccdf_mil.disa.stig_platform_RHEL_[^"]*or_Higher"\s*/>\n?',
-        ):
-            text, n = re.subn(pattern, '', text)
-            dropped += n
+        for parent in root.iter():
+            for platform in parent.findall('xccdf:platform', nsmap):
+                idref = platform.get('idref', '')
+                rhel_os = idref.startswith('cpe:/o:redhat:enterprise_linux:')
+                rhel_higher = (
+                    idref.startswith('#xccdf_mil.disa.stig_platform_RHEL_')
+                    and idref.endswith('or_Higher')
+                )
+                if rhel_os or rhel_higher:
+                    parent.remove(platform)
+                    dropped += 1
         if dropped:
             util.log(f"dropped {dropped} RHEL CPE platform(s) from {src}")
-        dest.write_text(text)
+        tree.write(dest, encoding='utf-8', xml_declaration=True)
     else:
         shutil.copy(src, dest)
 
