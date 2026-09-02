@@ -17,7 +17,11 @@ class VerboseCalledProcessError(subprocess.CalledProcessError):
             # truncate very long stderr to keep error messages readable
             max_len = 2000
             if len(stderr_output) > max_len:
-                stderr_output = stderr_output[:max_len] + '\n... (truncated)'
+                stderr_output = (
+                    stderr_output[:max_len//2]
+                    + '\n... (Contest-truncated output) ...\n'
+                    + stderr_output[-max_len//2:]
+                )
             return f"{base} \nCaptured stderr: \n{stderr_output}"
         return base
 
