@@ -1,8 +1,10 @@
 import collections
 import enum
+import shutil
 import xml.etree.ElementTree as ET
+from pathlib import Path
 
-from lib import results
+from lib import util, results, versions
 
 nsmap = {
     "xccdf": "http://checklists.nist.gov/xccdf/1.2",
@@ -78,6 +80,41 @@ def disa_scan(host, ds, html, arf):
         raise RuntimeError(f"remediation oscap failed with {proc.returncode}")
 
 
+def prepare_disa_datastream(content_dir, dest):
+    """
+    Copy the latest DISA STIG SCAP benchmark from CaC source content.
+
+    DISA binds content to cpe:/o:redhat:enterprise_linux:X and to minor
+    version platforms, so on CentOS Stream every matching rule would be
+    notapplicable. Therefore, on CentOS Stream, drop RHEL OS and
+    RHEL_X-Y_or_Higher CPE platforms so rules actually evaluate.
+    Per-rule (GNOME, TFTP, ...) and RHEL_X-Y_or_Lower CPE platforms are kept.
+    """
+    references = Path(content_dir) / 'shared' / 'references'
+    src = next(references.glob(f'disa-stig-rhel{versions.rhel.major}-*-xccdf-scap.xml'))
+    dest = Path(dest)
+    if versions.rhel.is_centos():
+        tree = ET.parse(src)
+        root = tree.getroot()
+        dropped = 0
+        for parent in root.iter():
+            for platform in parent.findall('xccdf:platform', nsmap):
+                idref = platform.get('idref', '')
+                rhel_os = idref.startswith('cpe:/o:redhat:enterprise_linux:')
+                rhel_higher = (
+                    idref.startswith('#xccdf_mil.disa.stig_platform_RHEL_')
+                    and idref.endswith('or_Higher')
+                )
+                if rhel_os or rhel_higher:
+                    parent.remove(platform)
+                    dropped += 1
+        if dropped:
+            util.log(f"dropped {dropped} RHEL CPE platform(s) from {src}")
+        tree.write(dest, encoding='utf-8', xml_declaration=True)
+    else:
+        shutil.copy(src, dest)
+
+
 def get_stigref_uri(xccdf_benchmark):
     for reference in xccdf_benchmark.findall(".//xccdf:reference", nsmap):
         if reference.text == "stigref":
@@ -100,7 +137,8 @@ def parse_ssg_results(ssg_path):
             continue
         rule = xccdf_benchmark.find(f".//xccdf:Rule[@id='{full_rule_id}']", nsmap)
         title = rule.find("xccdf:title", nsmap).text
-        cce_id = rule.find(f"xccdf:ident[@system='{CCE}']", nsmap).text
+        # only RHEL content has CCE IDs, CentOS Stream derivatives don't have them
+        cce_id = getattr(rule.find(f"xccdf:ident[@system='{CCE}']", nsmap), 'text', None)
         stig_ids = []
         xpath = f"xccdf:reference[@href='{stigref_uri}']"
         for stig_ref_el in rule.findall(xpath, nsmap):
@@ -177,8 +215,8 @@ def print_ssg_results(ssg_results):
     for ssg_result in ssg_results.values():
         disa = get_disa_result_to_str(ssg_result.stig_ids_results)
         print(
-            f"{ssg_result.final_result:<10}"
-            f"{ssg_result.cce_id} "
+            f"{ssg_result.final_result:<10} "
+            f"{ssg_result.cce_id or 'N/A'} "
             f"{ssg_result.rule_id:<55} "
             f"{ssg_result.result:<20} "
             f"{disa}",
