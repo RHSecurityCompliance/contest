@@ -61,4 +61,7 @@ with g.snapshotted():
         # Compare ARFs and report results from output
         shared.compare_arfs('ssg-arf.xml', 'disa-arf.xml')
 
-results.report_and_exit(logs=['ssg-report.html', 'disa-report.html'])
+logs = ['ssg-report.html', 'disa-report.html']
+if results.global_counts['fail'] or results.global_counts['error']:
+    logs += ['ssg-arf.xml', 'disa-arf.xml']
+results.report_and_exit(logs=logs)
