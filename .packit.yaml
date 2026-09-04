@@ -5,18 +5,43 @@ jobs:
   targets: [fedora-latest-stable]
   manual_trigger: true
   skip_build: true
+  env:
+    # tell the test to treat $PACKIT_SOURCE* as Contest and use static
+    # CaC/content, instead of the other way around
+    TEST_CONTEST_INSTEAD: "1"
   fmf_url: https://github.com/RHSecurityCompliance/contest-atex-testingfarm.git
   fmf_ref: main
   tf_extra_params:
-    environments:
-      - variables:
-          # tell the test to treat $PACKIT_SOURCE* as Contest and use static
-          # CaC/content, instead of the other way around
-          TEST_CONTEST_INSTEAD: "1"
-          # TODO: remove this after we take care of failures
-          RERUNS: "0"
     # increase default, per README.md of the above repo
     # - this includes time spent waiting in queued
     settings:
       pipeline:
         timeout: 1200
+
+- &contest-oscap
+  job: tests
+  trigger: pull_request
+  manual_trigger: true
+  skip_build: true
+  env:
+    # test latest upstream content, not the SSG RPM in CentOS Stream
+    CONTEST_CONTENT_BRANCH: master
+  tmt_plan: /plans/upstream-parallel/oscap
+  identifier: host-os-oscap
+  targets:
+    centos-stream-8: {}
+    centos-stream-9: {}
+    centos-stream-10: {}
+  labels: [host-os]
+  tf_extra_params:
+    settings:
+      pipeline:
+        parallel-limit: 32
+
+- <<: *contest-oscap
+  tmt_plan: /plans/upstream-parallel/ansible
+  identifier: host-os-ansible
+
+- <<: *contest-oscap
+  tmt_plan: /plans/upstream-parallel/other
+  identifier: host-os-other
