@@ -123,6 +123,42 @@ something we have seen before and expect to fail.
 Read [WAIVERS.md](docs/WAIVERS.md) to see where/how you can set up rules to
 automatically waive failures.
 
+## Triggering Packit testing on Github
+
+- To run just `host-os` directly managed by Packit + tmt:
+
+  ```
+  /packit test --labels host-os
+  ```
+
+  This runs 3 jobs (oscap, ansible, other). To run (or rerun) only one of them,
+  you can pass `--identifier` or `-i` with the specific name:
+
+  ```
+  /packit test -i host-os-oscap
+  ```
+
+- To run all possible tests using ATEX and containerized Contest:
+
+  ```
+  /packit test -i productization
+  ```
+
+  You can also pass some parameters:
+
+  - `PLAN` to override the default `/plans/daily`
+  - `TESTS` as comma-separated test name fmf-style expressions
+  - `RERUNS` to override the default 1 automatic rerun of every failed test
+  - `CONTENT_PR` to test a specific CaC/content PR instead of master branch
+  - `NO_EXCLUDES=1` to run even tests normally incompatible with containers
+    or unsuitable for PR CI
+
+  For example, to test all CIS profile variants (incl. non-daily):
+
+  ```
+  /packit test -i productization --env RERUNS=0 --env PLAN=/plans/weekly --env TESTS=/cis$,/cis_server,/cis_workstation
+  ```
+
 ## Workarounds
 
 (TODO: Find a better place for this?)
