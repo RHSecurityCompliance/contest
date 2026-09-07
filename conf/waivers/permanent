@@ -145,6 +145,11 @@
 /scanning/boot-errors/.+/rsyslogd.+(certificate.*is not set|key.*is not set|cannot resolve hostname).*
     True
 
+# Not an issue in content, for more details see https://github.com/ComplianceAsCode/content/issues/14735;
+# only fixed in RHEL 10.3+: https://redhat.atlassian.net/browse/RHEL-102929
+/scanning/boot-errors/hipaa/auditd: Error receiving audit netlink packet (No buffer space available).*
+    rhel <= 10.2
+
 # waive rules that have no respective remediation based on their test name
 /hardening/oscap/.+
 /hardening/host-os/oscap/.+
