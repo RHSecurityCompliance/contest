@@ -131,6 +131,20 @@
 /per-rule/oscap/.+/root_path_no_dot/period_on_path.fail
     True
 
+# Service rngd sometimes fails to start because of time out
+# see https://issues.redhat.com/browse/RHEL-19983
+/hardening/host-os/.+/service_rngd_enabled
+    rhel == 8
+
+# https://github.com/ComplianceAsCode/content/issues/14389
+# DISA content evaluates this as not applicable once package is removed
+/scanning/disa-alignment/.+/package_tftp-server_removed
+    rhel == 9
+
+# rsyslogd remote host and certificate need to be configured manually
+/scanning/boot-errors/.+/rsyslogd.+(certificate.*is not set|key.*is not set|cannot resolve hostname).*
+    True
+
 # waive rules that have no respective remediation based on their test name
 /hardening/oscap/.+
 /hardening/host-os/oscap/.+
@@ -146,19 +160,5 @@
     Match(no_remediation(fix.bash | fix.blueprint), note="no bash nor blueprint remediation")
 /hardening/container/.+
     Match(no_remediation(fix.bash | fix.bootc), note="no bash nor bootc remediation")
-
-# Service rngd sometimes fails to start because of time out
-# see https://issues.redhat.com/browse/RHEL-19983
-/hardening/host-os/.+/service_rngd_enabled
-    rhel == 8
-
-# https://github.com/ComplianceAsCode/content/issues/14389
-# DISA content evaluates this as not applicable once package is removed
-/scanning/disa-alignment/.+/package_tftp-server_removed
-    rhel == 9
-
-# rsyslogd remote host and certificate need to be configured manually
-/scanning/boot-errors/.+/rsyslogd.+(certificate.*is not set|key.*is not set|cannot resolve hostname).*
-    True
 
 # vim: syntax=python
