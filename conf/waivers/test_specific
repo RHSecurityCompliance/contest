@@ -1,0 +1,28 @@
+# Waivers rooted in how a specific Contest test is built, rather than in the
+# scanned content or product itself. Grouped separately from conf/waivers/permanent
+# so the "content/product defect" and "test methodology" waivers aren't mixed.
+
+# /hardening/container/old-new/* simulates an Image Mode Day-2 upgrade: an old
+# image (hardened with the currently shipped content) is booted, then switched
+# ("bootc switch") to a new image (hardened with the tested CaC content), and
+# scanned post-switch. "bootc switch" does not re-run remediation and does not
+# re-provision /var, and only 3-way-merges /etc against the live system - it
+# does not simply replace guest state with the new image's state. So rules that
+# the *old* content didn't select can fail post-switch even though the new
+# image itself was hardened correctly, because whatever the new image's build
+# produced under /var (or a locally-diverged /etc) never reaches the running
+# guest.
+#
+# TODO: Remove these waivers when the "old" content contains the rules.
+# ---
+# aide_build_database: old CUI doesn't select this rule, so the AIDE db is never
+# seeded into /var on the old image. /var is never re-provisioned by "bootc
+# switch", so the db built into the new image never reaches the guest. Deterministic.
+/hardening/container/old-new/cui/aide_build_database
+# ensure_pam_wheel_group_empty: old CUI doesn't select this rule, so the empty-wheel
+# fix baked into the new image's /etc/group can be dropped by ostree's /etc 3-way
+# merge on "bootc switch" if the live copy looks locally modified. Confirmed flaky.
+/hardening/container/old-new/cui/ensure_pam_wheel_group_empty
+    True
+
+# vim: syntax=python
