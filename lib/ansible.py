@@ -89,6 +89,11 @@ def report_from_output(lines, to_file='ansible-playbook.log', failure='fail'):
             if m:
                 status, _, _, data = m.groups()
                 if status in ['failed', 'fatal']:
+                    # a structured failure can span multiple lines, in such case
+                    # a result note would only contain the opening brace which
+                    # would be confusing so rather point to the playbook log file
+                    if data.strip() == '{':
+                        data = f'complex error found, see {to_file}'
                     results.report(failure, f'playbook: {task}', data)
                     failed = True
                 continue
