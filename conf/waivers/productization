@@ -117,10 +117,6 @@
 /hardening/host-os/ansible/stig/file_permissions_audit_configuration_stig
     rhel.is_centos() and rhel in [8, 9]
 
-# https://github.com/ComplianceAsCode/content/issues/15051
-/scanning/disa-alignment/(anaconda|ansible)/file_permissions_etc_audit_auditd_stig
-    rhel in [8, 9]
-
 # https://github.com/ComplianceAsCode/content/issues/15052
 /scanning/disa-alignment/[^/]+/audit_rules_sudoers_d
 # https://github.com/ComplianceAsCode/content/issues/15053
@@ -128,13 +124,5 @@
 # https://github.com/ComplianceAsCode/content/issues/15054
 /scanning/disa-alignment/[^/]+/audit_rules_login_events_lastlog
     rhel == 9
-
-# https://github.com/ComplianceAsCode/content/issues/15065
-# The hummingbird container images ship /home/build group-owned by GID 65532,
-# which differs from the account's primary group (GID 0) and is not even
-# defined in /etc/group. This is a defect in the hummingbird image; the rule
-# flags it correctly.
-/scanning/hummingbird/oscap-podman/.+/file_groupownership_home_directories
-    True
 
 # vim: syntax=python
