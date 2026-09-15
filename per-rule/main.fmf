@@ -31,9 +31,6 @@ adjust+:
   - when: arch != x86_64
     enabled: false
     because: we want to run virtualization on x86_64 only
-  - when: distro == rhel-9.0
-    enabled: false
-    because: xmlstarlet not available on 9.0
 # /per-rule tests often fail and need re-run, which is then slow
 # (each test takes a long time), so prioritize /per-rule above others
 # so it can re-run in the background

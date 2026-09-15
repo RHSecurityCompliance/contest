@@ -1,6 +1,12 @@
 ## Code style check
 
-Check your code with `flake8`, which has been configured via `setup.cfg`.
+Run `ruff check` to check the Python code. CI also runs:
+
+```
+python3 -m flake8 --isolated --require-plugins flake8-picky-parentheses --select PAR1
+```
+
+to check for picky-parentheses issues.
 
 ## Line length
 
@@ -48,8 +54,19 @@ Use `#!/usr/bin/python3` as shebang in python scripts.
 If this binary is not available, install the appropriate packages
 (should be done by TMT via test requirements).
 
-Do not use `#!/usr/libexec/platform-python`, which is not available outside
-of RHEL and may have unknown python version.
+Do not use `#!/usr/libexec/platform-python` for regular Contest scripts; it is
+not available outside of RHEL and may have an unknown Python version.
+
+`lib/dnf_get_repos` is the exception. It is a standalone system-Python helper
+which imports the distribution's `dnf` bindings, so it must remain compatible
+with the interpreter that provides those bindings, including older Python on
+retained systems. When modifying it, run its syntax check with that system
+interpreter and lint it with a target matching that interpreter, for example:
+
+```
+/usr/libexec/platform-python -m py_compile lib/dnf_get_repos
+ruff check --target-version py39 lib/dnf_get_repos
+```
 
 ## Python features
 
@@ -61,7 +78,7 @@ Prefer modern Python features over older (but still valid) ones, namely:
   - `Path('some/path') / subdir / another_dir`
   - `Path().name` instead of `os.path.basename()`
   - `Path().parent` instead of `os.path.dirname()`
-  - see others on https://docs.python.org/3.9/library/pathlib.html#methods
+  - see others on https://docs.python.org/3.11/library/pathlib.html#methods
 - `subprocess.run()` over `.check_output()` and `.call()`
 
 However avoid using these new features:

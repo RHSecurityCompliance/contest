@@ -1,4 +1,5 @@
 import math
+import platform
 
 # cache /etc/os-release on a module-wide basis
 _os_release = {}
@@ -7,13 +8,7 @@ _os_release = {}
 def _update_os_release():
     if _os_release:
         return
-    with open('/etc/os-release') as f:
-        for line in f:
-            if not line.strip():
-                continue
-            key, value = line.rstrip().split('=', 1)
-            value = value.strip('"')
-            _os_release[key] = value
+    _os_release.update(platform.freedesktop_os_release())
 
 
 class _Rhel:

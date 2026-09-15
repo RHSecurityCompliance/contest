@@ -35,16 +35,7 @@ _valid_statuses = ['pass', 'fail', 'warn', 'error', 'info', 'skip']
 _streamed_atex_logs = set()
 
 
-# TODO: replace by collections.Counter on python 3.10+
-class Counter(collections.defaultdict):
-    def __init__(self):
-        super().__init__(lambda: 0)
-
-    def total(self):
-        return sum(self.values())
-
-
-global_counts = Counter()
+global_counts = collections.Counter()
 
 
 def have_atex_api():

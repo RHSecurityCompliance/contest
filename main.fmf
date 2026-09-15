@@ -30,8 +30,8 @@ tag: []
 # - RHEL-10 defaults to python 3.12, there is only python3 RPM package
 # - RHEL-9 defaults to python 3.9, python3.11 RPM is available since RHEL-9.2
 # - RHEL-8 defaults to python 3.6, python3.11 RPM is available since RHEL-8.8
-# Effectively, we are limited by RHEL-9.0 where only python 3.9 is available
-# so contest can currently only use python features up to version 3.9.
+# Contest requires Python 3.11 or newer, so RHEL 8 and 9 use the explicit
+# python3.11 interpreter while RHEL 10 uses its native python3 interpreter.
 adjust:
   - when: distro == rhel-8 or distro == centos-stream-8 or distro == rhel-9 or distro == centos-stream-9
     environment+:
@@ -41,6 +41,3 @@ adjust:
       - python3.11-requests
       - python3.11-pyyaml
       - python3.11-urllib3
-  - when: distro ~= rhel-9.0
-    environment+:
-        CONTEST_PYTHON: python3
