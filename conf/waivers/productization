@@ -125,4 +125,8 @@
 /scanning/disa-alignment/[^/]+/audit_rules_login_events_lastlog
     rhel == 9
 
+# https://github.com/ComplianceAsCode/content/issues/15129
+/per-rule/oscap/.+/file_ownership_var_log_audit_stig/wrong_value.fail
+    True
+
 # vim: syntax=python
