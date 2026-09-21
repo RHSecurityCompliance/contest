@@ -56,6 +56,10 @@
 /hardening/anaconda(/with-gui)?/[^/]+/service_nftables_disabled
     True
 
+# https://github.com/ComplianceAsCode/content/issues/15132
+/hardening/ansible/uefi/hipaa/rpm_verify_permissions
+    rhel == 10.3
+
 # https://github.com/ComplianceAsCode/content/issues/12282
 /hardening/kickstart/.+/service_avahi-daemon_disabled
 /hardening/kickstart/.+/socket_systemd-journal-remote_disabled
