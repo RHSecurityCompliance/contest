@@ -3,6 +3,7 @@
 
 # https://github.com/ComplianceAsCode/content/issues/11698
 /scanning/disa-alignment/.*/no_shelllogin_for_systemaccounts
+    rhel == 9 or rhel == 10
 # https://github.com/ComplianceAsCode/content/issues/11802
 /scanning/disa-alignment/[^/]+/auditd_audispd_configure_sufficiently_large_partition
     rhel == 9
@@ -13,6 +14,21 @@
 # maybe it's related to the syntax change in rsyslog configuration files
 /scanning/disa-alignment/[^/]+/rsyslog_remote_access_monitoring
     rhel == 9
+# https://github.com/ComplianceAsCode/content/issues/15134
+/scanning/disa-alignment/oscap/rsyslog_remote_access_monitoring
+    rhel == 10
+# https://github.com/ComplianceAsCode/content/issues/15135
+/scanning/disa-alignment/[^/]+/audit_rules_dac_modification_.*
+    rhel == 10
+# https://github.com/ComplianceAsCode/content/issues/15136
+/scanning/disa-alignment/[^/]+/audit_rules_execution_.*
+/scanning/disa-alignment/[^/]+/audit_rules_login_events_faillock
+/scanning/disa-alignment/[^/]+/audit_privileged_commands_.*
+/scanning/disa-alignment/[^/]+/audit_rules_privileged_commands_.*
+    rhel == 10
+# https://github.com/ComplianceAsCode/content/issues/15137
+/scanning/disa-alignment/[^/]+/auditd_audispd_configure_sufficiently_large_partition
+    rhel == 10
 
 # https://github.com/ComplianceAsCode/content/issues/14390
 # The rule is failing on DISA content
