@@ -52,8 +52,8 @@ on Red Hat Enterprise Linux.
   - This is useful for debugging a failing OpenSCAP rule as you get the running
     virtual environment, as it was scanned, without an extra OS startup.
   - SSH instructions will be provided on stdout (python log output).
-    - Alternatively, use `virsh domifaddr contest` to get the VM's IP address
-      and `ssh` into it as `root` with `contest` as password.
+    - Alternatively, use `./contest-sshvm [vm-name]`, which discovers the
+      per-guest QEMU user-mode networking port and connects through `127.0.0.1`.
   - However any tests that use more than 1 VM **and** rely on a shut-down VM
     state between two context-managed blocks, will break.
     - Because the VM was left running after the first context manager block.
@@ -184,11 +184,13 @@ of the modules present in `lib`.
 
 ### SSH into Anaconda
 
-Anaconda-based remediation can be debugged on a virtual machine by issuing
-`virsh domifaddr contest` (where `contest` is the default VM name) to acquire
-an IP address of the guest (which gets assigned just before Anaconda launches)
-and doing `ssh root@that-ip-addr` from the host running the test itself (and
-hosting the VM).  
+Anaconda-based remediation can be debugged on a virtual machine through
+QEMU user-mode networking. While the installer is running, create a localhost
+port for its SSH service with
+`virsh qemu-monitor-command contest --hmp 'hostfwd_add tcp:127.0.0.1:0-:22'`.
+Then run `virsh qemu-monitor-command contest --hmp 'info usernet'` and find the
+`TCP[HOST_FORWARD]` row with source `127.0.0.1` and destination port `22`.
+Connect from the VM host with `ssh -p <port> root@127.0.0.1`.
 There is no password for the Anaconda environment, so this will just log you in.
 
 ### SSH into installed VMs

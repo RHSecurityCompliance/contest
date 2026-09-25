@@ -86,12 +86,12 @@ ks = virt.Kickstart(partitions=partitions)
 
 # install the VM, using a locally-hosted podman registry serving
 # the hardened image for Anaconda's ostreecontainer
-with podman.Registry(host_addr=virt.NETWORK_HOST) as registry:
+with podman.Registry(host_addr=virt.NETWORK_HOST, guest_addr=virt.NETWORK_GUEST) as registry:
     image_url = registry.push('contest-hardened')
-    ks.append(f'ostreecontainer --url {image_url}')
+    ks.append(f'ostreecontainer --url {registry.guest_reference(image_url)}')
     # Anaconda doesn't expose ostree --insecure-skip-tls-verification,
     # work around it using registries.conf
-    raddr, rport = registry.get_listen_addr()
+    raddr, rport = registry.get_guest_listen_addr()
     ks.add_pre(
         fr'''echo -e '[[registry]]\nlocation = "{raddr}:{rport}"\n'''
         r'''insecure = true\n' >> /etc/containers/registries.conf''',

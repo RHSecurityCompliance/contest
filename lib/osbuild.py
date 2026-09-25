@@ -353,7 +353,7 @@ class Guest(virt.Guest):
 
             # osbuild-composer doesn't support file:// repos, so host
             # the custom RPM on a HTTP server
-            with util.BackgroundHTTPServer('127.0.0.1', 0) as srv:
+            with util.BackgroundHTTPServer(virt.NETWORK_HOST, 0) as srv:
                 srv.add_dir(repo, 'repo')
                 http_host, http_port = srv.start()
 

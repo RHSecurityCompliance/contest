@@ -116,9 +116,10 @@ podman.podman(
 qcow2_path = bootc_output_dir / 'qcow2' / 'disk.qcow2'
 guest.import_image(qcow2_path, 'qcow2')
 
-with podman.Registry(host_addr=virt.NETWORK_HOST) as registry:
+with podman.Registry(host_addr=virt.NETWORK_HOST, guest_addr=virt.NETWORK_GUEST) as registry:
     image_url = registry.push('contest-hardened-new')
-    raddr, rport = registry.get_listen_addr()
+    guest_image_url = registry.guest_reference(image_url)
+    raddr, rport = registry.get_guest_listen_addr()
     # boot up and scan the VM
     with guest.booted():
         # copy the old remediation ARF from the guest
@@ -131,14 +132,13 @@ with podman.Registry(host_addr=virt.NETWORK_HOST) as registry:
         )
 
         # Run "bootc switch" to switch the image to the new one
-        guest.ssh(f"bootc switch {raddr}:{rport}/contest-hardened-new", check=True)
+        guest.ssh(f"bootc switch {guest_image_url}", check=True)
 
         # reboot the VM to apply the new image
         # we can't use guest.soft_reboot() here, because we don't have a guest agent
         guest.ssh("reboot")
-        virt.wait_for_ssh(guest.ipaddr, to_shutdown=True)
-        guest.ipaddr = virt.wait_for_ifaddr(guest.name)
-        virt.wait_for_ssh(guest.ipaddr)
+        virt.wait_for_ssh(guest.ipaddr, guest.port, to_shutdown=True)
+        virt.wait_for_ssh(guest.ipaddr, guest.port)
 
         # copy the original DS to the guest
         guest.copy_to(util.get_datastream(), 'scan-ds.xml')

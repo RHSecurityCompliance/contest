@@ -39,7 +39,6 @@ care of stopping it (manually, via try/finally, etc.):
 """
 
 import shutil
-import subprocess
 import threading
 from pathlib import Path
 from http.server import HTTPServer, SimpleHTTPRequestHandler
@@ -92,7 +91,6 @@ class BackgroundHTTPServer:
         self.file_mapping = {}
         self.dir_mapping = {}
         self.requested_address = (host, port)
-        self.firewalld_zones = []
 
     def add_file(self, fs_path, url_path=None):
         """
@@ -149,23 +147,6 @@ class BackgroundHTTPServer:
         server.file_mapping = self.file_mapping
         server.dir_mapping = self.dir_mapping
 
-        # allow the target port on the firewall
-        if shutil.which('firewall-cmd'):
-            res = util.subprocess_run(
-                ['firewall-cmd', '--state'], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL,
-            )
-            if res.returncode == 0:
-                res = util.subprocess_run(
-                    ['firewall-cmd', '--get-zones'], stdout=subprocess.PIPE,
-                    stderr=subprocess.PIPE, text=True, check=True,
-                )
-                self.firewalld_zones = res.stdout.strip().split(' ')
-                for zone in self.firewalld_zones:
-                    util.subprocess_run(
-                        ['firewall-cmd', f'--zone={zone}', f'--add-port={port}/tcp'],
-                        stdout=subprocess.DEVNULL, stderr=subprocess.PIPE, check=True,
-                    )
-
         self.thread = threading.Thread(target=server.serve_forever)
         self.thread.start()
 
@@ -186,13 +167,6 @@ class BackgroundHTTPServer:
         self.server.shutdown()
         self.thread.join()
         self.server.socket.close()
-
-        # remove allow rules from the firewall
-        for zone in self.firewalld_zones:
-            util.subprocess_run(
-                ['firewall-cmd', f'--zone={zone}', f'--remove-port={port}/tcp'],
-                stdout=subprocess.DEVNULL, stderr=subprocess.PIPE, check=True,
-            )
 
     def __enter__(self):
         return self
