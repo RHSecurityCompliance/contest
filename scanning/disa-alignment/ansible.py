@@ -32,6 +32,7 @@ with g.snapshotted():
     skip_tags_arg = ['--skip-tags', skip_tags] if skip_tags else []
     ansible_cmd = [
         'ansible-playbook', '-v', '-i', f'{g.ipaddr},',
+        '-u', virt.GUEST_SSH_USER, '-c', 'ssh', '-e', f'ansible_port={g.port}',
         '--private-key', g.ssh_keyfile_path,
         *skip_tags_arg,
         playbook,

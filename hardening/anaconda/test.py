@@ -22,11 +22,11 @@ with util.BackgroundHTTPServer(virt.NETWORK_HOST, 0) as srv:
     oscap.unselect_rules(util.get_datastream(), 'remediation-ds.xml', remediation.excludes())
     srv.add_file('remediation-ds.xml')
 
-    host, port = srv.start()
+    _, http_port = srv.start()
 
     oscap_conf = {
         'content-type': 'datastream',
-        'content-url': f'http://{host}:{port}/remediation-ds.xml',
+        'content-url': f'http://{virt.NETWORK_GUEST}:{http_port}/remediation-ds.xml',
         'profile': profile,
     }
     ks.add_oscap_addon(oscap_conf)
