@@ -14,6 +14,7 @@ extra-hardware: |
     hostrequire = memory>=6000
 tag+:
   - snapshottable
+  - fips
 adjust+:
   - when: arch != x86_64
     enabled: false
