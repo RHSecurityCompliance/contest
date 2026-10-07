@@ -282,6 +282,6 @@ def get_source_content():
                     builddir = Path(tmpdir) / "BUILD"
                     extracted = next(builddir.glob(f"**/{name_version}"))
                 except StopIteration:
-                    raise FileNotFoundError("extracted SRPM content sources not found")
+                    raise FileNotFoundError("extracted SRPM content sources not found") from None
                 util.log(f"using {extracted} as content source")
                 yield extracted
