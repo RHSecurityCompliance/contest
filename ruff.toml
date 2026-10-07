@@ -10,25 +10,36 @@ select = [
     "W",    # pycodestyle
     "N",    # pep8-naming
     "UP",   # pyupgrade
+    "B",    # flake8-bugbear
     "COM",  # flake8-commas
     "C4",   # flake8-comprehensions
+    "EXE",  # flake8-executable
+    "I",    # isort
+    "PIE",  # flake8-pie
+    "Q",    # flake8-quotes
+    "RSE",  # flake8-raise
     "SIM",  # flake8-simplify
     "ARG",  # flake8-unused-arguments
     "PTH",  # flake8-use-pathlib
     "PL",   # Pylint
     "RUF",  # Ruff-specific rules
+    "FURB", # refurb
 ]
 ignore = [
-    "bad-quotes-multiline-string",
     "builtin-open",
     "if-else-block-instead-of-if-exp",
     "collapsible-if",
     "multiple-with-statements",
     "if-else-block-instead-of-dict-get",
+    "too-many-public-methods",
     "too-many-return-statements",
     "too-many-branches",
     "too-many-arguments",
+    "too-many-locals",
     "too-many-statements",
+    "too-many-boolean-expressions",
+    "too-many-positional-arguments",
+    "too-many-nested-blocks",
     "too-many-statements-in-try-clause",
     "magic-value-comparison",
     "collapsible-else-if",
@@ -38,9 +49,12 @@ ignore = [
     "explicit-f-string-type-conversion",
     "mutable-class-default",
     "non-empty-init-module",
-    "float-equality-comparison",
-    "unused-noqa",
-    "noqa-comments",
+    "unsorted-dunder-all",
+    "needless-bool",
+    "suppressible-exception",
+    "open-file-with-context-handler",
+    "read-whole-file",
+    "reimplemented-operator",
 
     # rules from preview
     "no-indented-block-comment",
@@ -48,12 +62,15 @@ ignore = [
     "missing-whitespace",
     "no-space-after-block-comment",
     "multiple-leading-hashes-for-block-comment",
-    "too-many-public-methods",
-    "too-many-positional-arguments",
     "literal-membership",
     "unspecified-encoding",
     "eq-without-hash",
+    "noqa-comments",
+
+    # buggy in ruff, inconsistent across ruff versions
+    "unused-noqa",
 ]
 
 [format]
 indent-style = "space"
+quote-style = "double"
