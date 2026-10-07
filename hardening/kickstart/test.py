@@ -2,9 +2,8 @@
 
 import subprocess
 
-from lib import util, results, virt, oscap, metadata
 from conf import remediation
-
+from lib import metadata, oscap, results, util, virt
 
 virt.Host.setup()
 

@@ -1,11 +1,10 @@
 #!/usr/bin/python3
 
-import time
 import subprocess
 import tempfile
+import time
 
-from lib import util, results, virt, metadata
-
+from lib import metadata, results, util, virt
 
 profile = "cis_workstation_l1"
 

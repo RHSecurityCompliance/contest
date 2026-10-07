@@ -8,7 +8,7 @@ Do not use it to exclude expected failures, use the waiving logic instead.
 
 import re
 
-from lib import versions, util
+from lib import util, versions
 
 
 def excludes():

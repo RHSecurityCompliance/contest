@@ -3,7 +3,7 @@
 import re
 import subprocess
 
-from lib import util, results
+from lib import results, util
 
 proc = util.subprocess_run(
     ["oscap", "xccdf", "eval", "--profile", "stig", "--progress",

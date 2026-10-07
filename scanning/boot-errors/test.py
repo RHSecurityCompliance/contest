@@ -4,11 +4,10 @@ import atexit
 import datetime
 import json
 import subprocess
-
 from pathlib import Path
 
-from lib import util, results, virt, oscap, metadata
-from conf import remediation, partitions
+from conf import partitions, remediation
+from lib import metadata, oscap, results, util, virt
 
 PRIORITY_NAMES = {
     "0": "emerg",

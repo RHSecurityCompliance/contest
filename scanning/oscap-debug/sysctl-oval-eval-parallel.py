@@ -1,11 +1,10 @@
 #!/usr/bin/python3
 
-import time
-import subprocess
 import concurrent.futures
+import subprocess
+import time
 
-from lib import util, results, metadata
-
+from lib import metadata, results, util
 
 # sysctl ovals only take about 1 second
 OSCAP_TIMEOUT = 5

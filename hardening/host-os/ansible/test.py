@@ -3,9 +3,8 @@
 import os
 import subprocess
 
-from lib import util, results, oscap, ansible
 from conf import remediation
-
+from lib import ansible, oscap, results, util
 
 profile = util.get_test_name().rpartition("/")[2]
 

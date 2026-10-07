@@ -2,7 +2,7 @@ import os
 import re
 import subprocess
 
-from lib import util, results, versions
+from lib import results, util, versions
 
 # Versions pinned to match what rhc-worker-playbook bundles on RHEL for the
 # given RHEL version, so that CentOS/Fedora test environments are as close

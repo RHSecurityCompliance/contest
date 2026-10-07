@@ -1,13 +1,13 @@
-import contextlib
 import collections
-import tempfile
-import subprocess
-import requests
+import contextlib
 import json
+import subprocess
+import tempfile
 from pathlib import Path
 
-from lib import util
+import requests
 
+from lib import util
 
 _Repo = collections.namedtuple("Repo", ["name", "baseurl", "data", "file"])
 

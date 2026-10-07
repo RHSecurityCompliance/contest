@@ -2,7 +2,7 @@
 
 from collections import defaultdict
 
-from lib import util, results, oscap, versions
+from lib import oscap, results, util, versions
 
 reference_urls = {}
 for frames, elements in oscap.parse_xml(util.get_datastream()):

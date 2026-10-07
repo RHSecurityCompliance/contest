@@ -36,14 +36,14 @@ any binary artifacts other than what is provided here via get_*(), it should
 get_source_content() and call build_content() on it, or build it itself.
 """
 
+import contextlib
 import os
 import shutil
 import subprocess
-import contextlib
 import tempfile
 from pathlib import Path
 
-from lib import util, dnf, versions
+from lib import dnf, util, versions
 from lib.versions import rhel
 
 CONTENT_BUILD_DIR = "build"

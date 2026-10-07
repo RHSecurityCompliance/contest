@@ -4,9 +4,8 @@ import shutil
 import subprocess
 from pathlib import Path
 
-from lib import results, oscap, osbuild, util, metadata, versions
 from conf import remediation
-
+from lib import metadata, osbuild, oscap, results, util, versions
 
 # try to prevent the following error (usually happens on new RHEL versions in development):
 # ERROR: BlueprintsError: contest_blueprint: GetDistro - unknown distribution rhel-X.Y

@@ -1,11 +1,10 @@
 #!/usr/bin/python3
 
-import time
 import signal
 import subprocess
+import time
 
-from lib import util, results, oscap, metadata
-
+from lib import metadata, oscap, results, util
 
 start_time = time.monotonic()
 

@@ -3,7 +3,7 @@
 import re
 import subprocess
 
-from lib import util, results, versions
+from lib import results, util, versions
 
 syscalls_groups = [
     ["setxattr", "lsetxattr", "fsetxattr", "removexattr", "lremovexattr", "fremovexattr"],

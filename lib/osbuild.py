@@ -23,20 +23,20 @@ VMs via Guest.install(), they are created from images via Guest.create().
 Snapshotting is currently not supported/tested with this approach.
 """
 
-import sys
-import re
-import subprocess
-import textwrap
+import collections
 import contextlib
-import tempfile
 import json
 import platform
+import re
 import shutil
+import subprocess
+import sys
+import tempfile
+import textwrap
 import time
-import collections
 from pathlib import Path
 
-from lib import util, dnf, virt
+from lib import dnf, util, virt
 
 # composer-cli compose start --size: disk image size in MiB.
 # 100 GiB gives plenty of space for all profiles and partitions,

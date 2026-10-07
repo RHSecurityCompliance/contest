@@ -2,7 +2,7 @@
 
 import subprocess
 
-from lib import results, metadata, oscap, podman, util
+from lib import metadata, oscap, podman, results, util
 
 podman.Host.setup()
 

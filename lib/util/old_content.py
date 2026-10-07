@@ -3,11 +3,11 @@ These are support functions for testing "old content", the previous released
 content version, typically in comparison to "new content", the current release.
 """
 
-import subprocess
-import functools
 import contextlib
+import functools
+import subprocess
 
-from lib import util, dnf
+from lib import dnf, util
 
 
 @contextlib.contextmanager

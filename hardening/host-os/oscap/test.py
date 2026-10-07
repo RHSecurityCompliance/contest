@@ -1,12 +1,10 @@
 #!/usr/bin/python3
 
 import shutil
-
 from pathlib import Path
 
-from lib import util, results, oscap
 from conf import remediation
-
+from lib import oscap, results, util
 
 profile = util.get_test_name().rpartition("/")[2]
 

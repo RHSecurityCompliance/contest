@@ -4,7 +4,7 @@ import shutil
 import xml.etree.ElementTree as ET
 from pathlib import Path
 
-from lib import util, results, versions
+from lib import results, util, versions
 
 nsmap = {
     "xccdf": "http://checklists.nist.gov/xccdf/1.2",

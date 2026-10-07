@@ -3,16 +3,17 @@ Provides utilities and wrappers for creating and manipulating images and
 containers using the 'podman' utility.
 """
 
-import re
-import time
 import gzip
+import re
 import shutil
-import textwrap
-import tempfile
-import requests
 import subprocess
-import urllib3
+import tempfile
+import textwrap
+import time
 from pathlib import Path
+
+import requests
+import urllib3
 
 from lib import util
 

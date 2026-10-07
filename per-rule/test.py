@@ -1,14 +1,14 @@
 #!/usr/bin/python3
 
-import os
-import re
 import atexit
 import inspect
+import os
+import re
 import subprocess
 from pathlib import Path
 
-from lib import util, results, versions, virt, oscap, unit_tests
 from conf import remediation
+from lib import oscap, results, unit_tests, util, versions, virt
 
 rule_excludes = [
     # because of inter-rule dependencies and their incompatibility with

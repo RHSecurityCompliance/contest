@@ -3,8 +3,7 @@
 import re
 import subprocess
 
-from lib import util, results
-
+from lib import results, util
 
 url_regex = re.compile(r'href=[\'"]?(http[^\'" ]+)', re.IGNORECASE)
 

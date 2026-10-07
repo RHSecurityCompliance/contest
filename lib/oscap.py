@@ -1,12 +1,12 @@
-import re
-import enum
-import contextlib
 import collections
+import contextlib
+import enum
+import re
 import types
 import xml.etree.ElementTree as ET
 from pathlib import Path
 
-from lib import util, results
+from lib import results, util
 
 FixType = enum.Flag(
     "FixType",

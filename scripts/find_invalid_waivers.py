@@ -8,19 +8,18 @@ and identifies invalid waivers. The waiver is invalid if it:
 The identified invalid waivers are printed to the standard output.
 """
 
+import argparse
+import collections
+import gzip
+import json
+import pathlib
 import re
 import sys
-import json
-import gzip
-import pathlib
-import argparse
 import textwrap
-import collections
 
 # add the parent directory to the sys.path so we can import from the lib directory
 sys.path.append(str(pathlib.Path(__file__).resolve().parent.parent))
-from lib import waive, versions, oscap
-
+from lib import oscap, versions, waive
 
 MatchedWaiver = collections.namedtuple(
     "MatchedWaiver",
