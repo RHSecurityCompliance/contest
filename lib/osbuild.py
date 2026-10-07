@@ -183,11 +183,11 @@ class Compose:
 # so let's just append strings instead
 class Blueprint:
     NAME = "contest_blueprint"
-    TEMPLATE = util.dedent(fr'''
+    TEMPLATE = util.dedent(fr"""
         name = "{NAME}"
         description = "Testing blueprint created by the Contest test suite"
         version = "1.0.0"
-    ''')
+    """)
 
     def __init__(self, template=TEMPLATE):
         self.assembled = f"{template}\n\n" if template else ""
@@ -204,23 +204,23 @@ class Blueprint:
             self.assembled += f'key = "{ssh_pubkey}"\n'
 
     def add_package(self, name):
-        self.assembled += util.dedent(fr'''
+        self.assembled += util.dedent(fr"""
             [[packages]]
             name = "{name}"
-        ''') + "\n"
+        """) + "\n"
 
     def add_package_group(self, name):
-        self.assembled += util.dedent(fr'''
+        self.assembled += util.dedent(fr"""
             [[groups]]
             name = "{name}"
-        ''') + "\n"
+        """) + "\n"
 
     def add_partition(self, mountpoint, minsize):
-        self.assembled += util.dedent(fr'''
+        self.assembled += util.dedent(fr"""
             [[customizations.filesystem]]
             mountpoint = "{mountpoint}"
             minsize = {minsize}
-        ''') + "\n"
+        """) + "\n"
 
     def set_openscap_datastream(self, ds_file):
         pre, header, post = self.assembled.partition("\n[customizations.openscap]\n")

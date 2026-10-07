@@ -152,7 +152,7 @@ class Host:
     @staticmethod
     def create_sshvm(dest):
         dest = Path(dest)
-        script = util.dedent(r'''
+        script = util.dedent(r"""
             #!/bin/bash
             function list { virsh -q list "$@" | sed -rn 's/^ *[-0-9]+ +([^ ]+).*/\1/p'; }
             function get_sshkey { f="%SSHKEY_DIR%/$1.sshkey"; [[ -f $f ]] && echo "$f"; }
@@ -198,7 +198,7 @@ class Host:
             ssh -q -p "$port" -i "$sshkey" -o StrictHostKeyChecking=no \
                 -o UserKnownHostsFile=/dev/null -o ServerAliveInterval=1 \
                 "root@$ipaddr"
-        ''')
+        """)
         script = script.replace("%SSHKEY_DIR%", GUEST_IMG_DIR)  # f-strings cannot have \
         dest.write_text(script)
         dest.chmod(0o755)
@@ -284,7 +284,7 @@ class Host:
 #
 
 class Kickstart:
-    TEMPLATE = util.dedent(fr'''
+    TEMPLATE = util.dedent(fr"""
         rootpw {GUEST_LOGIN_PASS}
         timezone --utc Europe/Prague
         bootloader --append="console=ttyS0,115200 mitigations=off"
@@ -292,7 +292,7 @@ class Kickstart:
         zerombr
         clearpart --all --initlabel
         reqpart
-    ''')
+    """)
 
     def __init__(self, template=TEMPLATE, packages=None, partitions=None):
         """
@@ -370,14 +370,14 @@ class Kickstart:
         self.append(f"%addon {section}\n{lines}\n%end")
 
     def add_authorized_key(self, pubkey, homedir="/root", owner="root"):
-        script = util.dedent(fr'''
+        script = util.dedent(fr"""
             mkdir -m 0700 -p {homedir}/.ssh
             cat >> {homedir}/.ssh/authorized_keys <<EOF
             {pubkey}
             EOF
             chmod 0600 {homedir}/.ssh/authorized_keys
             chown {owner} -R {homedir}/.ssh
-        ''')
+        """)
         self.add_post(script)
 
 

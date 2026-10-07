@@ -114,13 +114,13 @@ class Containerfile:
 
     def add_ssh_pubkey(self, key, user="root"):
         home = "/root" if user == "root" else f"/home/{user}"
-        self.contents += "\n" + util.dedent(fr'''
+        self.contents += "\n" + util.dedent(fr"""
             # ssh key for {user} in {home}
             RUN mkdir -p -m 0700 '{home}/.ssh'
             RUN echo '{key}' >> '{home}/.ssh/authorized_keys'
             RUN chmod 0600 '{home}/.ssh/authorized_keys'
             RUN chown {user}:{user} -R '{home}/.ssh'
-        ''')
+        """)
 
     def write_to(self, path):
         util.log(f"writing to {path}:\n{textwrap.indent(self.contents, '    ')}")

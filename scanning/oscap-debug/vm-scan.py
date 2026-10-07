@@ -39,7 +39,7 @@ with g.booted():
     g.ssh(" ".join(["dnf", "-y", "debuginfo-install", *extra_debuginfos]), check=True)
     # prepare gdb script
     with tempfile.NamedTemporaryFile(mode="w+t") as f:
-        f.write(util.dedent('''
+        f.write(util.dedent("""
             generate-core-file oscap.core
             set logging file oscap-bt.txt
             set logging overwrite on
@@ -47,7 +47,7 @@ with g.booted():
             set logging enabled on
             thread apply all bt
             set logging enabled off
-        '''))
+        """))
         f.flush()
         g.copy_to(f.name, "gdb.script")
 
