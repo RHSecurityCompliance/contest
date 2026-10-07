@@ -48,11 +48,11 @@ with pack.build() as pack_binrpm:
 cfile = podman.Containerfile()
 cfile += f"FROM {src_image}"
 if Path("bootc_tf_img_cleanup.sh").exists():
-    cfile += util.dedent('''
+    cfile += util.dedent("""
         COPY bootc_tf_img_cleanup.sh /root/bootc_tf_img_cleanup.sh
         RUN chmod +x /root/bootc_tf_img_cleanup.sh && /root/bootc_tf_img_cleanup.sh
-    ''')
-cfile += util.dedent(fr'''
+    """)
+cfile += util.dedent(fr"""
     # install testing-specific RpmPack
     COPY contest-pack.rpm /root/.
     RUN dnf -y install /root/contest-pack.rpm && rm -f /root/contest-pack.rpm
@@ -64,7 +64,7 @@ cfile += util.dedent(fr'''
         --results-arf /root/remediation-arf.xml /root/remediation-ds.xml
     # debug only: run a lint check but don't fail the build in case of any issues
     RUN bootc container lint || true
-''')
+""")
 cfile.add_ssh_pubkey(guest.ssh_pubkey)
 cfile.write_to("Containerfile")
 

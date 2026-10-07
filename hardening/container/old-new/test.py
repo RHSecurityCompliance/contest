@@ -60,11 +60,11 @@ def build_image(data_stream, results_arf, dst_image):
     cfile = podman.Containerfile()
     cfile += f"FROM {src_image}"
     if Path("bootc_tf_img_cleanup.sh").exists():
-        cfile += util.dedent('''
+        cfile += util.dedent("""
             COPY bootc_tf_img_cleanup.sh /root/bootc_tf_img_cleanup.sh
             RUN chmod +x /root/bootc_tf_img_cleanup.sh && /root/bootc_tf_img_cleanup.sh
-        ''')
-    cfile += util.dedent(fr'''
+        """)
+    cfile += util.dedent(fr"""
         # install testing-specific RpmPack
         COPY contest-pack.rpm /root/.
         RUN dnf -y install /root/contest-pack.rpm && rm -f /root/contest-pack.rpm
@@ -75,7 +75,7 @@ def build_image(data_stream, results_arf, dst_image):
         RUN oscap-im --profile '{profile}' --results-arf '{results_arf}' '/root/{data_stream}'
         # debug only: run a lint check but don't fail the build in case of any issues
         RUN bootc container lint || true
-    ''')
+    """)
     cfile.add_ssh_pubkey(guest.ssh_pubkey)
     cfile.write_to("Containerfile")
 
@@ -127,8 +127,8 @@ with podman.Registry(host_addr=virt.NETWORK_HOST, guest_addr=virt.NETWORK_GUEST)
         # by the bootc switch
         guest.copy_from("/remediation-old-arf.xml")
         guest.ssh(
-            fr'''echo -e '[[registry]]\nlocation = "{raddr}:{rport}"\n'''
-            r'''insecure = true\n' >> /etc/containers/registries.conf''',
+            fr"""echo -e '[[registry]]\nlocation = "{raddr}:{rport}"\n"""
+            r"""insecure = true\n' >> /etc/containers/registries.conf""",
         )
 
         # Run "bootc switch" to switch the image to the new one

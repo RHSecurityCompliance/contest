@@ -34,7 +34,7 @@ util.subprocess_run(
 )
 
 with open("gdb.script", "w") as f:
-    f.write(util.dedent('''
+    f.write(util.dedent("""
         generate-core-file oscap.core
         set logging file oscap-bt.txt
         set logging overwrite on
@@ -42,7 +42,7 @@ with open("gdb.script", "w") as f:
         set logging enabled on
         thread apply all bt
         set logging enabled off
-    '''))
+    """))
 
 with util.get_source_content() as content_dir:
     util.build_content(content_dir)

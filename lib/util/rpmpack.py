@@ -13,7 +13,7 @@ class RpmPack:
     VERSION = 1
     RELEASE = 1
     ARCH = "noarch"
-    HEADER = util.dedent(fr'''
+    HEADER = util.dedent(fr"""
         Name: {NAME}
         Summary: RPM content pack for the Contest test suite
         Version: {VERSION}
@@ -24,7 +24,7 @@ class RpmPack:
         %global source_date_epoch_from_changelog 0
 
         %description
-    ''')
+    """)
     NVR = f"{NAME}-{VERSION}-{RELEASE}"
     FILE = f"{NVR}.{ARCH}.rpm"
 
@@ -85,10 +85,10 @@ class RpmPack:
         distro packages deploying repo and gpg key files (centos-stream-repos/centos-gpg-keys
         on CentOS Stream and subscription-manager/redhat-release on RHEL).
         """
-        self.add_script("%post", util.dedent('''
+        self.add_script("%post", util.dedent("""
             rm -rf /etc/yum.repos.d/*
             rm -rf /etc/pki/rpm-gpg/*
-        '''))
+        """))
         for repofile in dnf.repo_files():
             repopath = Path(repofile)
             repotext = repopath.read_text().rstrip("\n")
@@ -134,18 +134,18 @@ class RpmPack:
         To fix this, make sshd start after multi-user.target, making our
         connection more representative of a longer-running system.
         """
-        override_contents = util.dedent('''
+        override_contents = util.dedent("""
             [Unit]
             After=multi-user.target
-        ''')
+        """)
         self.add_file_contents(
             Path("/usr/lib/systemd/system/sshd.service.d/contest-override.conf"),
             override_contents,
         )
-        reload_systemd = util.dedent('''
+        reload_systemd = util.dedent("""
             systemctl is-system-running >/dev/null || exit 0  # offline install
             systemctl daemon-reload
-        ''')
+        """)
         self.add_script("%post", reload_systemd)
         self.add_script("%postun", reload_systemd)
 
@@ -160,7 +160,7 @@ class RpmPack:
             if isinstance(file, self.FilePath):
                 install_block += f'cp -r "{file.source}" "%{{buildroot}}{file.target}"\n'
             elif isinstance(file, self.FileContents):
-                install_block += f'''cat > "%{{buildroot}}{file.target}" <<'EOF'\n'''
+                install_block += f"""cat > "%{{buildroot}}{file.target}" <<'EOF'\n"""
                 install_block += file.contents
                 install_block += "\nEOF"
             else:
@@ -179,8 +179,8 @@ class RpmPack:
             scripts_blocks.append(block)
 
         return (
-            (f'''Requires: {' '.join(self.requires)}\n''' if self.requires else "")
-            + (f'''OrderWithRequires: {' '.join(self.softreq)}\n''' if self.softreq else "")
+            (f"""Requires: {' '.join(self.requires)}\n""" if self.requires else "")
+            + (f"""OrderWithRequires: {' '.join(self.softreq)}\n""" if self.softreq else "")
             + f"{self.HEADER}\n\n"
             + f"%install\n{install_block}\n"
             + f"%files\n{files_block}\n"

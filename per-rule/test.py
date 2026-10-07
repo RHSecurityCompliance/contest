@@ -139,21 +139,21 @@ with util.get_source_content() as content_dir:
     if versions.rhel.is_true_rhel():
         ks.packages.append("rhc-worker-playbook")
         # per https://access.redhat.com/articles/remediation
-        ks.add_post(util.dedent('''
+        ks.add_post(util.dedent("""
             cat >> /etc/ansible/ansible.cfg <<EOF
             [defaults]
             collections_path=/usr/share/rhc-worker-playbook/ansible/collections/ansible_collections/
             EOF
-        '''))
+        """))
     else:
         # Set the locale to fix the error:
         #   Ansible requires the locale encoding to be UTF-8; Detected None.
         # The locale has to be set in the %post because it is running in a separate
         # sibling process to the installer, not in its child process.
-        ks.add_post(util.dedent('''
+        ks.add_post(util.dedent("""
             export LC_ALL=en_US.UTF-8
             ansible-galaxy collection install community.general ansible.posix
-        '''))
+        """))
 
     # install the VM
     g = virt.Guest()
