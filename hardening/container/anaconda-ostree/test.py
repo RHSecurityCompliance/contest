@@ -4,9 +4,8 @@ import os
 import shutil
 from pathlib import Path
 
-from lib import results, oscap, versions, virt, podman, util, metadata
 from conf import remediation
-
+from lib import metadata, oscap, podman, results, util, versions, virt
 
 virt.Host.setup()
 podman.Host.setup()

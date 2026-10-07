@@ -1,12 +1,11 @@
 #!/usr/bin/python3
 
-import os
 import atexit
+import os
 import subprocess
 
-from lib import util, results, virt, oscap, ansible, metadata
-from conf import remediation, partitions
-
+from conf import partitions, remediation
+from lib import ansible, metadata, oscap, results, util, virt
 
 ansible.install_deps()
 virt.Host.setup()

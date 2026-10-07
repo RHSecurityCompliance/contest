@@ -2,8 +2,7 @@
 
 import subprocess
 
-from lib import util, results
-
+from lib import results, util
 
 profile = "cis_workstation_l1"
 

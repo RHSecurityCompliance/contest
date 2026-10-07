@@ -3,7 +3,7 @@
 import re
 import subprocess
 
-from lib import results, oscap, versions, podman, util
+from lib import oscap, podman, results, util, versions
 
 podman.Host.setup()
 

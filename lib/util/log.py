@@ -1,7 +1,7 @@
-import sys
 import inspect
-from pathlib import Path
+import sys
 from datetime import datetime
+from pathlib import Path
 
 
 def log(msg, *, skip_frames=0):

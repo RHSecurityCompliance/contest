@@ -1,13 +1,13 @@
 #!/usr/bin/python3
 
-import os
 import atexit
+import os
 import subprocess
 
 import shared
-from lib import util, results, virt, ansible, metadata
-from conf import partitions, remediation
 
+from conf import partitions, remediation
+from lib import ansible, metadata, results, util, virt
 
 ansible.install_deps()
 virt.Host.setup()

@@ -1,5 +1,5 @@
-import time
 import socket
+import time
 
 from lib import util
 

@@ -1,11 +1,10 @@
 #!/usr/bin/python3
 
-import sys
 import re
 import subprocess
+import sys
 
-from lib import util, results, oscap
-
+from lib import oscap, results, util
 
 got_normal_result = False
 

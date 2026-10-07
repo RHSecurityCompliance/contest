@@ -2,7 +2,7 @@
 
 import subprocess
 
-from lib import ansible, util, results
+from lib import ansible, results, util
 
 
 def check_playbook(playbook, name):

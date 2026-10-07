@@ -2,9 +2,8 @@
 
 import atexit
 
-from lib import util, results, virt, oscap, metadata
-from conf import remediation, partitions
-
+from conf import partitions, remediation
+from lib import metadata, oscap, results, util, virt
 
 virt.Host.setup()
 

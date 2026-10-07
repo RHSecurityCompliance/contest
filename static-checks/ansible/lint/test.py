@@ -1,9 +1,9 @@
 #!/usr/bin/python3
 
-import sys
 import subprocess
+import sys
 
-from lib import ansible, util, results
+from lib import ansible, results, util
 
 
 def lint_playbook(playbook, name):

@@ -1,6 +1,6 @@
 import importlib as _importlib
-import pkgutil as _pkgutil
 import inspect as _inspect
+import pkgutil as _pkgutil
 from pathlib import Path as _Path
 
 # directory with all these modules, and potentially more files

@@ -3,8 +3,8 @@ Simple recursive backup/restore of filesystem paths, preserving
 file metadata where possible.
 """
 
-import shutil
 import contextlib
+import shutil
 from pathlib import Path
 
 from lib import util

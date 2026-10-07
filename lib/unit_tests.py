@@ -13,10 +13,9 @@ To satisfy various use cases, the logic is modularized into functions:
    based on metadata contained in the .sh file
 """
 
-import re
 import collections
+import re
 from pathlib import Path
-
 
 UnitTest = collections.namedtuple(
     "UnitTest",

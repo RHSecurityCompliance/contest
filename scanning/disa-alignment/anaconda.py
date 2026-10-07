@@ -1,9 +1,9 @@
 #!/usr/bin/python3
 
 import shared
-from lib import util, results, virt, oscap
-from conf import remediation
 
+from conf import remediation
+from lib import oscap, results, util, virt
 
 virt.Host.setup()
 

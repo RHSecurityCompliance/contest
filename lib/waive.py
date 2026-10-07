@@ -3,13 +3,13 @@ Functionality for an automatic failure waiving logic, configured by
 a custom file format. See WAIVERS.md.
 """
 
-import os
-import re
-import platform
 import collections
+import os
+import platform
+import re
 from pathlib import Path
 
-from lib import util, versions, oscap
+from lib import oscap, util, versions
 
 WaiverSection = collections.namedtuple(
     "WaiverSection",

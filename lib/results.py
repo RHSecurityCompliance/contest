@@ -16,14 +16,15 @@ https://tmt.readthedocs.io/en/stable/spec/results.html
 https://tmt.readthedocs.io/en/stable/spec/tests.html#spec-tests-result
 """
 
-import os
-import sys
-import shutil
-import subprocess
 import collections
 import json
-import yaml
+import os
+import shutil
+import subprocess
+import sys
 from pathlib import Path
+
+import yaml
 
 from lib import util, waive
 

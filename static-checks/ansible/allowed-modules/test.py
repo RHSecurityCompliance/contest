@@ -1,15 +1,15 @@
 #!/usr/bin/python3
 
-import re
-import tempfile
-import subprocess
-import yaml
-import json
 import contextlib
+import json
+import re
+import subprocess
+import tempfile
 from pathlib import Path
 
-from lib import util, results, ansible
+import yaml
 
+from lib import ansible, results, util
 
 # Obtained from
 # https://docs.ansible.com/ansible/latest/reference_appendices/playbooks_keywords.html#task

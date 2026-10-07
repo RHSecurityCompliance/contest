@@ -1,10 +1,11 @@
 import os
-import sys
 import runpy
-import traceback
+import sys
 import tempfile
-import urllib3
+import traceback
 from pathlib import Path
+
+import urllib3
 
 from lib import results
 

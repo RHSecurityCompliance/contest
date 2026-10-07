@@ -77,20 +77,20 @@ Example using plain one-time-use guest:
         g.ssh( ... )
 """
 
+import contextlib
+import json
 import os
 import re
-import time
 import subprocess
-import textwrap
-import contextlib
 import tempfile
-import json
+import textwrap
+import time
 import uuid
 import xml.etree.ElementTree as ET
 from datetime import datetime, timedelta
 from pathlib import Path
 
-from lib import util, versions, dnf, results
+from lib import dnf, results, util, versions
 
 GUEST_NAME = "contest"
 GUEST_LOGIN_PASS = "contest"

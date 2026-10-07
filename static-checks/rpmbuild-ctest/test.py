@@ -1,10 +1,9 @@
 #!/usr/bin/python3
 
 import re
-
 from pathlib import Path
-from lib import util, results, ansible
 
+from lib import ansible, results, util
 
 ansible.install_deps()
 # Extra modules to enable more unit tests

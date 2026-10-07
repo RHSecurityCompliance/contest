@@ -1,11 +1,11 @@
-import textwrap
-import tempfile
-import contextlib
 import collections
+import contextlib
 import subprocess
+import tempfile
+import textwrap
 from pathlib import Path
 
-from lib import util, dnf
+from lib import dnf, util
 
 
 class RpmPack:

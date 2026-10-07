@@ -40,8 +40,8 @@ care of stopping it (manually, via try/finally, etc.):
 
 import shutil
 import threading
-from pathlib import Path
 from http.server import HTTPServer, SimpleHTTPRequestHandler
+from pathlib import Path
 
 from lib import util
 

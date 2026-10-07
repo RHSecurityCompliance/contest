@@ -2,7 +2,7 @@
 
 import io
 
-from lib import util, results, versions, unit_tests
+from lib import results, unit_tests, util, versions
 
 
 def check_file(partial, test_file):
