@@ -65,7 +65,7 @@ def process_task(task, all_allowed_modules):
             # one item and that should be the name of that forbidden module.
             forbidden_module = keywords.difference(ansible_reserved_keywords).pop()
             task_name = task["name"] if "name" in task else ""
-            results.report("fail", forbidden_module, f"task: \'{task_name}\'")
+            results.report("fail", forbidden_module, f"task: '{task_name}'")
 
     return found_allowed_modules
 

@@ -70,7 +70,7 @@ def disa_scan(host, ds, html, arf):
     """
     cmd = [
         *shared_cmd,
-        "--profile", "\'(all)\'",
+        "--profile", "'(all)'",
         "--report", html,
         "--results-arf", arf,
         ds,

@@ -1,4 +1,5 @@
 import concurrent.futures
+import pathlib
 import subprocess
 import time
 
@@ -31,16 +32,15 @@ util.subprocess_run(
     ["dnf", "-y", "debuginfo-install", *extra_debuginfos], check=True, stderr=subprocess.PIPE,
 )
 
-with open("gdb.script", "w") as f:
-    f.write(util.dedent("""
-        generate-core-file oscap.core
-        set logging file oscap-bt.txt
-        set logging overwrite on
-        set logging redirect on
-        set logging enabled on
-        thread apply all bt
-        set logging enabled off
-    """))
+pathlib.Path("gdb.script").write_text(util.dedent("""
+    generate-core-file oscap.core
+    set logging file oscap-bt.txt
+    set logging overwrite on
+    set logging redirect on
+    set logging enabled on
+    thread apply all bt
+    set logging enabled off
+"""))
 
 with util.get_source_content() as content_dir:
     util.build_content(content_dir)

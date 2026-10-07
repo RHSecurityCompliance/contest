@@ -391,7 +391,7 @@ def translate_oscap_blueprint(lines, datastream):
     bp_text = re.sub(
         r"^name = .*",
         f'name = "{Blueprint.NAME}"',
-        bp_text, count=1, flags=re.M,
+        bp_text, count=1, flags=re.MULTILINE,
     )
 
     # Partitioning mode defaults to auto-lvm which uses lvm because we use
@@ -405,17 +405,17 @@ def translate_oscap_blueprint(lines, datastream):
         'partitioning_mode = "raw"',
         bp_text,
         count=1,
-        flags=re.M,
+        flags=re.MULTILINE,
     )
     if bp_new != bp_text:
         bp_text = bp_new
-    elif not re.search(r'^partitioning_mode\s*=\s*"raw"\s*$', bp_text, flags=re.M):
+    elif not re.search(r'^partitioning_mode\s*=\s*"raw"\s*$', bp_text, flags=re.MULTILINE):
         bp_text, inserted = re.subn(
             r"^(\[customizations\]\s*\n)",
             r'\1partitioning_mode = "raw"\n',
             bp_text,
             count=1,
-            flags=re.M,
+            flags=re.MULTILINE,
         )
         if not inserted:
             bp_text = re.sub(
@@ -423,7 +423,7 @@ def translate_oscap_blueprint(lines, datastream):
                 r'\1\n[customizations]\npartitioning_mode = "raw"\n',
                 bp_text,
                 count=1,
-                flags=re.M,
+                flags=re.MULTILINE,
             )
 
     blueprint = Blueprint(template=bp_text)
