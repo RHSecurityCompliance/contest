@@ -19,24 +19,24 @@ from pathlib import Path
 
 
 UnitTest = collections.namedtuple(
-    'UnitTest',
+    "UnitTest",
     [
         # str: rule name
-        'rule',
+        "rule",
         # str: test name without .pass.sh or .fail.sh
-        'test',
+        "test",
         # bool: True if .pass.sh, False if .fail.sh
-        'is_pass',
+        "is_pass",
         # tuple of str or None: RPM package names
-        'packages',
+        "packages",
         # tuple of str or None: profiles the test should be run within
-        'profiles',
+        "profiles",
         # dict or None: variables that should be changed in datastream/playbook
-        'variables',
+        "variables",
         # str or None: which remediation types should be tested (none, bash, ansible, ..)
-        'remediation',
+        "remediation",
         # str or None: check engine type
-        'check',
+        "check",
     ],
     # last 5 fields are optional
     defaults=[None, None, None, None, None],
@@ -58,9 +58,9 @@ UnitTest = collections.namedtuple(
 def parse_variables(line):
     variables = {}
     key = None
-    for part in line.split(','):
-        if '=' in part:
-            key, _, value = part.partition('=')
+    for part in line.split(","):
+        if "=" in part:
+            key, _, value = part.partition("=")
             key = key.strip()
             value = value.lstrip()
             if not key:
@@ -69,7 +69,7 @@ def parse_variables(line):
         else:
             if key is None:
                 raise ValueError(f"no key=value pair given: {part}")
-            variables[key] += f',{part}'
+            variables[key] += f",{part}"
     # trim any trailing spaces in values
     # (we need to do it here because we might have added space-containing
     #  equals-less extra values to a previous key via the 'else' branch)
@@ -91,35 +91,35 @@ def fill_in_metadata(unit_test, test_file):
 
     with open(test_file) as fobj:
         for line in fobj:
-            line = line.rstrip('\n')
+            line = line.rstrip("\n")
             # packages
-            if m := re.fullmatch(r'# packages = (.+)', line):
+            if m := re.fullmatch(r"# packages = (.+)", line):
                 if packages is not None:
                     raise ValueError(f"packages already defined as: {packages}")
                 # save memory by using const tuples
-                packages = tuple(re.split(r' *, *', m.group(1)))
+                packages = tuple(re.split(r" *, *", m.group(1)))
                 continue
             # profiles
-            if m := re.fullmatch(r'# profiles = (.+)', line):
+            if m := re.fullmatch(r"# profiles = (.+)", line):
                 if profiles is not None:
                     raise ValueError(f"profiles already defined as: {profiles}")
                 # save memory by using const tuples
-                profiles = tuple(re.split(r' *, *', m.group(1)))
+                profiles = tuple(re.split(r" *, *", m.group(1)))
                 continue
             # variables
-            if m := re.fullmatch(r'# variables = (.+)', line):
+            if m := re.fullmatch(r"# variables = (.+)", line):
                 if variables is not None:
                     raise ValueError(f"variables already defined as: {variables}")
                 variables = parse_variables(m.group(1))
                 continue
             # remediation
-            if m := re.fullmatch(r'# remediation = (.+)', line):
+            if m := re.fullmatch(r"# remediation = (.+)", line):
                 if remediation is not None:
                     raise ValueError(f"remediation already defined as: {remediation}")
                 remediation = m.group(1)
                 continue
             # check
-            if m := re.fullmatch(r'# check = (.+)', line):
+            if m := re.fullmatch(r"# check = (.+)", line):
                 if check is not None:
                     raise ValueError(f"check already defined as: {check}")
                 check = m.group(1)
@@ -143,11 +143,11 @@ def iter_tests(rule_dir):
     rule_dir = Path(rule_dir)
     for test_file in sorted(rule_dir.iterdir(), key=lambda x: x.name):
         file_name = test_file.name
-        if file_name.endswith('.pass.sh'):
-            test = file_name.removesuffix('.pass.sh')
+        if file_name.endswith(".pass.sh"):
+            test = file_name.removesuffix(".pass.sh")
             is_pass = True
-        elif file_name.endswith('.fail.sh'):
-            test = file_name.removesuffix('.fail.sh')
+        elif file_name.endswith(".fail.sh"):
+            test = file_name.removesuffix(".fail.sh")
             is_pass = False
         else:
             # skip non-test files that might be present

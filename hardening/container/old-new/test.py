@@ -11,19 +11,19 @@ from conf import remediation
 virt.Host.setup()
 podman.Host.setup()
 
-profile = util.get_test_name().rpartition('/')[2]
-oscap_repo = os.environ.get('CONTEST_OSCAP_REPOFILE')
+profile = util.get_test_name().rpartition("/")[2]
+oscap_repo = os.environ.get("CONTEST_OSCAP_REPOFILE")
 
 # prepare old/new datastreams used for remediation
 with util.get_old_datastream() as old_xml:
-    oscap.unselect_rules(old_xml, 'remediation-old-ds.xml', remediation.excludes())
-oscap.unselect_rules(util.get_datastream(), 'remediation-new-ds.xml', remediation.excludes())
+    oscap.unselect_rules(old_xml, "remediation-old-ds.xml", remediation.excludes())
+oscap.unselect_rules(util.get_datastream(), "remediation-new-ds.xml", remediation.excludes())
 
 # check whether the profile is in both old and new
-if profile not in oscap.Datastream('remediation-old-ds.xml').profiles:
-    results.report_and_exit('skip', "profile missing the old DS")
-if profile not in oscap.Datastream('remediation-new-ds.xml').profiles:
-    results.report_and_exit('skip', "profile missing the new DS")
+if profile not in oscap.Datastream("remediation-old-ds.xml").profiles:
+    results.report_and_exit("skip", "profile missing the old DS")
+if profile not in oscap.Datastream("remediation-new-ds.xml").profiles:
+    results.report_and_exit("skip", "profile missing the new DS")
 
 # note that the .wipe() is necessary here, as we are not calling any .install()
 # function that would normally perform it
@@ -35,14 +35,14 @@ guest.generate_ssh_keypair()
 major = versions.rhel.major
 minor = versions.rhel.minor
 if versions.rhel.is_true_rhel():
-    src_image = f'images.paas.redhat.com/testingfarm/rhel-bootc:{major}.{minor}'
+    src_image = f"images.paas.redhat.com/testingfarm/rhel-bootc:{major}.{minor}"
     # copy a Testing Farm image cleanup script to CWD (if available),
     # because podman COPY cannot access files outside the build context
-    cleanup_sh = Path(__file__).resolve().parent.parent / 'bootc_tf_img_cleanup.sh'
+    cleanup_sh = Path(__file__).resolve().parent.parent / "bootc_tf_img_cleanup.sh"
     if cleanup_sh.exists():
-        shutil.copy(cleanup_sh, 'bootc_tf_img_cleanup.sh')
+        shutil.copy(cleanup_sh, "bootc_tf_img_cleanup.sh")
 else:
-    src_image = f'quay.io/centos-bootc/centos-bootc:stream{major}'
+    src_image = f"quay.io/centos-bootc/centos-bootc:stream{major}"
 
 # prepare a RpmPack with testing-specific hacks
 # - copy it to CWD because podman cannot handle absolute paths (or relative ones
@@ -52,14 +52,14 @@ if oscap_repo:
     pack.add_file(oscap_repo)
 pack.add_sshd_late_start()
 with pack.build() as pack_binrpm:
-    shutil.copy(pack_binrpm, 'contest-pack.rpm')
+    shutil.copy(pack_binrpm, "contest-pack.rpm")
 
 
 # prepare a Container file for making a hardened image using the data stream
 def build_image(data_stream, results_arf, dst_image):
     cfile = podman.Containerfile()
-    cfile += f'FROM {src_image}'
-    if Path('bootc_tf_img_cleanup.sh').exists():
+    cfile += f"FROM {src_image}"
+    if Path("bootc_tf_img_cleanup.sh").exists():
         cfile += util.dedent('''
             COPY bootc_tf_img_cleanup.sh /root/bootc_tf_img_cleanup.sh
             RUN chmod +x /root/bootc_tf_img_cleanup.sh && /root/bootc_tf_img_cleanup.sh
@@ -77,47 +77,47 @@ def build_image(data_stream, results_arf, dst_image):
         RUN bootc container lint || true
     ''')
     cfile.add_ssh_pubkey(guest.ssh_pubkey)
-    cfile.write_to('Containerfile')
+    cfile.write_to("Containerfile")
 
-    podman.podman('pull', src_image)
-    podman.podman('image', 'build', '--tag', dst_image, '.')
+    podman.podman("pull", src_image)
+    podman.podman("image", "build", "--tag", dst_image, ".")
 
 
 # take remediation datastreams from CWD, as generated above,
 # store them in / inside the image and build contest-hardened-* tagged images
-build_image('remediation-old-ds.xml', '/remediation-old-arf.xml', 'contest-hardened-old')
-build_image('remediation-new-ds.xml', '/remediation-new-arf.xml', 'contest-hardened-new')
+build_image("remediation-old-ds.xml", "/remediation-old-arf.xml", "contest-hardened-old")
+build_image("remediation-new-ds.xml", "/remediation-new-arf.xml", "contest-hardened-new")
 
 # pre-create a directory (inside GUEST_IMG_DIR) for storing the
 # hardened image, built by bootc-image-builder
-bootc_output_dir = Path(virt.GUEST_IMG_DIR) / 'bootc-image-builder-output'
+bootc_output_dir = Path(virt.GUEST_IMG_DIR) / "bootc-image-builder-output"
 if bootc_output_dir.exists():
     shutil.rmtree(bootc_output_dir)
 bootc_output_dir.mkdir(parents=True)
 
 # build the hardened image using a containerized builder
 podman.podman(
-    'container', 'run',
-    '--rm',
-    '--privileged',
-    '--security-opt', 'label=type:unconfined_t',
-    '--volume', f'{bootc_output_dir}:/output',
-    '--volume', '/var/lib/containers/storage:/var/lib/containers/storage',
-    'quay.io/centos-bootc/bootc-image-builder',
+    "container", "run",
+    "--rm",
+    "--privileged",
+    "--security-opt", "label=type:unconfined_t",
+    "--volume", f"{bootc_output_dir}:/output",
+    "--volume", "/var/lib/containers/storage:/var/lib/containers/storage",
+    "quay.io/centos-bootc/bootc-image-builder",
     # arguments for the builder itself
-    'build',
-    '--type', 'qcow2',
-    '--local',
+    "build",
+    "--type", "qcow2",
+    "--local",
     # 'localhost/' prefix tells the builder to just use local image storage
-    'localhost/contest-hardened-old',
+    "localhost/contest-hardened-old",
 )
 
 # path inside the output dir seems to be hardcoded in bootc-image-builder
-qcow2_path = bootc_output_dir / 'qcow2' / 'disk.qcow2'
-guest.import_image(qcow2_path, 'qcow2')
+qcow2_path = bootc_output_dir / "qcow2" / "disk.qcow2"
+guest.import_image(qcow2_path, "qcow2")
 
 with podman.Registry(host_addr=virt.NETWORK_HOST, guest_addr=virt.NETWORK_GUEST) as registry:
-    image_url = registry.push('contest-hardened-new')
+    image_url = registry.push("contest-hardened-new")
     guest_image_url = registry.guest_reference(image_url)
     raddr, rport = registry.get_guest_listen_addr()
     # boot up and scan the VM
@@ -125,7 +125,7 @@ with podman.Registry(host_addr=virt.NETWORK_HOST, guest_addr=virt.NETWORK_GUEST)
         # copy the old remediation ARF from the guest
         # we need to do this before switching the image, as it will be removed
         # by the bootc switch
-        guest.copy_from('/remediation-old-arf.xml')
+        guest.copy_from("/remediation-old-arf.xml")
         guest.ssh(
             fr'''echo -e '[[registry]]\nlocation = "{raddr}:{rport}"\n'''
             r'''insecure = true\n' >> /etc/containers/registries.conf''',
@@ -141,19 +141,19 @@ with podman.Registry(host_addr=virt.NETWORK_HOST, guest_addr=virt.NETWORK_GUEST)
         virt.wait_for_ssh(guest.ipaddr, guest.port)
 
         # copy the original DS to the guest
-        guest.copy_to(util.get_datastream(), 'scan-ds.xml')
+        guest.copy_to(util.get_datastream(), "scan-ds.xml")
         # scan the remediated system
         proc, lines = guest.ssh_stream(
-            f'oscap xccdf eval --profile {profile} --progress --report report.html'
-            f' --results-arf scan-arf.xml scan-ds.xml',
+            f"oscap xccdf eval --profile {profile} --progress --report report.html"
+            f" --results-arf scan-arf.xml scan-ds.xml",
         )
-        oscap.report_from_verbose(lines, to_file='oscap.log')
+        oscap.report_from_verbose(lines, to_file="oscap.log")
         if proc.returncode not in [0,2]:
             raise RuntimeError(f"post-reboot oscap failed unexpectedly with {proc.returncode}")
-        guest.copy_from('report.html')
-        guest.copy_from('scan-arf.xml')
-        guest.copy_from('/remediation-new-arf.xml')
+        guest.copy_from("report.html")
+        guest.copy_from("scan-arf.xml")
+        guest.copy_from("/remediation-new-arf.xml")
 
 results.report_and_exit(logs=[
-    'report.html', 'scan-arf.xml', 'remediation-old-arf.xml', 'remediation-new-arf.xml',
+    "report.html", "scan-arf.xml", "remediation-old-arf.xml", "remediation-new-arf.xml",
 ])

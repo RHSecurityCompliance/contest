@@ -27,7 +27,7 @@ from pathlib import Path
 
 from lib import util, waive
 
-_valid_statuses = ['pass', 'fail', 'warn', 'error', 'info', 'skip']
+_valid_statuses = ["pass", "fail", "warn", "error", "info", "skip"]
 
 # log names already uploaded to ATEX via atex_upload_log_data(), so that
 # add_log() and report_atex() can avoid re-uploading (appending duplicates)
@@ -40,26 +40,26 @@ global_counts = collections.Counter()
 
 def have_atex_api():
     """Return True if we can report results via ATEX natively."""
-    return ('ATEX_TEST_CONTROL' in os.environ)
+    return ("ATEX_TEST_CONTROL" in os.environ)
 
 
 def have_tmt_api():
     """Return True if we can report results via TMT natively."""
-    return bool(os.environ.get('TMT_TEST_DATA'))
+    return bool(os.environ.get("TMT_TEST_DATA"))
 
 
 def _allowed_by_verbosity(status):
-    env = os.environ.get('CONTEST_VERBOSE')
+    env = os.environ.get("CONTEST_VERBOSE")
     if env:
         level = int(env)
     else:
         level = 1
 
     if level == 0:
-        if status not in ['fail', 'error']:
+        if status not in ["fail", "error"]:
             return False
     elif level == 1:
-        if status not in ['fail', 'error', 'warn']:
+        if status not in ["fail", "error", "warn"]:
             return False
     return True
 
@@ -69,10 +69,10 @@ def _write_tmt_subresult(subresult):
     Append a single subresult entry to tmt-report-results.yaml.
     TMT converts the entry into a subresult under the main test result.
     """
-    test_data = Path(os.environ['TMT_TEST_DATA'])
+    test_data = Path(os.environ["TMT_TEST_DATA"])
     # file that TMT reads for subresult entries (same as tmt-report-result writes to)
-    results_path = test_data / 'tmt-report-results.yaml'
-    with open(results_path, 'a') as f:
+    results_path = test_data / "tmt-report-results.yaml"
+    with open(results_path, "a") as f:
         yaml.dump([subresult], f)
 
 
@@ -91,7 +91,7 @@ def _tmt_file_submit(filepath):
     if name in _submitted_tmt_logs:
         return
     subprocess.run(
-        ['tmt-file-submit', '-l', str(filepath)],
+        ["tmt-file-submit", "-l", str(filepath)],
         stdout=subprocess.DEVNULL,
     )
     _submitted_tmt_logs.add(name)
@@ -103,12 +103,12 @@ _atex_file = None
 def _get_atex_file():
     global _atex_file
     if _atex_file is None:
-        fd = int(os.environ['ATEX_TEST_CONTROL'])
-        _atex_file = os.fdopen(fd, 'wb', closefd=False)
+        fd = int(os.environ["ATEX_TEST_CONTROL"])
+        _atex_file = os.fdopen(fd, "wb", closefd=False)
     return _atex_file
 
 
-def _atex_send(result_dict, data=b'', *, logs=None):
+def _atex_send(result_dict, data=b"", *, logs=None):
     """
     Send a result JSON + optional file data over the ATEX control fd.
 
@@ -122,16 +122,16 @@ def _atex_send(result_dict, data=b'', *, logs=None):
     """
     control = _get_atex_file()
     json_data = json.dumps(result_dict).encode()
-    control.write(b'duration save\n')
-    control.write(f'result {len(json_data)}\n'.encode())
+    control.write(b"duration save\n")
+    control.write(f"result {len(json_data)}\n".encode())
     control.write(json_data)
     if logs:
         for log in logs:
-            with open(log, 'rb') as lf:
+            with open(log, "rb") as lf:
                 shutil.copyfileobj(lf, control)
     elif data:
         control.write(data)
-    control.write(b'duration restore\n')
+    control.write(b"duration restore\n")
     control.flush()
 
 
@@ -140,20 +140,20 @@ def report_atex(status, name=None, note=None, logs=None, *, partial=False):
         report_plain(status, name, note, logs)
 
     result = {
-        'status': status,
+        "status": status,
     }
     # for subresults
     if name:
-        result['name'] = name
+        result["name"] = name
     # always set note, even for None
     # (None -> JSON null -> clears add_log() set note)
-    result['note'] = note
+    result["note"] = note
     # output of the test itself
     if not name:
-        result['testout'] = 'output.txt'
+        result["testout"] = "output.txt"
     # partial result (non-partial to follow)
     if partial:
-        result['partial'] = True
+        result["partial"] = True
 
     if logs:
         # skip files already streamed incrementally via atex_upload_log_data()
@@ -162,8 +162,8 @@ def report_atex(status, name=None, note=None, logs=None, *, partial=False):
             if Path(log).name not in _streamed_atex_logs
         ]
         if logs_to_send:
-            result['files'] = [
-                {'name': log.name, 'length': log.stat().st_size}
+            result["files"] = [
+                {"name": log.name, "length": log.stat().st_size}
                 for log in logs_to_send
             ]
         logs = logs_to_send or None
@@ -172,7 +172,7 @@ def report_atex(status, name=None, note=None, logs=None, *, partial=False):
 
 
 def report_tmt(status, name=None, note=None, logs=None):
-    test_data = Path(os.environ['TMT_TEST_DATA'])
+    test_data = Path(os.environ["TMT_TEST_DATA"])
 
     report_plain(status, name, note, logs)
 
@@ -182,14 +182,14 @@ def report_tmt(status, name=None, note=None, logs=None):
             return
 
         subresult = {
-            'name': f'/{name}',
-            'result': status,
+            "name": f"/{name}",
+            "result": status,
             # include dummy start and end time to satisfy Testing Farm Oculus result viewer
-            'start-time': '1970-01-01T00:00:00.00000+00:00',
-            'end-time': '1970-01-01T00:05:00.00000+00:00',
+            "start-time": "1970-01-01T00:00:00.00000+00:00",
+            "end-time": "1970-01-01T00:05:00.00000+00:00",
         }
         if note:
-            subresult['note'] = [note]
+            subresult["note"] = [note]
 
         log_entries = []
 
@@ -207,14 +207,14 @@ def report_tmt(status, name=None, note=None, logs=None):
                 log_entries.append(str(dstfile.relative_to(test_data)))
         # add an empty log if none are present, to work around Testing Farm
         # and its Oculus result viewer expecting at least something
-        elif os.environ.get('TESTING_FARM_REQUEST_ID'):
+        elif os.environ.get("TESTING_FARM_REQUEST_ID"):
             dst.mkdir(parents=True, exist_ok=True)
-            dummy = dst / 'dummy.txt'
+            dummy = dst / "dummy.txt"
             dummy.touch()
             log_entries.append(str(dummy.relative_to(test_data)))
 
         if log_entries:
-            subresult['log'] = log_entries
+            subresult["log"] = log_entries
 
         _write_tmt_subresult(subresult)
     else:
@@ -229,10 +229,10 @@ def report_tmt(status, name=None, note=None, logs=None):
 
 def report_plain(status, name=None, note=None, logs=None):
     if not name:
-        name = '/'
-    note = f' ({note})' if note else ''
-    logs = (' [' + ', '.join(str(x) for x in logs) + ']') if logs else ''
-    util.log(f'{status.upper()} {name}{note}{logs}')
+        name = "/"
+    note = f" ({note})" if note else ""
+    logs = (" [" + ", ".join(str(x) for x in logs) + "]") if logs else ""
+    util.log(f"{status.upper()} {name}{note}{logs}")
 
 
 def report(status, name=None, note=None, logs=None):
@@ -292,10 +292,10 @@ def atex_upload_log_data(name, data):
     # status='error' is intentional: partial results are overwritten by the
     # final result, but survive test crashes until then (see add_log()).
     result = {
-        'status': 'error',
-        'note': "no final result provided",
-        'partial': True,
-        'files': [{'name': name, 'length': len(data)}],
+        "status": "error",
+        "note": "no final result provided",
+        "partial": True,
+        "files": [{"name": name, "length": len(data)}],
     }
     _atex_send(result, data)
 
@@ -314,11 +314,11 @@ def register_log(filepath):
     """
     filepath = Path(filepath)
     if have_tmt_api():
-        test_data = Path(os.environ['TMT_TEST_DATA'])
-        submitted_files = os.environ.get('TMT_TEST_SUBMITTED_FILES')
+        test_data = Path(os.environ["TMT_TEST_DATA"])
+        submitted_files = os.environ.get("TMT_TEST_SUBMITTED_FILES")
         if submitted_files:
-            with open(submitted_files, 'a') as f:
-                f.write(f'{filepath.name}\n')
+            with open(submitted_files, "a") as f:
+                f.write(f"{filepath.name}\n")
         _submitted_tmt_logs.add(filepath.name)
         return test_data / filepath.name
     return filepath
@@ -351,10 +351,10 @@ def add_log(*logs):
                 continue
             _streamed_atex_logs.add(log.name)
             result = {
-                'status': 'error',
-                'note': "no final result provided",
-                'partial': True,
-                'files': [{'name': log.name, 'length': log.stat().st_size}],
+                "status": "error",
+                "note": "no final result provided",
+                "partial": True,
+                "files": [{"name": log.name, "length": log.stat().st_size}],
             }
             _atex_send(result, logs=[log])
     elif have_tmt_api():
@@ -373,22 +373,22 @@ def report_and_exit(status=None, note=None, logs=None):
     # figure out overall test status based on previously reported results
     if not status:
         # only failures, no errors --> fail
-        if global_counts['fail'] > 0 and global_counts['error'] == 0:
-            status = 'fail'
+        if global_counts["fail"] > 0 and global_counts["error"] == 0:
+            status = "fail"
         # any errors anywhere --> error
-        elif global_counts['error'] > 0:
-            status = 'error'
+        elif global_counts["error"] > 0:
+            status = "error"
         # no errors, no fails --> pass
         else:
-            status = 'pass'
+            status = "pass"
 
     # report and pass the status through the waiving logic
     status = report(status=status, note=note, logs=logs)
 
     # exit based on the new status
-    if status == 'fail':
+    if status == "fail":
         sys.exit(2)
-    elif status in ['pass', 'info', 'warn', 'skip']:
+    elif status in ["pass", "info", "warn", "skip"]:
         sys.exit(0)
     else:
         sys.exit(1)

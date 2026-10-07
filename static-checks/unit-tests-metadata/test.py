@@ -10,14 +10,14 @@ def check_file(partial, test_file):
         return "file is empty"
 
     # last line must have a terminating \n
-    with open(test_file, 'rb') as f:
+    with open(test_file, "rb") as f:
         f.seek(-1, io.SEEK_END)
-        if f.read() != b'\n':
+        if f.read() != b"\n":
             return "last line doesn't end with a newline"
 
     # first line must be shebang
     with open(test_file) as f:
-        if next(f) != '#!/bin/bash\n':
+        if next(f) != "#!/bin/bash\n":
             return "first line is not a /bin/bash shebang"
 
     try:
@@ -26,10 +26,10 @@ def check_file(partial, test_file):
         return f"metadata syntax error: {str(e)}"
 
     if filled.remediation:
-        if filled.remediation not in ['bash', 'ansible', 'none']:
+        if filled.remediation not in ["bash", "ansible", "none"]:
             return f"remediation={filled.remediation} is not valid"
     if filled.check:
-        if filled.check not in ['oval', 'sce', 'any']:
+        if filled.check not in ["oval", "sce", "any"]:
             return f"check={filled.check} is not valid"
     if filled.remediation and filled.is_pass:
         return f"remediation={filled.remediation} doesn't make sense for a .pass.sh test"
@@ -38,19 +38,19 @@ def check_file(partial, test_file):
 with util.get_source_content() as content_dir:
     util.build_content(
         content_dir,
-        {'SSG_BUILT_TESTS_ENABLED:BOOL': 'ON'},
+        {"SSG_BUILT_TESTS_ENABLED:BOOL": "ON"},
     )
     build_dir = content_dir / util.CONTENT_BUILD_DIR
-    built_tests = build_dir / f'rhel{versions.rhel.major}' / 'tests'
+    built_tests = build_dir / f"rhel{versions.rhel.major}" / "tests"
     util.log(f"using built tests: {str(built_tests)}")
 
     for rule_dir in unit_tests.iter_rules(built_tests):
         for partial, test_file in unit_tests.iter_tests(rule_dir):
-            pass_fail = 'pass' if partial.is_pass else 'fail'
-            result_name = f'{partial.rule}/{partial.test}.{pass_fail}'
+            pass_fail = "pass" if partial.is_pass else "fail"
+            result_name = f"{partial.rule}/{partial.test}.{pass_fail}"
             if problem := check_file(partial, test_file):
-                results.report('fail', result_name, problem)
+                results.report("fail", result_name, problem)
             else:
-                results.report('pass', result_name)
+                results.report("pass", result_name)
 
 results.report_and_exit()

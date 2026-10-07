@@ -43,12 +43,12 @@ def log(msg, *, skip_frames=0):
 
     # bottom of the stack, or runpy executed module
     for frame_info in stack:
-        if frame_info.function == '<module>':
+        if frame_info.function == "<module>":
             break
     module = frame_info
 
-    log_prefix = datetime.now().strftime('%Y-%m-%d %H:%M:%S ')
-    log_prefix += f'{Path(module.filename).name}:{module.lineno}'
+    log_prefix = datetime.now().strftime("%Y-%m-%d %H:%M:%S ")
+    log_prefix += f"{Path(module.filename).name}:{module.lineno}"
 
     # last (topmost) function that isn't us
     parent = stack[0]
@@ -57,18 +57,18 @@ def log(msg, *, skip_frames=0):
     # if the function has 'self' and it looks like a class (instance),
     # prepend it to the function name
     p_locals = parent.frame.f_locals
-    if 'self' in p_locals:
-        self = p_locals['self']
-        if hasattr(self, '__class__') and inspect.isclass(self.__class__):
+    if "self" in p_locals:
+        self = p_locals["self"]
+        if hasattr(self, "__class__") and inspect.isclass(self.__class__):
             name = self.__name__ if isinstance(self, type) else self.__class__.__name__
-            function = f'{name}.{function}'
+            function = f"{name}.{function}"
 
     # don't report module name of a function if it's the same as running module
     if parent.filename != module.filename:
-        parent_modname = parent.frame.f_globals['__name__']
-        log_prefix += f': {parent_modname}.{function}:{parent.lineno}'
-    elif parent.function != '<module>':
-        log_prefix += f': {function}:{parent.lineno}'
+        parent_modname = parent.frame.f_globals["__name__"]
+        log_prefix += f": {parent_modname}.{function}:{parent.lineno}"
+    elif parent.function != "<module>":
+        log_prefix += f": {function}:{parent.lineno}"
 
-    sys.stdout.write(f'{log_prefix}: {msg}\n')
+    sys.stdout.write(f"{log_prefix}: {msg}\n")
     sys.stdout.flush()

@@ -13,11 +13,11 @@ CCE = "https://ncp.nist.gov/cce"
 SSG_RULE_PREFIX = "xccdf_org.ssgproject.content_rule_"
 DISA_RULE_PREFIX = "xccdf_mil.disa.stig_rule_"
 
-DISARuleResult = collections.namedtuple('DISARuleResult', ['rule_id', 'result'])
+DISARuleResult = collections.namedtuple("DISARuleResult", ["rule_id", "result"])
 
-profile = 'stig'
+profile = "stig"
 
-shared_cmd = ['oscap', 'xccdf', 'eval', '--progress']
+shared_cmd = ["oscap", "xccdf", "eval", "--progress"]
 
 
 class SSGRuleResult:
@@ -53,12 +53,12 @@ def content_scan(host, ds, html, arf):
     """
     cmd = [
         *shared_cmd,
-        '--profile', profile,
-        '--report', html,
-        '--results-arf', arf,
+        "--profile", profile,
+        "--report", html,
+        "--results-arf", arf,
         ds,
     ]
-    proc = host.ssh(' '. join(cmd))
+    proc = host.ssh(" ". join(cmd))
     if proc.returncode not in [0,2]:
         raise RuntimeError(f"remediation oscap failed with {proc.returncode}")
 
@@ -70,12 +70,12 @@ def disa_scan(host, ds, html, arf):
     """
     cmd = [
         *shared_cmd,
-        '--profile', '\'(all)\'',
-        '--report', html,
-        '--results-arf', arf,
+        "--profile", "\'(all)\'",
+        "--report", html,
+        "--results-arf", arf,
         ds,
     ]
-    proc = host.ssh(' '. join(cmd))
+    proc = host.ssh(" ". join(cmd))
     if proc.returncode not in [0,2]:
         raise RuntimeError(f"remediation oscap failed with {proc.returncode}")
 
@@ -90,27 +90,27 @@ def prepare_disa_datastream(content_dir, dest):
     RHEL_X-Y_or_Higher CPE platforms so rules actually evaluate.
     Per-rule (GNOME, TFTP, ...) and RHEL_X-Y_or_Lower CPE platforms are kept.
     """
-    references = Path(content_dir) / 'shared' / 'references'
-    src = next(references.glob(f'disa-stig-rhel{versions.rhel.major}-*-xccdf-scap.xml'))
+    references = Path(content_dir) / "shared" / "references"
+    src = next(references.glob(f"disa-stig-rhel{versions.rhel.major}-*-xccdf-scap.xml"))
     dest = Path(dest)
     if versions.rhel.is_centos():
         tree = ET.parse(src)
         root = tree.getroot()
         dropped = 0
         for parent in root.iter():
-            for platform in parent.findall('xccdf:platform', nsmap):
-                idref = platform.get('idref', '')
-                rhel_os = idref.startswith('cpe:/o:redhat:enterprise_linux:')
+            for platform in parent.findall("xccdf:platform", nsmap):
+                idref = platform.get("idref", "")
+                rhel_os = idref.startswith("cpe:/o:redhat:enterprise_linux:")
                 rhel_higher = (
-                    idref.startswith('#xccdf_mil.disa.stig_platform_RHEL_')
-                    and idref.endswith('or_Higher')
+                    idref.startswith("#xccdf_mil.disa.stig_platform_RHEL_")
+                    and idref.endswith("or_Higher")
                 )
                 if rhel_os or rhel_higher:
                     parent.remove(platform)
                     dropped += 1
         if dropped:
             util.log(f"dropped {dropped} RHEL CPE platform(s) from {src}")
-        tree.write(dest, encoding='utf-8', xml_declaration=True)
+        tree.write(dest, encoding="utf-8", xml_declaration=True)
     else:
         shutil.copy(src, dest)
 
@@ -138,7 +138,7 @@ def parse_ssg_results(ssg_path):
         rule = xccdf_benchmark.find(f".//xccdf:Rule[@id='{full_rule_id}']", nsmap)
         title = rule.find("xccdf:title", nsmap).text
         # only RHEL content has CCE IDs, CentOS Stream derivatives don't have them
-        cce_id = getattr(rule.find(f"xccdf:ident[@system='{CCE}']", nsmap), 'text', None)
+        cce_id = getattr(rule.find(f"xccdf:ident[@system='{CCE}']", nsmap), "text", None)
         stig_ids = []
         xpath = f"xccdf:reference[@href='{stigref_uri}']"
         for stig_ref_el in rule.findall(xpath, nsmap):

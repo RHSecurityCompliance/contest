@@ -49,7 +49,7 @@ from lib import util
 class _BackgroundHTTPServerHandler(SimpleHTTPRequestHandler):
     def send_file(self, path):
         try:
-            with open(path, 'rb') as f:
+            with open(path, "rb") as f:
                 self.send_response(200)
                 self.end_headers()
                 shutil.copyfileobj(f, self.wfile)
@@ -63,7 +63,7 @@ class _BackgroundHTTPServerHandler(SimpleHTTPRequestHandler):
     def do_GET(self):  # noqa: N802
         file_map = self.server.file_mapping
         dir_map = self.server.dir_mapping
-        get_path = Path(self.path).relative_to('/')
+        get_path = Path(self.path).relative_to("/")
         # try a file path match first
         for url_path, fs_path in file_map.items():
             if get_path == url_path:
@@ -82,7 +82,7 @@ class _BackgroundHTTPServerHandler(SimpleHTTPRequestHandler):
 
     def log_message(self, form, *args):
         addr, port = self.server.server_address
-        util.log(f'{addr}:{port}: ' + form % args)
+        util.log(f"{addr}:{port}: " + form % args)
 
 
 class BackgroundHTTPServer:
@@ -109,7 +109,7 @@ class BackgroundHTTPServer:
             # GET /testfile will get the contents of testfile (in CWD)
             .add_file('testfile')
         """
-        url_path = Path(fs_path) if url_path is None else Path(url_path.lstrip('/'))
+        url_path = Path(fs_path) if url_path is None else Path(url_path.lstrip("/"))
         self.file_mapping[url_path] = Path(fs_path)
 
     def add_dir(self, fs_path, url_path=None):
@@ -125,7 +125,7 @@ class BackgroundHTTPServer:
             # GET /testdir/123 will get the contents of testdir/123 (in CWD)
             .add_dir('testdir')
         """
-        url_path = Path(fs_path) if url_path is None else Path(url_path.lstrip('/'))
+        url_path = Path(fs_path) if url_path is None else Path(url_path.lstrip("/"))
         self.dir_mapping[url_path] = Path(fs_path)
 
     def start(self):

@@ -34,10 +34,10 @@ sys.path.insert(0, str(test_script.parent))
 with tempfile.TemporaryDirectory() as tmpdir:
     os.chdir(tmpdir)
     try:
-        runpy.run_path(str(test_script), run_name='__main__')
+        runpy.run_path(str(test_script), run_name="__main__")
     except Exception as e:
         traceback.print_exc()
-        results.report_and_exit('error', note=f'{type(e).__name__}: {str(e)}')
+        results.report_and_exit("error", note=f"{type(e).__name__}: {str(e)}")
 
 # here we rely on the test to report pass/fail for itself, as its control flow
 # reached an end successfully - we care only about it ending prematurely due to

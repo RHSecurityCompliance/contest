@@ -12,8 +12,8 @@ from pathlib import Path
 from lib import util, versions, oscap
 
 WaiverSection = collections.namedtuple(
-    'WaiverSection',
-    ['regexes', 'python_code', 'python_source'],
+    "WaiverSection",
+    ["regexes", "python_code", "python_source"],
 )
 _sections_cache = None
 
@@ -60,7 +60,7 @@ def _compile_eval(meta, code):
     if not code.strip():
         raise WaiveParseError(meta, "empty python block code ending here")
     try:
-        return compile(util.dedent(code), 'waivercode', 'eval')
+        return compile(util.dedent(code), "waivercode", "eval")
     except Exception:
         raise WaiveParseError(meta, "compiling waiver python code failed")
 
@@ -68,32 +68,32 @@ def _compile_eval(meta, code):
 def _parse_waiver_file(stream, filename):
     sections = []
     regexes = set()
-    python_code = ''
-    state = 'skipping_empty_lines'
+    python_code = ""
+    state = "skipping_empty_lines"
 
     lines = _PushbackIterator(stream)
     for line in lines:
-        if line.startswith('#'):
+        if line.startswith("#"):
             continue
-        line = line.rstrip('\n')
+        line = line.rstrip("\n")
         filedesc = (filename, lines.counter)
 
         # between regex+python blocks
-        if state == 'skipping_empty_lines':
+        if state == "skipping_empty_lines":
             if line:
                 # non-empty line found, assume we're at the start of a new
                 # regex+python block - start parsing it
-                state = 'reading_regex'
+                state = "reading_regex"
                 lines.pushback()
 
         # collecting adjacent/subsequent regex lines
-        elif state == 'reading_regex':
+        elif state == "reading_regex":
             if not line:
                 raise WaiveParseError(filedesc, "unexpected empty line between regexes")
 
             # until we see an indented line (beginning with space), just collect
             # regex lines into a buffer
-            if not line.startswith((' ', '\t')):
+            if not line.startswith((" ", "\t")):
                 try:
                     regexes.add(re.compile(line))
                 except re.error as e:
@@ -102,14 +102,14 @@ def _parse_waiver_file(stream, filename):
                 # indented line found, which means it's a python code - parse it
                 if not regexes:
                     raise WaiveParseError(filedesc, "python block without a preceding regexp")
-                state = 'reading_python'
+                state = "reading_python"
                 lines.pushback()
 
         # reading python code related to a set of regex lines
-        elif state == 'reading_python':
-            if line.startswith((' ', '\t')):
+        elif state == "reading_python":
+            if line.startswith((" ", "\t")):
                 # indented line - assume it's still python code
-                python_code += f'{line}\n'
+                python_code += f"{line}\n"
             else:
                 # non-indented line - either empty (between regex+python blocks)
                 # or the start of a new regex+python block -- either case, we're
@@ -118,8 +118,8 @@ def _parse_waiver_file(stream, filename):
                     WaiverSection(regexes, _compile_eval(lines, python_code), python_code.strip()),
                 )
                 regexes = set()
-                python_code = ''
-                state = 'skipping_empty_lines'
+                python_code = ""
+                state = "skipping_empty_lines"
                 lines.pushback()
 
     if regexes and not python_code:
@@ -145,13 +145,13 @@ def collect_waivers():
     # note: we don't use os.walk() because it splits files and directories
     # into two lists, breaking sorting - we want to treat both equally, so that
     # files can interleave directories in the sorted order
-    dir_name = os.environ.get('CONTEST_WAIVER_DIR', 'conf/waivers')
+    dir_name = os.environ.get("CONTEST_WAIVER_DIR", "conf/waivers")
     dir_path = Path(util.libdir).parent / dir_name
     util.log(f"using {dir_path} for waiving")
 
     def _collect_files(in_dir):
         for item in sorted(in_dir.iterdir()):
-            if item.name.startswith('.'):
+            if item.name.startswith("."):
                 continue
             if item.is_dir():
                 yield from _collect_files(item)
@@ -187,13 +187,13 @@ def match_result(status, name, note):
 
     # make sure "'something' in name" always works
     if name is None:
-        name = ''
+        name = ""
     if note is None:
-        note = ''
+        note = ""
 
     if name:
         # prepend test name to a sub-result
-        name = util.get_test_name() + f'/{name}'
+        name = util.get_test_name() + f"/{name}"
         subresult = True
     else:
         # use the actual test name, not '/'
@@ -208,11 +208,11 @@ def match_result(status, name, note):
         if not subresult:
             return False
         # similarly, if we got an error status we are not processing a sub-result with rule
-        if status == 'error':
+        if status == "error":
             return False
         # extract the rule name from the test name
         # (e.g. '/hardening/kickstart/stig/configure_crypto_policy')
-        rule = name.rpartition('/')[2]
+        rule = name.rpartition("/")[2]
         ds = oscap.global_ds()
         # there can be non-rule sub-result names (e.g. 'playbook: Ensure aide is installed ...')
         # so just return False if the extracted rule name is not in the datastream
@@ -222,19 +222,19 @@ def match_result(status, name, note):
 
     objs = {
         # result related
-        'status': status,
-        'name': name,
-        'note': note,
+        "status": status,
+        "name": name,
+        "note": note,
         # platform related
-        'arch': platform.machine(),
-        'rhel': versions.rhel,
+        "arch": platform.machine(),
+        "rhel": versions.rhel,
         # environmental
-        'env': os.environ.get,
-        're': re,
-        'no_remediation': _rule_has_no_remediation,
-        'fix': oscap.FixType,
+        "env": os.environ.get,
+        "re": re,
+        "no_remediation": _rule_has_no_remediation,
+        "fix": oscap.FixType,
         # special
-        'Match': Match,
+        "Match": Match,
     }
 
     for section in _sections_cache:
@@ -252,8 +252,8 @@ def match_result(status, name, note):
     return Match(False)
 
 
-def rewrite_result(status, name, note, new_status='warn'):
-    if os.environ.get('CONTEST_VERBATIM_RESULTS') == '1' or status in ['info', 'skip', 'warn']:
+def rewrite_result(status, name, note, new_status="warn"):
+    if os.environ.get("CONTEST_VERBATIM_RESULTS") == "1" or status in ["info", "skip", "warn"]:
         return (status, name, note)
 
     matched = match_result(status, name, note)
@@ -261,14 +261,14 @@ def rewrite_result(status, name, note, new_status='warn'):
         return (status, name, note)
 
     def add_note(text):
-        return f'({text}) {note}' if note else text
+        return f"({text}) {note}" if note else text
 
-    if status == 'pass':
-        if matched.strict or os.environ.get('CONTEST_STRICT_WAIVERS') == '1':
-            return ('fail', name, add_note("waive: expected fail/error, got pass"))
+    if status == "pass":
+        if matched.strict or os.environ.get("CONTEST_STRICT_WAIVERS") == "1":
+            return ("fail", name, add_note("waive: expected fail/error, got pass"))
         else:
             return (status, name, add_note("waived pass"))
-    elif status == 'fail':
+    elif status == "fail":
         # if Match object overrides the note, use it
         if matched.note:
             return (new_status, name, add_note(matched.note))

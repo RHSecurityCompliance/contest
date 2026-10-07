@@ -15,7 +15,7 @@ def wait_for_tcp(host, port, *, timeout=600, to_shutdown=False, compare=None):
     accepts connections.
     Useful for waiting for b'SSH-' to start or stop answering on a forwarded port.
     """
-    state = 'stop' if to_shutdown else 'start'
+    state = "stop" if to_shutdown else "start"
     util.log(f"waiting for {host}:{port} to {state} listening for {timeout}s", skip_frames=1)
 
     # we don't actually do low-level networking here, we let the kernel initiate

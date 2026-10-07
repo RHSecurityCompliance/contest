@@ -23,8 +23,8 @@ from lib import waive, versions, oscap
 
 
 MatchedWaiver = collections.namedtuple(
-    'MatchedWaiver',
-    ['regex', 'python_source'],
+    "MatchedWaiver",
+    ["regex", "python_source"],
 )
 
 
@@ -49,41 +49,41 @@ def unwaive_note(waive_text, note):
     # there are 2 possible types of note containing waive text:
     #  - (waived X)
     #  - ((waived X) some text)
-    if note.startswith('(('):
+    if note.startswith("(("):
         note = note[1:]
-    return note.removeprefix(waive_text).removeprefix(' ').rstrip(')')
+    return note.removeprefix(waive_text).removeprefix(" ").rstrip(")")
 
 
 def match_result_mark_waiver(regexes_matched_list, version, arch, status, name, note):
     """This function is an updated version of the match_result() function from the lib/waive.py."""
     # make sure "'something' in name" always works
     if name is None:
-        name = ''
-    if note is None or note == '[]':
-        note = ''
+        name = ""
+    if note is None or note == "[]":
+        note = ""
 
-    if '(waived fail)' in note:
-        note = unwaive_note('(waived fail)', note)
-        status = 'fail'
-    elif '(waived error)' in note:
-        note = unwaive_note('(waived error)', note)
-        status = 'error'
+    if "(waived fail)" in note:
+        note = unwaive_note("(waived fail)", note)
+        status = "fail"
+    elif "(waived error)" in note:
+        note = unwaive_note("(waived error)", note)
+        status = "error"
 
     objs = {
         # result related
-        'status': status,
-        'name': name,
-        'note': note,
+        "status": status,
+        "name": name,
+        "note": note,
         # platform related
-        'arch': arch,
-        'rhel': _FakeRhel(version),
+        "arch": arch,
+        "rhel": _FakeRhel(version),
         # environmental
-        'env': lambda _key, default=None: default,  # like dict.get()
-        're': re,
-        'no_remediation': lambda *_args, **_kwargs: False,
-        'fix': oscap.FixType,
+        "env": lambda _key, default=None: default,  # like dict.get()
+        "re": re,
+        "no_remediation": lambda *_args, **_kwargs: False,
+        "fix": oscap.FixType,
         # special
-        'Match': waive.Match,
+        "Match": waive.Match,
     }
 
     for section in _sections_cache:
@@ -106,26 +106,26 @@ def match_result_mark_waiver(regexes_matched_list, version, arch, status, name, 
 
 
 def load_and_process_results(file, regexes_matched_list):
-    with gzip.open(file, 'rt') as f:
+    with gzip.open(file, "rt") as f:
         for line in f:
             json_line = json.loads(line)
             platform, status, test, subtest, _files, note = json_line
 
             # extract RHEL arch+version from the platform string,
             # ie. '9.0' or '9.0@x86_64'
-            if '@' in platform:
-                version = re.sub(r'@.*', '', platform)
-                arch = re.sub(r'.*@', '', platform)
+            if "@" in platform:
+                version = re.sub(r"@.*", "", platform)
+                arch = re.sub(r".*@", "", platform)
             else:
                 version = platform
-                arch = 'x86_64'
+                arch = "x86_64"
 
             # assemble full waiver name
-            name = f'{test}/{subtest}' if subtest else test
+            name = f"{test}/{subtest}" if subtest else test
 
             # do not consider 'pass' test results, even if waivers would match them
             # we still want to remove such waivers
-            if status not in ['fail', 'error', 'warn']:
+            if status not in ["fail", "error", "warn"]:
                 continue
 
             match_result_mark_waiver(regexes_matched_list, version, arch, status, name, note)
@@ -151,14 +151,14 @@ def get_invalid_waivers(result_file_list):
     for section in _sections_cache:
         # ignore the waivers using the no_remediation function, we always
         # want to keep these waivers even if they don't match anything
-        if 'no_remediation(' in section.python_source:
+        if "no_remediation(" in section.python_source:
             continue
 
         # if "is_centos()" is in section.python_source and there is no "or"
         # logical operator the section is only applicable for centos so skip it
-        or_operator_in_py_code = bool(re.search(r'\s+or\s+', section.python_source) is not None)
+        or_operator_in_py_code = bool(re.search(r"\s+or\s+", section.python_source) is not None)
         centos_section = bool(
-            'is_centos()' in section.python_source and not or_operator_in_py_code,
+            "is_centos()" in section.python_source and not or_operator_in_py_code,
         )
         if centos_section:
             continue
@@ -172,7 +172,7 @@ def get_invalid_waivers(result_file_list):
             print(f"    {section.python_source}\n")
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     parser = argparse.ArgumentParser(
         description=textwrap.dedent("""
             Process results.json.gz files and identify invalid waivers. The waiver is invalid
@@ -184,7 +184,7 @@ if __name__ == '__main__':
         formatter_class=argparse.RawTextHelpFormatter,
     )
     parser.add_argument(
-        "result_file", nargs='+',
+        "result_file", nargs="+",
         help="The results.json.gz file with test results to process",
     )
     args = parser.parse_args()

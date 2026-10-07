@@ -16,10 +16,10 @@ from pathlib import Path
 
 from lib import util
 
-REGISTRY_IMAGE = 'https://github.com/RHSecurityCompliance/contest-data/raw/refs/heads/main/data/docker-registry.tar.gz'
+REGISTRY_IMAGE = "https://github.com/RHSecurityCompliance/contest-data/raw/refs/heads/main/data/docker-registry.tar.gz"
 # podman bridge subnet, chosen away from the common default 10.88.x.x range
 # to reduce conflicts with the host environment
-NETWORK_SUBNET = '192.168.124.0/24'
+NETWORK_SUBNET = "192.168.124.0/24"
 
 
 class Host:
@@ -41,35 +41,35 @@ class Host:
             )
         except StopIteration:
             # doesn't exist, create section + option
-            lines += [section, f'{option} = {value}']
+            lines += [section, f"{option} = {value}"]
         else:
             # existing section found, look for the option
             for line in lines[start+1:]:
                 # option already set, abort
-                if declares(line, f'{option} ', f'{option}='):
+                if declares(line, f"{option} ", f"{option}="):
                     return
                 # next section found
-                if declares(line, '['):
+                if declares(line, "["):
                     break
             # section exists, but no option set (or we hit EOF), so insert it
             # right after the existing section header
-            lines.insert(start+1, f'{option} = {value}')
+            lines.insert(start+1, f"{option} = {value}")
 
-        conf.write_text('\n'.join(lines) + '\n')
+        conf.write_text("\n".join(lines) + "\n")
 
     @classmethod
     def setup_network(cls):
         cls._config_set(
-            '/etc/containers/containers.conf',
-            '[network]', 'default_subnet', f'"{NETWORK_SUBNET}"',
+            "/etc/containers/containers.conf",
+            "[network]", "default_subnet", f'"{NETWORK_SUBNET}"',
         )
 
     @classmethod
     def setup_storage(cls):
-        if Path('/run/.containerenv').exists():  # only if running in container
+        if Path("/run/.containerenv").exists():  # only if running in container
             cls._config_set(
-                '/etc/containers/storage.conf',
-                '[storage.options.overlay]', 'mount_program', '"/usr/bin/fuse-overlayfs"',
+                "/etc/containers/storage.conf",
+                "[storage.options.overlay]", "mount_program", '"/usr/bin/fuse-overlayfs"',
             )
 
     @classmethod
@@ -85,12 +85,12 @@ def podman(*args, log=True, check=True, **kwargs):
     """
     if log:
         run = util.subprocess_run
-        kwargs['skip_frames'] = 1
+        kwargs["skip_frames"] = 1
     else:
         run = subprocess.run
 
     return run(
-        ['podman', *args],
+        ["podman", *args],
         check=check, text=True,
         stderr=subprocess.PIPE if check else None,
         **kwargs,
@@ -98,7 +98,7 @@ def podman(*args, log=True, check=True, **kwargs):
 
 
 class Containerfile:
-    def __init__(self, contents=''):
+    def __init__(self, contents=""):
         self.contents = contents
 
     def __repr__(self):
@@ -108,12 +108,12 @@ class Containerfile:
         return self.contents
 
     def __add__(self, other):
-        new = '\n'.join((self.contents, other)) if self.contents else other
+        new = "\n".join((self.contents, other)) if self.contents else other
         return __class__(new)
 
-    def add_ssh_pubkey(self, key, user='root'):
-        home = '/root' if user == 'root' else f'/home/{user}'
-        self.contents += '\n' + util.dedent(fr'''
+    def add_ssh_pubkey(self, key, user="root"):
+        home = "/root" if user == "root" else f"/home/{user}"
+        self.contents += "\n" + util.dedent(fr'''
             # ssh key for {user} in {home}
             RUN mkdir -p -m 0700 '{home}/.ssh'
             RUN echo '{key}' >> '{home}/.ssh/authorized_keys'
@@ -140,7 +140,7 @@ class Registry:
         # local_image is ie. '127.0.0.1:12345/foobar'
         ...
     """
-    def __init__(self, name='contest-registry', *, host_addr, guest_addr):
+    def __init__(self, name="contest-registry", *, host_addr, guest_addr):
         self.name = name
         self.addr = host_addr
         self.guest_addr = guest_addr
@@ -152,11 +152,11 @@ class Registry:
     def _download_image():
         session = requests.Session()
         retries = urllib3.util.Retry(total=10, backoff_factor=0.1)
-        session.mount('https://', requests.adapters.HTTPAdapter(max_retries=retries))
+        session.mount("https://", requests.adapters.HTTPAdapter(max_retries=retries))
         result = session.get(REGISTRY_IMAGE, stream=True)
         result.raise_for_status()
         gz_file = gzip.GzipFile(fileobj=result.raw)
-        with tempfile.NamedTemporaryFile(suffix='.tar', delete=False) as tmpf:
+        with tempfile.NamedTemporaryFile(suffix=".tar", delete=False) as tmpf:
             shutil.copyfileobj(gz_file, tmpf)
         return tmpf.name
 
@@ -165,20 +165,20 @@ class Registry:
         # download the registry image and start it as a container
         self.registry_image = Path(self._download_image())
         self.registry_proc = util.subprocess_Popen([
-            'podman', 'container', 'run', '--rm', '--name', self.name,
-            '--publish', f'{self.addr}::5000', f'docker-archive:{self.registry_image}',
+            "podman", "container", "run", "--rm", "--name", self.name,
+            "--publish", f"{self.addr}::5000", f"docker-archive:{self.registry_image}",
         ])
         try:
             # wait for the registry server to start existing
             for _ in range(100):
-                proc = podman('container', 'exists', self.name, check=False, log=False)
+                proc = podman("container", "exists", self.name, check=False, log=False)
                 if proc.returncode == 0:
                     break
                 time.sleep(0.1)
             else:
                 raise TimeoutError("registry container failed creation")
             # wait for it to start up
-            podman('container', 'wait', '--condition=running', self.name)
+            podman("container", "wait", "--condition=running", self.name)
             # wait for it to start responding on TCP
             host, port = self.get_listen_addr()
             util.wait_for_tcp(host, port)
@@ -190,7 +190,7 @@ class Registry:
 
     def stop(self):
         for tag in self.tagged:
-            podman('image', 'untag', tag)
+            podman("image", "untag", tag)
         if self.registry_proc:
             util.log(f"stopping container for {self.name}")
             self.registry_proc.terminate()
@@ -203,9 +203,9 @@ class Registry:
         """
         Returns an (address, port) tuple the started-up registry is listening on.
         """
-        proc = podman('container', 'port', self.name, stdout=subprocess.PIPE)
-        portmap = proc.stdout.rstrip('\n')
-        match = re.fullmatch(r'[0-9]+/tcp -> ([^:]+):([0-9]+)', portmap)
+        proc = podman("container", "port", self.name, stdout=subprocess.PIPE)
+        portmap = proc.stdout.rstrip("\n")
+        match = re.fullmatch(r"[0-9]+/tcp -> ([^:]+):([0-9]+)", portmap)
         if not match:
             raise RuntimeError(f"could not parse port mapping from: {portmap}")
         host, port = match.groups()
@@ -217,15 +217,15 @@ class Registry:
 
     def guest_reference(self, image):
         """Translate a host-local pushed image reference for a guest consumer."""
-        local_addr, separator, image_path = image.partition('/')
+        local_addr, separator, image_path = image.partition("/")
         if not separator:
             raise ValueError(f"invalid local registry image reference: {image}")
         try:
-            _, port = local_addr.rsplit(':', 1)
+            _, port = local_addr.rsplit(":", 1)
             int(port)
         except (ValueError, TypeError):
             raise ValueError(f"invalid local registry image reference: {image}") from None
-        return f'{self.guest_addr}:{port}/{image_path}'
+        return f"{self.guest_addr}:{port}/{image_path}"
 
     def push(self, image):
         """
@@ -236,16 +236,16 @@ class Registry:
         """
         # path after the first / (if specified as an URL),
         # or just the image name if given as a plain name
-        _, _, sub_path = image.partition('/')
+        _, _, sub_path = image.partition("/")
         if not sub_path:
             sub_path = image
 
         addr, port = self.get_listen_addr()
-        full_local_path = f'{addr}:{port}/{sub_path}'
+        full_local_path = f"{addr}:{port}/{sub_path}"
 
-        podman('image', 'tag', image, full_local_path)
+        podman("image", "tag", image, full_local_path)
         self.tagged.add(full_local_path)
-        podman('image', 'push', '--tls-verify=false', full_local_path)
+        podman("image", "push", "--tls-verify=false", full_local_path)
 
         return full_local_path
 

@@ -13,7 +13,7 @@ from lib import util
 def backup(path):
     util.log(f"backing up {path}", skip_frames=1)
     path = Path(path)
-    path_backup = path.with_suffix('.contest-backup')
+    path_backup = path.with_suffix(".contest-backup")
     if path_backup.exists():
         raise RuntimeError(f"previous backup found: {path_backup}")
     # store the original files in the backup + copy them for our use
@@ -25,7 +25,7 @@ def backup(path):
 def restore(path):
     util.log(f"restoring {path}", skip_frames=1)
     path = Path(path)
-    path_backup = path.with_suffix('.contest-backup')
+    path_backup = path.with_suffix(".contest-backup")
     if not path_backup.exists():
         raise RuntimeError(f"no backup found: {path_backup}")
     shutil.rmtree(path)
