@@ -487,7 +487,7 @@ class Guest:
                     + (" "+" ".join(kernel_args) if kernel_args else "")
                 ),
                 "--noreboot",
-                *(virt_install_args if virt_install_args else []),
+                *(virt_install_args or []),
             ]
             if secure_boot:
                 virt_install += ["--boot", "firmware=efi,loader_secure=no"]
@@ -599,7 +599,7 @@ class Guest:
             # don't try to start the imported VM; there are some race conditions
             # inside virt-install when attaching a console of an imported guest
             "--autoconsole", "none",
-            *(virt_install_args if virt_install_args else []),
+            *(virt_install_args or []),
         ]
         if secure_boot:
             virt_install += ["--boot", "firmware=efi,loader_secure=yes"]

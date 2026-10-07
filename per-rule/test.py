@@ -124,8 +124,7 @@ with util.get_source_content() as content_dir:
         vars_rule_dir.mkdir(exist_ok=True)
         filename = f"{test.test}." + ("pass" if test.is_pass else "fail")
         with open(vars_rule_dir / filename, "w") as f:
-            for key, value in test.variables.items():
-                f.write(f"{key}={value}\n")
+            f.writelines(f"{key}={value}\n" for key, value in test.variables.items())
 
     # collect all packages from all unit_tests
     packages = {pkg for t in tests if t.packages is not None for pkg in t.packages}
