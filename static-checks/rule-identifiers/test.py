@@ -1,5 +1,3 @@
-#!/usr/bin/python3
-
 from collections import defaultdict
 
 from lib import oscap, results, util, versions

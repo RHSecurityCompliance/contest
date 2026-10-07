@@ -1,5 +1,3 @@
-#!/usr/bin/python3
-
 import concurrent.futures
 import subprocess
 import time

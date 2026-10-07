@@ -1,5 +1,3 @@
-#!/usr/bin/python3
-
 import io
 
 from lib import results, unit_tests, util, versions

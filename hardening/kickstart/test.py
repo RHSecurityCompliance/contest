@@ -1,5 +1,3 @@
-#!/usr/bin/python3
-
 import subprocess
 
 from conf import remediation

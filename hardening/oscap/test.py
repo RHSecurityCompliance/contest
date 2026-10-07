@@ -1,5 +1,3 @@
-#!/usr/bin/python3
-
 import atexit
 
 from conf import partitions, remediation
