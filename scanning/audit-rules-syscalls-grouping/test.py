@@ -15,11 +15,15 @@ syscalls_groups = [
 # fchmodat2 is only available since RHEL 10+ kernels,
 # CaC/content rule for renameat2 is only on RHEL 10+
 if versions.rhel >= 10:
-    syscalls_groups.append(["chmod", "fchmod", "fchmodat", "fchmodat2"])
-    syscalls_groups.append(["unlink", "unlinkat", "rename", "renameat", "renameat2", "rmdir"])
+    syscalls_groups += (
+        ["chmod", "fchmod", "fchmodat", "fchmodat2"],
+        ["unlink", "unlinkat", "rename", "renameat", "renameat2", "rmdir"],
+    )
 else:
-    syscalls_groups.append(["chmod", "fchmod", "fchmodat"])
-    syscalls_groups.append(["unlink", "unlinkat", "rename", "renameat", "rmdir"])
+    syscalls_groups += (
+        ["chmod", "fchmod", "fchmodat"],
+        ["unlink", "unlinkat", "rename", "renameat", "rmdir"],
+    )
 
 
 def syscalls_pretty_print(syscalls):

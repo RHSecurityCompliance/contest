@@ -62,7 +62,7 @@ def _compile_eval(meta, code):
     try:
         return compile(util.dedent(code), "waivercode", "eval")
     except Exception:
-        raise WaiveParseError(meta, "compiling waiver python code failed")
+        raise WaiveParseError(meta, "compiling waiver python code failed") from None
 
 
 def _parse_waiver_file(stream, filename):
@@ -97,7 +97,7 @@ def _parse_waiver_file(stream, filename):
                 try:
                     regexes.add(re.compile(line))
                 except re.error as e:
-                    raise WaiveParseError(filedesc, f"regex failed: {e}")
+                    raise WaiveParseError(filedesc, f"regex failed: {e}") from None
             else:
                 # indented line found, which means it's a python code - parse it
                 if not regexes:

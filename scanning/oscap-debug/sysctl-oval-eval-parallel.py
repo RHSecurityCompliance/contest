@@ -55,7 +55,7 @@ util.log(f"trying to freeze oscap for {duration} total seconds")
 
 while time.monotonic() - start_time < duration:
     with concurrent.futures.ProcessPoolExecutor() as executor:
-        for filename, res in zip(oval_files, executor.map(run, oval_files)):
+        for _, res in zip(oval_files, executor.map(run, oval_files), strict=False):
             oscap_pid, returncode = res
             if returncode == -1:
                 # attach gdb to that PID
