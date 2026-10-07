@@ -9,7 +9,7 @@ from lib import util
 
 def running_in_tmt():
     """Return True if running under TMT."""
-    return bool(os.environ.get('TMT_TEST_DATA'))
+    return bool(os.environ.get("TMT_TEST_DATA"))
 
 
 def reboot():
@@ -17,16 +17,16 @@ def reboot():
     # flush buffers to disk, just in case reboot doesn't do it
     os.sync()
 
-    if 'ATEX_TEST_CONTROL' in os.environ:
-        fd = int(os.environ['ATEX_TEST_CONTROL'])
-        with os.fdopen(fd, 'w', closefd=False) as control:
+    if "ATEX_TEST_CONTROL" in os.environ:
+        fd = int(os.environ["ATEX_TEST_CONTROL"])
+        with os.fdopen(fd, "w", closefd=False) as control:
             util.log("doing disconnect + reboot")
-            control.write('disconnect\n')
+            control.write("disconnect\n")
             control.flush()
             # wait for the test control to actually break
             while True:
                 try:
-                    control.write('noop\n')
+                    control.write("noop\n")
                     control.flush()
                 except BrokenPipeError:
                     break
@@ -36,18 +36,18 @@ def reboot():
         # to their outputs without getting EPIPE
         # - shut down sshd so the test executor doesn't reconnect before reboot
         subprocess.run(
-            ['systemctl', 'stop', 'sshd'],
+            ["systemctl", "stop", "sshd"],
             stdout=subprocess.DEVNULL, stderr=subprocess.STDOUT,
         )
         # - actually reboot the OS
-        subprocess.run(['reboot'], stdout=subprocess.DEVNULL, stderr=subprocess.STDOUT)
+        subprocess.run(["reboot"], stdout=subprocess.DEVNULL, stderr=subprocess.STDOUT)
 
-    elif shutil.which('tmt-reboot'):
-        util.subprocess_run(['tmt-reboot'])
-    elif shutil.which('rstrnt-reboot'):
-        util.subprocess_run(['rstrnt-reboot'])
+    elif shutil.which("tmt-reboot"):
+        util.subprocess_run(["tmt-reboot"])
+    elif shutil.which("rstrnt-reboot"):
+        util.subprocess_run(["rstrnt-reboot"])
     else:
-        util.subprocess_run(['reboot'])
+        util.subprocess_run(["reboot"])
 
     while True:
         time.sleep(1000000)
@@ -55,7 +55,7 @@ def reboot():
 
 def get_reboot_count():
     """Return the number of OS reboots the test underwent."""
-    for var in ['TMT_REBOOT_COUNT', 'RSTRNT_REBOOTCOUNT']:
+    for var in ["TMT_REBOOT_COUNT", "RSTRNT_REBOOTCOUNT"]:
         count = os.environ.get(var)
         if count:
             return int(count)
@@ -68,13 +68,13 @@ def get_test_name():
     Ie. '/hardening/oscap/stig'.
     """
     # natively running under TMT
-    name = os.environ.get('TMT_TEST_NAME')
+    name = os.environ.get("TMT_TEST_NAME")
     if name:
         return name
     # under Restraint (Beaker, OSCI, etc.)
-    name = os.environ.get('RSTRNT_TASKNAME', '')
+    name = os.environ.get("RSTRNT_TASKNAME", "")
     # - without leading '(gitrepo) '
-    match = re.fullmatch(r'\([^\)]*\) (/.+)', name)
+    match = re.fullmatch(r"\([^\)]*\) (/.+)", name)
     if match:
         return match.group(1)
     # unknown

@@ -8,19 +8,19 @@ from lib import util, results, oscap
 from conf import remediation
 
 
-profile = util.get_test_name().rpartition('/')[2]
+profile = util.get_test_name().rpartition("/")[2]
 
-unique_name = util.get_test_name().lstrip('/').replace('/', '-')
+unique_name = util.get_test_name().lstrip("/").replace("/", "-")
 
 # persistent across reboots
-tmpdir = Path(f'/var/tmp/contest-{unique_name}')
-remediation_ds = tmpdir / 'remediation-ds.xml'
+tmpdir = Path(f"/var/tmp/contest-{unique_name}")
+remediation_ds = tmpdir / "remediation-ds.xml"
 
 
 def do_one_remediation(ds, profile, arf_results):
     cmd = [
-        'oscap', 'xccdf', 'eval', '--profile', profile, '--progress',
-        '--results-arf', arf_results, '--remediate', ds,
+        "oscap", "xccdf", "eval", "--profile", profile, "--progress",
+        "--results-arf", arf_results, "--remediate", ds,
     ]
     proc = util.subprocess_run(cmd)
     if proc.returncode not in [0,2]:
@@ -41,7 +41,7 @@ if util.get_reboot_count() == 0:
 
     oscap.unselect_rules(util.get_datastream(), remediation_ds, remediation.excludes())
 
-    do_one_remediation(remediation_ds, profile, 'remediation-arf.xml')
+    do_one_remediation(remediation_ds, profile, "remediation-arf.xml")
 
     util.reboot()
 
@@ -50,7 +50,7 @@ if util.get_reboot_count() == 0:
 elif util.get_reboot_count() == 1:
     util.log("second boot, doing second remediation")
 
-    do_one_remediation(remediation_ds, profile, 'remediation2-arf.xml')
+    do_one_remediation(remediation_ds, profile, "remediation2-arf.xml")
 
     util.reboot()
 
@@ -60,16 +60,16 @@ else:
     # scan the remediated system
     # - use the original unmodified datastream
     cmd = [
-        'oscap', 'xccdf', 'eval', '--profile', profile, '--progress',
-        '--report', 'report.html', '--results-arf', 'scan-arf.xml',
+        "oscap", "xccdf", "eval", "--profile", profile, "--progress",
+        "--report", "report.html", "--results-arf", "scan-arf.xml",
         util.get_datastream(),
     ]
     proc, lines = util.subprocess_stream(cmd)
-    oscap.report_from_verbose(lines, to_file='oscap.log')
+    oscap.report_from_verbose(lines, to_file="oscap.log")
     if proc.returncode not in [0,2]:
         raise RuntimeError(f"post-reboot oscap failed unexpectedly with {proc.returncode}")
 
     pack = util.RpmPack()
     pack.uninstall()
 
-    results.report_and_exit(logs=['report.html', 'scan-arf.xml'])
+    results.report_and_exit(logs=["report.html", "scan-arf.xml"])

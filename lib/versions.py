@@ -15,7 +15,7 @@ class _Rhel:
     def __init__(self, version=None):
         if version is None:
             _update_os_release()
-            version = _os_release['VERSION_ID']
+            version = _os_release["VERSION_ID"]
 
         self.major, self.minor = self._parse_version(version)
         # to make version comparison on CentOS Stream possible we assign
@@ -26,19 +26,19 @@ class _Rhel:
 
     @staticmethod
     def is_true_rhel():
-        return _os_release['ID'] == 'rhel'
+        return _os_release["ID"] == "rhel"
 
     @staticmethod
     def is_centos():
-        return _os_release['ID'] == 'centos'
+        return _os_release["ID"] == "centos"
 
     @staticmethod
     def __bool__():
-        return _os_release['ID'] in ['rhel', 'centos']
+        return _os_release["ID"] in ["rhel", "centos"]
 
     @staticmethod
     def _parse_version(version):
-        major, _, minor = str(version).partition('.')
+        major, _, minor = str(version).partition(".")
         return (int(major), int(minor) if minor else None)
 
     def __eq__(self, other):
@@ -91,7 +91,7 @@ class _Rhel:
 
     def __str__(self):
         if self.minor:
-            return f'{self.major}.{self.minor}'
+            return f"{self.major}.{self.minor}"
         else:
             return str(self.major)
 

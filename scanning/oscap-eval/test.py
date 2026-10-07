@@ -13,34 +13,34 @@ got_normal_result = False
 problems_seen = set()
 
 proc, lines = util.subprocess_stream(
-    ['oscap', 'xccdf', 'eval', '--profile', '(all)', '--progress', util.get_datastream()],
+    ["oscap", "xccdf", "eval", "--profile", "(all)", "--progress", util.get_datastream()],
     stderr=subprocess.STDOUT,
 )
 
 for line in lines:
-    sys.stdout.write(f'{line}\n')
+    sys.stdout.write(f"{line}\n")
     sys.stdout.flush()
 
     # valid results, of error/unknown status
     match = oscap.rule_from_verbose(line)
     if match:
         rulename, status = match
-        if status in ['error', 'unknown']:
-            results.report('fail', rulename, f'scanner returned: {status}')
+        if status in ["error", "unknown"]:
+            results.report("fail", rulename, f"scanner returned: {status}")
         else:
             got_normal_result = True
 
     # random spurious ERRORs / WARNINGs
-    elif line.startswith(('E: ', 'ERROR: ')):
-        line = re.sub(r' +', ' ', line)
+    elif line.startswith(("E: ", "ERROR: ")):
+        line = re.sub(r" +", " ", line)
         if line not in problems_seen:
-            results.report('fail', 'ERROR', line)
+            results.report("fail", "ERROR", line)
             problems_seen.add(line)
 
-    elif line.startswith(('W: ', 'WARNING: ')):
-        line = re.sub(r' +', ' ', line)
+    elif line.startswith(("W: ", "WARNING: ")):
+        line = re.sub(r" +", " ", line)
         if line not in problems_seen:
-            results.report('warn', 'WARNING', line)
+            results.report("warn", "WARNING", line)
             problems_seen.add(line)
 
 if proc.returncode not in [0,2]:

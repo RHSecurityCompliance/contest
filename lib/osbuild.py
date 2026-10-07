@@ -49,11 +49,11 @@ class Host:
     @staticmethod
     def setup():
         virt.Host.setup()
-        for unit in ['osbuild-composer.socket', 'osbuild-local-worker.socket']:
-            ret = subprocess.run(['systemctl', 'is-active', '--quiet', unit])
+        for unit in ["osbuild-composer.socket", "osbuild-local-worker.socket"]:
+            ret = subprocess.run(["systemctl", "is-active", "--quiet", unit])
             if ret.returncode != 0:
                 util.subprocess_run(
-                    ['systemctl', 'start', unit], check=True, stderr=subprocess.PIPE,
+                    ["systemctl", "start", unit], check=True, stderr=subprocess.PIPE,
                 )
 
 
@@ -67,8 +67,8 @@ class ComposerRepos:
     repos are used for the build process.
     """
 
-    ETC_REPOS = Path('/etc/osbuild-composer/repositories')
-    USR_REPOS = Path('/usr/share/osbuild-composer/repositories')
+    ETC_REPOS = Path("/etc/osbuild-composer/repositories")
+    USR_REPOS = Path("/usr/share/osbuild-composer/repositories")
 
     def __init__(self):
         self.repos = []
@@ -76,10 +76,10 @@ class ComposerRepos:
     def add_host_repos(self):
         for reponame, config in dnf.repo_configs():
             new = {
-                'name': reponame,
-                'check_gpg': False,
+                "name": reponame,
+                "check_gpg": False,
             }
-            for key in ['baseurl', 'metalink', 'mirrorlist']:
+            for key in ["baseurl", "metalink", "mirrorlist"]:
                 if key in config:
                     new[key] = config[key]
             self.repos.append(new)
@@ -102,7 +102,7 @@ class ComposerRepos:
         for repofile in self.USR_REPOS.iterdir():
             (self.ETC_REPOS / repofile.name).write_text(repos)
         util.subprocess_run(
-            ['systemctl', 'restart', 'osbuild-composer.service'],
+            ["systemctl", "restart", "osbuild-composer.service"],
             check=True, stderr=subprocess.PIPE,
         )
         try:
@@ -110,26 +110,26 @@ class ComposerRepos:
         finally:
             shutil.rmtree(self.ETC_REPOS)
             util.subprocess_run(
-                ['systemctl', 'restart', 'osbuild-composer.service'],
+                ["systemctl", "restart", "osbuild-composer.service"],
                 check=True, stderr=subprocess.PIPE,
             )
 
 
 class Compose:
     _Entry = collections.namedtuple(
-        'ComposeEntry',
-        ['id', 'status', 'blueprint', 'version', 'type'],
+        "ComposeEntry",
+        ["id", "status", "blueprint", "version", "type"],
     )
-    RUNNING_STATUSES = ['WAITING', 'RUNNING']
-    FINISHED_STATUSES = ['FINISHED', 'FAILED']
+    RUNNING_STATUSES = ["WAITING", "RUNNING"]
+    FINISHED_STATUSES = ["FINISHED", "FAILED"]
 
     @classmethod
     def _get_status(cls, filter):
-        out = composer_cli_out('compose', 'list', log=False)
-        lines = iter(out.strip('\n').split('\n'))
+        out = composer_cli_out("compose", "list", log=False)
+        lines = iter(out.strip("\n").split("\n"))
         next(lines)  # skip header (first line)
         for line in lines:
-            entry = cls._Entry(*re.split(r'[ \t]+', line))
+            entry = cls._Entry(*re.split(r"[ \t]+", line))
             if filter(entry):
                 return entry
         return None
@@ -155,23 +155,23 @@ class Compose:
         # delete any existing compose
         if entry:
             if entry.status in cls.RUNNING_STATUSES:
-                composer_cli('compose', 'cancel', entry.id)
-            composer_cli('compose', 'delete', entry.id)
+                composer_cli("compose", "cancel", entry.id)
+            composer_cli("compose", "delete", entry.id)
         # start and wait
         composer_cli(
-            'compose', 'start', blueprint_name, 'qcow2',
-            '--size', str(QCOW2_IMAGE_SIZE_MIB),
+            "compose", "start", blueprint_name, "qcow2",
+            "--size", str(QCOW2_IMAGE_SIZE_MIB),
         )
         entry = cls._wait_for_finished(blueprint_name)
         # check & yield
-        if entry.status != 'FINISHED':
-            composer_cli('compose', 'log', entry.id)
+        if entry.status != "FINISHED":
+            composer_cli("compose", "log", entry.id)
             raise RuntimeError(f"failed to build: {entry}")
         try:
             yield entry.id
         finally:
             # clean up
-            composer_cli('compose', 'delete', entry.id)
+            composer_cli("compose", "delete", entry.id)
 
 
 # this is using a different approach to class Kickstart or class RpmPack
@@ -182,7 +182,7 @@ class Compose:
 # would require logic for quoting str(), for transforming arrays into [ ], etc.,
 # so let's just append strings instead
 class Blueprint:
-    NAME = 'contest_blueprint'
+    NAME = "contest_blueprint"
     TEMPLATE = util.dedent(fr'''
         name = "{NAME}"
         description = "Testing blueprint created by the Contest test suite"
@@ -190,16 +190,16 @@ class Blueprint:
     ''')
 
     def __init__(self, template=TEMPLATE):
-        self.assembled = f'{template}\n\n' if template else ''
+        self.assembled = f"{template}\n\n" if template else ""
 
     def add_user(self, name, *, password=None, groups=None, ssh_pubkey=None):
-        self.assembled += '[[customizations.user]]\n'
+        self.assembled += "[[customizations.user]]\n"
         self.assembled += f'name = "{name}"\n'
         if password:
             self.assembled += f'password = "{password}"\n'
         if groups:
-            groups_str = ','.join(f'"{x}"' for x in groups)
-            self.assembled += f'groups = [ {groups_str} ]\n'
+            groups_str = ",".join(f'"{x}"' for x in groups)
+            self.assembled += f"groups = [ {groups_str} ]\n"
         if ssh_pubkey:
             self.assembled += f'key = "{ssh_pubkey}"\n'
 
@@ -207,28 +207,28 @@ class Blueprint:
         self.assembled += util.dedent(fr'''
             [[packages]]
             name = "{name}"
-        ''') + '\n'
+        ''') + "\n"
 
     def add_package_group(self, name):
         self.assembled += util.dedent(fr'''
             [[groups]]
             name = "{name}"
-        ''') + '\n'
+        ''') + "\n"
 
     def add_partition(self, mountpoint, minsize):
         self.assembled += util.dedent(fr'''
             [[customizations.filesystem]]
             mountpoint = "{mountpoint}"
             minsize = {minsize}
-        ''') + '\n'
+        ''') + "\n"
 
     def set_openscap_datastream(self, ds_file):
-        pre, header, post = self.assembled.partition('\n[customizations.openscap]\n')
+        pre, header, post = self.assembled.partition("\n[customizations.openscap]\n")
         if not header:
             raise ValueError("openscap section not found")
-        self.assembled = '\n'.join([
+        self.assembled = "\n".join([
             pre,
-            header.strip('\n'),
+            header.strip("\n"),
             f'datastream = "{ds_file}"',
             post,
         ])
@@ -237,28 +237,28 @@ class Blueprint:
     def to_tmpfile(self):
         bp = self.assembled
         util.log(f"using blueprint:\n{textwrap.indent(bp, '    ')}")
-        with tempfile.NamedTemporaryFile(mode='w') as f:
+        with tempfile.NamedTemporaryFile(mode="w") as f:
             f.write(bp)
             f.flush()
             yield Path(f.name)
 
     @contextlib.contextmanager
     def to_composer(self):
-        blueprints = composer_cli_out('blueprints', 'list', log=False)
+        blueprints = composer_cli_out("blueprints", "list", log=False)
         if self.NAME in blueprints:
-            composer_cli('blueprints', 'delete', self.NAME)
+            composer_cli("blueprints", "delete", self.NAME)
         with self.to_tmpfile() as f:
-            composer_cli('blueprints', 'push', f)
+            composer_cli("blueprints", "push", f)
         try:
             yield self.NAME
         finally:
-            composer_cli('blueprints', 'delete', self.NAME)
+            composer_cli("blueprints", "delete", self.NAME)
 
 
 class Guest(virt.Guest):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.osbuild_log = f'{virt.GUEST_IMG_DIR}/{self.name}-osbuild.txt'
+        self.osbuild_log = f"{virt.GUEST_IMG_DIR}/{self.name}-osbuild.txt"
 
     def wipe(self):
         super().wipe()
@@ -282,14 +282,14 @@ class Guest(virt.Guest):
         if not blueprint:
             blueprint = Blueprint()
 
-        image_path = Path(f'{virt.GUEST_IMG_DIR}/{self.name}.img')
+        image_path = Path(f"{virt.GUEST_IMG_DIR}/{self.name}.img")
 
         with blueprint.to_composer() as bp_name:
             # re-try multiple times to try to avoid a bug:
             # ERROR: Depsolve Error: Get "http://localhost/.../depsolve/contest_blueprint": EOF
             for _ in range(5):
                 ret = composer_cli(
-                    'blueprints', 'depsolve', bp_name, check=False, text=True,
+                    "blueprints", "depsolve", bp_name, check=False, text=True,
                     stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
                 )
                 sys.stdout.write(ret.stdout)
@@ -305,18 +305,18 @@ class Guest(virt.Guest):
             with Compose.build(bp_name) as ident:
                 if image_path.exists():
                     image_path.unlink()
-                composer_cli('compose', 'image', ident, '--filename', image_path)
+                composer_cli("compose", "image", ident, "--filename", image_path)
 
                 # get image building log, try to limit its size by cutting off
                 # everything before openscap
-                log = composer_cli_out('compose', 'log', ident)
-                idx = log.find('Stage: org.osbuild.oscap')
+                log = composer_cli_out("compose", "log", ident)
+                idx = log.find("Stage: org.osbuild.oscap")
                 if idx != -1:
                     log = log[idx:]
                 Path(self.osbuild_log).write_text(log)
 
         # import the created qcow2 image as a VM
-        self.import_image(image_path, 'qcow2', **kwargs)
+        self.import_image(image_path, "qcow2", **kwargs)
 
     def create(self, *, blueprint=None, rpmpack=None, **kwargs):
         """
@@ -333,11 +333,11 @@ class Guest(virt.Guest):
             blueprint = Blueprint()
 
         # implicitly install openscap-scanner, like virt.Guest.install()
-        blueprint.add_package('openscap-scanner')
+        blueprint.add_package("openscap-scanner")
 
         # generate an ssh key the same way as virt.Guest
         self.generate_ssh_keypair()
-        blueprint.add_user('root', password=virt.GUEST_LOGIN_PASS, ssh_pubkey=self.ssh_pubkey)
+        blueprint.add_user("root", password=virt.GUEST_LOGIN_PASS, ssh_pubkey=self.ssh_pubkey)
 
         # osbuild doesn't support running Anaconda %post-style custom
         # scripts, the only way to run additional shell code is via
@@ -354,15 +354,15 @@ class Guest(virt.Guest):
             # osbuild-composer doesn't support file:// repos, so host
             # the custom RPM on a HTTP server
             with util.BackgroundHTTPServer(virt.NETWORK_HOST, 0) as srv:
-                srv.add_dir(repo, 'repo')
+                srv.add_dir(repo, "repo")
                 http_host, http_port = srv.start()
 
                 # overwrite default Red Hat CDN host repos via a custom HTTP server
                 repos = ComposerRepos()
                 repos.add_host_repos()
                 repos.repos.append({
-                    'name': 'contest-rpmpack',
-                    'baseurl': f'http://{http_host}:{http_port}/repo',
+                    "name": "contest-rpmpack",
+                    "baseurl": f"http://{http_host}:{http_port}/repo",
                 })
                 with repos.to_composer():
                     # build qcow2 and import it
@@ -371,25 +371,25 @@ class Guest(virt.Guest):
 
 def composer_cli(*args, log=True, check=True, stderr=subprocess.PIPE, **kwargs):
     run = util.subprocess_run if log else subprocess.run
-    return run(['composer-cli', *args], check=check, stderr=stderr, **kwargs)
+    return run(["composer-cli", *args], check=check, stderr=stderr, **kwargs)
 
 
 def composer_cli_out(*args, **kwargs):
     out = composer_cli(*args, stdout=subprocess.PIPE, text=True, **kwargs)
-    return out.stdout.rstrip('\n')
+    return out.stdout.rstrip("\n")
 
 
 def translate_oscap_blueprint(lines, datastream):
     """
     Parse (and tweak) a blueprint generated via 'oscap xccdf generate fix'.
     """
-    bp_text = '\n'.join(lines)
+    bp_text = "\n".join(lines)
 
     # replace blueprint name, it's an unique identifier for composer-cli,
     # however replace only the first occurence of 'name', as later sections
     # like [[packages]] would also match ^name=...
     bp_text = re.sub(
-        r'^name = .*',
+        r"^name = .*",
         f'name = "{Blueprint.NAME}"',
         bp_text, count=1, flags=re.M,
     )
@@ -411,7 +411,7 @@ def translate_oscap_blueprint(lines, datastream):
         bp_text = bp_new
     elif not re.search(r'^partitioning_mode\s*=\s*"raw"\s*$', bp_text, flags=re.M):
         bp_text, inserted = re.subn(
-            r'^(\[customizations\]\s*\n)',
+            r"^(\[customizations\]\s*\n)",
             r'\1partitioning_mode = "raw"\n',
             bp_text,
             count=1,
@@ -419,7 +419,7 @@ def translate_oscap_blueprint(lines, datastream):
         )
         if not inserted:
             bp_text = re.sub(
-                r'^(version = .*\n)',
+                r"^(version = .*\n)",
                 r'\1\n[customizations]\npartitioning_mode = "raw"\n',
                 bp_text,
                 count=1,

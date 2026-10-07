@@ -25,8 +25,8 @@ for url in urls:
         text=True,
     )
     if proc.returncode != 0:
-        results.report('fail', url, proc.stderr.rstrip('\n'))
+        results.report("fail", url, proc.stderr.rstrip("\n"))
     else:
-        results.report('pass', url)
+        results.report("pass", url)
 
 results.report_and_exit()

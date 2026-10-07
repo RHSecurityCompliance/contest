@@ -12,10 +12,10 @@ from lib import util, results, versions
 # RHEL 10  (rhc-worker-playbook 0.2.x):
 #   https://github.com/RedHatInsights/rhc-worker-playbook/blob/main/ansible/meson.build
 ANSIBLE_GALAXY_COLLECTIONS = {
-    8: ['ansible.posix:1.3.0', 'community.general:4.4.0'],
-    9: ['ansible.posix:1.3.0', 'community.general:4.4.0'],
-    10: ['ansible.posix:1.5.4', 'community.general:9.2.0'],
-    'default': ['ansible.posix', 'community.general'],
+    8: ["ansible.posix:1.3.0", "community.general:4.4.0"],
+    9: ["ansible.posix:1.3.0", "community.general:4.4.0"],
+    10: ["ansible.posix:1.5.4", "community.general:9.2.0"],
+    "default": ["ansible.posix", "community.general"],
 }
 
 
@@ -26,22 +26,22 @@ def install_deps():
     if versions.rhel.is_true_rhel():
         # On RHEL, use collections bundled in rhc-worker-playbook
         # https://access.redhat.com/articles/remediation
-        os.environ['ANSIBLE_COLLECTIONS_PATH'] = \
-            '/usr/share/rhc-worker-playbook/ansible/collections/ansible_collections/'
+        os.environ["ANSIBLE_COLLECTIONS_PATH"] = \
+            "/usr/share/rhc-worker-playbook/ansible/collections/ansible_collections/"
     else:
         collections = ANSIBLE_GALAXY_COLLECTIONS.get(
-            versions.rhel.major, ANSIBLE_GALAXY_COLLECTIONS['default'],
+            versions.rhel.major, ANSIBLE_GALAXY_COLLECTIONS["default"],
         )
         util.subprocess_run(
             (
-                'ansible-galaxy', '-vvv', 'collection', 'install', '--force', *collections,
+                "ansible-galaxy", "-vvv", "collection", "install", "--force", *collections,
             ),
             check=True,
             stderr=subprocess.PIPE,
         )
 
 
-def report_from_output(lines, to_file='ansible-playbook.log', failure='fail'):
+def report_from_output(lines, to_file="ansible-playbook.log", failure="fail"):
     """
     Process 'ansible-playbook' output, hide useless info, and report important
     info.
@@ -63,38 +63,38 @@ def report_from_output(lines, to_file='ansible-playbook.log', failure='fail'):
     (False && exit code 2 means a task-unrelated problem.)
     """
     failed = False
-    task = '<unknown task>'
+    task = "<unknown task>"
     log_path = results.register_log(to_file)
 
-    with open(log_path, 'w') as out_file:
+    with open(log_path, "w") as out_file:
         for line in lines:
             # shorten facts
             m = re.match(r'(ok: \[.+\] =>) {"ansible_facts": ', line)
             if m:
-                line = f'{m.group(1)} (Redacted by Contest)'
+                line = f"{m.group(1)} (Redacted by Contest)"
 
-            results.atex_upload_log_data(to_file, f'{line}\n')
-            out_file.write(f'{line}\n')
+            results.atex_upload_log_data(to_file, f"{line}\n")
+            out_file.write(f"{line}\n")
             out_file.flush()
 
             # match and parse task name
-            m = re.fullmatch(r'TASK \[(.+)\] \*+', line)
+            m = re.fullmatch(r"TASK \[(.+)\] \*+", line)
             if m:
                 task = m.group(1)
                 continue
 
             # match and parse a module status line
             # - note that 'failed:' doesn't use =>
-            m = re.fullmatch(r'([\w]+): \[.+\](: [^ ]+)?( =>)? (.+)', line, flags=re.DOTALL)
+            m = re.fullmatch(r"([\w]+): \[.+\](: [^ ]+)?( =>)? (.+)", line, flags=re.DOTALL)
             if m:
                 status, _, _, data = m.groups()
-                if status in ['failed', 'fatal']:
+                if status in ["failed", "fatal"]:
                     # a structured failure can span multiple lines, in such case
                     # a result note would only contain the opening brace which
                     # would be confusing so rather point to the playbook log file
-                    if data.strip() == '{':
-                        data = f'complex error found, see {to_file}'
-                    results.report(failure, f'playbook: {task}', data)
+                    if data.strip() == "{":
+                        data = f"complex error found, see {to_file}"
+                    results.report(failure, f"playbook: {task}", data)
                     failed = True
                 continue
 

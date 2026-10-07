@@ -11,10 +11,10 @@ from conf import remediation
 virt.Host.setup()
 podman.Host.setup()
 
-profile = util.get_test_name().rpartition('/')[2]
-oscap_repo = os.environ.get('CONTEST_OSCAP_REPOFILE')
+profile = util.get_test_name().rpartition("/")[2]
+oscap_repo = os.environ.get("CONTEST_OSCAP_REPOFILE")
 
-oscap.unselect_rules(util.get_datastream(), 'remediation-ds.xml', remediation.excludes())
+oscap.unselect_rules(util.get_datastream(), "remediation-ds.xml", remediation.excludes())
 
 # note that the .wipe() is necessary here, as we are not calling any .install()
 # function that would normally perform it
@@ -26,14 +26,14 @@ guest.generate_ssh_keypair()
 major = versions.rhel.major
 minor = versions.rhel.minor
 if versions.rhel.is_true_rhel():
-    src_image = f'images.paas.redhat.com/testingfarm/rhel-bootc:{major}.{minor}'
+    src_image = f"images.paas.redhat.com/testingfarm/rhel-bootc:{major}.{minor}"
     # copy a Testing Farm image cleanup script to CWD (if available),
     # because podman COPY cannot access files outside the build context
-    cleanup_sh = Path(__file__).resolve().parent.parent / 'bootc_tf_img_cleanup.sh'
+    cleanup_sh = Path(__file__).resolve().parent.parent / "bootc_tf_img_cleanup.sh"
     if cleanup_sh.exists():
-        shutil.copy(cleanup_sh, 'bootc_tf_img_cleanup.sh')
+        shutil.copy(cleanup_sh, "bootc_tf_img_cleanup.sh")
 else:
-    src_image = f'quay.io/centos-bootc/centos-bootc:stream{major}'
+    src_image = f"quay.io/centos-bootc/centos-bootc:stream{major}"
 
 # prepare a RpmPack with testing-specific hacks
 # - copy it to CWD because podman cannot handle absolute paths (or relative ones
@@ -43,12 +43,12 @@ if oscap_repo:
     pack.add_file(oscap_repo)
 pack.add_sshd_late_start()
 with pack.build() as pack_binrpm:
-    shutil.copy(pack_binrpm, 'contest-pack.rpm')
+    shutil.copy(pack_binrpm, "contest-pack.rpm")
 
 # prepare a Container file for making a hardened image
 cfile = podman.Containerfile()
-cfile += f'FROM {src_image}'
-if Path('bootc_tf_img_cleanup.sh').exists():
+cfile += f"FROM {src_image}"
+if Path("bootc_tf_img_cleanup.sh").exists():
     cfile += util.dedent('''
         COPY bootc_tf_img_cleanup.sh /root/bootc_tf_img_cleanup.sh
         RUN chmod +x /root/bootc_tf_img_cleanup.sh && /root/bootc_tf_img_cleanup.sh
@@ -67,10 +67,10 @@ cfile += util.dedent(fr'''
     RUN bootc container lint || true
 ''')
 cfile.add_ssh_pubkey(guest.ssh_pubkey)
-cfile.write_to('Containerfile')
+cfile.write_to("Containerfile")
 
-podman.podman('pull', src_image)
-podman.podman('image', 'build', '--tag', 'contest-hardened', '.')
+podman.podman("pull", src_image)
+podman.podman("image", "build", "--tag", "contest-hardened", ".")
 
 # we can't use standard CaC/content style partitioning scheme because the
 # space distribution is different and the installer runs out of space,
@@ -78,8 +78,8 @@ podman.podman('image', 'build', '--tag', 'contest-hardened', '.')
 # - note that Anaconda requires a separate /boot for 'ostreecontainer',
 #   otherwise it crashes on RHEL-66155
 partitions = [
-    ('/boot', 1000),
-    ('/', 18000),
+    ("/boot", 1000),
+    ("/", 18000),
 ]
 
 ks = virt.Kickstart(partitions=partitions)
@@ -87,8 +87,8 @@ ks = virt.Kickstart(partitions=partitions)
 # install the VM, using a locally-hosted podman registry serving
 # the hardened image for Anaconda's ostreecontainer
 with podman.Registry(host_addr=virt.NETWORK_HOST, guest_addr=virt.NETWORK_GUEST) as registry:
-    image_url = registry.push('contest-hardened')
-    ks.append(f'ostreecontainer --url {registry.guest_reference(image_url)}')
+    image_url = registry.push("contest-hardened")
+    ks.append(f"ostreecontainer --url {registry.guest_reference(image_url)}")
     # Anaconda doesn't expose ostree --insecure-skip-tls-verification,
     # work around it using registries.conf
     raddr, rport = registry.get_guest_listen_addr()
@@ -101,24 +101,24 @@ with podman.Registry(host_addr=virt.NETWORK_HOST, guest_addr=virt.NETWORK_GUEST)
         # Anaconda installer may itself perform cryptographic operations so
         # it also needs to run with fips=1, see
         # https://docs.fedoraproject.org/en-US/bootc/security-and-hardening/
-        kernel_args=['fips=1'] if 'fips' in metadata.tags() else None,
+        kernel_args=["fips=1"] if "fips" in metadata.tags() else None,
     )
 
 # boot up and scan the VM
 with guest.booted():
     # copy the original DS to the guest
-    guest.copy_to(util.get_datastream(), 'scan-ds.xml')
+    guest.copy_to(util.get_datastream(), "scan-ds.xml")
     # scan the remediated system
     proc, lines = guest.ssh_stream(
-        f'oscap xccdf eval --profile {profile} --progress --report report.html'
-        f' --results-arf scan-arf.xml scan-ds.xml',
+        f"oscap xccdf eval --profile {profile} --progress --report report.html"
+        f" --results-arf scan-arf.xml scan-ds.xml",
     )
-    oscap.report_from_verbose(lines, to_file='oscap.log')
+    oscap.report_from_verbose(lines, to_file="oscap.log")
     if proc.returncode not in [0,2]:
         raise RuntimeError(f"post-reboot oscap failed unexpectedly with {proc.returncode}")
 
-    guest.copy_from('report.html')
-    guest.copy_from('remediation-arf.xml')
-    guest.copy_from('scan-arf.xml')
+    guest.copy_from("report.html")
+    guest.copy_from("remediation-arf.xml")
+    guest.copy_from("scan-arf.xml")
 
-results.report_and_exit(logs=['report.html', 'remediation-arf.xml', 'scan-arf.xml'])
+results.report_and_exit(logs=["report.html", "remediation-arf.xml", "scan-arf.xml"])

@@ -9,10 +9,10 @@ from lib import util, dnf
 
 
 class RpmPack:
-    NAME = 'contest-pack'
+    NAME = "contest-pack"
     VERSION = 1
     RELEASE = 1
-    ARCH = 'noarch'
+    ARCH = "noarch"
     HEADER = util.dedent(fr'''
         Name: {NAME}
         Summary: RPM content pack for the Contest test suite
@@ -25,11 +25,11 @@ class RpmPack:
 
         %description
     ''')
-    NVR = f'{NAME}-{VERSION}-{RELEASE}'
-    FILE = f'{NVR}.{ARCH}.rpm'
+    NVR = f"{NAME}-{VERSION}-{RELEASE}"
+    FILE = f"{NVR}.{ARCH}.rpm"
 
-    FilePath = collections.namedtuple('RpmPackFilePath', ['source', 'target'])
-    FileContents = collections.namedtuple('RpmPackFileContents', ['target', 'contents'])
+    FilePath = collections.namedtuple("RpmPackFilePath", ["source", "target"])
+    FileContents = collections.namedtuple("RpmPackFileContents", ["target", "contents"])
 
     def __init__(self):
         # FilePath/FileContents to files to be included in the RPM
@@ -85,27 +85,27 @@ class RpmPack:
         distro packages deploying repo and gpg key files (centos-stream-repos/centos-gpg-keys
         on CentOS Stream and subscription-manager/redhat-release on RHEL).
         """
-        self.add_script('%post', util.dedent('''
+        self.add_script("%post", util.dedent('''
             rm -rf /etc/yum.repos.d/*
             rm -rf /etc/pki/rpm-gpg/*
         '''))
         for repofile in dnf.repo_files():
             repopath = Path(repofile)
-            repotext = repopath.read_text().rstrip('\n')
+            repotext = repopath.read_text().rstrip("\n")
             repo_contents = (
                 f'cat > "/etc/yum.repos.d/{repopath.name}" <<\'EOF\'\n'
                 + repotext
-                + '\nEOF'
+                + "\nEOF"
             )
-            self.add_script('%post', repo_contents)
+            self.add_script("%post", repo_contents)
         for keyfile in dnf.repo_gpg_keys():
-            keytext = keyfile.read_text().rstrip('\n')
+            keytext = keyfile.read_text().rstrip("\n")
             key_contents = (
                 f'cat > "/etc/pki/rpm-gpg/{keyfile.name}" <<\'EOF\'\n'
                 + keytext
-                + '\nEOF'
+                + "\nEOF"
             )
-            self.add_script('%post', key_contents)
+            self.add_script("%post", key_contents)
 
     def add_script(self, script_type, content):
         """
@@ -139,18 +139,18 @@ class RpmPack:
             After=multi-user.target
         ''')
         self.add_file_contents(
-            Path('/usr/lib/systemd/system/sshd.service.d/contest-override.conf'),
+            Path("/usr/lib/systemd/system/sshd.service.d/contest-override.conf"),
             override_contents,
         )
         reload_systemd = util.dedent('''
             systemctl is-system-running >/dev/null || exit 0  # offline install
             systemctl daemon-reload
         ''')
-        self.add_script('%post', reload_systemd)
-        self.add_script('%postun', reload_systemd)
+        self.add_script("%post", reload_systemd)
+        self.add_script("%postun", reload_systemd)
 
     def create_spec(self):
-        install_block = files_block = ''
+        install_block = files_block = ""
         created_dirs = set()
 
         for file in self.files:
@@ -162,29 +162,29 @@ class RpmPack:
             elif isinstance(file, self.FileContents):
                 install_block += f'''cat > "%{{buildroot}}{file.target}" <<'EOF'\n'''
                 install_block += file.contents
-                install_block += '\nEOF'
+                install_block += "\nEOF"
             else:
                 raise RuntimeError(f"invalid file entry: {file}")
-            files_block += f'%attr(0644,root,root) {file.target}\n'
+            files_block += f"%attr(0644,root,root) {file.target}\n"
 
         scripts_blocks = []
         for script_type, contents in self.scripts.items():
-            block = f'{script_type}\n'
+            block = f"{script_type}\n"
             if len(contents) == 1:
-                block += f'{contents[0]}\nexit 0'
+                block += f"{contents[0]}\nexit 0"
             else:
-                block += '(\n'
-                block += '\n)\n(\n'.join(contents)
-                block += '\n)\nexit 0'
+                block += "(\n"
+                block += "\n)\n(\n".join(contents)
+                block += "\n)\nexit 0"
             scripts_blocks.append(block)
 
         return (
-            (f'''Requires: {' '.join(self.requires)}\n''' if self.requires else '')
-            + (f'''OrderWithRequires: {' '.join(self.softreq)}\n''' if self.softreq else '')
-            + f'{self.HEADER}\n\n'
-            + f'%install\n{install_block}\n'
-            + f'%files\n{files_block}\n'
-            + '\n\n'.join(scripts_blocks)
+            (f'''Requires: {' '.join(self.requires)}\n''' if self.requires else "")
+            + (f'''OrderWithRequires: {' '.join(self.softreq)}\n''' if self.softreq else "")
+            + f"{self.HEADER}\n\n"
+            + f"%install\n{install_block}\n"
+            + f"%files\n{files_block}\n"
+            + "\n\n".join(scripts_blocks)
         )
 
     @contextlib.contextmanager
@@ -195,18 +195,18 @@ class RpmPack:
         with tempfile.TemporaryDirectory() as tmpdir:
             tmpdir = Path(tmpdir)
             # write down the spec file
-            specdir = tmpdir / 'SPECS'
+            specdir = tmpdir / "SPECS"
             specdir.mkdir()
-            specfile = specdir / f'{self.NAME}.spec'
+            specfile = specdir / f"{self.NAME}.spec"
             specfile.write_text(spec)
             # build it via rpmbuild
             cmd = [
-                'rpmbuild', '--define', f'_topdir {tmpdir.absolute()}',
-                '-ba', specfile.absolute(),
+                "rpmbuild", "--define", f"_topdir {tmpdir.absolute()}",
+                "-ba", specfile.absolute(),
             ]
             util.subprocess_run(cmd, check=True, stderr=subprocess.PIPE)
             # yield it to caller
-            binrpm = tmpdir / 'RPMS' / self.ARCH / self.FILE
+            binrpm = tmpdir / "RPMS" / self.ARCH / self.FILE
             if not binrpm.exists():
                 raise RuntimeError("rpmbuild did not build the binary RPM")
             yield binrpm
@@ -219,7 +219,7 @@ class RpmPack:
         """
         with self.build() as binrpm:
             repodir = binrpm.parent
-            util.subprocess_run(['createrepo', repodir], check=True, stderr=subprocess.PIPE)
+            util.subprocess_run(["createrepo", repodir], check=True, stderr=subprocess.PIPE)
             yield repodir
 
     def install(self):
@@ -228,7 +228,7 @@ class RpmPack:
         """
         with self.build() as binrpm:
             util.subprocess_run(
-                ['dnf', 'install', '-y', binrpm], check=True, stderr=subprocess.PIPE,
+                ["dnf", "install", "-y", binrpm], check=True, stderr=subprocess.PIPE,
             )
 
     def uninstall(self):
@@ -236,6 +236,6 @@ class RpmPack:
         Call 'dnf remove' on a previously-installed built RPM.
         """
         util.subprocess_run(
-            ['dnf', 'remove', '--noautoremove', '-y', self.NAME],
+            ["dnf", "remove", "--noautoremove", "-y", self.NAME],
             check=True, stderr=subprocess.PIPE,
         )

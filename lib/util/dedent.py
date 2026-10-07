@@ -22,4 +22,4 @@ def dedent(text):
     Like textwrap.dedent(), but also strip leading and trailing spaces/newlines
     up to the content.
     """
-    return textwrap.dedent(text.lstrip('\n').rstrip(' \n'))
+    return textwrap.dedent(text.lstrip("\n").rstrip(" \n"))

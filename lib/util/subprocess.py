@@ -13,13 +13,13 @@ class VerboseCalledProcessError(subprocess.CalledProcessError):
         if self.stderr:
             stderr_output = self.stderr
             if isinstance(stderr_output, bytes):
-                stderr_output = stderr_output.decode(errors='replace')
+                stderr_output = stderr_output.decode(errors="replace")
             # truncate very long stderr to keep error messages readable
             max_len = 2000
             if len(stderr_output) > max_len:
                 stderr_output = (
                     stderr_output[:max_len//2]
-                    + '\n... (Contest-truncated output) ...\n'
+                    + "\n... (Contest-truncated output) ...\n"
                     + stderr_output[-max_len//2:]
                 )
             return f"{base} \nCaptured stderr: \n{stderr_output}"
@@ -31,7 +31,7 @@ class VerboseCalledProcessError(subprocess.CalledProcessError):
 
 def _format_subprocess_cmd(cmd):
     if isinstance(cmd, (list, tuple)):
-        return ' '.join(str(x) for x in cmd)
+        return " ".join(str(x) for x in cmd)
     else:
         return cmd
 
@@ -45,7 +45,7 @@ def subprocess_run(cmd, *, check=False, skip_frames=0, stderr=None, **kwargs):
     """
     # when logging, skip current stack frame - report the place we were called
     # from, not util.subprocess_run itself
-    util.log(f'running: {_format_subprocess_cmd(cmd)}', skip_frames=skip_frames+1)
+    util.log(f"running: {_format_subprocess_cmd(cmd)}", skip_frames=skip_frames+1)
 
     use_verbose_errors = (stderr is subprocess.PIPE and check)
 
@@ -69,7 +69,7 @@ def subprocess_Popen(cmd, *, skip_frames=0, **kwargs):  # noqa: N802
     """
     A simple wrapper for the real subprocess.Popen() that logs the command used.
     """
-    util.log(f'running: {_format_subprocess_cmd(cmd)}', skip_frames=skip_frames+1)
+    util.log(f"running: {_format_subprocess_cmd(cmd)}", skip_frames=skip_frames+1)
     return subprocess.Popen(cmd, **kwargs)
 
 
@@ -83,15 +83,15 @@ def subprocess_stream(cmd, *, check=False, skip_frames=0, stderr=None, **kwargs)
 
     To capture both stdout and stderr as yielded lines, use stderr=subprocess.STDOUT.
     """
-    util.log(f'running: {_format_subprocess_cmd(cmd)}', skip_frames=skip_frames+1)
+    util.log(f"running: {_format_subprocess_cmd(cmd)}", skip_frames=skip_frames+1)
 
     use_verbose_errors = (stderr is subprocess.PIPE and check)
 
     proc = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=stderr, text=True, **kwargs)
 
     def generate_lines():
-        stdout_buffer = ''
-        stderr_buffer = ''
+        stdout_buffer = ""
+        stderr_buffer = ""
 
         streams = [proc.stdout]
         if use_verbose_errors and proc.stderr:
@@ -109,8 +109,8 @@ def subprocess_stream(cmd, *, check=False, skip_frames=0, stderr=None, **kwargs)
 
                 if stream == proc.stdout:
                     stdout_buffer += chunk
-                    while '\n' in stdout_buffer:
-                        line, stdout_buffer = stdout_buffer.split('\n', 1)
+                    while "\n" in stdout_buffer:
+                        line, stdout_buffer = stdout_buffer.split("\n", 1)
                         yield line
                 elif stream == proc.stderr:
                     stderr_buffer += chunk

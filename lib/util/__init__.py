@@ -19,21 +19,21 @@ def __dir__():
 # (function to avoid polluting global namespace with extra variables)
 def _import_submodules():
     for info in _pkgutil.iter_modules(__spec__.submodule_search_locations):
-        mod = _importlib.import_module(f'.{info.name}', __name__)
+        mod = _importlib.import_module(f".{info.name}", __name__)
 
         # if the module defines __all__, just use it
-        if hasattr(mod, '__all__'):
+        if hasattr(mod, "__all__"):
             keys = mod.__all__
         else:
             # https://docs.python.org/3/reference/executionmodel.html#binding-of-names
-            keys = (x for x in dir(mod) if not x.startswith('_'))
+            keys = (x for x in dir(mod) if not x.startswith("_"))
 
         for key in keys:
             attr = getattr(mod, key)
 
             # avoid objects that belong to other known modules
             # (ie. imported function from another util module)
-            if hasattr(attr, '__module__'):
+            if hasattr(attr, "__module__"):
                 if attr.__module__ != mod.__name__:
                     continue
             # avoid some common pollution / imports

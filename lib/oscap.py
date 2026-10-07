@@ -9,8 +9,8 @@ from pathlib import Path
 from lib import util, results
 
 FixType = enum.Flag(
-    'FixType',
-    ['bash', 'ansible', 'anaconda', 'kickstart', 'blueprint', 'bootc'],
+    "FixType",
+    ["bash", "ansible", "anaconda", "kickstart", "blueprint", "bootc"],
 )
 
 
@@ -35,18 +35,18 @@ def parse_xml(path):
     """
     # parse input XML tream in 10KB binary chunks (arbitrary reasonable value),
     # pass them to ElementTree parser, which returns element start/end events
-    parser = ET.XMLPullParser(events=['start', 'end'])
+    parser = ET.XMLPullParser(events=["start", "end"])
     frames = []
     elements = []
-    with open(path, 'rb') as f:
+    with open(path, "rb") as f:
         while True:
             chunk = f.read(10000)
             if not chunk:
                 break
             parser.feed(chunk)
             for event, elem in parser.read_events():
-                if event == 'start':
-                    frames.append(elem.tag.partition('}')[2] or elem.tag)
+                if event == "start":
+                    frames.append(elem.tag.partition("}")[2] or elem.tag)
                     elements.append(elem)
                 else:
                     yield (frames, elements)
@@ -98,63 +98,63 @@ class Datastream:
             # elsewhere in the XML tree (if only element name was used)
 
             # profiles
-            if frames[-1] == 'Profile':
-                profile = elements[-1].get('id')
-                profile = profile.removeprefix('xccdf_org.ssgproject.content_profile_')
+            if frames[-1] == "Profile":
+                profile = elements[-1].get("id")
+                profile = profile.removeprefix("xccdf_org.ssgproject.content_profile_")
                 self.profiles[profile]  # let defaultdict fill in the values
 
             # profile contents
-            elif frames[-2] == 'Profile':
-                profile = elements[-2].get('id')
-                profile = profile.removeprefix('xccdf_org.ssgproject.content_profile_')
+            elif frames[-2] == "Profile":
+                profile = elements[-2].get("id")
+                profile = profile.removeprefix("xccdf_org.ssgproject.content_profile_")
                 # title
-                if frames[-1] == 'title':
+                if frames[-1] == "title":
                     text = elements[-1].text
                     self.profiles[profile].title = text
                 # rule selection
-                elif frames[-1] == 'select':
-                    if elements[-1].get('selected') == 'true':
-                        rule = elements[-1].get('idref')
-                        rule = rule.removeprefix('xccdf_org.ssgproject.content_rule_')
+                elif frames[-1] == "select":
+                    if elements[-1].get("selected") == "true":
+                        rule = elements[-1].get("idref")
+                        rule = rule.removeprefix("xccdf_org.ssgproject.content_rule_")
                         self.profiles[profile].rules.add(rule)
                 # variable refinement
-                elif frames[-1] == 'refine-value':
-                    name = elements[-1].get('idref')
-                    name = name.removeprefix('xccdf_org.ssgproject.content_value_')
-                    contents = elements[-1].get('selector')
+                elif frames[-1] == "refine-value":
+                    name = elements[-1].get("idref")
+                    name = name.removeprefix("xccdf_org.ssgproject.content_value_")
+                    contents = elements[-1].get("selector")
                     self.profiles[profile].values.add((name, contents))
 
             # rules
-            elif frames[-1] == 'Rule':
-                rule_id = elements[-1].get('id')
-                rule_id = rule_id.removeprefix('xccdf_org.ssgproject.content_rule_')
+            elif frames[-1] == "Rule":
+                rule_id = elements[-1].get("id")
+                rule_id = rule_id.removeprefix("xccdf_org.ssgproject.content_rule_")
                 self.rules[rule_id]  # let defaultdict fill in the values
 
             # fixes / remediations
-            elif frames[-2:] == ['Rule', 'fix']:
-                system = elements[-1].get('system')
-                for_rule = elements[-1].get('id')
-                if system == 'urn:xccdf:fix:script:sh':
+            elif frames[-2:] == ["Rule", "fix"]:
+                system = elements[-1].get("system")
+                for_rule = elements[-1].get("id")
+                if system == "urn:xccdf:fix:script:sh":
                     self.rules[for_rule].fixes |= FixType.bash
-                elif system == 'urn:xccdf:fix:script:ansible':
+                elif system == "urn:xccdf:fix:script:ansible":
                     self.rules[for_rule].fixes |= FixType.ansible
-                elif system == 'urn:redhat:anaconda:pre':
+                elif system == "urn:redhat:anaconda:pre":
                     self.rules[for_rule].fixes |= FixType.anaconda
-                elif system == 'urn:xccdf:fix:script:kickstart':
+                elif system == "urn:xccdf:fix:script:kickstart":
                     self.rules[for_rule].fixes |= FixType.kickstart
-                elif system == 'urn:redhat:osbuild:blueprint':
+                elif system == "urn:redhat:osbuild:blueprint":
                     self.rules[for_rule].fixes |= FixType.blueprint
-                elif system == 'urn:xccdf:fix:script:bootc':
+                elif system == "urn:xccdf:fix:script:bootc":
                     self.rules[for_rule].fixes |= FixType.bootc
 
             # checks (OVAL OR sce)
-            elif frames[-2:] == ['Rule', 'check']:
-                system = elements[-1].get('system')
-                for_rule = elements[-2].get('id')
-                for_rule = for_rule.removeprefix('xccdf_org.ssgproject.content_rule_')
-                if system == 'http://open-scap.org/page/SCE':
+            elif frames[-2:] == ["Rule", "check"]:
+                system = elements[-1].get("system")
+                for_rule = elements[-2].get("id")
+                for_rule = for_rule.removeprefix("xccdf_org.ssgproject.content_rule_")
+                if system == "http://open-scap.org/page/SCE":
                     self.rules[for_rule].has_sce = True
-                if system == 'http://oval.mitre.org/XMLSchema/oval-definitions-5':
+                if system == "http://oval.mitre.org/XMLSchema/oval-definitions-5":
                     self.rules[for_rule].has_oval = True
 
         # "convert" to regular dict, make external logic get KeyError
@@ -210,14 +210,14 @@ def rule_from_verbose(line):
 
     Return None if the input line is not a valid oscap verbose result line.
     """
-    match = re.match(r'^xccdf_org.ssgproject.content_rule_(.+):([a-z]+)$', line)
+    match = re.match(r"^xccdf_org.ssgproject.content_rule_(.+):([a-z]+)$", line)
     if match:
         return (match.group(1), match.group(2))
     else:
         return None
 
 
-def report_from_verbose(lines, to_file='oscap.log'):
+def report_from_verbose(lines, to_file="oscap.log"):
     """
     Report results from oscap output.
 
@@ -237,10 +237,10 @@ def report_from_verbose(lines, to_file='oscap.log'):
     total_nonresults = 0
     log_path = results.register_log(to_file)
 
-    with open(log_path, 'w') as out_file:
+    with open(log_path, "w") as out_file:
         for line in lines:
-            results.atex_upload_log_data(to_file, f'{line}\n')
-            out_file.write(f'{line}\n')
+            results.atex_upload_log_data(to_file, f"{line}\n")
+            out_file.write(f"{line}\n")
             out_file.flush()
 
             match = rule_from_verbose(line)
@@ -250,15 +250,15 @@ def report_from_verbose(lines, to_file='oscap.log'):
             total += 1
             note = None
 
-            if status in ['pass', 'error', 'fail']:
+            if status in ["pass", "error", "fail"]:
                 pass
-            elif status in ['notapplicable', 'notchecked', 'notselected', 'informational']:
+            elif status in ["notapplicable", "notchecked", "notselected", "informational"]:
                 total_nonresults += 1
                 note = status
-                status = 'skip'
+                status = "skip"
             else:
                 note = status
-                status = 'error'
+                status = "error"
 
             results.report(status, rule, note)
 
@@ -280,7 +280,7 @@ def unselect_rules(orig_ds, new_ds, rules):
     copy the source datastream to the destination one, disabling the
     specified rules.
     """
-    prefix = 'xccdf_org.ssgproject.content_rule_'
+    prefix = "xccdf_org.ssgproject.content_rule_"
     # prefix rules once and store in a set for O(1) membership checks
     prefixed_rules = {
         (x if x.startswith(prefix) else prefix + x)
@@ -296,7 +296,7 @@ def unselect_rules(orig_ds, new_ds, rules):
         new_ds.unlink()
 
     util.log(f"reading {orig_ds}, writing to {new_ds}")
-    with open(orig_ds) as orig_ds_f, open(new_ds, 'w') as new_ds_f:
+    with open(orig_ds) as orig_ds_f, open(new_ds, "w") as new_ds_f:
         for line in orig_ds_f:
             matched = False
 

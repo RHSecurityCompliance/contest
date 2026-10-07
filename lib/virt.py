@@ -92,16 +92,16 @@ from pathlib import Path
 
 from lib import util, versions, dnf, results
 
-GUEST_NAME = 'contest'
-GUEST_LOGIN_PASS = 'contest'
-GUEST_SSH_USER = 'root'
+GUEST_NAME = "contest"
+GUEST_LOGIN_PASS = "contest"
+GUEST_SSH_USER = "root"
 
-GUEST_IMG_DIR = '/var/lib/libvirt/images'
+GUEST_IMG_DIR = "/var/lib/libvirt/images"
 
 # Address on which services are bound in the test runner's network namespace.
-NETWORK_HOST = '127.0.0.1'
+NETWORK_HOST = "127.0.0.1"
 # Address of the test runner as seen from QEMU user networking (SLIRP).
-NETWORK_GUEST = '10.0.2.2'
+NETWORK_GUEST = "10.0.2.2"
 
 # installing from HTTP URL leads to Anaconda downloading stage2
 # to RAM, leading to notably higher memory requirements during
@@ -142,10 +142,10 @@ class Host:
         Return True if the host has HW-accelerated virtualization support (HVM).
         Else return False.
         """
-        with open('/proc/cpuinfo') as f:
+        with open("/proc/cpuinfo") as f:
             cpuinfo = f.read()
-        for virt_type in ['vmx', 'svm']:
-            if re.search(fr'\nflags\t+:.* {virt_type}( |$)', cpuinfo):
+        for virt_type in ["vmx", "svm"]:
+            if re.search(fr"\nflags\t+:.* {virt_type}( |$)", cpuinfo):
                 return True
         return False
 
@@ -199,7 +199,7 @@ class Host:
                 -o UserKnownHostsFile=/dev/null -o ServerAliveInterval=1 \
                 "root@$ipaddr"
         ''')
-        script = script.replace('%SSHKEY_DIR%', GUEST_IMG_DIR)  # f-strings cannot have \
+        script = script.replace("%SSHKEY_DIR%", GUEST_IMG_DIR)  # f-strings cannot have \
         dest.write_text(script)
         dest.chmod(0o755)
 
@@ -210,42 +210,42 @@ class Host:
         """
         def _key_exists(f, key):
             f.seek(0)
-            return any(line.lstrip().startswith((f'{key} ', f'{key}=')) for line in f)
+            return any(line.lstrip().startswith((f"{key} ", f"{key}=")) for line in f)
 
         changed = False
-        with open(conf, 'a+') as f:
+        with open(conf, "a+") as f:
             for key, value in settings.items():
                 if not _key_exists(f, key):
                     changed = True
                     util.log(f"setting {key} = {value} in {conf}")
-                    f.write(f'\n{key} = {value}\n')
+                    f.write(f"\n{key} = {value}\n")
         return changed
 
     @classmethod
     def setup_qemu_conf(cls):
-        return cls._set_libvirt_options('/etc/libvirt/qemu.conf', {
+        return cls._set_libvirt_options("/etc/libvirt/qemu.conf", {
             # disable core dumps - raising RLIMIT_CORE back to unlimited
             # requires CAP_SYS_RESOURCE in the init user namespace
-            'max_core': 0,
+            "max_core": 0,
             # don't use xattrs to remember original disk image owner
-            'remember_owner': 0,
+            "remember_owner": 0,
             # don't create a private mount namespace for qemu,
             # avoids "/dev/urandom File exists" on RHEL-8
-            'namespaces': '[]',
+            "namespaces": "[]",
             # don't impose cgroup resource limits on qemu
-            'cgroup_controllers': '[]',
+            "cgroup_controllers": "[]",
         })
 
     @classmethod
     def setup_libvirtd_conf(cls):
         opts = {
             # disable keepalive timeouts that may fire on a busy host
-            'keepalive_interval': -1,
+            "keepalive_interval": -1,
         }
         if versions.rhel == 8:
-            return cls._set_libvirt_options('/etc/libvirt/libvirtd.conf', opts)
+            return cls._set_libvirt_options("/etc/libvirt/libvirtd.conf", opts)
         else:
-            return cls._set_libvirt_options('/etc/libvirt/virtqemud.conf', opts)
+            return cls._set_libvirt_options("/etc/libvirt/virtqemud.conf", opts)
 
     @classmethod
     def setup(cls):
@@ -259,24 +259,24 @@ class Host:
         if versions.rhel == 8:
             # monolothic daemon, always restart it if config changed,
             # or start if it wasn't running (no-op if it was already)
-            action = 'restart' if conf_changed else 'start'
-            util.subprocess_run(['systemctl', action, '--quiet', 'libvirtd'], check=True)
+            action = "restart" if conf_changed else "start"
+            util.subprocess_run(["systemctl", action, "--quiet", "libvirtd"], check=True)
 
         else:
             # modular libvirtd daemons - always start sockets, restart service
             # if already running (config applies next time it's socket-started)
-            for daemon in ['virtqemud', 'virtstoraged', 'virtlogd']:
+            for daemon in ["virtqemud", "virtstoraged", "virtlogd"]:
                 util.subprocess_run(
-                    ['systemctl', 'start', '--quiet', f'{daemon}.socket'],
+                    ["systemctl", "start", "--quiet", f"{daemon}.socket"],
                     check=True,
                 )
             if conf_changed:
                 util.subprocess_run(
-                    ['systemctl', 'try-restart', '--quiet', 'virtqemud.service'],
+                    ["systemctl", "try-restart", "--quiet", "virtqemud.service"],
                     check=True,
                 )
 
-        cls.create_sshvm('/root/contest-sshvm')
+        cls.create_sshvm("/root/contest-sshvm")
 
 
 #
@@ -311,24 +311,24 @@ class Kickstart:
         output = self.ks
         # partitions
         if self.partitions is not None:
-            entries = [f'part {mntpoint} --size={size}' for mntpoint, size in self.partitions]
+            entries = [f"part {mntpoint} --size={size}" for mntpoint, size in self.partitions]
             if entries:
-                output += '\n\n' + '\n'.join(entries)
+                output += "\n\n" + "\n".join(entries)
         else:
-            output += '\n\npart / --size=1 --grow'
+            output += "\n\npart / --size=1 --grow"
         # packages
         if self.packages:
-            output += '\n\n%packages\n' + '\n'.join(self.packages) + '\n%end'
+            output += "\n\n%packages\n" + "\n".join(self.packages) + "\n%end"
         # appends
         if self.appends:
-            output += '\n\n' + '\n'.join(self.appends)
+            output += "\n\n" + "\n".join(self.appends)
         return output
 
     @contextlib.contextmanager
     def to_tmpfile(self):
         final_ks = self.assemble()
         util.log(f"writing:\n{textwrap.indent(final_ks, '    ')}")
-        with tempfile.NamedTemporaryFile(mode='w', suffix='.ks.cfg') as f:
+        with tempfile.NamedTemporaryFile(mode="w", suffix=".ks.cfg") as f:
             f.write(final_ks)
             f.flush()
             yield Path(f.name)
@@ -339,37 +339,37 @@ class Kickstart:
         self.appends.append(content)
 
     def add_pre(self, content):
-        new = ('%pre --interpreter=/bin/bash --erroronfail\n'
-               'set -xe; exec >/dev/tty 2>&1\n' + content + '\n%end')
+        new = ("%pre --interpreter=/bin/bash --erroronfail\n"
+               "set -xe; exec >/dev/tty 2>&1\n" + content + "\n%end")
         self.append(new)
 
     def add_post(self, content):
-        new = ('%post --interpreter=/bin/bash --erroronfail\n'
-               'set -xe; exec >/dev/tty 2>&1\n' + content + '\n%end')
+        new = ("%post --interpreter=/bin/bash --erroronfail\n"
+               "set -xe; exec >/dev/tty 2>&1\n" + content + "\n%end")
         self.append(new)
 
     def add_install_only_repo(self, name, baseurl):
-        self.appends.append(f'repo --name={name} --baseurl={baseurl}')
+        self.appends.append(f"repo --name={name} --baseurl={baseurl}")
 
     def add_host_repos(self):
         for reponame, config in dnf.repo_configs():
-            if 'metalink' in config:
-                metalink = config['metalink']
-                self.appends.append(f'repo --name={reponame} --metalink={metalink}')
-            elif 'mirrorlist' in config:
-                mirrorlist = config['mirrorlist']
-                self.appends.append(f'repo --name={reponame} --mirrorlist={mirrorlist}')
+            if "metalink" in config:
+                metalink = config["metalink"]
+                self.appends.append(f"repo --name={reponame} --metalink={metalink}")
+            elif "mirrorlist" in config:
+                mirrorlist = config["mirrorlist"]
+                self.appends.append(f"repo --name={reponame} --mirrorlist={mirrorlist}")
             else:
-                baseurl = config['baseurl']
-                self.appends.append(f'repo --name={reponame} --baseurl={baseurl}')
+                baseurl = config["baseurl"]
+                self.appends.append(f"repo --name={reponame} --baseurl={baseurl}")
 
     def add_oscap_addon(self, keyvals):
         """Append an OSCAP addon section, with key=value pairs from 'keyvals'."""
-        lines = '\n'.join(f'  {k} = {v}' for k, v in keyvals.items())
-        section = 'org_fedora_oscap' if versions.rhel < 9 else 'com_redhat_oscap'
-        self.append(f'%addon {section}\n{lines}\n%end')
+        lines = "\n".join(f"  {k} = {v}" for k, v in keyvals.items())
+        section = "org_fedora_oscap" if versions.rhel < 9 else "com_redhat_oscap"
+        self.append(f"%addon {section}\n{lines}\n%end")
 
-    def add_authorized_key(self, pubkey, homedir='/root', owner='root'):
+    def add_authorized_key(self, pubkey, homedir="/root", owner="root"):
         script = util.dedent(fr'''
             mkdir -m 0700 -p {homedir}/.ssh
             cat >> {homedir}/.ssh/authorized_keys <<EOF
@@ -397,7 +397,7 @@ class Guest:
     """
 
     GUEST_REQUIRES = [
-        'qemu-guest-agent',
+        "qemu-guest-agent",
     ]
 
     def __init__(self, tag=None, *, name=GUEST_NAME):
@@ -405,20 +405,20 @@ class Guest:
         self.name = name
         self.ipaddr = NETWORK_HOST
         self.port = None
-        self.ssh_keyfile_path = Path(f'{GUEST_IMG_DIR}/{name}.sshkey')
+        self.ssh_keyfile_path = Path(f"{GUEST_IMG_DIR}/{name}.sshkey")
         self.ssh_pubkey = None
         self.disk_path = None
         self.disk_format = None
-        self.state_file_path = Path(f'{GUEST_IMG_DIR}/{name}.state')
-        self.snapshot_path = Path(f'{GUEST_IMG_DIR}/{name}-snap.qcow2')
+        self.state_file_path = Path(f"{GUEST_IMG_DIR}/{name}.state")
+        self.snapshot_path = Path(f"{GUEST_IMG_DIR}/{name}-snap.qcow2")
         # if it exists, guest was successfully installed
-        self.install_ready_path = Path(f'{GUEST_IMG_DIR}/{name}.install_ready')
+        self.install_ready_path = Path(f"{GUEST_IMG_DIR}/{name}.install_ready")
         # if True, all snapshot preparation processes were successful
         self.snapshot_ready = False
 
     def install_basic(
         self, location=None, kickstart=None, secure_boot=False, virt_install_args=None,
-        kernel_args=None, final_mem=None, disk_format='qcow2',
+        kernel_args=None, final_mem=None, disk_format="qcow2",
     ):
         """
         Install a new guest, to a shut down state.
@@ -450,57 +450,57 @@ class Guest:
         if not kickstart:
             kickstart = Kickstart()
 
-        disk_extension = 'qcow2' if disk_format == 'qcow2' else 'img'
-        disk_path = Path(f'{GUEST_IMG_DIR}/{self.name}.{disk_extension}')
+        disk_extension = "qcow2" if disk_format == "qcow2" else "img"
+        disk_path = Path(f"{GUEST_IMG_DIR}/{self.name}.{disk_extension}")
 
         # pre-create disk image with qemu-img to allow for preallocation=metadata
         # which provides better performance for qcow2 images
         util.log(f"pre-creating disk image {disk_path}")
-        qemu_img_cmd = ['qemu-img', 'create', '-f', disk_format]
-        if disk_format == 'qcow2':
-            qemu_img_cmd += ['-o', 'preallocation=metadata']
+        qemu_img_cmd = ["qemu-img", "create", "-f", disk_format]
+        if disk_format == "qcow2":
+            qemu_img_cmd += ["-o", "preallocation=metadata"]
         # 100 GB gives kickstarts plenty of space for partitions
-        qemu_img_cmd += [disk_path, '100G']
+        qemu_img_cmd += [disk_path, "100G"]
         util.subprocess_run(qemu_img_cmd, check=True, stderr=subprocess.PIPE)
 
         with kickstart.to_tmpfile() as ksfile:
             virt_install = [
-                'pseudotty', 'virt-install',
+                "pseudotty", "virt-install",
                 # installing from HTTP URL leads to Anaconda downloading stage2
                 # to RAM, leading to notably higher memory requirements during
                 # installation
-                '--name', self.name, '--vcpus', '1', '--memory', str(INSTALL_TIME_RAM),
+                "--name", self.name, "--vcpus", "1", "--memory", str(INSTALL_TIME_RAM),
                 # Use pre-created disk
-                '--disk', f'path={disk_path},format={disk_format},io=threads,cache=none',
-                '--network', 'user',
-                '--location', location,
-                '--graphics', 'none', '--console', 'pty', '--rng', '/dev/urandom',
+                "--disk", f"path={disk_path},format={disk_format},io=threads,cache=none",
+                "--network", "user",
+                "--location", location,
+                "--graphics", "none", "--console", "pty", "--rng", "/dev/urandom",
                 # this has nothing to do with rhel8, it just tells v-i to use virtio
-                '--initrd-inject', ksfile, '--os-variant', 'rhel8-unknown',
-                '--extra-args', (
-                    f'console=ttyS0 inst.ks=file:/{ksfile.name} '
+                "--initrd-inject", ksfile, "--os-variant", "rhel8-unknown",
+                "--extra-args", (
+                    f"console=ttyS0 inst.ks=file:/{ksfile.name} "
                     # explicitly add inst.repo= because the automatic addition
                     # is based on random OS name strings, and is unreliable
-                    f'inst.repo={location} '
-                    'inst.notmux inst.noninteractive inst.noverifyssl inst.sshd '
-                    'inst.loglevel=debug systemd.journald.forward_to_console=1'
-                    + (' '+' '.join(kernel_args) if kernel_args else '')
+                    f"inst.repo={location} "
+                    "inst.notmux inst.noninteractive inst.noverifyssl inst.sshd "
+                    "inst.loglevel=debug systemd.journald.forward_to_console=1"
+                    + (" "+" ".join(kernel_args) if kernel_args else "")
                 ),
-                '--noreboot',
+                "--noreboot",
                 *(virt_install_args if virt_install_args else []),
             ]
             if secure_boot:
-                virt_install += ['--boot', 'firmware=efi,loader_secure=no']
+                virt_install += ["--boot", "firmware=efi,loader_secure=no"]
 
-            executable = util.libdir / 'pseudotty'
+            executable = util.libdir / "pseudotty"
             proc = util.subprocess_Popen(virt_install, stdout=PIPE, executable=executable)
             fail_exprs = [re.compile(x) for x in INSTALL_FAILURES]
 
-            log_path = results.register_log('virt-install.log')
+            log_path = results.register_log("virt-install.log")
             try:
-                with open(log_path, 'wb') as virt_log:
+                with open(log_path, "wb") as virt_log:
                     for line in proc.stdout:
-                        results.atex_upload_log_data('virt-install.log', line)
+                        results.atex_upload_log_data("virt-install.log", line)
                         virt_log.write(line)
                         virt_log.flush()
                         if any(x.search(line) for x in fail_exprs):
@@ -543,7 +543,7 @@ class Guest:
         if not kickstart:
             kickstart = Kickstart()
 
-        kickstart.packages.append('openscap-scanner')
+        kickstart.packages.append("openscap-scanner")
         kickstart.add_host_repos()
         self.generate_ssh_keypair()
         kickstart.add_authorized_key(self.ssh_pubkey)
@@ -558,20 +558,20 @@ class Guest:
             # host the custom RPM on a HTTP server, as Anaconda needs a YUM repo
             # to pull packages from
             with util.BackgroundHTTPServer(NETWORK_HOST, 0) as srv:
-                srv.add_dir(repo, 'repo')
+                srv.add_dir(repo, "repo")
                 _, http_port = srv.start()
                 # now that we know the address/port of the HTTP server, add it to
                 # the kickstart as well
                 kickstart.add_install_only_repo(
-                    'contest-rpmpack',
-                    f'http://{NETWORK_GUEST}:{http_port}/repo',
+                    "contest-rpmpack",
+                    f"http://{NETWORK_GUEST}:{http_port}/repo",
                 )
                 kickstart.packages.append(util.RpmPack.NAME)
                 # install the OS using our kickstart
                 self.install_basic(kickstart=kickstart, **kwargs)
 
     def import_image(
-        self, disk_path, disk_format='qcow2', *, secure_boot=False, virt_install_args=None,
+        self, disk_path, disk_format="qcow2", *, secure_boot=False, virt_install_args=None,
         final_mem=None,
     ):
         """
@@ -588,23 +588,23 @@ class Guest:
         util.log(f"importing {disk_path} as {disk_format}")
 
         virt_install = [
-            'pseudotty', 'virt-install',
-            '--name', self.name, '--vcpus', '1', '--memory', str(INSTALL_TIME_RAM),
-            '--disk', f'path={disk_path},format={disk_format},io=native,cache=none',
-            '--network', 'user',
-            '--graphics', 'none', '--console', 'pty', '--rng', '/dev/urandom',
-            '--noreboot', '--import',
+            "pseudotty", "virt-install",
+            "--name", self.name, "--vcpus", "1", "--memory", str(INSTALL_TIME_RAM),
+            "--disk", f"path={disk_path},format={disk_format},io=native,cache=none",
+            "--network", "user",
+            "--graphics", "none", "--console", "pty", "--rng", "/dev/urandom",
+            "--noreboot", "--import",
             # this has nothing to do with rhel8, it just tells v-i to use virtio
-            '--os-variant', 'rhel8-unknown',
+            "--os-variant", "rhel8-unknown",
             # don't try to start the imported VM; there are some race conditions
             # inside virt-install when attaching a console of an imported guest
-            '--autoconsole', 'none',
+            "--autoconsole", "none",
             *(virt_install_args if virt_install_args else []),
         ]
         if secure_boot:
-            virt_install += ['--boot', 'firmware=efi,loader_secure=yes']
+            virt_install += ["--boot", "firmware=efi,loader_secure=yes"]
 
-        executable = util.libdir / 'pseudotty'
+        executable = util.libdir / "pseudotty"
         util.subprocess_run(
             virt_install, executable=executable, check=True, stderr=subprocess.PIPE,
         )
@@ -618,20 +618,20 @@ class Guest:
         self.install_ready_path.write_text(self.tag)
 
     def start(self):
-        if guest_domstate(self.name) == 'shut off':
-            virsh('start', self.name, check=True)
+        if guest_domstate(self.name) == "shut off":
+            virsh("start", self.name, check=True)
         self.port = ensure_domain_port(self.name)
 
     def destroy(self):
         state = guest_domstate(self.name)
-        if state and state != 'shut off':
-            virsh('destroy', self.name, check=True)
+        if state and state != "shut off":
+            virsh("destroy", self.name, check=True)
         self.port = None
 
     def shutdown(self):
-        if guest_domstate(self.name) == 'running':
-            virsh('shutdown', self.name, check=True)
-        wait_for_domstate(self.name, 'shut off')
+        if guest_domstate(self.name) == "running":
+            virsh("shutdown", self.name, check=True)
+        wait_for_domstate(self.name, "shut off")
         self.port = None
 
     # we cannot shutdown/start a snapshotted guest as that would start it from
@@ -640,20 +640,20 @@ class Guest:
     def soft_reboot(self):
         """Reboot by issuing 'reboot' via ssh."""
         util.log("rebooting using qemu-guest-agent")
-        self.guest_agent_cmd('guest-shutdown', {'mode': 'reboot'}, blind=True)
+        self.guest_agent_cmd("guest-shutdown", {"mode": "reboot"}, blind=True)
         wait_for_ssh(self.ipaddr, self.port, to_shutdown=True)
         wait_for_ssh(self.ipaddr, self.port)
 
     def reset(self):
         util.log("rebooting using 'virsh reset'")
-        virsh('reset', self.name, check=True)
+        virsh("reset", self.name, check=True)
 
     def undefine(self, incl_storage=False):
         if guest_domstate(self.name):
-            storage = ['--remove-all-storage'] if incl_storage else []
+            storage = ["--remove-all-storage"] if incl_storage else []
             virsh(
-                'undefine', self.name, '--nvram', '--snapshots-metadata',
-                '--checkpoints-metadata', *storage, check=True,
+                "undefine", self.name, "--nvram", "--snapshots-metadata",
+                "--checkpoints-metadata", *storage, check=True,
             )
 
     def is_installed(self):
@@ -701,10 +701,10 @@ class Guest:
 
         # save a running domain (RAM, but not disk state) to a state file
         # so that it can be restored later
-        virsh('save', self.name, self.state_file_path, check=True)
+        virsh("save", self.name, self.state_file_path, check=True)
 
         # modify domain's built-in XML to point to a snapshot-style disk path
-        set_image_disk_in_state_file(self.state_file_path, self.snapshot_path, 'qcow2')
+        set_image_disk_in_state_file(self.state_file_path, self.snapshot_path, "qcow2")
 
         self.snapshot_ready = True
 
@@ -712,17 +712,17 @@ class Guest:
         self._destroy_snapshotted()
 
         cmd = [
-            'qemu-img', 'create', '-q', '-f', 'qcow2',
-            '-b', self.disk_path, '-F', self.disk_format,
+            "qemu-img", "create", "-q", "-f", "qcow2",
+            "-b", self.disk_path, "-F", self.disk_format,
             self.snapshot_path,
         ]
         subprocess.run(cmd, check=True)
 
-        virsh('restore', self.state_file_path, check=True)
+        virsh("restore", self.state_file_path, check=True)
         self.port = ensure_domain_port(self.name)
 
     def cleanup_snapshot(self):
-        if os.environ.get('CONTEST_LEAVE_GUEST_RUNNING') == '1':
+        if os.environ.get("CONTEST_LEAVE_GUEST_RUNNING") == "1":
             self._log_leave_running_notice()
             return
 
@@ -735,7 +735,7 @@ class Guest:
             To ssh into it, log in (ssh) into the VM host first, then do:
                 ./contest-sshvm
             """)
-        util.log(textwrap.indent(out, '    '), skip_frames=1)
+        util.log(textwrap.indent(out, "    "), skip_frames=1)
 
     @contextlib.contextmanager
     def snapshotted(self):
@@ -771,7 +771,7 @@ class Guest:
                 util.log(f"shutting down {self.name} (safely)")
                 self.shutdown()
             else:
-                if os.environ.get('CONTEST_LEAVE_GUEST_RUNNING') == '1':
+                if os.environ.get("CONTEST_LEAVE_GUEST_RUNNING") == "1":
                     self._log_leave_running_notice()
                 else:
                     try:
@@ -783,13 +783,13 @@ class Guest:
 
     def _do_ssh(self, *cmd, func=util.subprocess_run, **run_args):
         ssh_cmdline = [
-            'ssh', '-q', '-p', str(self.port), '-i', self.ssh_keyfile_path,
-            '-o', 'BatchMode=yes',
-            '-o', 'StrictHostKeyChecking=no', '-o', 'UserKnownHostsFile=/dev/null',
-            f'{GUEST_SSH_USER}@{self.ipaddr}', '--', *cmd,
+            "ssh", "-q", "-p", str(self.port), "-i", self.ssh_keyfile_path,
+            "-o", "BatchMode=yes",
+            "-o", "StrictHostKeyChecking=no", "-o", "UserKnownHostsFile=/dev/null",
+            f"{GUEST_SSH_USER}@{self.ipaddr}", "--", *cmd,
         ]
-        if run_args.get('check') and run_args.get('stderr') is None:
-            run_args['stderr'] = subprocess.PIPE
+        if run_args.get("check") and run_args.get("stderr") is None:
+            run_args["stderr"] = subprocess.PIPE
         return func(ssh_cmdline, **run_args)
 
     def ssh(self, *cmd, **kwargs):
@@ -801,52 +801,52 @@ class Guest:
 
     def _do_scp(self, *args):
         cmd = [
-            'scp', '-q', '-P', str(self.port), '-i', self.ssh_keyfile_path,
-            '-o', 'BatchMode=yes',
-            '-o', 'StrictHostKeyChecking=no', '-o', 'UserKnownHostsFile=/dev/null',
+            "scp", "-q", "-P", str(self.port), "-i", self.ssh_keyfile_path,
+            "-o", "BatchMode=yes",
+            "-o", "StrictHostKeyChecking=no", "-o", "UserKnownHostsFile=/dev/null",
             *args,
         ]
         return util.subprocess_run(cmd, check=True, stderr=subprocess.PIPE)
 
-    def copy_from(self, remote_file, local_file='.'):
-        self._do_scp(f'{GUEST_SSH_USER}@{self.ipaddr}:{remote_file}', local_file)
+    def copy_from(self, remote_file, local_file="."):
+        self._do_scp(f"{GUEST_SSH_USER}@{self.ipaddr}:{remote_file}", local_file)
 
-    def copy_to(self, local_file, remote_file='.'):
-        self._do_scp(local_file, f'{GUEST_SSH_USER}@{self.ipaddr}:{remote_file}')
+    def copy_to(self, local_file, remote_file="."):
+        self._do_scp(local_file, f"{GUEST_SSH_USER}@{self.ipaddr}:{remote_file}")
 
     def _do_rsync(self, *args):
         ssh = (
-            f'ssh -q -p {self.port} -i {self.ssh_keyfile_path}'
-            ' -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null'
+            f"ssh -q -p {self.port} -i {self.ssh_keyfile_path}"
+            " -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null"
         )
         return util.subprocess_run(
-            ['rsync', '-a', '-e', ssh, *args], check=True, stderr=subprocess.PIPE,
+            ["rsync", "-a", "-e", ssh, *args], check=True, stderr=subprocess.PIPE,
         )
 
-    def rsync_from(self, remote_path, local_path='.', rsync_opts=()):
+    def rsync_from(self, remote_path, local_path=".", rsync_opts=()):
         if isinstance(remote_path, (tuple,list)):
-            remote_args = (f'{GUEST_SSH_USER}@{self.ipaddr}:{x}' for x in remote_path)
+            remote_args = (f"{GUEST_SSH_USER}@{self.ipaddr}:{x}" for x in remote_path)
         else:
-            remote_args = (f'{GUEST_SSH_USER}@{self.ipaddr}:{remote_path}',)
+            remote_args = (f"{GUEST_SSH_USER}@{self.ipaddr}:{remote_path}",)
         self._do_rsync(*rsync_opts, *remote_args, local_path)
 
-    def rsync_to(self, local_path, remote_path='.', rsync_opts=()):
+    def rsync_to(self, local_path, remote_path=".", rsync_opts=()):
         if isinstance(local_path, (tuple,list)):
             local_args = local_path
         else:
             local_args = (local_path,)
         self._do_rsync(
-            *rsync_opts, *local_args, f'{GUEST_SSH_USER}@{self.ipaddr}:{remote_path}',
+            *rsync_opts, *local_args, f"{GUEST_SSH_USER}@{self.ipaddr}:{remote_path}",
         )
 
     def generate_ssh_keypair(self):
         private = self.ssh_keyfile_path
         # don't use .with_suffix() as it would destroy anything after first '.'
-        public = Path(f'{private}.pub')
+        public = Path(f"{private}.pub")
         for filepath in [private, public]:
             filepath.unlink(missing_ok=True)
         util.ssh_keygen(private)
-        self.ssh_pubkey = public.read_text().rstrip('\n')
+        self.ssh_pubkey = public.read_text().rstrip("\n")
 
     def guest_agent_cmd(self, cmd, args=None, blind=False):
         """
@@ -855,14 +855,14 @@ class Guest:
         If 'blind' is specified, the command is executed without waiting for
         completion and nothing is returned.
         """
-        request = {'execute': cmd}
+        request = {"execute": cmd}
         if args:
-            request['arguments'] = args
-        ret = virsh('qemu-agent-command', self.name, json.dumps(request), check=not blind,
+            request["arguments"] = args
+        ret = virsh("qemu-agent-command", self.name, json.dumps(request), check=not blind,
                     text=True, stdout=PIPE, stderr=DEVNULL if blind else None)
         if blind:
             return
-        return json.loads(ret.stdout)['return']
+        return json.loads(ret.stdout)["return"]
 
     def wipe(self):
         """
@@ -874,7 +874,7 @@ class Guest:
         self.destroy()
         self.undefine(incl_storage=True)
         files = [
-            self.ssh_keyfile_path, Path(f'{self.ssh_keyfile_path}.pub'),
+            self.ssh_keyfile_path, Path(f"{self.ssh_keyfile_path}.pub"),
             self.snapshot_path, self.state_file_path, self.install_ready_path,
         ]
         for f in files:
@@ -887,9 +887,9 @@ class Guest:
 #
 
 def guest_domstate(name):
-    ret = virsh('domstate', name, stdout=PIPE, stderr=DEVNULL, text=True)
+    ret = virsh("domstate", name, stdout=PIPE, stderr=DEVNULL, text=True)
     if ret.returncode != 0:  # not defined
-        return ''
+        return ""
     return ret.stdout.strip()
 
 
@@ -909,15 +909,15 @@ def wait_for_domstate(name, state, timeout=300):
 def get_domain_port(name):
     """Return the active localhost SSH port, or None if no mapping exists."""
     ret = virsh(
-        'qemu-monitor-command', name, '--hmp', 'info usernet',
+        "qemu-monitor-command", name, "--hmp", "info usernet",
         stdout=PIPE, check=True, text=True,
     )
     ports = []
     for line in ret.stdout.splitlines():
         fields = line.split()
         if (
-            len(fields) >= 6 and fields[0] == 'TCP[HOST_FORWARD]'
-            and fields[2] == NETWORK_HOST and fields[5] == '22'
+            len(fields) >= 6 and fields[0] == "TCP[HOST_FORWARD]"
+            and fields[2] == NETWORK_HOST and fields[5] == "22"
         ):
             ports.append(int(fields[3]))
     if len(ports) > 1:
@@ -931,8 +931,8 @@ def ensure_domain_port(name):
     """Create a localhost mapping to guest SSH if the running VM lacks one."""
     if (port := get_domain_port(name)) is None:
         virsh(
-            'qemu-monitor-command', name, '--hmp',
-            f'hostfwd_add tcp:{NETWORK_HOST}:0-:22',
+            "qemu-monitor-command", name, "--hmp",
+            f"hostfwd_add tcp:{NETWORK_HOST}:0-:22",
             stdout=PIPE, check=True, text=True,
         )
         if (port := get_domain_port(name)) is None:
@@ -945,7 +945,7 @@ def ensure_domain_port(name):
 #
 
 def wait_for_ssh(host, port=22, *, to_shutdown=False):
-    util.wait_for_tcp(host, port, compare=b'SSH-', to_shutdown=to_shutdown)
+    util.wait_for_tcp(host, port, compare=b"SSH-", to_shutdown=to_shutdown)
 
 
 #
@@ -954,7 +954,7 @@ def wait_for_ssh(host, port=22, *, to_shutdown=False):
 
 def virsh(*virsh_args, **run_args):
     # --quiet just skips the buggy trailing newline
-    cmd = ['virsh', '--quiet', *virsh_args]
+    cmd = ["virsh", "--quiet", *virsh_args]
     return subprocess.run(cmd, **run_args)
 
 
@@ -963,24 +963,24 @@ def translate_ssg_kickstart(ks_file):
     Parse (and tweak) a kickstart shipped with the upstream content
     into class Kickstart instance.
     """
-    ks_text = ''
+    ks_text = ""
     with open(ks_file) as f:
         for line in f:
-            line = line.rstrip('\n')
+            line = line.rstrip("\n")
 
             # use our own password
-            if re.match(r'^rootpw ', line):
-                line = f'rootpw {GUEST_LOGIN_PASS}'
+            if re.match(r"^rootpw ", line):
+                line = f"rootpw {GUEST_LOGIN_PASS}"
 
             # don't hardcode interface name because we use network installs,
             # which fill in the booted-from device automatically
-            elif re.match(r'^network ', line):
-                line = re.sub(r' --device[= ][^ ]+', '', line)
+            elif re.match(r"^network ", line):
+                line = re.sub(r" --device[= ][^ ]+", "", line)
 
-            ks_text += f'{line}\n'
+            ks_text += f"{line}\n"
 
     # remove %addon oscap, we'll add our own
-    ks_text = re.sub(r'\n%addon .+?_oscap\n.+?\n%end[^\n]*', '', ks_text, flags=re.DOTALL)
+    ks_text = re.sub(r"\n%addon .+?_oscap\n.+?\n%end[^\n]*", "", ks_text, flags=re.DOTALL)
 
     # leave original %packages - Anaconda can handle multiple %packages sections
     # just fine (when we later add ours during installation)
@@ -992,19 +992,19 @@ def translate_oscap_kickstart(lines, datastream):
     Parse (and tweak) a kickstart generated via 'oscap xccdf generate fix'.
     """
     bootloader_seen = False
-    bootloader_append = 'console=ttyS0,115200 mitigations=off'
+    bootloader_append = "console=ttyS0,115200 mitigations=off"
 
-    ks_text = ''
+    ks_text = ""
     for line in lines:
         # use our own password
-        if re.match(r'^rootpw ', line):
-            line = f'rootpw {GUEST_LOGIN_PASS}'
+        if re.match(r"^rootpw ", line):
+            line = f"rootpw {GUEST_LOGIN_PASS}"
 
         # append some optimizations to the existing bootloader line,
         # see Kickstart.TEMPLATE
-        elif re.match(r'^bootloader', line):
+        elif re.match(r"^bootloader", line):
             bootloader_seen = True
-            if '--append' in line:
+            if "--append" in line:
                 line = re.sub(r'--append="([^"]+)"', fr'--append="\1 {bootloader_append}"', line)
             else:
                 line = f'{line} --append="{bootloader_append}"'
@@ -1014,14 +1014,14 @@ def translate_oscap_kickstart(lines, datastream):
         # (see https://github.com/ComplianceAsCode/content/pull/7141)
         # - reducing this to 512 makes the rest of the partitions align
         #   perfectly at 20448 MB, same as other kickstarts
-        elif re.match(r'^logvol /var/log/audit .*--size=10240', line):
-            line = re.sub(r'--size=[^ ]+', '--size=512', line)
+        elif re.match(r"^logvol /var/log/audit .*--size=10240", line):
+            line = re.sub(r"--size=[^ ]+", "--size=512", line)
 
         # replace datastream path for the 'oscap' in %post
-        elif re.match(r'^oscap xccdf eval --remediate', line):
-            line = re.sub(r'/usr/share/xml/scap[^ ]+\.xml', datastream, line)
+        elif re.match(r"^oscap xccdf eval --remediate", line):
+            line = re.sub(r"/usr/share/xml/scap[^ ]+\.xml", datastream, line)
 
-        ks_text += f'{line}\n'
+        ks_text += f"{line}\n"
 
     if not bootloader_seen:
         ks_text += f'bootloader --append="{bootloader_append}"\n'
@@ -1038,18 +1038,18 @@ def calculate_guest_tag(tags):
 
     May return None (which is still a valid Guest tag).
     """
-    if 'snapshottable' not in tags:
+    if "snapshottable" not in tags:
         return None
 
     # these must be appended in specific deterministic order across tests
     # so that multiple tests with identical requirements can share snapshots
-    name = 'default'
-    if 'with-gui' in tags:
-        name += '_gui'
-    if 'uefi' in tags:
-        name += '_uefi'
-    if 'fips' in tags:
-        name += '_fips'
+    name = "default"
+    if "with-gui" in tags:
+        name += "_gui"
+    if "uefi" in tags:
+        name += "_uefi"
+    if "fips" in tags:
+        name += "_fips"
     return name
 
 
@@ -1059,10 +1059,10 @@ def calculate_guest_tag(tags):
 
 def domain_xml_diskinfo(xmlstr):
     domain = ET.fromstring(xmlstr)
-    devices = domain.find('devices')
-    disk = devices.find('disk')
-    driver = disk.find('driver')
-    source = disk.find('source')
+    devices = domain.find("devices")
+    disk = devices.find("disk")
+    driver = disk.find("driver")
+    source = disk.find("source")
     if driver is None or source is None:
         raise RuntimeError("invalid disk specification")
     return (domain, devices, disk, driver, source)
@@ -1070,52 +1070,52 @@ def domain_xml_diskinfo(xmlstr):
 
 def get_image_disk_from_state_file(state_file):
     """Get path/format of the first <disk> definition in a RAM image state file."""
-    ret = virsh('save-image-dumpxml', state_file, stdout=PIPE, check=True, text=True)
+    ret = virsh("save-image-dumpxml", state_file, stdout=PIPE, check=True, text=True)
     _, _, _, driver, source = domain_xml_diskinfo(ret.stdout)
-    image_format = driver.get('type')
-    source_file = Path(source.get('file'))
+    image_format = driver.get("type")
+    source_file = Path(source.get("file"))
     return (source_file, image_format)
 
 
 def get_domain_base_image_disk(domain):
-    ret = virsh('dumpxml', domain, '--inactive', stdout=PIPE, check=True, text=True)
+    ret = virsh("dumpxml", domain, "--inactive", stdout=PIPE, check=True, text=True)
     _, _, disk, driver, _ = domain_xml_diskinfo(ret.stdout)
-    backing_store = disk.find('backingStore')
+    backing_store = disk.find("backingStore")
     if backing_store:
-        base_image = backing_store.find('source').get('file')
-        base_image_format = backing_store.find('format').get('type')
+        base_image = backing_store.find("source").get("file")
+        base_image_format = backing_store.find("format").get("type")
     else:
-        base_image = disk.find('source').get('file')
-        base_image_format = driver.get('type')
+        base_image = disk.find("source").get("file")
+        base_image_format = driver.get("type")
     return (Path(base_image), base_image_format)
 
 
 def set_image_disk_in_state_file(state_file, source_file, image_format):
     """Set a disk path/format inside a saved guest RAM image state file to 'source_file'."""
-    ret = virsh('save-image-dumpxml', state_file, stdout=PIPE, check=True, text=True)
+    ret = virsh("save-image-dumpxml", state_file, stdout=PIPE, check=True, text=True)
     domain, _, disk, driver, source = domain_xml_diskinfo(ret.stdout)
-    driver.set('type', image_format)
-    source.set('file', str(source_file))
+    driver.set("type", image_format)
+    source.set("file", str(source_file))
     # saved state images have empty <backingStore/> for some weird reason,
     # breaking our snapshotting hack -- just remove it
-    backing_store = disk.find('backingStore')
+    backing_store = disk.find("backingStore")
     if backing_store is not None:
         disk.remove(backing_store)
-    with tempfile.NamedTemporaryFile(mode='wb', suffix='.xml') as f:
+    with tempfile.NamedTemporaryFile(mode="wb", suffix=".xml") as f:
         f.write(ET.tostring(domain))
         f.flush()
-        virsh('save-image-define', state_file, f.name, check=True)
+        virsh("save-image-define", state_file, f.name, check=True)
 
 
-def set_domain_memory(domain, amount, unit='MiB'):
+def set_domain_memory(domain, amount, unit="MiB"):
     """Set the amount of RAM allowed for a defined guest."""
-    ret = virsh('dumpxml', domain, stdout=PIPE, check=True, text=True)
+    ret = virsh("dumpxml", domain, stdout=PIPE, check=True, text=True)
     domain = ET.fromstring(ret.stdout)
-    for name in ['memory', 'currentMemory']:
+    for name in ["memory", "currentMemory"]:
         mem = domain.find(name)
-        mem.set('unit', unit)
+        mem.set("unit", unit)
         mem.text = str(amount)
-    with tempfile.NamedTemporaryFile(mode='wb', suffix='.xml') as f:
+    with tempfile.NamedTemporaryFile(mode="wb", suffix=".xml") as f:
         f.write(ET.tostring(domain))
         f.flush()
-        virsh('define', f.name, check=True)
+        virsh("define", f.name, check=True)

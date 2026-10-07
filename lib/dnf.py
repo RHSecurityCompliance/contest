@@ -9,11 +9,11 @@ from pathlib import Path
 from lib import util
 
 
-_Repo = collections.namedtuple('Repo', ['name', 'baseurl', 'data', 'file'])
+_Repo = collections.namedtuple("Repo", ["name", "baseurl", "data", "file"])
 
 
 def _get_repos_dnf():
-    cmd = util.libdir / 'dnf_get_repos'
+    cmd = util.libdir / "dnf_get_repos"
     ret = util.subprocess_run(
         cmd, check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True,
     )
@@ -24,19 +24,19 @@ def _get_repos_dnf():
 
     for repo in json_data:
         # no local-only repos that aren't portable to VM guests
-        if repo['baseurl'].startswith('file://'):
+        if repo["baseurl"].startswith("file://"):
             continue
         # sanity check for (in)valid URLs as Anaconda fails on broken ones
-        if repo['baseurl'].startswith(('http://', 'https://')):
+        if repo["baseurl"].startswith(("http://", "https://")):
             try:
-                repomd = repo['baseurl'].rstrip('/') + '/repodata/repomd.xml'
+                repomd = repo["baseurl"].rstrip("/") + "/repodata/repomd.xml"
                 reply = requests.head(repomd, verify=False, allow_redirects=True)
                 reply.raise_for_status()
             except requests.exceptions.RequestException as e:
                 util.log(f"skipping: {e}")
                 continue
         yield _Repo(
-            name=repo['name'], baseurl=repo['baseurl'], data=repo['data'], file=repo['file'],
+            name=repo["name"], baseurl=repo["baseurl"], data=repo["data"], file=repo["file"],
         )
 
 
@@ -84,7 +84,7 @@ def repo_gpg_keys():
     """
     Yield Paths of all GPG key files on the host under /etc/pki/rpm-gpg/.
     """
-    rpm_gpg_dir = Path('/etc/pki/rpm-gpg')
+    rpm_gpg_dir = Path("/etc/pki/rpm-gpg")
     if not rpm_gpg_dir.is_dir():
         return
     for keyfile in rpm_gpg_dir.iterdir():
@@ -97,11 +97,11 @@ def installable_url():
     Return one baseurl usable for installing the currently-running system.
     """
     for _, url in repo_urls():
-        url = url.rstrip('/')
+        url = url.rstrip("/")
         util.log(f"considering: {url}")
-        reply = requests.head(url + '/images/install.img', verify=False, allow_redirects=True)
+        reply = requests.head(url + "/images/install.img", verify=False, allow_redirects=True)
         if reply.status_code == 200:
-            return reply.url.removesuffix('/images/install.img')
+            return reply.url.removesuffix("/images/install.img")
     raise RuntimeError("did not find any install-capable repo amongst host repos")
 
 
@@ -115,14 +115,14 @@ def download_rpm(nvr, source=False):
     'source' specifies whether to download a binary or a source RPM.
     """
     with tempfile.TemporaryDirectory() as tmpdir:
-        cmd = ['dnf', 'download', '--destdir', tmpdir]
+        cmd = ["dnf", "download", "--destdir", tmpdir]
         if source:
-            cmd.append('--source')
+            cmd.append("--source")
         cmd.append(nvr)
         util.subprocess_run(cmd, check=True, stderr=subprocess.PIPE)
         # unfortunately, these commands mix debug output into stdout, before the
         # printed out NVR of the downloaded package, so just glob it afterwards
-        yield next(Path(tmpdir).glob('*.rpm'))
+        yield next(Path(tmpdir).glob("*.rpm"))
 
 
 @contextlib.contextmanager
@@ -132,8 +132,8 @@ def extract_rpm(rpmfile):
     yielding a path to that directory.
     """
     with tempfile.TemporaryDirectory() as tmpdir:
-        rpm2cpio = util.subprocess_Popen(['rpm2cpio', rpmfile], stdout=subprocess.PIPE)
-        cpio_cmd = ['cpio', '-idmv', '--no-absolute-filenames', '-D', tmpdir]
+        rpm2cpio = util.subprocess_Popen(["rpm2cpio", rpmfile], stdout=subprocess.PIPE)
+        cpio_cmd = ["cpio", "-idmv", "--no-absolute-filenames", "-D", tmpdir]
         cpio = util.subprocess_run(cpio_cmd, stdin=rpm2cpio.stdout)
         # safety for when 'cpio' exits before parsing all input,
         # trigger write error for 'rpm2cpio' rather than infinite hang

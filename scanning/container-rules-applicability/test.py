@@ -35,22 +35,22 @@ minor = versions.rhel.minor
 if versions.rhel.is_true_rhel():
     # released RHEL versions have registry.access.redhat.com/ubiX:X.Y images available,
     # for the RHEL y-stream releases in development we just use the latest GA image
-    container_image = f'registry.access.redhat.com/ubi{major}:{major}.{minor}'
+    container_image = f"registry.access.redhat.com/ubi{major}:{major}.{minor}"
     try:
-        podman.podman('pull', container_image)
+        podman.podman("pull", container_image)
     except subprocess.CalledProcessError as e:
         print(f"Error pulling image {container_image}: {e}")
-        container_image = f'registry.access.redhat.com/ubi{major}:latest'
+        container_image = f"registry.access.redhat.com/ubi{major}:latest"
         print(f"Pulling the latest GA image {container_image}")
-        podman.podman('pull', container_image)
+        podman.podman("pull", container_image)
 else:
-    container_image = f'quay.io/centos/centos:stream{major}'
-    podman.podman('pull', container_image)
+    container_image = f"quay.io/centos/centos:stream{major}"
+    podman.podman("pull", container_image)
 
 proc, lines = util.subprocess_stream(
     [
-        'oscap-podman', container_image, 'xccdf', 'eval', '--profile', '(all)', '--progress',
-        '--report', 'report.html', '--results-arf', 'scan-arf.xml', util.get_datastream(),
+        "oscap-podman", container_image, "xccdf", "eval", "--profile", "(all)", "--progress",
+        "--report", "report.html", "--results-arf", "scan-arf.xml", util.get_datastream(),
     ],
     stderr=subprocess.STDOUT,
 )
@@ -58,14 +58,14 @@ proc, lines = util.subprocess_stream(
 for line in lines:
     if match := oscap.rule_from_verbose(line):
         rulename, status = match
-        if status in ['error', 'unknown']:
-            results.report('error', rulename, f'scanner returned: {status}')
-        elif NA_RULES_REGEX.match(rulename) and status != 'notapplicable':
-            results.report('fail', rulename, f'expected notapplicable, scanner returned: {status}')
+        if status in ["error", "unknown"]:
+            results.report("error", rulename, f"scanner returned: {status}")
+        elif NA_RULES_REGEX.match(rulename) and status != "notapplicable":
+            results.report("fail", rulename, f"expected notapplicable, scanner returned: {status}")
         else:
-            results.report('pass', rulename, f'scanner returned: {status}')
+            results.report("pass", rulename, f"scanner returned: {status}")
 
 if proc.returncode not in [0,2]:
     raise RuntimeError("oscap failed unexpectedly")
 
-results.report_and_exit(logs=['report.html', 'scan-arf.xml'])
+results.report_and_exit(logs=["report.html", "scan-arf.xml"])

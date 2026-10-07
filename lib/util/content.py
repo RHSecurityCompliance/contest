@@ -46,11 +46,11 @@ from pathlib import Path
 from lib import util, dnf, versions
 from lib.versions import rhel
 
-CONTENT_BUILD_DIR = 'build'
+CONTENT_BUILD_DIR = "build"
 
 
 def get_user_content(build=True):
-    user_content = os.environ.get('CONTEST_CONTENT')
+    user_content = os.environ.get("CONTEST_CONTENT")
     if not user_content:
         return None
     user_content = Path(user_content).absolute()
@@ -63,7 +63,7 @@ def get_user_content(build=True):
 
 
 def find_datastreams(force_ssg, content_dir=None):
-    ssg_path = Path('/usr/share/xml/scap/ssg/content')
+    ssg_path = Path("/usr/share/xml/scap/ssg/content")
     # if specifically requested by the user
     if force_ssg:
         return ssg_path
@@ -78,11 +78,11 @@ def find_datastreams(force_ssg, content_dir=None):
 def get_datastream(force_ssg=False, content_dir=None):
     if rhel.is_centos():
         if rhel == 8:
-            name = f'ssg-centos{rhel.major}-ds.xml'
+            name = f"ssg-centos{rhel.major}-ds.xml"
         else:
-            name = f'ssg-cs{rhel.major}-ds.xml'
+            name = f"ssg-cs{rhel.major}-ds.xml"
     else:
-        name = f'ssg-rhel{rhel.major}-ds.xml'
+        name = f"ssg-rhel{rhel.major}-ds.xml"
     datastream = find_datastreams(force_ssg, content_dir) / name
     if not datastream.exists():
         raise RuntimeError(f"could not find datastream as {datastream}")
@@ -90,46 +90,46 @@ def get_datastream(force_ssg=False, content_dir=None):
 
 
 def iter_datastreams(force_ssg=False, content_dir=None):
-    for file in find_datastreams(force_ssg, content_dir).rglob('*'):
+    for file in find_datastreams(force_ssg, content_dir).rglob("*"):
         # Return only DS v1.3, do not return v1.2 (ends with '-ds-1.2.xml')
-        if file.name.endswith('-ds.xml'):
+        if file.name.endswith("-ds.xml"):
             yield file
 
 
 def find_playbooks(force_ssg=False, content_dir=None):
-    ssg_path = Path('/usr/share/scap-security-guide/ansible')
+    ssg_path = Path("/usr/share/scap-security-guide/ansible")
     # if specifically requested by the user
     if force_ssg:
         return ssg_path
     # if given content dir override or if CONTEST_CONTENT was specified
     user_content = content_dir or get_user_content()
     if user_content:
-        return user_content / CONTENT_BUILD_DIR / 'ansible'
+        return user_content / CONTENT_BUILD_DIR / "ansible"
     # default to the OS-wide scap-security-guide content
     return ssg_path
 
 
 def find_per_rule_playbooks(force_ssg=False, content_dir=None):
-    ssg_path = Path(f'/usr/share/scap-security-guide/ansible/rule_playbooks/rhel{rhel.major}/all')
+    ssg_path = Path(f"/usr/share/scap-security-guide/ansible/rule_playbooks/rhel{rhel.major}/all")
     # if specifically requested by the user
     if force_ssg:
         return ssg_path
     # if given content dir override or if CONTEST_CONTENT was specified
     user_content = content_dir or get_user_content()
     if user_content:
-        return user_content / CONTENT_BUILD_DIR / f'rhel{rhel.major}' / 'playbooks' / 'all'
+        return user_content / CONTENT_BUILD_DIR / f"rhel{rhel.major}" / "playbooks" / "all"
     # default to the OS-wide scap-security-guide content
     return ssg_path
 
 
 def get_playbook(profile, force_ssg=False, content_dir=None):
     if rhel.is_true_rhel():
-        name = f'rhel{rhel.major}-playbook-{profile}.yml'
+        name = f"rhel{rhel.major}-playbook-{profile}.yml"
     elif rhel.is_centos():
         if rhel == 8:
-            name = f'centos{rhel.major}-playbook-{profile}.yml'
+            name = f"centos{rhel.major}-playbook-{profile}.yml"
         else:
-            name = f'cs{rhel.major}-playbook-{profile}.yml'
+            name = f"cs{rhel.major}-playbook-{profile}.yml"
     playbook = find_playbooks(force_ssg, content_dir) / name
     if not playbook.exists():
         raise RuntimeError(f"cound not find playbook as {playbook}")
@@ -138,7 +138,7 @@ def get_playbook(profile, force_ssg=False, content_dir=None):
 
 def iter_playbooks(force_ssg=False, content_dir=None):
     for file in find_playbooks(force_ssg, content_dir).iterdir():
-        if file.suffix == '.yml':
+        if file.suffix == ".yml":
             yield file
 
 
@@ -147,7 +147,7 @@ def iter_per_rule_playbooks():
     if user_content := get_user_content(build=False):
         build_content(
             user_content,
-            {'SSG_ANSIBLE_PLAYBOOKS_PER_RULE_ENABLED:BOOL': 'ON'},
+            {"SSG_ANSIBLE_PLAYBOOKS_PER_RULE_ENABLED:BOOL": "ON"},
         )
         playbooks_dir = find_per_rule_playbooks(content_dir=user_content)
         if not playbooks_dir.exists() or not next(playbooks_dir.iterdir(), None):
@@ -167,13 +167,13 @@ def get_kickstart(profile, content_dir=None):
     user_content = content_dir or get_user_content()
     if user_content:
         kickstart = (
-            user_content / 'products' / f'rhel{rhel.major}' / 'kickstart'
-            / f'ssg-rhel{rhel.major}-{profile}-ks.cfg'
+            user_content / "products" / f"rhel{rhel.major}" / "kickstart"
+            / f"ssg-rhel{rhel.major}-{profile}-ks.cfg"
         )
     else:
-        base_dir = Path('/usr/share/scap-security-guide/kickstart')
+        base_dir = Path("/usr/share/scap-security-guide/kickstart")
         # RHEL and CentOS Stream both use 'ssg-rhel*' files
-        kickstart = base_dir / f'ssg-rhel{rhel.major}-{profile}-ks.cfg'
+        kickstart = base_dir / f"ssg-rhel{rhel.major}-{profile}-ks.cfg"
     if not kickstart.exists():
         raise RuntimeError(f"cound not find kickstart as {kickstart}")
     return kickstart
@@ -183,9 +183,9 @@ def _parse_cmake_config(path):
     with open(path) as f:
         for line in f:
             line = line.strip()
-            if not line or line.startswith(('#','//')) or '=' not in line:
+            if not line or line.startswith(("#","//")) or "=" not in line:
                 continue
-            name, _, value = line.partition('=')
+            name, _, value = line.partition("=")
             yield (name, value)
 
 
@@ -206,20 +206,20 @@ def build_content(path, extra_cmake_opts=None, force=False):
 
     # assemble CMake options
     cmake_opts = {
-        'CMAKE_BUILD_TYPE:STRING': 'Release',
-        'SSG_CENTOS_DERIVATIVES_ENABLED:BOOL': 'ON' if versions.rhel.is_centos() else 'OFF',
-        'SSG_PRODUCT_DEFAULT:BOOL': 'OFF',
-        f'SSG_PRODUCT_RHEL{versions.rhel.major}:BOOL': 'ON',
-        'SSG_SCE_ENABLED:BOOL': 'ON',
-        'SSG_BASH_SCRIPTS_ENABLED:BOOL': 'OFF',
-        'SSG_BUILD_DISA_DELTA_FILES:BOOL': 'OFF',
-        'SSG_SEPARATE_SCAP_FILES_ENABLED:BOOL': 'OFF',
+        "CMAKE_BUILD_TYPE:STRING": "Release",
+        "SSG_CENTOS_DERIVATIVES_ENABLED:BOOL": "ON" if versions.rhel.is_centos() else "OFF",
+        "SSG_PRODUCT_DEFAULT:BOOL": "OFF",
+        f"SSG_PRODUCT_RHEL{versions.rhel.major}:BOOL": "ON",
+        "SSG_SCE_ENABLED:BOOL": "ON",
+        "SSG_BASH_SCRIPTS_ENABLED:BOOL": "OFF",
+        "SSG_BUILD_DISA_DELTA_FILES:BOOL": "OFF",
+        "SSG_SEPARATE_SCAP_FILES_ENABLED:BOOL": "OFF",
     }
     cmake_opts.update(extra_cmake_opts)
 
     # if there is pre-built content, check if it was built with options
     # we care about - if it was, do not rebuild it
-    cmake_cache = build_dir / 'CMakeCache.txt'
+    cmake_cache = build_dir / "CMakeCache.txt"
     if cmake_cache.exists() and not force:
         built_opts = dict(_parse_cmake_config(cmake_cache))
         for key, value in cmake_opts.items():
@@ -230,20 +230,20 @@ def build_content(path, extra_cmake_opts=None, force=False):
             return
 
     # install dependencies from an upstream-bundled spec file
-    cmd = ['dnf', '-y', 'builddep', '--spec', path / 'scap-security-guide.spec']
+    cmd = ["dnf", "-y", "builddep", "--spec", path / "scap-security-guide.spec"]
     util.subprocess_run(cmd, check=True, stderr=subprocess.PIPE)
 
     if build_dir.exists():
         shutil.rmtree(build_dir)
     build_dir.mkdir()
 
-    cli_opts = (f'-D{name}={val}' for name, val in cmake_opts.items())
+    cli_opts = (f"-D{name}={val}" for name, val in cmake_opts.items())
     util.subprocess_run(
-        ['cmake', '../', *cli_opts], cwd=build_dir, check=True, stderr=subprocess.PIPE,
+        ["cmake", "../", *cli_opts], cwd=build_dir, check=True, stderr=subprocess.PIPE,
     )
 
     cpus = os.cpu_count() or 1
-    util.subprocess_run(['make', f'-j{cpus}'], cwd=build_dir, check=True, stderr=subprocess.PIPE)
+    util.subprocess_run(["make", f"-j{cpus}"], cwd=build_dir, check=True, stderr=subprocess.PIPE)
 
 
 @contextlib.contextmanager
@@ -257,21 +257,21 @@ def get_source_content():
         yield user_content
     else:
         # fall back to SRPM
-        with dnf.download_rpm('scap-security-guide', source=True) as src_rpm:
+        with dnf.download_rpm("scap-security-guide", source=True) as src_rpm:
             with tempfile.TemporaryDirectory() as tmpdir:
                 # install dependencies
                 # - unfortunately, we cannot move this to build_content()
                 #   because extracting + patching SRPM needs all builddeps
-                cmd = ['dnf', '-y', 'builddep', src_rpm]
+                cmd = ["dnf", "-y", "builddep", src_rpm]
                 util.subprocess_run(cmd, check=True, stderr=subprocess.PIPE, cwd=tmpdir)
                 # extract + patch SRPM
-                cmd = ['rpmbuild', '-rp', '--define', f'_topdir {tmpdir}', src_rpm]
+                cmd = ["rpmbuild", "-rp", "--define", f"_topdir {tmpdir}", src_rpm]
                 util.subprocess_run(cmd, check=True, stderr=subprocess.PIPE)
                 # get path to the extracted content
                 # - parse name+version from the SRPM instead of glob(BUILD/*)
                 #   because of '-rhel6' content on RHEL-8
                 ret = util.subprocess_run(
-                    ['rpm', '-q', '--qf', '%{NAME}-%{VERSION}', '-p', src_rpm],
+                    ["rpm", "-q", "--qf", "%{NAME}-%{VERSION}", "-p", src_rpm],
                     check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
                     text=True, cwd=tmpdir,
                 )
@@ -279,8 +279,8 @@ def get_source_content():
                 # extracted sources directory varies across distro versions, thus
                 # try to search for the directory rather than using hardcoded path
                 try:
-                    builddir = Path(tmpdir) / 'BUILD'
-                    extracted = next(builddir.glob(f'**/{name_version}'))
+                    builddir = Path(tmpdir) / "BUILD"
+                    extracted = next(builddir.glob(f"**/{name_version}"))
                 except StopIteration:
                     raise FileNotFoundError("extracted SRPM content sources not found")
                 util.log(f"using {extracted} as content source")
