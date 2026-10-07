@@ -1,5 +1,3 @@
-#!/usr/bin/python3
-
 from conf import remediation
 from lib import metadata, oscap, results, util, virt
 

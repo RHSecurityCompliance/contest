@@ -1,5 +1,3 @@
-#!/usr/bin/python3
-
 from lib import oscap, results, util
 
 new = oscap.global_ds()

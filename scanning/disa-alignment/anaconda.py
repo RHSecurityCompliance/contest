@@ -1,5 +1,3 @@
-#!/usr/bin/python3
-
 import shared
 
 from conf import remediation

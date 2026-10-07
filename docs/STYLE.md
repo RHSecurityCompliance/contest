@@ -49,13 +49,10 @@ with Something(variant) as x:
 
 ## Shebang
 
-Use `#!/usr/bin/python3` as shebang in python scripts.
-
-If this binary is not available, install the appropriate packages
-(should be done by TMT via test requirements).
-
-Do not use `#!/usr/libexec/platform-python` for regular Contest scripts; it is
-not available outside of RHEL and may have an unknown Python version.
+Do not use a shebang in test scripts that are executed from the `test:`
+field in fmf metadata, since we use different python versions/paths depending
+on the OS/platform, and a shebang might mislead somebody that the `.py` file
+is supposed to be executed on its own (instead of using fmf/tmt to run it).
 
 `lib/dnf_get_repos` is the exception. It is a standalone system-Python helper
 which imports the distribution's `dnf` bindings, so it must remain compatible

@@ -1,4 +1,3 @@
-#!/usr/bin/python3
 """
 This is a standalone script which processes provided results.json.gz files
 and identifies invalid waivers. The waiver is invalid if it:
