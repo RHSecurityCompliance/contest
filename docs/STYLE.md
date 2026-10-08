@@ -31,7 +31,7 @@ In the first case, it's up to the test to clean up:
 ```
 import atexit
 
-variant = 'foo'
+variant = "foo"
 atexit.register(cleanup_something, variant)
 x = setup_something(variant)
 do(x)
@@ -42,7 +42,7 @@ The `setup_something` function itself must not touch `atexit`.
 In the second, python takes care of it:
 
 ```
-variant = 'foo'
+variant = "foo"
 with Something(variant) as x:
     do(x)
 ```
@@ -72,7 +72,7 @@ Prefer modern Python features over older (but still valid) ones, namely:
 - f-strings over `.format()` and `%`
   - unless required by a module, ie. `logging` needs `%(blabla)s`
 - `pathlib.Path` over `os.path.*`
-  - `Path('some/path') / subdir / another_dir`
+  - `Path("some/path") / subdir / another_dir`
   - `Path().name` instead of `os.path.basename()`
   - `Path().parent` instead of `os.path.dirname()`
   - see others on https://docs.python.org/3.11/library/pathlib.html#methods
@@ -131,8 +131,8 @@ combine the opening `(` and closing `)` of the function call with the opening
 and closing of the constant.
 ```
 ret = func_call({
-    'x': 123,
-    'y': 234,
+    "x": 123,
+    "y": 234,
 })
 ```
 However do not use this syntax if you would pass extra arguments to `func_call`
@@ -188,7 +188,7 @@ Avoid (for now) using `@property` to hack this, we don't have public APIs.
 This is fine:
 
 ```
-if match := re.fullmatch(r'/some/([^/]+)/test', test_name):
+if match := re.fullmatch(r"/some/([^/]+)/test", test_name):
     variant = match.group(1)
 ```
 
@@ -196,7 +196,7 @@ as long as `variant` never leaves the `if` scope. If it does, assign it without
 walrus above the condition:
 
 ```
-test_type = os.environ.get('SOME_VAR')
+test_type = os.environ.get("SOME_VAR")
 
 if test_type:
     do_something(test_type)
@@ -207,7 +207,7 @@ another_func(test_type)
 Avoid this:
 
 ```
-if test_type := os.environ.get('SOME_VAR'):
+if test_type := os.environ.get("SOME_VAR"):
     do_something(test_type)
 
 another_func(test_type)
@@ -215,7 +215,7 @@ another_func(test_type)
 
 ## Log tactically
 
-Use `util.log('something')` when something
+Use `util.log("something")` when something
 
 - will take a long time with no output
 - will perform notable changes to an OS
