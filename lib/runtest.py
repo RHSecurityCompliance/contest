@@ -1,4 +1,5 @@
 import os
+import platform
 import runpy
 import sys
 import tempfile
@@ -7,7 +8,14 @@ from pathlib import Path
 
 import urllib3
 
-from lib import results
+# make sure we only run on RHEL / CentOS Stream
+# - do this very early, so no other lib code gets invalid /etc/os-release details
+os_release = platform.freedesktop_os_release()
+os_id = os_release["ID"]
+if os_id not in ["rhel", "centos"]:
+    raise RuntimeError(f"only RHEL/CentOS Stream is supported, found: {os_id}")
+
+from lib import results  # noqa: E402
 
 # disable annoying warnings when using requests with verify=False,
 # we know we're disabling TLS verification, yes, it's a bad idea in production,

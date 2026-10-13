@@ -100,9 +100,6 @@ The expression has these globals available:
 - `Match` - a class for complex waive results, able to contain both a boolean
   expression as well as additional parameters
 
-The version comparison objects also support a boolean evaluation, with
-`bool(rhel)` returning `False` if not running on RHEL or CentOS.
-
 ```python
 /some/result/name
     (rhel < 7.9 and 'some thing' in note) or \

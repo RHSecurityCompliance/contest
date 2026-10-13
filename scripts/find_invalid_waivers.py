@@ -26,18 +26,15 @@ MatchedWaiver = collections.namedtuple(
 )
 
 
+# fake a _Rhel class so that it always assumes valid RHEL
 class _FakeRhel(versions._Rhel):
     @staticmethod
     def is_true_rhel():
-        return True  # always assume we're on RHEL
+        return True
 
     @staticmethod
     def is_centos():
-        return False  # always assume we're on RHEL
-
-    @staticmethod
-    def __bool__():
-        return True  # always assume we're on RHEL
+        return False
 
 
 _sections_cache = None
