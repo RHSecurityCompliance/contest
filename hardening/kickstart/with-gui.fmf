@@ -49,6 +49,11 @@ tag+:
       - enabled: false
         because: CUI profile is not supported with GUI
 
+/cui_enhanced:
+    adjust+:
+      - enabled: false
+        because: CUI profile is not supported with GUI
+
 /e8:
 
 /hipaa:
