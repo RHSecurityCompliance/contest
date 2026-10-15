@@ -57,6 +57,8 @@ adjust+:
             RHEL-8 doesn't have fast /dev/random under OSPP/CUI,
             compensate with rngd
 
+/cui_enhanced:
+
 /e8:
 
 /hipaa:
