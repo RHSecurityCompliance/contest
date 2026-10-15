@@ -57,6 +57,14 @@ adjust+:
             RHEL-8 doesn't have fast /dev/random under OSPP/CUI,
             compensate with rngd
 
+/cui_enhanced:
+    adjust+:
+      - when: distro == rhel-8 or distro == centos-stream-8
+        require+: [rng-tools]
+        because: >
+            RHEL-8 doesn't have fast /dev/random under OSPP/CUI,
+            compensate with rngd (same source rule as cui)
+
 /e8:
 
 /hipaa:
