@@ -2,6 +2,23 @@ import importlib as _importlib
 import inspect as _inspect
 import pkgutil as _pkgutil
 from pathlib import Path as _Path
+from typing import TYPE_CHECKING as _TYPE_CHECKING
+
+# static-analysis-only re-exports of submodules, for type checkers (Pylance)
+# that cannot follow the dynamic _import_submodules() below
+if _TYPE_CHECKING:
+    from .backup import *  # noqa: F403
+    from .content import *  # noqa: F403
+    from .dedent import *  # noqa: F403
+    from .environment import *  # noqa: F403
+    from .httpsrv import *  # noqa: F403
+    from .log import *  # noqa: F403
+    from .network import *  # noqa: F403
+    from .old_content import *  # noqa: F403
+    from .rpmpack import *  # noqa: F403
+    from .sanitization import *  # noqa: F403
+    from .ssh import *  # noqa: F403
+    from .subprocess import *  # noqa: F403
 
 # directory with all these modules, and potentially more files
 # - useful until TMT can parametrize 'environment:' with variable expressions,
