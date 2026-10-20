@@ -23,7 +23,7 @@ if _TYPE_CHECKING:
 # directory with all these modules, and potentially more files
 # - useful until TMT can parametrize 'environment:' with variable expressions,
 #   so we could add the libdir to PATH and PYTHONPATH
-libdir = _Path(_inspect.getfile(_inspect.currentframe())).parent.parent
+libdir = _Path(__file__).parent.parent
 
 __all__ = []
 
