@@ -36,6 +36,29 @@ DOWNSTREAM_CMAKE_OPTS = {
 }
 
 
+def ensure_python_deps():
+    """
+    Make sure the interpreter running this test can run the content utils.
+
+    They import 'ssg' (made available via PYTHONPATH) and need jinja2 and a
+    PyYAML new enough to support 'sort_keys'. The latter is not always
+    installed for the Python running the test, e.g. on RHEL-8 where the
+    content build uses the old system Python.
+    """
+    probe = "import jinja2, yaml; yaml.safe_dump({}, sort_keys=False)"
+    if util.subprocess_run([sys.executable, "-c", probe]).returncode == 0:
+        return
+
+    # Install via CONTEST_PYTHON (sys.executable), not bare pip3 - on RHEL-8/9
+    # pip3 targets the older system Python.
+    if util.subprocess_run([sys.executable, "-m", "pip", "--version"]).returncode != 0:
+        util.subprocess_run([sys.executable, "-m", "ensurepip", "--upgrade"], check=True)
+    util.subprocess_run(
+        [sys.executable, "-m", "pip", "install", "jinja2", "pyyaml>=5.1"],
+        check=True,
+    )
+
+
 def build_collection(content_dir):
     """
     Build the collection the same way the downstream RPM does, and return the
@@ -61,6 +84,7 @@ def build_collection(content_dir):
             filter(None, [str(content_dir), os.environ.get("PYTHONPATH")]),
         ),
     }
+    ensure_python_deps()
     for p in COLLECTION_PRODUCTS:
         product_roles = roles_workdir / p
         util.subprocess_run(
