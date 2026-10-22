@@ -189,7 +189,7 @@ def _parse_cmake_config(path):
             yield (name, value)
 
 
-def build_content(path, extra_cmake_opts=None, force=False):
+def build_content(path, extra_cmake_opts=None, force=False, make_targets=None):
     """
     Given a CaC/content source as 'path', build it with some sensible CMake
     options.
@@ -198,11 +198,17 @@ def build_content(path, extra_cmake_opts=None, force=False):
     the full option name with :DATATYPE as visible in CMakeCache.txt.
     See also https://cmake.org/cmake/help/latest/prop_cache/TYPE.html.
 
+    Set 'make_targets' (a list of strings) to build only those Makefile
+    targets instead of the default (everything).
+
     Set 'force=True' to always re-build content, even with compatible options.
     """
     path = Path(path)
     build_dir = path / CONTENT_BUILD_DIR
     extra_cmake_opts = extra_cmake_opts or {}
+
+    cpus = os.cpu_count() or 1
+    make_cmd = ["make", f"-j{cpus}", *(make_targets or [])]
 
     # assemble CMake options
     cmake_opts = {
@@ -227,6 +233,10 @@ def build_content(path, extra_cmake_opts=None, force=False):
                 break
         else:
             # all opts were ignored or passed equality checking
+            # - still build explicitly requested targets, in case they aren't
+            #   built yet (make is a no-op for targets that are up to date)
+            if make_targets:
+                util.subprocess_run(make_cmd, cwd=build_dir, check=True, stderr=subprocess.PIPE)
             return
 
     # install dependencies from an upstream-bundled spec file
@@ -242,8 +252,7 @@ def build_content(path, extra_cmake_opts=None, force=False):
         ["cmake", "../", *cli_opts], cwd=build_dir, check=True, stderr=subprocess.PIPE,
     )
 
-    cpus = os.cpu_count() or 1
-    util.subprocess_run(["make", f"-j{cpus}"], cwd=build_dir, check=True, stderr=subprocess.PIPE)
+    util.subprocess_run(make_cmd, cwd=build_dir, check=True, stderr=subprocess.PIPE)
 
 
 @contextlib.contextmanager
