@@ -1,3 +1,4 @@
+import base64
 import collections
 import contextlib
 import subprocess
@@ -99,11 +100,11 @@ class RpmPack:
             )
             self.add_script("%post", repo_contents)
         for keyfile in dnf.repo_gpg_keys():
-            keytext = keyfile.read_text().rstrip("\n")
+            keydata = base64.encodebytes(keyfile.read_bytes()).decode()
             key_contents = (
-                f'cat > "/etc/pki/rpm-gpg/{keyfile.name}" <<\'EOF\'\n'
-                + keytext
-                + "\nEOF"
+                f'base64 -d > "/etc/pki/rpm-gpg/{keyfile.name}" <<\'EOF\'\n'
+                + keydata
+                + "EOF"
             )
             self.add_script("%post", key_contents)
 
