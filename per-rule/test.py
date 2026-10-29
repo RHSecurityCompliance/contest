@@ -17,6 +17,14 @@ rule_excludes = [
     "sshd_set_keepalive",
 ]
 
+if versions.rhel.is_centos():
+    rule_excludes += [
+        # the key_installed.pass scenario imports the RHEL release GPG key
+        # from /etc/pki/rpm-gpg/RPM-GPG-KEY-redhat-release, which doesn't
+        # exist on CentOS Stream
+        "ensure_redhat_gpgkey_installed",
+    ]
+
 _, fix_type, test_basename = util.get_test_name().rsplit("/", 2)
 
 # directory containing this test.py; necessary because we run in a tmpdir
