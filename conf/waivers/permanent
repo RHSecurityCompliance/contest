@@ -150,6 +150,11 @@
 /scanning/boot-errors/hipaa/auditd: Error receiving audit netlink packet (No buffer space available).*
     rhel <= 10.2
 
+# this needs openscap 1.3.16, but cs8 has old 1.3.10, and since CS8
+# is dead, it won't ever receive the fixed version
+/scanning/disa-stig-viewer-results
+    rhel == 8 and rhel.is_centos()
+
 # waive rules that have no respective remediation based on their test name
 /hardening/oscap/.+
 /hardening/host-os/oscap/.+
