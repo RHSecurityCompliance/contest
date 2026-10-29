@@ -18,11 +18,11 @@
 # aide_build_database: old CUI doesn't select this rule, so the AIDE db is never
 # seeded into /var on the old image. /var is never re-provisioned by "bootc
 # switch", so the db built into the new image never reaches the guest. Deterministic.
-/hardening/container/old-new/cui/aide_build_database
+/hardening/container/old-new/cui(_enhanced)?/aide_build_database
 # ensure_pam_wheel_group_empty: old CUI doesn't select this rule, so the empty-wheel
 # fix baked into the new image's /etc/group can be dropped by ostree's /etc 3-way
 # merge on "bootc switch" if the live copy looks locally modified. Confirmed flaky.
-/hardening/container/old-new/cui/ensure_pam_wheel_group_empty
+/hardening/container/old-new/cui(_enhanced)?/ensure_pam_wheel_group_empty
     True
 
 # vim: syntax=python
