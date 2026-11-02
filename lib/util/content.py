@@ -132,7 +132,7 @@ def get_playbook(profile, force_ssg=False, content_dir=None):
             name = f"cs{rhel.major}-playbook-{profile}.yml"
     playbook = find_playbooks(force_ssg, content_dir) / name
     if not playbook.exists():
-        raise RuntimeError(f"cound not find playbook as {playbook}")
+        raise RuntimeError(f"could not find playbook as {playbook}")
     return playbook
 
 
@@ -175,7 +175,7 @@ def get_kickstart(profile, content_dir=None):
         # RHEL and CentOS Stream both use 'ssg-rhel*' files
         kickstart = base_dir / f"ssg-rhel{rhel.major}-{profile}-ks.cfg"
     if not kickstart.exists():
-        raise RuntimeError(f"cound not find kickstart as {kickstart}")
+        raise RuntimeError(f"could not find kickstart as {kickstart}")
     return kickstart
 
 
