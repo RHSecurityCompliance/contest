@@ -38,6 +38,10 @@ environment:
         discover+: {test: /hardening/host-os/oscap/e8$}
     /hipaa:
         discover+: {test: /hardening/host-os/oscap/hipaa$}
+    /iec_62443_sl1:
+        discover+: {test: /hardening/host-os/oscap/iec_62443_sl1$}
+    /iec_62443_sl2:
+        discover+: {test: /hardening/host-os/oscap/iec_62443_sl2$}
     /ism_o:
         discover+: {test: /hardening/host-os/oscap/ism_o$}
     /ism_o_secret:
@@ -84,6 +88,10 @@ environment:
         discover+: {test: /hardening/host-os/ansible/e8$}
     /hipaa:
         discover+: {test: /hardening/host-os/ansible/hipaa$}
+    /iec_62443_sl1:
+        discover+: {test: /hardening/host-os/ansible/iec_62443_sl1$}
+    /iec_62443_sl2:
+        discover+: {test: /hardening/host-os/ansible/iec_62443_sl2$}
     /ism_o:
         discover+: {test: /hardening/host-os/ansible/ism_o$}
     /ism_o_secret:
@@ -146,6 +154,10 @@ environment:
             discover+: {test: /scanning/host-os/ansible-check/check-mode/e8$}
         /hipaa:
             discover+: {test: /scanning/host-os/ansible-check/check-mode/hipaa$}
+        /iec_62443_sl1:
+            discover+: {test: /scanning/host-os/ansible-check/check-mode/iec_62443_sl1$}
+        /iec_62443_sl2:
+            discover+: {test: /scanning/host-os/ansible-check/check-mode/iec_62443_sl2$}
         /ism_o:
             discover+: {test: /scanning/host-os/ansible-check/check-mode/ism_o$}
         /ism_o_secret:
