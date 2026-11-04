@@ -247,14 +247,26 @@ def build_content(path, extra_cmake_opts=None, force=False):
 
 
 @contextlib.contextmanager
-def get_source_content():
+def get_source_content(exclusive=False):
     """
     Acquire and return a path to a CaC/content style content source distribution
     from either a user-provided directory or a SRPM.
+
+    Pass 'exclusive=True' to always get a temporary source-only (no build) copy,
+    not shared with any other tests.
     """
     user_content = get_user_content(build=False)
     if user_content:
-        yield user_content
+        if not exclusive:
+            yield user_content
+        else:
+            # create a temp copy without multi-GB build/
+            with tempfile.TemporaryDirectory() as tmpdir:
+                # ignore build/ but only if its parent dir is content repo root
+                def ignore(d, _):
+                    return (CONTENT_BUILD_DIR,) if Path(d).samefile(user_content) else ()
+                shutil.copytree(user_content, tmpdir, dirs_exist_ok=True, ignore=ignore)
+                yield Path(tmpdir)
     else:
         # fall back to SRPM
         with dnf.download_rpm("scap-security-guide", source=True) as src_rpm:
