@@ -189,7 +189,7 @@ def _parse_cmake_config(path):
             yield (name, value)
 
 
-def build_content(path, extra_cmake_opts=None, force=False):
+def build_content(path, extra_cmake_opts=None, force=False, make=True):
     """
     Given a CaC/content source as 'path', build it with some sensible CMake
     options.
@@ -199,6 +199,9 @@ def build_content(path, extra_cmake_opts=None, force=False):
     See also https://cmake.org/cmake/help/latest/prop_cache/TYPE.html.
 
     Set 'force=True' to always re-build content, even with compatible options.
+
+    Set 'make=False' to prepare the content for building (cmake, etc.),
+    without actually executing the final 'make' command.
     """
     path = Path(path)
     build_dir = path / CONTENT_BUILD_DIR
@@ -217,11 +220,19 @@ def build_content(path, extra_cmake_opts=None, force=False):
     }
     cmake_opts.update(extra_cmake_opts)
 
+    # check real datastream XML, not just CMakeCache.txt presence,
+    # the content needs to have been built (make=True)
+    def built_datastream_exists():
+        try:
+            get_datastream(force_ssg=False, content_dir=path)
+            return True
+        except RuntimeError:
+            return False
+
     # if there is pre-built content, check if it was built with options
     # we care about - if it was, do not rebuild it
-    cmake_cache = build_dir / "CMakeCache.txt"
-    if cmake_cache.exists() and not force:
-        built_opts = dict(_parse_cmake_config(cmake_cache))
+    if not force and built_datastream_exists():
+        built_opts = dict(_parse_cmake_config(build_dir / "CMakeCache.txt"))
         for key, value in cmake_opts.items():
             if key not in built_opts or value != built_opts[key]:
                 break
@@ -239,11 +250,16 @@ def build_content(path, extra_cmake_opts=None, force=False):
 
     cli_opts = (f"-D{name}={val}" for name, val in cmake_opts.items())
     util.subprocess_run(
-        ["cmake", "../", *cli_opts], cwd=build_dir, check=True, stderr=subprocess.PIPE,
+        ["cmake", "../", *cli_opts],
+        cwd=build_dir, check=True, stderr=subprocess.PIPE,
     )
 
-    cpus = os.cpu_count() or 1
-    util.subprocess_run(["make", f"-j{cpus}"], cwd=build_dir, check=True, stderr=subprocess.PIPE)
+    if make:
+        cpus = os.cpu_count() or 1
+        util.subprocess_run(
+            ["make", f"-j{cpus}"],
+            cwd=build_dir, check=True, stderr=subprocess.PIPE,
+        )
 
 
 @contextlib.contextmanager
