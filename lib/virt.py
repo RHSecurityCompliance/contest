@@ -21,7 +21,8 @@ be used in two ways, both using a context manager ('g' is an instance):
    - g.snapshotted()
      - Assumes (1) and (2) were done, creates a snapshot and restores the guest
        from its RAM image, waits for ssh.
-     - Stops the guest and deletes the snapshot on __exit__
+     - Leaves the guest running on __exit__, the snapshot is discarded by
+       the next g.snapshotted() or by g.cleanup_snapshot()
    - g.booted()
      - Assumes (1) was done and just boots and waits for ssh.
 
@@ -30,6 +31,10 @@ upon guest installation.
 
 Step (1) can be replaced by importing a pre-existing ImageBuilder image, with
 (2) and (3), or Guest() usage, remaining unaffected / compatible.
+
+Step (1) can also be replaced by importing a CentOS Stream 10 cloud image via
+g.import_cloud_image(), for helper guests which need a working OS, but not
+the one being tested.
 
 Installation customization can be done via g.install() arguments, such as by
 instantiating Kickstart() in the test itself, modifying it, and passing the
@@ -75,12 +80,30 @@ Example using plain one-time-use guest:
     with g.booted():
         g.ssh( ... )
         g.ssh( ... )
+
+Example using a temporary worker guest:
+
+    from lib import virt
+
+    virt.Host.setup()
+    worker = virt.Guest(name="contest-worker")
+    worker.import_cloud_image()
+
+    with worker.booted():
+        worker.ssh("cloud-init", "status", "--wait")
+        worker.ssh("dnf", "-y", "install", "podman", check=True)
+        worker.ssh("podman", "run", "--privileged", ... )
+
+    # free up disk space before using other guests
+    worker.wipe()
 """
 
 import contextlib
+import hashlib
 import json
 import os
 import re
+import shutil
 import subprocess
 import tempfile
 import textwrap
@@ -90,6 +113,9 @@ import xml.etree.ElementTree as ET
 from datetime import datetime, timedelta
 from pathlib import Path
 
+import requests
+import yaml
+
 from lib import dnf, results, util, versions
 
 GUEST_NAME = "contest"
@@ -97,6 +123,13 @@ GUEST_LOGIN_PASS = "contest"
 GUEST_SSH_USER = "root"
 
 GUEST_IMG_DIR = "/var/lib/libvirt/images"
+
+# CentOS Stream 10 cloud image used by Guest.import_cloud_image(); if 'latest'
+# breaks, pin a known-good dated image from the same directory
+CLOUD_IMAGE_URL = (
+    "https://cloud.centos.org/centos/10-stream/x86_64/images/"
+    "CentOS-Stream-GenericCloud-10-latest.x86_64.qcow2"
+)
 
 # Address on which services are bound in the test runner's network namespace.
 NETWORK_HOST = "127.0.0.1"
@@ -572,7 +605,7 @@ class Guest:
 
     def import_image(
         self, disk_path, disk_format="qcow2", *, secure_boot=False, virt_install_args=None,
-        final_mem=None,
+        final_mem=None, vcpus=1,
     ):
         """
         Import an existing disk image, creating a new guest domain from it.
@@ -580,6 +613,8 @@ class Guest:
         The image is used as-is, in place. No copy or move is performed.
         Ideally, the image should be located in GUEST_IMG_DIR and named
         after the '.name' attribute of the guest instance.
+
+        'vcpus' specifies the number of virtual CPUs of the guest.
         """
         disk_path = Path(disk_path)
         if not disk_path.exists():
@@ -589,7 +624,7 @@ class Guest:
 
         virt_install = [
             "pseudotty", "virt-install",
-            "--name", self.name, "--vcpus", "1", "--memory", str(INSTALL_TIME_RAM),
+            "--name", self.name, "--vcpus", str(vcpus), "--memory", str(INSTALL_TIME_RAM),
             "--disk", f"path={disk_path},format={disk_format},io=native,cache=none",
             "--network", "user",
             "--graphics", "none", "--console", "pty", "--rng", "/dev/urandom",
@@ -616,6 +651,52 @@ class Guest:
         self.disk_path = disk_path
         self.disk_format = disk_format
         self.install_ready_path.write_text(self.tag)
+
+    def import_cloud_image(self, *, disk_size="100G", **kwargs):
+        """
+        Create a new guest from a (cached) copy of the CentOS Stream 10 cloud
+        image (CLOUD_IMAGE_URL), with root ssh access and the additional CA
+        certificates trusted by the host set up by cloud-init on its first
+        boot, to a shut down state. This needs internet access to download
+        the image.
+
+        The disk image is grown to 'disk_size' (sparse), and cloud-init grows
+        the root filesystem on first boot. Any other arguments are passed
+        to import_image().
+        """
+        util.log(f"creating guest {self.name} from {CLOUD_IMAGE_URL}")
+        self.wipe()
+        self.generate_ssh_keypair()
+
+        disk_path = Path(f"{GUEST_IMG_DIR}/{self.name}.qcow2")
+        shutil.copyfile(_cached_cloud_image(), disk_path)
+        util.subprocess_run(
+            ["qemu-img", "resize", "-q", disk_path, disk_size],
+            check=True, stderr=subprocess.PIPE,
+        )
+
+        # set up root ssh access via a custom user-data file, as virt-install
+        # on RHEL-8 doesn't support --cloud-init root-ssh-key=
+        user_data = {
+            "users": [
+                "default",
+                {"name": "root", "ssh_authorized_keys": [self.ssh_pubkey]},
+            ],
+        }
+        # trust the same additional CA certificates as the host, so that
+        # the guest can access the same internal services (ie. repositories
+        # redirecting to HTTPS servers with company-internal certificates)
+        if ca_certs := list(_host_ca_anchors()):
+            user_data["ca_certs"] = {"trusted": ca_certs}
+
+        with tempfile.NamedTemporaryFile(mode="w", suffix=".yaml") as f:
+            f.write("#cloud-config\n" + yaml.safe_dump(user_data, sort_keys=False))
+            f.flush()
+            self.import_image(
+                disk_path, "qcow2",
+                virt_install_args=["--cloud-init", f"user-data={f.name}"],
+                **kwargs,
+            )
 
     def start(self):
         if guest_domstate(self.name) == "shut off":
@@ -880,6 +961,48 @@ class Guest:
         for f in files:
             f.unlink(missing_ok=True)
         self.port = None
+
+
+#
+# CentOS Stream 10 cloud image
+#
+
+def _host_ca_anchors():
+    """
+    Yield PEM contents of additional CA certificates (ie. company-internal
+    ones) trusted by the host, see update-ca-trust(8).
+    """
+    for anchors in ["/etc/pki/ca-trust/source/anchors", "/usr/share/pki/ca-trust-source/anchors"]:
+        for path in sorted(Path(anchors).glob("*")):
+            if not path.is_file():
+                continue
+            content = path.read_bytes()
+            # cloud-init supports only PEM, not DER
+            if b"-----BEGIN CERTIFICATE-----" in content:
+                yield content.decode()
+
+
+def _cached_cloud_image():
+    """
+    Return a path to a local copy of CLOUD_IMAGE_URL, verified against
+    its published sha256 checksum, downloading it only if needed.
+    """
+    reply = requests.get(f"{CLOUD_IMAGE_URL}.SHA256SUM")
+    reply.raise_for_status()
+    # SHA256 (CentOS-Stream-GenericCloud-10-latest.x86_64.qcow2) = c2667193...
+    match = re.search(r"^SHA256 \(.+\) = ([0-9a-f]{64})$", reply.text, flags=re.MULTILINE)
+    if not match:
+        raise RuntimeError(f"could not find a sha256 checksum in:\n{reply.text}")
+    sha256 = match.group(1)
+
+    cached = Path(GUEST_IMG_DIR) / CLOUD_IMAGE_URL.rpartition("/")[2]
+    if cached.exists():
+        with open(cached, "rb") as f:
+            if hashlib.file_digest(f, "sha256").hexdigest() == sha256:
+                util.log(f"using cached {cached}")
+                return cached
+    util.download(CLOUD_IMAGE_URL, cached, sha256=sha256)
+    return cached
 
 
 #
