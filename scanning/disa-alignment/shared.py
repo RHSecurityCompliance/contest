@@ -46,6 +46,10 @@ class ComparisonResult(enum.Enum):
     MISSING = enum.auto()
 
 
+class NoDISABenchmarkError(Exception):
+    pass
+
+
 def content_scan(host, ds, html, arf):
     """
     Scan machine and prepare ARF results for STIG Viewer.
@@ -91,7 +95,12 @@ def prepare_disa_datastream(content_dir, dest):
     Per-rule (GNOME, TFTP, ...) and RHEL_X-Y_or_Lower CPE platforms are kept.
     """
     references = Path(content_dir) / "shared" / "references"
-    src = next(references.glob(f"disa-stig-rhel{versions.rhel.major}-*-xccdf-scap.xml"))
+    if not references.is_dir():
+        raise FileNotFoundError(f"content references directory not found: {references}")
+    try:
+        src = next(references.glob(f"disa-stig-rhel{versions.rhel.major}-*-xccdf-scap.xml"))
+    except StopIteration:
+        raise NoDISABenchmarkError(f"no DISA STIG benchmark in: {references}") from None
     dest = Path(dest)
     if versions.rhel.is_centos():
         tree = ET.parse(src)

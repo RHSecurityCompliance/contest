@@ -3,6 +3,12 @@ import shared
 from conf import remediation
 from lib import oscap, results, util, virt
 
+with util.get_source_content() as content_dir:
+    try:
+        shared.prepare_disa_datastream(content_dir, "disa-ds.xml")
+    except shared.NoDISABenchmarkError as e:
+        results.report_and_exit("skip", note=str(e))
+
 virt.Host.setup()
 
 g = virt.Guest()
@@ -26,14 +32,12 @@ with util.BackgroundHTTPServer(virt.NETWORK_HOST, 0) as srv:
 
     g.install(kickstart=ks, kernel_args=["fips=1"])
 
-with g.booted(), util.get_source_content() as content_dir:
+with g.booted():
     g.copy_to(util.get_datastream(), "ssg-ds.xml")
     shared.content_scan(g, "ssg-ds.xml", html="ssg-report.html", arf="ssg-arf.xml")
     g.copy_from("ssg-report.html")
     g.copy_from("ssg-arf.xml")
 
-    # There is always one (the latest) DISA benchmark in content src
-    shared.prepare_disa_datastream(content_dir, "disa-ds.xml")
     g.copy_to("disa-ds.xml")
     shared.disa_scan(g, "disa-ds.xml", html="disa-report.html", arf="disa-arf.xml")
     g.copy_from("disa-report.html")

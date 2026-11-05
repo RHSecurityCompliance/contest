@@ -7,6 +7,12 @@ import shared
 from conf import partitions, remediation
 from lib import ansible, metadata, results, util, virt
 
+with util.get_source_content() as content_dir:
+    try:
+        shared.prepare_disa_datastream(content_dir, "disa-ds.xml")
+    except shared.NoDISABenchmarkError as e:
+        results.report_and_exit("skip", note=str(e))
+
 ansible.install_deps()
 virt.Host.setup()
 
@@ -41,20 +47,17 @@ with g.snapshotted():
         results.report_and_exit("fail", note=f"ansible-playbook failed with {proc.returncode}")
     g.soft_reboot()
 
-    with util.get_source_content() as content_dir:
-        g.copy_to(util.get_datastream(), "ssg-ds.xml")
-        shared.content_scan(g, "ssg-ds.xml", html="ssg-report.html", arf="ssg-arf.xml")
-        g.copy_from("ssg-report.html")
-        g.copy_from("ssg-arf.xml")
+    g.copy_to(util.get_datastream(), "ssg-ds.xml")
+    shared.content_scan(g, "ssg-ds.xml", html="ssg-report.html", arf="ssg-arf.xml")
+    g.copy_from("ssg-report.html")
+    g.copy_from("ssg-arf.xml")
 
-        # There is always one (the latest) DISA benchmark in content src
-        shared.prepare_disa_datastream(content_dir, "disa-ds.xml")
-        g.copy_to("disa-ds.xml")
-        shared.disa_scan(g, "disa-ds.xml", html="disa-report.html", arf="disa-arf.xml")
-        g.copy_from("disa-report.html")
-        g.copy_from("disa-arf.xml")
+    g.copy_to("disa-ds.xml")
+    shared.disa_scan(g, "disa-ds.xml", html="disa-report.html", arf="disa-arf.xml")
+    g.copy_from("disa-report.html")
+    g.copy_from("disa-arf.xml")
 
-        # Compare ARFs and report results from output
-        shared.compare_arfs("ssg-arf.xml", "disa-arf.xml")
+    # Compare ARFs and report results from output
+    shared.compare_arfs("ssg-arf.xml", "disa-arf.xml")
 
 results.report_and_exit(logs=["ssg-report.html", "disa-report.html"])
