@@ -3,17 +3,12 @@ Provides utilities and wrappers for creating and manipulating images and
 containers using the 'podman' utility.
 """
 
-import gzip
 import re
-import shutil
 import subprocess
 import tempfile
 import textwrap
 import time
 from pathlib import Path
-
-import requests
-import urllib3
 
 from lib import util
 
@@ -151,15 +146,12 @@ class Registry:
 
     @staticmethod
     def _download_image():
-        session = requests.Session()
-        retries = urllib3.util.Retry(total=10, backoff_factor=0.1)
-        session.mount("https://", requests.adapters.HTTPAdapter(max_retries=retries))
-        result = session.get(REGISTRY_IMAGE, stream=True)
-        result.raise_for_status()
-        gz_file = gzip.GzipFile(fileobj=result.raw)
-        with tempfile.NamedTemporaryFile(suffix=".tar", delete=False) as tmpf:
-            shutil.copyfileobj(gz_file, tmpf)
-        return tmpf.name
+        with tempfile.NamedTemporaryFile(suffix=".tar.gz", delete=False) as gz_file:
+            gz_path = Path(gz_file.name)
+        util.download(REGISTRY_IMAGE, gz_path)
+        # decompress in place, replacing the .tar.gz file with a .tar file
+        util.subprocess_run(["gzip", "-d", gz_path], check=True, stderr=subprocess.PIPE)
+        return gz_path.with_suffix("")
 
     def start(self):
         util.log(f"starting container for {self.name}")
