@@ -34,6 +34,8 @@ environment:
         discover+: {test: /hardening/host-os/oscap/cis_workstation_l1$}
     /cui:
         discover+: {test: /hardening/host-os/oscap/cui$}
+    /cui_enhanced:
+        discover+: {test: /hardening/host-os/oscap/cui_enhanced$}
     /e8:
         discover+: {test: /hardening/host-os/oscap/e8$}
     /hipaa:
@@ -80,6 +82,8 @@ environment:
         discover+: {test: /hardening/host-os/ansible/cis_workstation_l1$}
     /cui:
         discover+: {test: /hardening/host-os/ansible/cui$}
+    /cui_enhanced:
+        discover+: {test: /hardening/host-os/ansible/cui_enhanced$}
     /e8:
         discover+: {test: /hardening/host-os/ansible/e8$}
     /hipaa:
@@ -142,6 +146,8 @@ environment:
             discover+: {test: /scanning/host-os/ansible-check/check-mode/cis_workstation_l1$}
         /cui:
             discover+: {test: /scanning/host-os/ansible-check/check-mode/cui$}
+        /cui_enhanced:
+            discover+: {test: /scanning/host-os/ansible-check/check-mode/cui_enhanced$}
         /e8:
             discover+: {test: /scanning/host-os/ansible-check/check-mode/e8$}
         /hipaa:
