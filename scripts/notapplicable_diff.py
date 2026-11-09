@@ -10,11 +10,11 @@ This is critical for finding real issues that might be hidden by applicability
 changes (rule worked before, is accidentally hidden as notapplicable now).
 """
 
-import re
-import sys
+import argparse
 import gzip
 import json
-import argparse
+import re
+import sys
 import textwrap
 
 
@@ -25,25 +25,25 @@ def extract_results(filepath, args):
     Yields: ((platform_string, test_name), (status, note)) tuples
     where platform_string is like "9.0@x86_64" or "9.0"
     """
-    with gzip.open(filepath, 'rt') as stream:
+    with gzip.open(filepath, "rt") as stream:
         for line in stream:
             json_line = json.loads(line)
             platform, status, test, subtest, _files, note = json_line
 
             # assemble full test name
-            name = f'{test}/{subtest}' if subtest else test
+            name = f"{test}/{subtest}" if subtest else test
 
             # only /hardening results (tmt result reported for each rule)
-            if not name.startswith('/hardening/'):
+            if not name.startswith("/hardening/"):
                 continue
 
             # extract RHEL version and arch from platform string
-            if '@' in platform:
-                rhel = re.sub(r'@.*', '', platform)
-                arch = re.sub(r'.*@', '', platform)
+            if "@" in platform:
+                rhel = re.sub(r"@.*", "", platform)
+                arch = re.sub(r".*@", "", platform)
             else:
                 rhel = platform
-                arch = 'x86_64'
+                arch = "x86_64"
 
             # apply filters
             if args.ignore_rhel and any(x == rhel for x in args.ignore_rhel):
@@ -55,14 +55,14 @@ def extract_results(filepath, args):
 
             # retain compatibility with str(empty note) being '', not 'None'
             if note is None:
-                note = ''
+                note = ""
 
             # Use (platform, test_name) as the key for quick lookup
             key = (platform, name)
             yield (key, (status, note))
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     epilog = textwrap.dedent(r"""
         This tool parses two results.json.gz files (stabilization CI artifacts
         produced by ATEX), extracting any 'notapplicable' results, diffing them
@@ -86,16 +86,22 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(
         epilog=epilog,
         formatter_class=argparse.RawTextHelpFormatter,
-        usage=f'{sys.argv[0]} [options] <old_results> <new_results>',
+        usage=f"{sys.argv[0]} [options] <old_results> <new_results>",
     )
-    parser.add_argument('--ignore-arch', metavar='ARCH', action='append',
-                        help="Skip any results from this architecture")
-    parser.add_argument('--ignore-rhel', metavar='RHEL', action='append',
-                        help="Skip any results from RHEL version")
-    parser.add_argument('--ignore-test', metavar='REGEX', action='append',
-                        help="Skip any results with test name matching a TMT regex")
-    parser.add_argument('old_results')
-    parser.add_argument('new_results')
+    parser.add_argument(
+        "--ignore-arch", metavar="ARCH", action="append",
+        help="Skip any results from this architecture",
+    )
+    parser.add_argument(
+        "--ignore-rhel", metavar="RHEL", action="append",
+        help="Skip any results from RHEL version",
+    )
+    parser.add_argument(
+        "--ignore-test", metavar="REGEX", action="append",
+        help="Skip any results with test name matching a TMT regex",
+    )
+    parser.add_argument("old_results")
+    parser.add_argument("new_results")
 
     args = parser.parse_args()
 
@@ -112,8 +118,7 @@ if __name__ == '__main__':
     def extract_platforms(result_dict):
         """Extract unique platforms (RHEL version + arch) from results."""
         platforms = set()
-        for platform, _test_name in result_dict.keys():
-            platforms.add(platform)
+        platforms.update(platform for platform, _test_name in result_dict)
         return platforms
 
     old_platforms = extract_platforms(old)
@@ -144,9 +149,9 @@ if __name__ == '__main__':
     # we don't control partitions on the host OS — tracked separately
     # https://github.com/RHSecurityCompliance/contest/blob/16629441ef3489866f9c1827226d9b66309184a6/conf/waivers/infrastructure#L10
     _PARTITION_RULE_RE = re.compile(
-        r'/hardening/host-os/.+/mount_option_'
-        r'(home|opt|srv|var|var_log|var_log_audit|tmp)_'
-        r'(noexec|nosuid|nodev|usrquota|grpquota)'
+        r"/hardening/host-os/.+/mount_option_"
+        r"(home|opt|srv|var|var_log|var_log_audit|tmp)_"
+        r"(noexec|nosuid|nodev|usrquota|grpquota)",
     )
 
     # -------------------------------------------------------------------------
@@ -158,7 +163,7 @@ if __name__ == '__main__':
     partition_became_applicable = {}
 
     # Check all tests that exist in both old and new
-    for key in new.keys():
+    for key in new:  # noqa: PLC0206
         if key not in old:
             continue
 
@@ -166,11 +171,11 @@ if __name__ == '__main__':
         old_status, old_note = old[key]
         new_status, new_note = new[key]
 
-        old_is_notapplicable = (old_status == 'skip' and old_note == 'notapplicable')
-        new_is_notapplicable = (new_status == 'skip' and new_note == 'notapplicable')
+        old_is_notapplicable = (old_status == "skip" and old_note == "notapplicable")
+        new_is_notapplicable = (new_status == "skip" and new_note == "notapplicable")
 
         # Extract rule basename (last component of path)
-        rule_basename = test_name.split('/')[-1]
+        rule_basename = test_name.split("/")[-1]
 
         is_partition = bool(_PARTITION_RULE_RE.search(test_name))
 
@@ -208,31 +213,39 @@ if __name__ == '__main__':
 
             by_rhel = {}
             for platform, test_name, *_ in platforms_list:
-                rhel, arch = platform.split('@') if '@' in platform else (platform, 'x86_64')
+                rhel, arch = platform.split("@") if "@" in platform else (platform, "x86_64")
                 by_rhel.setdefault(rhel, []).append((arch, test_name))
 
             for rhel in sorted(by_rhel.keys()):
-                archs = sorted(set(arch for arch, _ in by_rhel[rhel]))
+                archs = sorted({arch for arch, _ in by_rhel[rhel]})
                 print(f"    RHEL {rhel}: {', '.join(archs)}")
 
-            unique_paths = sorted(set(test_name for _, test_name, *_ in platforms_list))
+            unique_paths = sorted({test_name for _, test_name, *_ in platforms_list})
             if len(unique_paths) > 1:
-                print(f"  Test paths:")
+                print("  Test paths:")
                 for path in unique_paths:
                     print(f"    {path}")
 
         print(f"\n{'=' * 80}")
-        print(f"Total: {len(rules_dict)} unique rules across {total_instances} platform/test combinations\n")
+        print(f"Total: {len(rules_dict)} unique rules across {total_instances} combinations\n")
 
-    print_section("Rules that became NOTAPPLICABLE", became_notapplicable,
-                  "No rules became notapplicable (no regressions found)")
-    print_section("Rules that became APPLICABLE", became_applicable,
-                  "No rules became applicable")
+    print_section(
+        "Rules that became NOTAPPLICABLE", became_notapplicable,
+        "No rules became notapplicable (no regressions found)",
+    )
+    print_section(
+        "Rules that became APPLICABLE", became_applicable,
+        "No rules became applicable",
+    )
 
     if partition_became_notapplicable or partition_became_applicable:
-        print("NOTE: Partition mount-option rules (host-OS layout not controlled by hardening content)")
+        print("NOTE: Partition mount-option rules not controlled by hardening content")
         print("=" * 80)
-        print_section("  Partition rules that became NOTAPPLICABLE", partition_became_notapplicable,
-                      "  No partition rules became notapplicable")
-        print_section("  Partition rules that became APPLICABLE", partition_became_applicable,
-                      "  No partition rules became applicable")
+        print_section(
+            "  Partition rules that became NOTAPPLICABLE", partition_became_notapplicable,
+            "  No partition rules became notapplicable",
+        )
+        print_section(
+            "  Partition rules that became APPLICABLE", partition_became_applicable,
+            "  No partition rules became applicable",
+        )
