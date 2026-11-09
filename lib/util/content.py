@@ -44,7 +44,6 @@ import tempfile
 from pathlib import Path
 
 from lib import dnf, util, versions
-from lib.versions import rhel
 
 CONTENT_BUILD_DIR = "build"
 
@@ -76,13 +75,13 @@ def find_datastreams(force_ssg, content_dir=None):
 
 
 def get_datastream(force_ssg=False, content_dir=None):
-    if rhel.is_centos():
-        if rhel == 8:
-            name = f"ssg-centos{rhel.major}-ds.xml"
+    if versions.rhel.is_centos():
+        if versions.rhel == 8:
+            name = f"ssg-centos{versions.rhel.major}-ds.xml"
         else:
-            name = f"ssg-cs{rhel.major}-ds.xml"
+            name = f"ssg-cs{versions.rhel.major}-ds.xml"
     else:
-        name = f"ssg-rhel{rhel.major}-ds.xml"
+        name = f"ssg-rhel{versions.rhel.major}-ds.xml"
     datastream = find_datastreams(force_ssg, content_dir) / name
     if not datastream.exists():
         raise RuntimeError(f"could not find datastream as {datastream}")
@@ -110,26 +109,30 @@ def find_playbooks(force_ssg=False, content_dir=None):
 
 
 def find_per_rule_playbooks(force_ssg=False, content_dir=None):
-    ssg_path = Path(f"/usr/share/scap-security-guide/ansible/rule_playbooks/rhel{rhel.major}/all")
+    ssg_path = Path(
+        f"/usr/share/scap-security-guide/ansible/rule_playbooks/rhel{versions.rhel.major}/all",
+    )
     # if specifically requested by the user
     if force_ssg:
         return ssg_path
     # if given content dir override or if CONTEST_CONTENT was specified
     user_content = content_dir or get_user_content()
     if user_content:
-        return user_content / CONTENT_BUILD_DIR / f"rhel{rhel.major}" / "playbooks" / "all"
+        return (
+            user_content / CONTENT_BUILD_DIR / f"rhel{versions.rhel.major}" / "playbooks" / "all"
+        )
     # default to the OS-wide scap-security-guide content
     return ssg_path
 
 
 def get_playbook(profile, force_ssg=False, content_dir=None):
-    if rhel.is_true_rhel():
-        name = f"rhel{rhel.major}-playbook-{profile}.yml"
-    elif rhel.is_centos():
-        if rhel == 8:
-            name = f"centos{rhel.major}-playbook-{profile}.yml"
+    if versions.rhel.is_true_rhel():
+        name = f"rhel{versions.rhel.major}-playbook-{profile}.yml"
+    elif versions.rhel.is_centos():
+        if versions.rhel == 8:
+            name = f"centos{versions.rhel.major}-playbook-{profile}.yml"
         else:
-            name = f"cs{rhel.major}-playbook-{profile}.yml"
+            name = f"cs{versions.rhel.major}-playbook-{profile}.yml"
     playbook = find_playbooks(force_ssg, content_dir) / name
     if not playbook.exists():
         raise RuntimeError(f"could not find playbook as {playbook}")
@@ -167,13 +170,13 @@ def get_kickstart(profile, content_dir=None):
     user_content = content_dir or get_user_content()
     if user_content:
         kickstart = (
-            user_content / "products" / f"rhel{rhel.major}" / "kickstart"
-            / f"ssg-rhel{rhel.major}-{profile}-ks.cfg"
+            user_content / "products" / f"rhel{versions.rhel.major}" / "kickstart"
+            / f"ssg-rhel{versions.rhel.major}-{profile}-ks.cfg"
         )
     else:
         base_dir = Path("/usr/share/scap-security-guide/kickstart")
         # RHEL and CentOS Stream both use 'ssg-rhel*' files
-        kickstart = base_dir / f"ssg-rhel{rhel.major}-{profile}-ks.cfg"
+        kickstart = base_dir / f"ssg-rhel{versions.rhel.major}-{profile}-ks.cfg"
     if not kickstart.exists():
         raise RuntimeError(f"could not find kickstart as {kickstart}")
     return kickstart

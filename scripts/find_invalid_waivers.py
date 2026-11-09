@@ -31,12 +31,8 @@ MatchedWaiver = collections.namedtuple(
 # fake a _Rhel class so that it always assumes valid RHEL
 class _FakeRhel(versions._Rhel):
     @staticmethod
-    def is_true_rhel():
-        return True
-
-    @staticmethod
-    def is_centos():
-        return False
+    def get_os_release():
+        return {"ID": "rhel"}
 
 
 _sections_cache = None

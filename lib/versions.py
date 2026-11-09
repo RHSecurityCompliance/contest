@@ -4,7 +4,7 @@ import platform
 
 class _Rhel:
     def __init__(self, version=None):
-        self.os_release = platform.freedesktop_os_release()
+        self.os_release = self.get_os_release()
 
         if version is None:
             version = self.os_release["VERSION_ID"]
@@ -15,6 +15,10 @@ class _Rhel:
         # latest minor version of RHEL
         if self.is_centos():
             self.minor = math.inf
+
+    @staticmethod
+    def get_os_release():
+        return platform.freedesktop_os_release()
 
     def is_true_rhel(self):
         return self.os_release["ID"] == "rhel"
@@ -82,4 +86,11 @@ class _Rhel:
             return str(self.major)
 
 
-rhel = _Rhel()
+# lazily instantiate class _Rhel singleton on first 'versions.rhel' access,
+# to allow importing this module without running /etc/os-release detection
+def __getattr__(name):
+    if name == "rhel":  # versions.rhel
+        instance = _Rhel()
+        globals()["rhel"] = instance  # don't __getattr__ next time
+        return instance
+    raise AttributeError(f"module {__name__} has no attribute {name}")
