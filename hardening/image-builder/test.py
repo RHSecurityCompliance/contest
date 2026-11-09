@@ -1,32 +1,16 @@
-import shutil
 import subprocess
-from pathlib import Path
 
 from conf import remediation
-from lib import metadata, osbuild, oscap, results, util, versions
+from lib import metadata, osbuild, oscap, results, util, virt
 
-# try to prevent the following error (usually happens on new RHEL versions in development):
-# ERROR: BlueprintsError: contest_blueprint: GetDistro - unknown distribution rhel-X.Y
-# which is caused by the absence of rhel-X.Y.json in /usr/share/osbuild-composer/repositories;
-# if /usr/share/osbuild-composer/repositories/rhel-X.Y.json does not exist, we try to create it
-# by copying rhel-X.json if it exists
-repos_dir = Path("/usr/share/osbuild-composer/repositories")
-rhel_xy_json = repos_dir / f"rhel-{versions.rhel.major}.{versions.rhel.minor}.json"
-rhel_x_json = repos_dir / f"rhel-{versions.rhel.major}.json"
-if not rhel_xy_json.exists() and rhel_x_json.exists():
-    util.log(f"{rhel_xy_json} does not exist, creating it by copying {rhel_x_json}")
-    shutil.copy(rhel_x_json, rhel_xy_json)
-
-osbuild.Host.setup()
-
-g = osbuild.Guest()
+virt.Host.setup()
 
 profile = util.get_test_name().rpartition("/")[2]
 
 oscap.unselect_rules(util.get_datastream(), "remediation-ds.xml", remediation.excludes())
 
 # provide our modified DS via RpmPack to the VM as /root/remediation-ds.xml,
-# tell the 'oscap xccdf eval --remediate' called by osbuild-composer to use it
+# tell the 'oscap xccdf eval --remediate' called by image-builder to use it
 rpmpack = util.RpmPack()
 rpmpack.add_file("remediation-ds.xml", "/root/remediation-ds.xml")
 
@@ -38,6 +22,9 @@ cmd = [
 _, lines = util.subprocess_stream(cmd, check=True, stderr=subprocess.PIPE)
 blueprint = osbuild.translate_oscap_blueprint(lines, "/root/remediation-ds.xml")
 
+# the image is built inside a temporary cs10 VM instead of on this system, so
+# that this test can run even when contest runs in a container, see lib/osbuild.py
+g = osbuild.Guest()
 g.create(blueprint=blueprint, rpmpack=rpmpack, secure_boot=("uefi" in metadata.tags()))
 
 with g.booted():
@@ -55,4 +42,4 @@ with g.booted():
     g.copy_from("report.html")
     g.copy_from("scan-arf.xml")
 
-results.report_and_exit(logs=["report.html", "scan-arf.xml", g.osbuild_log])
+results.report_and_exit(logs=["report.html", "scan-arf.xml"])
