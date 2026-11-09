@@ -1,5 +1,15 @@
 #!/usr/bin/python3
 
+"""
+This is a standalone script for comparing a full set of results from provided
+results.json.gz files and finding any rules that existed previously as
+applicable, but a new version (of results.json.gz) revealed them to be freshly
+notapplicable.
+
+This is critical for finding real issues that might be hidden by applicability
+changes (rule worked before, is accidentally hidden as notapplicable now).
+"""
+
 import re
 import sys
 import gzip
