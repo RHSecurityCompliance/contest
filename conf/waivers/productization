@@ -93,16 +93,10 @@
 /hardening/anaconda/ospp/enable_fips_mode
     rhel == 8
 
-# https://github.com/ComplianceAsCode/content/issues/11565
-/hardening/image-builder/.*/audit_rules_privileged_commands
 # https://github.com/ComplianceAsCode/content/issues/11567
 /hardening/image-builder/.*/enable_dracut_fips_module
 /hardening/image-builder/.*/enable_fips_mode
     True
-# missing OSBuild support for BSI
-# https://issues.redhat.com/browse/HMS-10132
-/hardening/image-builder(/uefi)?/bsi
-    rhel == 10 and status == 'error'
 
 # https://issues.redhat.com/browse/RHEL-77158
 # (we unselect max_age in conf/remediations.py)
@@ -110,24 +104,19 @@
 /hardening/container/anaconda-ostree/.+/accounts_password_set_warn_age_existing
     True
 
-# Image builder issue. Image builder needs to add BSI, ISM Official Secret
-# and ISM Official Top Secret to its allow list, tracked under
-# https://issues.redhat.com/browse/HMS-9407
-# https://issues.redhat.com/browse/HMS-9507
-/hardening/image-builder/bsi
-    rhel == 9 and status == 'error'
-/hardening/image-builder/ism_o_secret
-/hardening/image-builder/uefi/ism_o_secret
-/hardening/image-builder/ism_o_top_secret
-/hardening/image-builder/uefi/ism_o_top_secret
-    rhel == 10 and status == 'error'
-
 # Image builder needs to add the CUI profile to its allow list; osbuild-composer
 # rejects it with "unsupported profile xccdf_org.ssgproject.content_profile_cui"
 # https://redhat.atlassian.net/browse/HMS-11244
 /hardening/image-builder/cui(_enhanced)?
 /hardening/image-builder/uefi/cui(_enhanced)?
     status == 'error'
+
+# the remediation copies /dev/shm mount options of the build environment into
+# /etc/fstab, ie. 'inode64' from the CentOS Stream 10 image builder VM, which
+# the RHEL-8 kernel doesn't support, so /dev/shm is not remounted with noexec
+# https://github.com/ComplianceAsCode/content/issues/15332
+/hardening/image-builder/.+/mount_option_dev_shm_noexec
+    rhel == 8
 
 # https://github.com/ComplianceAsCode/content/issues/15002
 /hardening/host-os/ansible/.+/mount_option_tmp_noexec
