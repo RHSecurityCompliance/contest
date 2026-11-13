@@ -72,6 +72,10 @@
 /hardening/anaconda(/with-gui)?/[^/]+/service_nftables_disabled
     True
 
+/hardening/anaconda/with-gui/iec_62443_sl1/service_cups_disabled
+/hardening/anaconda/with-gui/iec_62443_sl2/service_cups_disabled
+    rhel == 9
+
 # https://github.com/ComplianceAsCode/content/issues/15132
 /hardening/ansible/uefi/hipaa/rpm_verify_permissions
     rhel == 10.3
@@ -117,6 +121,15 @@
 # https://github.com/ComplianceAsCode/content/issues/15332
 /hardening/image-builder/.+/mount_option_dev_shm_noexec
     rhel == 8
+
+# Image builder needs to add the IEC profile to its allow list; osbuild-composer
+# rejects it with
+# "unsupported profile xccdf_org.ssgproject.content_profile_iec_62443_sl1"
+# "unsupported profile xccdf_org.ssgproject.content_profile_iec_62443_sl2"
+# https://redhat.atlassian.net/browse/HMS-11606
+/hardening/image-builder/iec_62443_sl1
+/hardening/image-builder/iec_62443_sl2
+    rhel == 9 and status == 'error'
 
 # https://github.com/ComplianceAsCode/content/issues/15002
 /hardening/host-os/ansible/.+/mount_option_tmp_noexec

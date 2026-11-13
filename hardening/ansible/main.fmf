@@ -69,6 +69,18 @@ adjust+:
 
 /hipaa:
 
+/iec_62443_sl1:
+    adjust+:
+      - when: distro != rhel-9 and distro != centos-stream-9
+        enabled: false
+        because: IEC 62443 profiles are only available for RHEL 9
+
+/iec_62443_sl2:
+    adjust+:
+      - when: distro != rhel-9 and distro != centos-stream-9
+        enabled: false
+        because: IEC 62443 profiles are only available for RHEL 9
+
 /ism_o:
     tag+:
       - fips
