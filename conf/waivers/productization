@@ -147,4 +147,8 @@
 /scanning/disa-alignment/[^/]+/audit_rules_login_events_lastlog
     rhel == 9
 
+# https://github.com/ComplianceAsCode/content/issues/15367
+/per-rule/oscap/.+/grub2_(nosmep|nosmap|systemd_debug-shell)_argument_absent/arg_value_there_bootc_kargs\.fail
+    rhel == 9.2
+
 # vim: syntax=python
