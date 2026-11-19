@@ -19,6 +19,13 @@ def reboot():
 
     if "ATEX_TEST_CONTROL" in os.environ:
         fd = int(os.environ["ATEX_TEST_CONTROL"])
+        # stop sshd before disconnect so the executor cannot reconnect before
+        # reboot - normally not necessary as ssh sessions stay open despite
+        # a channel being closed, but this makes sure anyway
+        subprocess.run(
+            ["systemctl", "stop", "sshd"],
+            stdout=subprocess.DEVNULL, stderr=subprocess.STDOUT,
+        )
         util.log("doing disconnect + reboot")
         os.write(fd, b"disconnect\n")
         # wait for the test control to actually break
@@ -28,15 +35,9 @@ def reboot():
             except BrokenPipeError:
                 break
             time.sleep(0.1)
-        # do these without util.log() output as the ssh stdio might be broken
+        # do this without util.log() output as the ssh stdio might be broken
         # from the above - the DEVNULL also ensures the commands can safely write
         # to their outputs without getting EPIPE
-        # - shut down sshd so the test executor doesn't reconnect before reboot
-        subprocess.run(
-            ["systemctl", "stop", "sshd"],
-            stdout=subprocess.DEVNULL, stderr=subprocess.STDOUT,
-        )
-        # - actually reboot the OS
         subprocess.run(["reboot"], stdout=subprocess.DEVNULL, stderr=subprocess.STDOUT)
 
     elif shutil.which("tmt-reboot"):
