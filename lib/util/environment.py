@@ -1,6 +1,7 @@
 import os
 import re
 import shutil
+import signal
 import subprocess
 import time
 
@@ -19,6 +20,9 @@ def reboot():
 
     if "ATEX_TEST_CONTROL" in os.environ:
         fd = int(os.environ["ATEX_TEST_CONTROL"])
+        # survive SSH session hangup (Ctrl-C issued to atex, super rare case)
+        # - useful to fully complete the reboot procedure, starting sshd again
+        signal.signal(signal.SIGHUP, signal.SIG_IGN)
         # stop sshd before disconnect so the executor cannot reconnect before
         # reboot - normally not necessary as ssh sessions stay open despite
         # a channel being closed, but this makes sure anyway
