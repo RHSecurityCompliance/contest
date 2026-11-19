@@ -131,6 +131,11 @@
 /per-rule/oscap/.+/root_path_no_dot/period_on_path.fail
     True
 
+# https://github.com/ComplianceAsCode/content/issues/15367
+# RHEL 9.2 repositories do not carry the bootc package this scenario requires.
+/per-rule/oscap/.+/grub2_(nosmep|nosmap|systemd_debug-shell)_argument_absent/arg_value_there_bootc_kargs\.fail
+    rhel == 9.2
+
 # Service rngd sometimes fails to start because of time out
 # see https://issues.redhat.com/browse/RHEL-19983
 /hardening/host-os/.+/service_rngd_enabled
