@@ -19,18 +19,15 @@ def reboot():
 
     if "ATEX_TEST_CONTROL" in os.environ:
         fd = int(os.environ["ATEX_TEST_CONTROL"])
-        with os.fdopen(fd, "w", closefd=False) as control:
-            util.log("doing disconnect + reboot")
-            control.write("disconnect\n")
-            control.flush()
-            # wait for the test control to actually break
-            while True:
-                try:
-                    control.write("noop\n")
-                    control.flush()
-                except BrokenPipeError:
-                    break
-                time.sleep(0.1)
+        util.log("doing disconnect + reboot")
+        os.write(fd, b"disconnect\n")
+        # wait for the test control to actually break
+        while True:
+            try:
+                os.write(fd, b"noop\n")
+            except BrokenPipeError:
+                break
+            time.sleep(0.1)
         # do these without util.log() output as the ssh stdio might be broken
         # from the above - the DEVNULL also ensures the commands can safely write
         # to their outputs without getting EPIPE
