@@ -1,7 +1,9 @@
 summary: Runs oscap remediation directly on the target system
 test: $CONTEST_PYTHON -m lib.runtest ./test.py
 environment+:
-    PYTHONPATH: ../../..
+    # the '..' is to allow 'import shared' to find '../shared.py',
+    # and ':' is used to separate path segments, like bash PATH
+    PYTHONPATH: ../../..:..
 duration: 30m
 require+:
   - openscap-scanner

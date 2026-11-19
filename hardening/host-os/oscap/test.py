@@ -1,6 +1,8 @@
 import shutil
 from pathlib import Path
 
+import shared
+
 from conf import remediation
 from lib import oscap, results, util
 
@@ -39,6 +41,7 @@ if util.get_reboot_count() == 0:
 
     do_one_remediation(remediation_ds, profile, "remediation-arf.xml")
 
+    shared.fips_allow_ssh_ed25519()
     util.reboot()
 
 # remediate twice due to some rules being 'notapplicable'
@@ -48,6 +51,7 @@ elif util.get_reboot_count() == 1:
 
     do_one_remediation(remediation_ds, profile, "remediation2-arf.xml")
 
+    shared.fips_allow_ssh_ed25519()
     util.reboot()
 
 else:

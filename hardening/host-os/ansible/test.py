@@ -1,6 +1,8 @@
 import os
 import subprocess
 
+import shared
+
 from conf import remediation
 from lib import ansible, oscap, results, util
 
@@ -34,6 +36,7 @@ if util.get_reboot_count() == 0:
     if proc.returncode != 0:
         results.report_and_exit("fail", note=f"ansible-playbook failed with {proc.returncode}")
 
+    shared.fips_allow_ssh_ed25519()
     util.reboot()
 
 else:
