@@ -18,7 +18,7 @@ def _get_metadata():
 def duration_seconds():
     metadata = _get_metadata()
     if duration_str := metadata.get("duration"):
-        match = re.fullmatch(r"([0-9]+)([a-z]+)", duration_str)
+        match = re.fullmatch(r"([0-9]+)([smhd]?)", duration_str)
         if not match:
             raise RuntimeError(f"'duration' has invalid format: {duration_str}")
         length, unit = match.groups()
