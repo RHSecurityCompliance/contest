@@ -51,11 +51,15 @@ with g.snapshotted():
     shared.content_scan(g, "ssg-ds.xml", html="ssg-report.html", arf="ssg-arf.xml")
     g.copy_from("ssg-report.html")
     g.copy_from("ssg-arf.xml")
+    if results.extra_logs_wanted():
+        results.add_log("ssg-arf.xml")
 
     g.copy_to("disa-ds.xml")
     shared.disa_scan(g, "disa-ds.xml", html="disa-report.html", arf="disa-arf.xml")
     g.copy_from("disa-report.html")
     g.copy_from("disa-arf.xml")
+    if results.extra_logs_wanted():
+        results.add_log("disa-arf.xml")
 
     # Compare ARFs and report results from output
     shared.compare_arfs("ssg-arf.xml", "disa-arf.xml")

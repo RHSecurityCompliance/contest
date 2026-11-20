@@ -6,7 +6,7 @@ discover:
       - tag:-broken
       - tag:-subset-profile
 environment:
-    CONTEST_VERBOSE: "0"
+    CONTEST_SUB_STATUSES: fail,error
 
 # don't be afraid to include ALL possible profiles supported by any RHEL
 # down below - TMT context (adjust rules) still apply, and empty plans

@@ -200,7 +200,7 @@ debug && cp --reflink=always "$test_cwd/$test_file" "test.$test_type.sh"
 if debug; then
     oscap_reports=(--report report.html --results-arf results-arf.xml)
 else
-    oscap_report=()
+    oscap_reports=()
 fi
 
 # just do an oscap scan, expect it to pass
