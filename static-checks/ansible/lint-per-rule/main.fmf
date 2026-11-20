@@ -1,0 +1,32 @@
+summary: Lint per-rule Ansible playbooks with ansible-lint.
+description: |-
+    Lint per-rule playbooks with ansible-lint (profile min).
+    Each test takes every TOTAL_SLICES-th playbook from the sorted list,
+    so these can run on separate guests instead of tying up one guest
+    for hours.
+test: $CONTEST_PYTHON -m lib.runtest ./test.py
+environment+:
+    PYTHONPATH: ../../..
+    TOTAL_SLICES: 6
+duration: 2h
+require+:
+  - openscap-scanner
+  - ansible-core
+recommend+:
+  # individual rule playbooks (built only during downstream RPM testing)
+  - scap-security-guide-rule-playbooks
+adjust+:
+  - when: arch != x86_64
+    enabled: false
+    because: Ansible playbooks are same on all architectures
+  - when: distro == rhel
+    require+:
+      - rhc-worker-playbook
+    because: rhc-worker-playbook works reliably only in RHEL
+
+/1:
+/2:
+/3:
+/4:
+/5:
+/6:

@@ -1,7 +1,7 @@
 summary: Lint Ansible playbooks with ansible-lint.
 description: |-
-    Verify that all generated playbooks and all playbooks provided
-    by the scap-security-guide package pass ansible-lint (profile min).
+    Verify that the generated (all) profile playbook and shipped profile
+    playbooks pass ansible-lint (profile min).
     The min profile (which includes only mandatory lint rules) is used
     instead of basic (or stricter) because CaC/content playbooks are
     machine-generated and use non-standard formatting which would fail
@@ -13,9 +13,6 @@ duration: 2h
 require+:
   - openscap-scanner
   - ansible-core
-recommend+:
-  # individual rule playbooks (built only during downstream RPM testing)
-  - scap-security-guide-rule-playbooks
 adjust+:
   - when: arch != x86_64
     enabled: false
