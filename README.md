@@ -23,19 +23,30 @@ on Red Hat Enterprise Linux.
 - "result" is a piece of data reported by a test, containing
   - `name` - either a test name, or a test name with something appended to it,
     ie. `/hardening/oscap/stig` or `/hardening/oscap/stig/some_rule_name/etc`
-  - `status` - one of `pass`, `fail`, `info`, `warn` or `error`
+  - `status` - one of `pass`, `fail`, `warn`, `error`, `info` or `skip`
   - `note` - additional freeform text details about the result
   - `log` - a list of logs associated with the result
 
 ## Parameters
 
-- `CONTEST_VERBOSE`
-  - Set to an integer value to control the verbosity of reported results.
-    This applies only to sub-results (`/something` after a test name), results
-    for tests themselves (as seen by TMT) are always reported.
-    - `0` outputs only `fail` and `error`
-    - `1` (default) is `fail`, `error` and `warn`
-    - `2` or greater to output everything
+- `CONTEST_SUB_STATUSES`
+  - A comma-separated list of subresult statuses to be reported.
+  - Useful for infrastructures that cannot handle large amounts of results,
+    e.g. Testing Farm Oculus.
+  - Set to e.g. `fail,error` to avoid passing-like subresults being reported.
+  - Set to empty (variable defined, but empty) or `none` to never report
+    any subresults, keeping only the main test results.
+  - Defaults to all valid statuses (reporting all subresults).
+
+- `CONTEST_EXTRA_LOGS`
+  - Set to `1` to collect and upload additional logs that would normally be
+    skipped due to extra overhead from collecting them, or extra wasted space
+    during typical runs. Defaults to `0`.
+  - Contest normally tries to upload any useful logs, even for passing results,
+    but skips some huge ones or generally "useless" temporary ones. Setting `1`
+    forces an upload of those too.
+  - DO NOT use this on full daily/weekly/etc. runs unless you're prepared for
+    10+GB of logs. Use it only for targeted single-test or few-tests runs.
 
 - `CONTEST_WAIVER_DIR`
   - Specify a relative path to a waiver directory containing waiver files.

@@ -49,20 +49,22 @@ def have_tmt_api():
     return bool(os.environ.get("TMT_TEST_DATA"))
 
 
-def _allowed_by_verbosity(status):
-    env = os.environ.get("CONTEST_VERBOSE")
-    if env:
-        level = int(env)
+def _allowed_subresult(status):
+    env = os.environ.get("CONTEST_SUB_STATUSES")
+    if env is None:
+        statuses = _valid_statuses
+    elif not env.strip() or env.strip() == "none":
+        return False
     else:
-        level = 1
+        statuses = [x.strip() for x in env.split(",")]
+        for item in statuses:
+            if item not in _valid_statuses:
+                raise ValueError(f"invalid status in CONTEST_SUB_STATUSES: {item}")
+    return status in statuses
 
-    if level == 0:
-        if status not in ["fail", "error"]:
-            return False
-    elif level == 1:
-        if status not in ["fail", "error", "warn"]:
-            return False
-    return True
+
+def extra_logs_wanted():
+    return os.environ.get("CONTEST_EXTRA_LOGS") == "1"
 
 
 def _write_tmt_subresult(subresult):
@@ -179,9 +181,6 @@ def report_tmt(status, name=None, note=None, logs=None):
 
     if name:
         # -- reporting a subresult --
-        if not _allowed_by_verbosity(status):
-            return
-
         subresult = {
             "name": f"/{name}",
             "result": status,
@@ -260,14 +259,20 @@ def report(status, name=None, note=None, logs=None):
 
     status, name, note = waive.rewrite_result(status, name, note)
 
+    global_counts[status] += 1
+
+    # if it's a subresult not allowed to be reported, write it to plain output
+    # regardless - basically zero cost, but very useful for debugging
+    if name and not _allowed_subresult(status):
+        report_plain(status, name, note, logs)
+        return status
+
     if have_atex_api():
         report_atex(status, name, note, logs)
     elif have_tmt_api():
         report_tmt(status, name, note, logs)
     else:
         report_plain(status, name, note, logs)
-
-    global_counts[status] += 1
 
     return status
 

@@ -33,6 +33,17 @@ def format_test(test):
     return f"{prefix}{test.rule}/{test.test}.{pass_fail}"
 
 
+def exitcode_to_status(code):
+    if code == 0:  # noqa: SIM116
+        return "pass"
+    elif code == 2:
+        return "fail"
+    elif code == 3:
+        return "skip"
+    else:
+        return "error"
+
+
 def unit_tests_from_rules(built_tests_dir, rules, ds):
     for rule in sorted(rules):
         rule_dir = built_tests_dir / rule
@@ -203,38 +214,37 @@ for test in tests:
     else:
         remediation_type = fix_type
 
-    # try a first run, if it passes, report it without extra overhead
-    with g.snapshotted():
-        proc = g.ssh(
-            "./runner.sh", test.rule, test.test, pass_fail,
-            remediation_type, "nodebug", test.check,
-            stdout=subprocess.PIPE, text=True,
-        )
-        if proc.returncode == 0:
-            results.report("pass", format_test(test), proc.stdout.rstrip("\n"))
-            continue
-        elif proc.returncode == 3:
-            results.report("skip", format_test(test), proc.stdout.rstrip("\n"))
-            continue
+    # this normally does two runs - a first run without the extra overhead
+    # of fetching logs, and if it fails, a debug-enabled second run to get
+    # all the details and logs and report that one
+    # - the failure may have been transient, so the second run may still pass
+    #
+    # if extra logs are always wanted (regardless of failure), we do just
+    # the second run with all debugging enabled
 
-    # something failed, do a second run and collect debug details
-    # - note that it is possible the fail was transient and the following
-    #   may still pass
+    # first run
+    if not results.extra_logs_wanted():
+        with g.snapshotted():
+            proc = g.ssh(
+                "./runner.sh", test.rule, test.test, pass_fail,
+                remediation_type, "nodebug", test.check,
+                stdout=subprocess.PIPE, text=True,
+            )
+            if proc.returncode in [0,3]:
+                results.report(
+                    status=exitcode_to_status(proc.returncode),
+                    name=format_test(test),
+                    note=proc.stdout.rstrip("\n"),
+                )
+                continue
+
+    # second run
     with g.snapshotted():
         proc = g.ssh(
             "./runner.sh", test.rule, test.test, pass_fail,
             remediation_type, "debug", test.check,
             stdout=subprocess.PIPE, text=True,
         )
-
-        if proc.returncode == 0:
-            status = "pass"
-        elif proc.returncode == 2:
-            status = "fail"
-        elif proc.returncode == 3:
-            status = "skip"
-        else:
-            status = "error"
 
         for log in guest_logs:
             Path(log).unlink(missing_ok=True)
@@ -245,7 +255,7 @@ for test in tests:
             continue
 
         results.report(
-            status=status,
+            status=exitcode_to_status(proc.returncode),
             name=format_test(test),
             note=proc.stdout.rstrip("\n"),
             logs=[x for x in guest_logs if Path(x).exists()],

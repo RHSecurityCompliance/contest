@@ -52,12 +52,13 @@ with util.get_source_content() as content_dir:
 
             if state == "result":
                 test_output.append(line)
-                if "Test Passed" in line:
-                    results.report("pass", test_name)
-                else:
+                status = "pass" if "Test Passed" in line else "fail"
+                logs = []
+                if status == "fail" or results.extra_logs_wanted():
                     test_log = f"{test_name}.log"
                     Path(test_log).write_text("\n".join(test_output))
-                    results.report("fail", test_name, logs=[test_log])
+                    logs.append(test_log)
+                results.report(status, test_name, logs=logs)
                 test_output.clear()
                 state = "start"
 
