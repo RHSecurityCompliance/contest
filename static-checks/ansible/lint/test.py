@@ -5,23 +5,6 @@ from pathlib import Path
 
 from lib import ansible, results, util
 
-
-def lint_playbook(playbook, name):
-    cmd = [
-        venv_python, "-m", "ansiblelint",
-        "--offline", "--nocolor", "--profile", "min",
-        playbook,
-    ]
-    # ansible-lint writes violations to stdout
-    ret = util.subprocess_run(
-        cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
-    )
-    if ret.returncode == 0:
-        results.report("pass", name)
-    else:
-        results.report("fail", name, ret.stdout)
-
-
 ansible.install_deps()
 
 ds = util.get_datastream()
@@ -42,6 +25,18 @@ with tempfile.TemporaryDirectory() as venv_dir:
         check=True,
     )
 
+    def lint_playbook(playbook, name):
+        cmd = [
+            venv_python, "-m", "ansiblelint", "--offline", "--nocolor", "--profile", "min",
+            playbook,
+        ]
+        # ansible-lint writes violations to stdout
+        ret = util.subprocess_run(cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+        if ret.returncode == 0:
+            results.report("pass", name)
+        else:
+            results.report("fail", name, ret.stdout)
+
     # lint generated playbook with virtual (all) profile
     cmd = [
         "oscap", "xccdf", "generate", "fix", "--profile", "(all)",
@@ -52,10 +47,6 @@ with tempfile.TemporaryDirectory() as venv_dir:
 
     # lint shipped playbooks
     for playbook in util.iter_playbooks():
-        lint_playbook(playbook, playbook.name)
-
-    # lint per-rule playbooks
-    for playbook in util.iter_per_rule_playbooks():
         lint_playbook(playbook, playbook.name)
 
 results.report_and_exit()
