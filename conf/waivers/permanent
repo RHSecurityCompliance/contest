@@ -131,10 +131,11 @@
 /per-rule/oscap/.+/root_path_no_dot/period_on_path.fail
     True
 
-# https://github.com/ComplianceAsCode/content/issues/15367
-# RHEL 9.2 repositories do not carry the bootc package this scenario requires.
-/per-rule/oscap/.+/grub2_(nosmep|nosmap|systemd_debug-shell)_argument_absent/arg_value_there_bootc_kargs\.fail
-    rhel == 9.2
+# these require bootc and fail on setup when the 'bootc' package isn't installed
+# - there unfortunately isn't any good way to add RHEL-minor-aware logic
+#   to content building or Automatus tests, so we have to waive it here
+/per-rule/oscap/.+/grub2.+_bootc_kargs\.fail
+    rhel < 9.6 and status == "error" and note == "test script failed with 1"
 
 # Service rngd sometimes fails to start because of time out
 # see https://issues.redhat.com/browse/RHEL-19983
