@@ -128,6 +128,28 @@ BUILDER_NAME = "contest-image-builder"
 BUILDER_PACKAGES = ["image-builder", "osbuild", "osbuild-depsolve-dnf", "rsync"]
 
 
+# TODO: remove once osbuild in CentOS Stream 10 includes
+#       https://github.com/osbuild/osbuild/pull/2603
+def _set_librepo_useragent(builder):
+    """
+    Make the osbuild librepo source (used by image-builder for downloading
+    RPMs) inside a running 'builder' guest send a User-Agent header, the same
+    one as the osbuild curl source sends.
+
+    Without it, some mirrors reject all requests, ie. mirror.stream.centos.org
+    (CloudFront) responds with HTTP 403 "Request blocked".
+    """
+    script = util.dedent(r"""
+        f=/usr/lib/osbuild/sources/org.osbuild.librepo
+        ua='handle.useragent = f"osbuild (Linux.{os.uname().machine}; https://osbuild.org/)"'
+        grep -q 'handle\.useragent' "$f" && exit 0
+        sed -i -E "s|^( *)handle\.repotype = librepo\.YUMREPO\$|&\n\1$ua|" "$f"
+        grep -q 'handle\.useragent' "$f"
+    """)
+    if builder.ssh(script).returncode != 0:
+        raise RuntimeError("could not set User-Agent in the osbuild librepo source")
+
+
 def _resolve_distro(builder):
     """
     Return an image-builder distribution name matching the host OS, as known
@@ -188,6 +210,7 @@ def build_image(blueprint, image_path, log_path, *, extra_repo=None, image_size=
         if proc.returncode not in [0,2]:
             raise RuntimeError(f"cloud-init failed with {proc.returncode}")
         builder.ssh("dnf", "-y", "install", *BUILDER_PACKAGES, check=True)
+        _set_librepo_useragent(builder)
 
         with blueprint.to_tmpfile() as bp_file:
             builder.copy_to(bp_file, "/root/blueprint.toml")
