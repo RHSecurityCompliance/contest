@@ -30,6 +30,9 @@ adjust+:
   - when: distro ~< rhel-8.10 or distro ~< rhel-9.4
     enabled: false
     because: Image Builder hardening was never shipped to (nor tested on) older RHEL-8/9
+  - when: distro == centos-stream-8
+    enabled: false
+    because: CentOS Stream 8 is EOL, image-builder dropped its repository definitions
 
 /anssi_bp28_high:
 
