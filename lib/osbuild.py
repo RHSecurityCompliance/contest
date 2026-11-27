@@ -204,11 +204,7 @@ def build_image(blueprint, image_path, log_path, *, extra_repo=None, image_size=
     builder.import_cloud_image(vcpus=min(4, os.cpu_count() or 1))
 
     with builder.booted():
-        # wait for cloud-init to finish the first boot setup (ie. growing
-        # the root filesystem), 2 means it finished with recoverable errors
-        proc = builder.ssh("cloud-init", "status", "--wait")
-        if proc.returncode not in [0,2]:
-            raise RuntimeError(f"cloud-init failed with {proc.returncode}")
+        builder.wait_for_cloud_init()
         builder.ssh("dnf", "-y", "install", *BUILDER_PACKAGES, check=True)
         _set_librepo_useragent(builder)
 

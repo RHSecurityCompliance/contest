@@ -14,9 +14,9 @@ require+:
   - nmap-ncat
   - rpm-build
   - createrepo
-  # podman library dependencies
-  - podman
-  - fuse-overlayfs
+# the hardened container image and qcow2 disk are built inside a temporary
+# CentOS Stream 10 VM; internet access is needed to download the cloud image,
+# packages, and container images
 extra-hardware: |
     keyvalue = HVM=1
     hostrequire = memory>=6000

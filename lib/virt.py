@@ -90,7 +90,7 @@ Example using a temporary worker guest:
     worker.import_cloud_image()
 
     with worker.booted():
-        worker.ssh("cloud-init", "status", "--wait")
+        worker.wait_for_cloud_init()
         worker.ssh("dnf", "-y", "install", "podman", check=True)
         worker.ssh("podman", "run", "--privileged", ... )
 
@@ -661,8 +661,8 @@ class Guest:
         the image.
 
         The disk image is grown to 'disk_size' (sparse), and cloud-init grows
-        the root filesystem on first boot. Any other arguments are passed
-        to import_image().
+        the root filesystem on first boot (call wait_for_cloud_init() after
+        booting). Any other arguments are passed to import_image().
         """
         util.log(f"creating guest {self.name} from {CLOUD_IMAGE_URL}")
         self.wipe()
@@ -697,6 +697,17 @@ class Guest:
                 virt_install_args=["--cloud-init", f"user-data={f.name}"],
                 **kwargs,
             )
+
+    def wait_for_cloud_init(self):
+        """
+        Wait for cloud-init to finish first-boot setup (ie. growing the root
+        filesystem and installing additional CA certificates) inside a booted
+        cloud-image guest.
+        """
+        # 2 means cloud-init finished with recoverable errors
+        proc = self.ssh("cloud-init", "status", "--wait")
+        if proc.returncode not in [0, 2]:
+            raise RuntimeError(f"cloud-init failed with {proc.returncode}")
 
     def start(self):
         if guest_domstate(self.name) == "shut off":

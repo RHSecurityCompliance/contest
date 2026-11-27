@@ -18,8 +18,8 @@ require+:
   # osbuild library dependencies
   - rsync
 # the image is built by image-builder inside a temporary CentOS Stream 10 VM
-# (see lib/osbuild.py), which needs internet access to download its cloud
-# image and packages
+# (see lib/osbuild.py); internet access is needed to download the cloud image
+# and packages
 extra-hardware: |
     keyvalue = HVM=1
     hostrequire = memory>=6000

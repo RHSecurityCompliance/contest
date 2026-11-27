@@ -32,19 +32,16 @@ guest.generate_ssh_keypair()
 # select appropriate container image based on host OS
 major = versions.rhel.major
 minor = versions.rhel.minor
+cleanup_sh = None
 if versions.rhel.is_true_rhel():
     src_image = f"images.paas.redhat.com/testingfarm/rhel-bootc:{major}.{minor}"
-    # copy a Testing Farm image cleanup script to CWD (if available),
-    # because podman COPY cannot access files outside the build context
     cleanup_sh = Path(__file__).resolve().parent.parent / "bootc_tf_img_cleanup.sh"
-    if cleanup_sh.exists():
-        shutil.copy(cleanup_sh, "bootc_tf_img_cleanup.sh")
+    if not cleanup_sh.exists():
+        cleanup_sh = None
 else:
     src_image = f"quay.io/centos-bootc/centos-bootc:stream{major}"
 
 # prepare a RpmPack with testing-specific hacks
-# - copy it to CWD because podman cannot handle absolute paths (or relative ones
-#   going above CWD) as source for COPY or RUN --mount
 pack = util.RpmPack()
 if oscap_repo:
     pack.add_file(oscap_repo)
@@ -53,11 +50,11 @@ with pack.build() as pack_binrpm:
     shutil.copy(pack_binrpm, "contest-pack.rpm")
 
 
-# prepare a Container file for making a hardened image using the data stream
-def build_image(data_stream, results_arf, dst_image):
+# prepare a Containerfile and build a hardened image inside 'builder'
+def build_image(builder, data_stream, results_arf, dst_image):
     cfile = podman.Containerfile()
     cfile += f"FROM {src_image}"
-    if Path("bootc_tf_img_cleanup.sh").exists():
+    if cleanup_sh:
         cfile += util.dedent("""
             COPY bootc_tf_img_cleanup.sh /root/bootc_tf_img_cleanup.sh
             RUN chmod +x /root/bootc_tf_img_cleanup.sh && /root/bootc_tf_img_cleanup.sh
@@ -77,47 +74,76 @@ def build_image(data_stream, results_arf, dst_image):
     cfile.add_ssh_pubkey(guest.ssh_pubkey)
     cfile.write_to("Containerfile")
 
-    podman.podman("pull", src_image)
-    podman.podman("image", "build", "--tag", dst_image, ".")
+    builder.copy_to("Containerfile", "/root/build/")
+    builder.ssh("podman", "image", "build", "--tag", dst_image, "/root/build", check=True)
 
-
-# take remediation datastreams from CWD, as generated above,
-# store them in / inside the image and build contest-hardened-* tagged images
-build_image("remediation-old-ds.xml", "/remediation-old-arf.xml", "contest-hardened-old")
-build_image("remediation-new-ds.xml", "/remediation-new-arf.xml", "contest-hardened-new")
-
-# pre-create a directory (inside GUEST_IMG_DIR) for storing the
-# hardened image, built by bootc-image-builder
-bootc_output_dir = Path(virt.GUEST_IMG_DIR) / "bootc-image-builder-output"
-if bootc_output_dir.exists():
-    shutil.rmtree(bootc_output_dir)
-bootc_output_dir.mkdir(parents=True)
-
-# build the hardened image using a containerized builder
-podman.podman(
-    "container", "run",
-    "--rm",
-    "--privileged",
-    "--security-opt", "label=type:unconfined_t",
-    "--volume", f"{bootc_output_dir}:/output",
-    "--volume", "/var/lib/containers/storage:/var/lib/containers/storage",
-    "quay.io/centos-bootc/bootc-image-builder",
-    # arguments for the builder itself
-    "build",
-    "--type", "qcow2",
-    "--local",
-    # 'localhost/' prefix tells the builder to just use local image storage
-    "localhost/contest-hardened-old",
-)
-
-# path inside the output dir seems to be hardcoded in bootc-image-builder
-qcow2_path = bootc_output_dir / "qcow2" / "disk.qcow2"
-guest.import_image(qcow2_path, "qcow2")
 
 with podman.Registry(host_addr=virt.NETWORK_HOST, guest_addr=virt.NETWORK_GUEST) as registry:
-    image_url = registry.push("contest-hardened-new")
-    guest_image_url = registry.guest_reference(image_url)
     raddr, rport = registry.get_guest_listen_addr()
+    guest_image_url = f"{raddr}:{rport}/contest-hardened-new"
+
+    # build the hardened container images and qcow2 disk inside a temporary VM,
+    # so that bootc-image-builder can run with --privileged (init-namespace root)
+    # and podman build doesn't have to run nested when Contest runs in a container
+    builder = virt.Guest(name="contest-builder")
+    builder.import_cloud_image(vcpus=min(4, os.cpu_count() or 1))
+
+    qcow2_path = Path(virt.GUEST_IMG_DIR) / f"{guest.name}.qcow2"
+    with builder.booted():
+        builder.wait_for_cloud_init()
+        builder.ssh("dnf", "-y", "install", "podman", check=True)
+        builder.ssh("mkdir", "-p", "/root/build", "/root/output", check=True)
+
+        build_files = ["contest-pack.rpm", "remediation-old-ds.xml", "remediation-new-ds.xml"]
+        if cleanup_sh:
+            build_files.append(cleanup_sh)
+        for src in build_files:
+            builder.copy_to(src, "/root/build/")
+
+        builder.ssh("podman", "pull", src_image, check=True)
+
+        # build contest-hardened-* tagged images using the old and new datastreams,
+        # storing the remediation ARFs in / inside each image
+        build_image(
+            builder, "remediation-old-ds.xml", "/remediation-old-arf.xml", "contest-hardened-old",
+        )
+        build_image(
+            builder, "remediation-new-ds.xml", "/remediation-new-arf.xml", "contest-hardened-new",
+        )
+
+        # build the hardened image using a containerized builder
+        builder.ssh(
+            "podman", "container", "run",
+            "--rm",
+            "--privileged",
+            "--security-opt", "label=type:unconfined_t",
+            "--volume", "/root/output:/output",
+            "--volume", "/var/lib/containers/storage:/var/lib/containers/storage",
+            "quay.io/centos-bootc/bootc-image-builder",
+            # arguments for the builder itself
+            "build",
+            "--type", "qcow2",
+            "--local",
+            # 'localhost/' prefix tells the builder to just use local image storage
+            "localhost/contest-hardened-old",
+            check=True,
+        )
+
+        # path inside the output dir seems to be hardcoded in bootc-image-builder
+        builder.copy_from("/root/output/qcow2/disk.qcow2", qcow2_path)
+
+        # push the new image directly to the host's local registry
+        builder.ssh(
+            "podman", "image", "push", "--tls-verify=false",
+            "localhost/contest-hardened-new", guest_image_url,
+            check=True,
+        )
+
+    # free up disk space before using the hardened guest
+    builder.wipe()
+
+    guest.import_image(qcow2_path, "qcow2")
+
     # boot up and scan the VM
     with guest.booted():
         # copy the old remediation ARF from the guest
